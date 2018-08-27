@@ -2,11 +2,15 @@
 (require 'dash)
 
 ;; 2018-08-27T12:45:03+0530
-(define-derived-mode timeclock-list-mode tabulated-list-mode "Timeclock-List"
+;; has not yet been tested with comments in the timelog
+;; TODO -
+;; 1. Refresh when you select the list buffer
+
+(define-derived-mode timeclock-list-mode tabulated-list-mode "timeclock-list"
   "Display projects from timeclock.el and the time spent on each
   today."
   (make-local-variable 'tabulated-list-format)
-  (setq tabulated-list-format [("Project" 25 t) ("Time" 5 t)])
+  (setq tabulated-list-format [("Project" 25 t) ("Time" 10 t) ("Active" 3 t)])
 
   (make-local-variable 'tabulated-list-entries)
   (setq tabulated-list-entries 'tclist/entries)
@@ -14,19 +18,49 @@
   (make-local-variable 'tabulated-list-sort-key)
   (setq tabulated-list-sort-key '("Project" . nil))
 
-  (tabulated-list-init-header))
+  (tabulated-list-init-header)
+
+  (define-key timeclock-list-mode-map (kbd "RET") 'tclist/toggle-project))
+
+(defvar time-re "[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}")
+
+(defun tclist/current-project ()
+  "Returns the name of the currently clocked-in project, or nil
+ if the user is not clocked in."
+  (if (not (timeclock-currently-in-p))
+      nil
+    (with-current-buffer (find-file-noselect timeclock-file)
+      (goto-char (point-max))
+      (forward-line -1)
+      (re-search-forward (concat time-re " ") nil t)
+      (buffer-substring-no-properties (point) (point-at-eol)))))
+
+(defun tclist/project-active? (project)
+  "Returns t if PROJECT is currently clocked in, else nil."
+  (equal (tclist/current-project) project))
 
 (defun tclist/toggle-project ()
   "Start or stop the project at point."
   (interactive)
-  (if (timeclock-currently-in-p)
-      (if ()))
-  ;; if we're clocked in to anything -
-  ;; - if yes and it's at point, clock out
-  ;; - else, error
-  ;; else - start project at point
-  ;;
-)
+  (let ((project-at-point (progn
+                            (beginning-of-line)
+                            (--> (buffer-substring-no-properties
+                                  (point)
+                                  (progn
+                                    (end-of-line)
+                                    (re-search-backward time-re nil t)))
+                                 (replace-regexp-in-string "[ \t]*$" "" it))))
+        (current-project  (tclist/current-project)))
+    ;; if we're clocked in to anything
+    (if current-project
+        ;; if yes and it's at point, clock out
+        (if (equal project-at-point current-project)
+            (timeclock-out)
+          ;; otherwise, stop that one and start this one
+          (timeclock-change nil project-at-point))
+      ;; else - start project at point
+      (timeclock-in nil project-at-point))
+    (tabulated-list-print t)))
 
 ;; listing command
 ;; 1. show projects and time spent on them today
@@ -43,9 +77,14 @@
       (switch-to-buffer-other-window buffer))))
 
 (defun tclist/entries ()
-  (mapcar (lambda (item)
-            (list nil
-                  (vector item (tclist/project-time-one-day item))))
+  "Creates entries to be displayed in the buffer created by
+`timeclock-list'."
+  (mapcar (lambda (project-name)
+            (list project-name
+                  (vector project-name
+                          (tclist/project-time-one-day project-name)
+                          (if (tclist/project-active? project-name)
+                              "*" ""))))
           timeclock-project-list))
 
 (defun tclist/timestamp->seconds (date-time)
@@ -72,7 +111,6 @@
   (if (not (member project timeclock-project-list))
       (error (concat "Unknown project: " project))
     (let* ((current-date  (format-time-string "%Y/%m/%d"))
-           (time-re       "[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}")
            (search-re     (concat current-date " " time-re " " project))
            (interval-list nil))
       (with-current-buffer (find-file-noselect timeclock-file)
@@ -103,7 +141,7 @@
                (time-h      (elt time-vector 0))
                (time-m      (elt time-vector 1))
                (time-s      (elt time-vector 2)))
-          (concat (number-to-string time-h)
+          (concat (format "%02d" time-h)
                   ":"
                   (format "%02d" time-m)
                   ":"
