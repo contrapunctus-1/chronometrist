@@ -61,7 +61,9 @@
           (timeclock-change nil project-at-point))
       ;; else - start project at point
       (timeclock-in nil project-at-point))
-    (tabulated-list-print t)))
+    ;; Trying to update partially doesn't update the activity
+    ;; indicator. Why?
+    (tabulated-list-print t nil)))
 
 ;; listing command
 ;; 1. show projects and time spent on them today
@@ -178,7 +180,7 @@
 (defun tclist/timer-fn ()
   (when (tclist/buffer-visible? timeclock-list-buffer-name)
     (with-current-buffer timeclock-list-buffer-name
-      (tabulated-list-print t))))
+      (tabulated-list-print t t))))
 
 (run-with-idle-timer 3 t #'tclist/timer-fn)
 
