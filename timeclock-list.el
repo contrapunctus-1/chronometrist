@@ -1,8 +1,10 @@
 (require 'timeclock)
 (require 'dash)
+(require 'cl-lib)
 
 ;; 2018-08-27T12:45:03+0530
 ;; has not yet been tested with comments in the timelog
+
 ;; TODO -
 ;; 1. Refresh when you select the list buffer (impossible? make-thread
 ;; in v26? Use emacs-async library?)
@@ -10,10 +12,18 @@
 ;;    - Simplest - instead of having tclist/toggle-project start the
 ;;      task at point, have it run timeclock-in with the task at point
 ;;      being the default.
+;;    - Fancy - add a button saying 'Add task'. Will probably involve
+;;      multiple major modes of some sort
 ;; 3. Add support for prefix args to tclist/toggle-project
-;; 4. Add variable to change prompting-for-reason behaviour
+;; 4. Add variable to let user control prompting-for-reason behaviour
 ;; 5. Make "?" show help; show message saying "Press ? for help" in
 ;;    minibuffer when running M-x timeclock-list
+;; 6. Option to use a specific time to define when a day starts/ends.
+;;    e.g. 08:00 will mean a day starts and ends at 08:00 instead of
+;;    the usual 24:00/00:00.
+
+;; Limitations of timeclock.el
+;; 1. Concurrent tasks not permitted
 
 (defun tclist/buffer-visible? (buffer-or-buffer-name)
   "Returns t if BUFFER-OR-BUFFER-NAME is visible to user."
@@ -94,18 +104,24 @@
                                     (re-search-backward time-re nil t)))
                                  (replace-regexp-in-string "[ \t]*$" "" it))))
         (current-project  (tclist/current-project)))
-    ;; if we're clocked in to anything
-    (if current-project
-        ;; if yes and it's at point, clock out
-        (if (equal project-at-point current-project)
-            (timeclock-out nil nil t)
-          ;; otherwise, stop that one and start this one
-          (timeclock-change nil project-at-point))
-      ;; else - start project at point
-      (timeclock-in nil project-at-point))
+    ;; If we're clocked in to anything (current-project non-nil) and
+    ;; it's the project at point, clock out
+    (if (equal project-at-point current-project)
+        (timeclock-out nil nil t)
+      ;; Otherwise, run timeclock-in with project at point as default
+      ;; suggestion
+      ;; (let ((timeclock-get-project-function #'tclist/ask-for-project))
+      (cl-letf (((symbol-function 'timeclock-ask-for-project)
+                 (lambda ()
+                   (timeclock-completing-read
+                    (format "Clock into which project (default %s): "
+                            project-at-point)
+                    (mapcar 'list timeclock-project-list)
+                    project-at-point))))
+        (timeclock-in nil nil t))
     ;; Trying to update partially doesn't update the activity
     ;; indicator. Why?
-    (tabulated-list-print t nil)))
+    (tabulated-list-print t nil))))
 
 ;; listing command
 ;; 1. show projects and time spent on them today
