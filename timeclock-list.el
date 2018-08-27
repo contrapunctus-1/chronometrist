@@ -57,24 +57,14 @@
        (apply #'encode-time it)))
 
 ;; tests -
-;; (tclist/seconds-to-hms 1) => [0 0 1]
-;; (tclist/seconds-to-hms 60) => [0 1 0]
-;; (tclist/seconds-to-hms 61) => [0 1 1]
-;; (tclist/seconds-to-hms 3600) => [1 0 0]
-;; (tclist/seconds-to-hms 3660) => [1 1 0]
-;; (tclist/seconds-to-hms 3661) => [1 1 1]
+;; (mapcar #'tclist/seconds-to-hms '(1 60 61 3600 3660 3661))
+;; => ([0 0 1] [0 1 0] [0 1 1] [1 0 0] [1 1 0] [1 1 1])
 (defun tclist/seconds-to-hms (seconds)
-  (let* ((hours   (if (>= seconds 3600)
-                      (/ seconds 3600)
-                    0))
-         (minutes (if (>= (% seconds 3600)
-                          60)
-                      (/ (% seconds 3600) 60)
-                    0))
-         (seconds (if (or (> hours 0) (> minutes 0))
-                      (% (% seconds 3600) 60)
-                    seconds)))
-    (vector hours minutes seconds)))
+  (setq seconds (truncate seconds))
+  (let* ((s (% seconds 60))
+         (m (% (/ seconds 60) 60))
+         (h (/ seconds 3600)))
+    (vector h m s)))
 
 ;; The multiple calls to re-search-forward/backward to get point at
 ;; the right spot are so...inelegant :\
