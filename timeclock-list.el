@@ -69,12 +69,15 @@
 (defun tclist/timer-fn ()
   (when (and (tclist/buffer-exists? timeclock-list-buffer-name)
              (tclist/buffer-visible? timeclock-list-buffer-name))
+    (timeclock-reread-log)
     (with-current-buffer timeclock-list-buffer-name
       (tabulated-list-print t t))))
 
 (define-derived-mode timeclock-list-mode tabulated-list-mode "timeclock-list"
   "Display projects from timeclock.el and the time spent on each
   today."
+  (timeclock-reread-log)
+
   (make-local-variable 'tabulated-list-format)
   (setq tabulated-list-format [("Project" 25 t) ("Time" 10 t) ("Active" 3 t)])
 
