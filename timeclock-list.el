@@ -18,21 +18,28 @@
 ;;      weekly report"?
 ;; 5. Option to use a specific time to define when a day starts/ends.
 ;;    e.g. 08:00 will mean a day starts and ends at 08:00 instead of
-;;    the usual 24:00/00:00.
+;;    the usual 24:00/00:00. Helpful for late sleepers.
 ;; 6. Project weekly report mode
-;; 7. If buffer already exists, don't open it in the other window
-;;    (kill and recreate it?)
+;; 7. If buffer is already visible, calling timeclock-list again
+;;    shouldn't open it in the other window (Kill and recreate it?
+;;    Close it?)
+;; 8. When stopped, put cursor on the last activity.
+;; 9. Make clocked-in project row bold, either in addition to the
+;;    star, or replacing it.
 ;;
 ;; BUGS
 ;; 1. RET -> create new project -> the idle timer will not update it
 ;;    until you re-create the buffer
 
 ;; Style issues
-;; 1. Uses Scheme-style ? instead of Elisp/CL -p convention
-;; 2. Should use *earmuffs* for global variables
+;; 1. Uses Scheme-style ? and x->y conventions instead of
+;;    Elisp/CL-style "-p" and "x-to-y"
+;; 2. Should use *earmuffs* for global variables for clarity
 
 ;; Limitations of timeclock.el
 ;; 1. Concurrent tasks not permitted
+;; 2. timeclock-project-list contains only the projects found in the
+;;    timeclock-file - no way for a user to specify tasks beforehand.
 
 (defun tclist/buffer-exists? (buffer-name)
   (--> (buffer-list)
@@ -41,13 +48,11 @@
 
 (defun tclist/buffer-visible? (buffer-or-buffer-name)
   "Returns t if BUFFER-OR-BUFFER-NAME is visible to user."
+  ;; It'd be simpler to use only the windows of the current frame (-->
+  ;; (selected-frame) (window-list it) ...) - but it wouldn't be
+  ;; robust, because it is possible that a frame partially covers
+  ;; another and the buffer is visible to the user from the latter.
   (-->
-   ;; It'd be simpler to start with this, but because it is possible
-   ;; that a frame partially covers another, and that frame has a
-   ;; buffer visible to the user; thus, using only the current frame
-   ;; isn't robust.
-   ;; (selected-frame)
-   ;; (window-list it)
    (visible-frame-list)
    (mapcar #'window-list it)
    (mapcar (lambda (list)
@@ -74,8 +79,7 @@
       (tabulated-list-print t t))))
 
 (define-derived-mode timeclock-list-mode tabulated-list-mode "timeclock-list"
-  "Display projects from timeclock.el and the time spent on each
-  today."
+  "Major mode for timeclock-list."
   (timeclock-reread-log)
 
   (make-local-variable 'tabulated-list-format)
@@ -190,7 +194,13 @@ This is the 'listing command' for timeclock-list-mode."
 
 ;; The multiple calls to re-search-forward/backward to get point at
 ;; the right spot are so...inelegant :\
+
+;; Could be refactored - one function to get ranges for an activity,
+;; one to convert them to seconds, one to subtract them (get an
+;; interval from two timestamps), and one to output the time vector
+;; from tclist/seconds-to-hms in the desired format
 (defun tclist/project-time-one-day (project)
+  "Read `timeclock-file' and return total time spent on a project today."
   (if (not (member project timeclock-project-list))
       (error (concat "Unknown project: " project))
     (let* ((current-date  (format-time-string "%Y/%m/%d"))
