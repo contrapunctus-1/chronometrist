@@ -94,7 +94,8 @@
   (tabulated-list-init-header)
 
   (run-with-idle-timer 3 t #'tclist/timer-fn)
-  (define-key timeclock-list-mode-map (kbd "RET") 'tclist/toggle-project))
+  (define-key timeclock-list-mode-map (kbd "RET") 'tclist/toggle-project)
+  (define-key timeclock-list-mode-map (kbd "l") 'tclist/open-timeclock-file))
 
 (defvar time-re "[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}")
 (defvar timeclock-list-buffer-name "*Timeclock-List*")
@@ -149,6 +150,10 @@
     ;; Trying to update partially doesn't update the activity
     ;; indicator. Why?
     (tabulated-list-print t nil)))
+
+(defun tclist/open-timeclock-file ()
+  (interactive)
+  (find-file-other-window timeclock-file))
 
 (defun timeclock-list ()
   "Displays a list of the user's timeclock.el projects and the
