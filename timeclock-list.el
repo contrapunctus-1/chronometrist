@@ -5,7 +5,7 @@
 ;; 2018-08-27T12:45:03+0530
 ;; has not yet been tested with comments in the timelog
 
-;; TODO -
+;; TODO
 ;; 1. Refresh when you select the list buffer (impossible? make-thread
 ;;    in v26? Use emacs-async library?)
 ;; 2. Add support for prefix args to tclist/toggle-project
@@ -20,6 +20,16 @@
 ;;    e.g. 08:00 will mean a day starts and ends at 08:00 instead of
 ;;    the usual 24:00/00:00.
 ;; 6. Project weekly report mode
+;; 7. If buffer already exists, don't open it in the other window
+;;    (kill and recreate it?)
+;;
+;; BUGS
+;; 1. RET -> create new project -> the idle timer will not update it
+;;    until you re-create the buffer
+
+;; Style issues
+;; 1. Uses Scheme-style ? instead of Elisp/CL -p convention
+;; 2. Should use *earmuffs* for global variables
 
 ;; Limitations of timeclock.el
 ;; 1. Concurrent tasks not permitted
