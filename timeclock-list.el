@@ -108,7 +108,7 @@
   (equal (tclist/current-project) project))
 
 (defun tclist/toggle-project ()
-  "Start or stop the project at point."
+  "In a `timeclock-list' buffer, start or stop the project at point."
   (interactive)
   (let ((project-at-point (progn
                             (beginning-of-line)
@@ -138,12 +138,11 @@
     ;; indicator. Why?
     (tabulated-list-print t nil))))
 
-;; listing command
-;; 1. show projects and time spent on them today
-;; 2. hit enter to start/stop project
-;; 3. update buffer when starting/stopping/idle/other events/possibly also on a
-;;    timer.
 (defun timeclock-list ()
+  "Displays a list of the user's timeclock.el projects and the
+time spent on each today, based on their timelog file
+`timeclock-file'. The user can hit RET to start/stop projects.
+This is the 'listing command' for timeclock-list-mode."
   (interactive)
   (let ((buffer (get-buffer-create timeclock-list-buffer-name)))
     (with-current-buffer buffer
