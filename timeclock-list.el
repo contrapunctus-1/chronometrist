@@ -7,20 +7,19 @@
 
 ;; TODO -
 ;; 1. Refresh when you select the list buffer (impossible? make-thread
-;; in v26? Use emacs-async library?)
-;; 2. Some way to add a new task
-;;    - Simplest - instead of having tclist/toggle-project start the
-;;      task at point, have it run timeclock-in with the task at point
-;;      being the default.
-;;    - Fancy - add a button saying 'Add task'. Will probably involve
-;;      multiple major modes of some sort
-;; 3. Add support for prefix args to tclist/toggle-project
-;; 4. Add variable to let user control prompting-for-reason behaviour
-;; 5. Make "?" show help; show message saying "Press ? for help" in
+;;    in v26? Use emacs-async library?)
+;; 2. Add support for prefix args to tclist/toggle-project
+;; 3. Add variable to let user control prompting-for-reason behaviour
+;; 4. Make "?" show help; show message saying "Press ? for help" in
 ;;    minibuffer when running M-x timeclock-list
-;; 6. Option to use a specific time to define when a day starts/ends.
+;;    - Not really necessary, now that we only use one key to do
+;;      everything?
+;;    - Maybe only "Press RET to clock in/out, r to view a project's
+;;      weekly report"?
+;; 5. Option to use a specific time to define when a day starts/ends.
 ;;    e.g. 08:00 will mean a day starts and ends at 08:00 instead of
 ;;    the usual 24:00/00:00.
+;; 6. Project weekly report mode
 
 ;; Limitations of timeclock.el
 ;; 1. Concurrent tasks not permitted
