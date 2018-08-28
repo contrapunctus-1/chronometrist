@@ -119,24 +119,29 @@
                                     (re-search-backward time-re nil t)))
                                  (replace-regexp-in-string "[ \t]*$" "" it))))
         (current-project  (tclist/current-project)))
-    ;; If we're clocked in to anything (current-project non-nil) and
-    ;; it's the project at point, clock out
-    (if (equal project-at-point current-project)
-        (timeclock-out nil nil t)
-      ;; Otherwise, run timeclock-in with project at point as default
-      ;; suggestion
-      ;; (let ((timeclock-get-project-function #'tclist/ask-for-project))
-      (cl-letf (((symbol-function 'timeclock-ask-for-project)
-                 (lambda ()
-                   (timeclock-completing-read
-                    (format "Clock into which project (default %s): "
-                            project-at-point)
-                    (mapcar 'list timeclock-project-list)
-                    project-at-point))))
-        (timeclock-in nil nil t))
+    ;; When changing projects/clocking in, suggest the project at point
+    (cl-letf (((symbol-function 'timeclock-ask-for-project)
+               (lambda ()
+                 (timeclock-completing-read
+                  (format "Clock into which project (default %s): "
+                          project-at-point)
+                  (mapcar 'list timeclock-project-list)
+                  project-at-point))))
+      ;; If we're clocked in to anything - clock out or change projects
+      (if current-project
+          (if (equal project-at-point current-project)
+              (timeclock-out nil nil t)
+            ;; We don't use timeclock-change because it doesn't prompt for a reason
+            (progn
+              (timeclock-out nil nil t)
+              (timeclock-in nil nil t)))
+        ;; Otherwise, run timeclock-in with project at point as default
+        ;; suggestion
+        (timeclock-in nil nil t)))
+    (timeclock-reread-log) ;; required when we create a new activity
     ;; Trying to update partially doesn't update the activity
     ;; indicator. Why?
-    (tabulated-list-print t nil))))
+    (tabulated-list-print t nil)))
 
 (defun timeclock-list ()
   "Displays a list of the user's timeclock.el projects and the
