@@ -34,6 +34,11 @@
 ;; Limitations of timeclock.el
 ;; 1. Concurrent tasks not permitted
 
+(defun tclist/buffer-exists? (buffer-name)
+  (--> (buffer-list)
+       (mapcar #'buffer-name it)
+       (member buffer-name it)))
+
 (defun tclist/buffer-visible? (buffer-or-buffer-name)
   "Returns t if BUFFER-OR-BUFFER-NAME is visible to user."
   (-->
@@ -62,7 +67,8 @@
    (if it t nil)))
 
 (defun tclist/timer-fn ()
-  (when (tclist/buffer-visible? timeclock-list-buffer-name)
+  (when (and (tclist/buffer-exists? timeclock-list-buffer-name)
+             (tclist/buffer-visible? timeclock-list-buffer-name))
     (with-current-buffer timeclock-list-buffer-name
       (tabulated-list-print t t))))
 
