@@ -162,11 +162,20 @@ time spent on each today, based on their timelog file
 This is the 'listing command' for timeclock-list-mode."
   (interactive)
   (let ((buffer (get-buffer-create timeclock-list-buffer-name)))
-    (with-current-buffer buffer
-      (setq buffer-read-only nil)
-      (timeclock-list-mode)
-      (tabulated-list-print)
-      (switch-to-buffer-other-window buffer))))
+    ;; if we're in a timeclock-list buffer, kill it
+    ;; FIXME - kill buffer if it's visible, too
+    (if (and (equal (buffer-name) (buffer-name buffer))
+             (equal major-mode 'timeclock-list-mode))
+        (kill-this-buffer)
+      ;; otherwise create the buffer
+      (with-current-buffer buffer
+        (setq buffer-read-only nil)
+        (timeclock-list-mode)
+        (tabulated-list-print)
+        ;; using switch-to-buffer instead until we can preserve
+        ;; position of point across successive calls to timeclock-list
+        ;; (switch-to-buffer-other-window buffer)
+        (switch-to-buffer buffer)))))
 
 (defun tclist/entries ()
   "Creates entries to be displayed in the buffer created by
