@@ -78,7 +78,7 @@
     (with-current-buffer timeclock-list-buffer-name
       (tabulated-list-print t t))))
 
-(define-derived-mode timeclock-list-mode tabulated-list-mode "timeclock-list"
+(define-derived-mode timeclock-list-mode tabulated-list-mode "Timeclock-List"
   "Major mode for timeclock-list."
   (timeclock-reread-log)
 
@@ -153,7 +153,8 @@
 
 (defun tclist/open-timeclock-file ()
   (interactive)
-  (find-file-other-window timeclock-file))
+  (find-file-other-window timeclock-file)
+  (goto-char (point-max)))
 
 (defun timeclock-list ()
   "Displays a list of the user's timeclock.el projects and the
