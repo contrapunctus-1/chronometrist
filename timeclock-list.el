@@ -28,10 +28,12 @@
 ;;    star, or replacing it.
 ;; 10. Show currently active project + time spent on it so far in the
 ;;     mode-line (see timeclock-mode-line-display)
-;;
+
 ;; BUGS
 ;; 1. RET -> create new project -> the idle timer will not update it
 ;;    until you re-create the buffer
+;; 2. (goto-char (point-max)) -> RET -> the time spent on the last
+;;    project in the list will be the first new project suggestion.
 
 ;; Style issues
 ;; 1. Uses Scheme-style ? and x->y conventions instead of
@@ -142,7 +144,7 @@
       (if current-project
           (if (equal project-at-point current-project)
               (timeclock-out nil nil t)
-            ;; We don't use timeclock-change because it doesn't prompt for a reason
+            ;; We don't use timeclock-change because it doesn't prompt for the reason
             (progn
               (timeclock-out nil nil t)
               (timeclock-in nil nil t)))
@@ -150,8 +152,7 @@
         ;; suggestion
         (timeclock-in nil nil t)))
     (timeclock-reread-log) ;; required when we create a new activity
-    ;; Trying to update partially doesn't update the activity
-    ;; indicator. Why?
+    ;; Trying to update partially doesn't update the activity indicator. Why?
     (tabulated-list-print t nil)))
 
 (defun tclist/open-timeclock-file ()
