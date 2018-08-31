@@ -108,10 +108,11 @@
   (if (not (timeclock-currently-in-p))
       nil
     (with-current-buffer (find-file-noselect timeclock-file)
-      (goto-char (point-max))
-      (forward-line -1)
-      (re-search-forward (concat time-re " ") nil t)
-      (buffer-substring-no-properties (point) (point-at-eol)))))
+      (save-excursion
+        (goto-char (point-max))
+        (forward-line -1)
+        (re-search-forward (concat time-re " ") nil t)
+        (buffer-substring-no-properties (point) (point-at-eol))))))
 
 (defun tclist/project-active? (project)
   "Returns t if PROJECT is currently clocked in, else nil."
@@ -224,38 +225,39 @@ This is the 'listing command' for timeclock-list-mode."
            (search-re     (concat current-date " " time-re " " project))
            (interval-list nil))
       (with-current-buffer (find-file-noselect timeclock-file)
-        (goto-char (point-min))
-        (while (re-search-forward (concat "i " search-re) nil t)
-          (re-search-backward current-date nil t)
-          (let* ((start-time (buffer-substring-no-properties
-                              (point)
-                              (+ 10 1 8 (point))))
-                 (end-time   (progn
-                               (if (re-search-forward (concat "o " current-date) nil t)
-                                   (buffer-substring-no-properties (- (point) 10)
-                                                                   (+ 9 (point)))
-                                 ;; if the user hasn't clocked out
-                                 ;; from the project, the timelog does
-                                 ;; not have an ending time yet, so we
-                                 ;; use the current time
-                                 (format-time-string "%Y/%m/%d %T"))))
-                 (interval   (-->
-                              (time-subtract (tclist/timestamp->seconds end-time)
-                                             (tclist/timestamp->seconds start-time))
-                              (elt it 1))))
-            (setq interval-list
-                  (append interval-list (list interval)))))
-        (let* ((time-vector (->>
-                             (seq-reduce #'+ interval-list 0)
-                             (tclist/seconds-to-hms)))
-               (time-h      (elt time-vector 0))
-               (time-m      (elt time-vector 1))
-               (time-s      (elt time-vector 2)))
-          (concat (format "%02d" time-h)
-                  ":"
-                  (format "%02d" time-m)
-                  ":"
-                  (format "%02d" time-s)))))))
+        (save-excursion
+          (goto-char (point-min))
+          (while (re-search-forward (concat "i " search-re) nil t)
+            (re-search-backward current-date nil t)
+            (let* ((start-time (buffer-substring-no-properties
+                                (point)
+                                (+ 10 1 8 (point))))
+                   (end-time   (progn
+                                 (if (re-search-forward (concat "o " current-date) nil t)
+                                     (buffer-substring-no-properties (- (point) 10)
+                                                                     (+ 9 (point)))
+                                   ;; if the user hasn't clocked out
+                                   ;; from the project, the timelog does
+                                   ;; not have an ending time yet, so we
+                                   ;; use the current time
+                                   (format-time-string "%Y/%m/%d %T"))))
+                   (interval   (-->
+                                (time-subtract (tclist/timestamp->seconds end-time)
+                                               (tclist/timestamp->seconds start-time))
+                                (elt it 1))))
+              (setq interval-list
+                    (append interval-list (list interval)))))
+          (let* ((time-vector (->>
+                               (seq-reduce #'+ interval-list 0)
+                               (tclist/seconds-to-hms)))
+                 (time-h      (elt time-vector 0))
+                 (time-m      (elt time-vector 1))
+                 (time-s      (elt time-vector 2)))
+            (concat (format "%02d" time-h)
+                    ":"
+                    (format "%02d" time-m)
+                    ":"
+                    (format "%02d" time-s))))))))
 
 (defun tclist/buffer-visible? (buffer-or-buffer-name)
   "Returns t if BUFFER-OR-BUFFER-NAME is visible to user."
