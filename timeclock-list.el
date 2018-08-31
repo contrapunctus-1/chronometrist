@@ -26,6 +26,8 @@
 ;; 8. When stopped, put cursor on the last activity.
 ;; 9. Make clocked-in project row bold, either in addition to the
 ;;    star, or replacing it.
+;; 10. Show currently active project + time spent on it so far in the
+;;     mode-line (see timeclock-mode-line-display)
 ;;
 ;; BUGS
 ;; 1. RET -> create new project -> the idle timer will not update it
