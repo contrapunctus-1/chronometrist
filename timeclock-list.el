@@ -102,6 +102,12 @@
 
 ;; ## VARIABLES ##
 (defvar time-re "[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}")
+(defvar empty-time-string "-")
+(defvar time-re-list (rx-to-string
+                      `(or
+                        (and (optional (repeat 1 2 digit) ":")
+                             (and (repeat 1 2 digit) ":" (repeat 2 digit)))
+                        ,empty-time-string)))
 (defvar timeclock-list-buffer-name "*Timeclock-List*")
 
 ;; ## FUNCTIONS ##
@@ -251,7 +257,7 @@ day."
                                   (point)
                                   (progn
                                     (end-of-line)
-                                    (re-search-backward time-re nil t)))
+                                    (re-search-backward time-re-list nil t)))
                                  (replace-regexp-in-string "[ \t]*$" "" it))))
         (current-project  (tcl/current-project)))
     ;; When changing projects/clocking in, suggest the project at point

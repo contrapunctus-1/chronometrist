@@ -5,6 +5,9 @@
 ;; 2. Highlight current day
 ;; 3. If hours and minutes aren't used, don't print them
 ;; 4. Add total time clocked per day
+;; 5. If the week number is stored in the buffer name, we can't use
+;;    the name to kill it. We can't store the name as a variable
+;;    either, it will have to be a function.
 
 ;; ## VARIABLES ##
 (defvar timeclock-report-buffer-name "*Timeclock-Report")
@@ -61,10 +64,10 @@ of the year (01-52)."
             timeclock-project-list)))
 
 (defun tcr/idle-timer ()
-  (when (and (tcl/buffer-exists? timeclock-list-buffer-name)
-             (tcl/buffer-visible? timeclock-list-buffer-name))
+  (when (and (tcl/buffer-exists? timeclock-report-buffer-name)
+             (tcl/buffer-visible? timeclock-report-buffer-name))
     (timeclock-reread-log)
-    (with-current-buffer timeclock-list-buffer-name
+    (with-current-buffer timeclock-report-buffer-name
       (tabulated-list-print t t))))
 
 ;; TODO - add support for other locale weeks/weekday names,
@@ -101,14 +104,24 @@ and the time spent on them each day, based on their timelog file
 in `timeclock-file'. This is the 'listing command' for
 timeclock-report-mode."
   (interactive)
-  (let ((buffer (get-buffer-create timeclock-report-buffer-name)))
+  (let ((buffer (get-buffer-create (concat timeclock-report-buffer-name
+                                           (format-time-string "-Week-%U*")))))
     ;; we want this command to toggle viewing the report
     (if (tcl/buffer-visible? timeclock-report-buffer-name)
-        (kill-buffer timeclock-report-buffer-name)
+        (kill-buffer buffer)
       (with-current-buffer buffer
         (delete-other-windows)
         (timeclock-report-mode)
         (tabulated-list-print)
         (switch-to-buffer buffer)))))
+
+(defun tcr/previous-week ()
+  "View the previous week's report."
+  (interactive)
+  (let ((current-week (progn
+                        (string-match "[0-9]\\{1,2\\}"
+                                      (buffer-name))
+                        (match-string-no-properties 0 (buffer-name)))))
+    ))
 
 (provide 'timeclock-report)
