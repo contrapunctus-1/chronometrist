@@ -107,12 +107,8 @@ timeclock-report-mode."
     (if (tcl/buffer-visible? timeclock-report-buffer-name)
         (kill-buffer timeclock-report-buffer-name)
       (with-current-buffer buffer
-        ;; (setq buffer-read-only nil)
         (timeclock-report-mode)
         (tabulated-list-print)
-        ;; using switch-to-buffer instead until we can preserve
-        ;; position of point across successive calls to timeclock-list
-        ;; (switch-to-buffer-other-window buffer)
         (switch-to-buffer buffer)))))
 
 (provide 'timeclock-report)

@@ -20,23 +20,19 @@
 ;; 5. Option to use a specific time to define when a day starts/ends.
 ;;    e.g. 08:00 will mean a day starts and ends at 08:00 instead of
 ;;    the usual 24:00/00:00. Helpful for late sleepers.
-;; 6. Project weekly report mode
-;; 7. If buffer is already visible, calling timeclock-list again
-;;    shouldn't open it in the other window (Kill and recreate it?
-;;    Close it?)
-;; 8. When stopped, put cursor on the last activity.
+;; 6. When stopped, put cursor on the last activity.
 ;;    - or better yet, give each line a number - press the number to
 ;;      clock in/out
 ;;    - shortcuts derived from the first alphabet of each project
 ;;      could be even nicer, but the code to generate them from
 ;;      similarly-named projects would be somewhat complex
-;; 9. Make clocked-in project row bold, either in addition to the
+;; 7. Make clocked-in project row bold, either in addition to the
 ;;    star, or replacing it.
-;; 10. Show currently active project + time spent on it so far in the
-;;     mode-line (see timeclock-mode-line-display)
-;; 11. The default reason suggested is the last one used. Can't even
-;;     begin to explain how nonsensical that is. (might be an ido
-;;     problem)
+;; 8. Show currently active project + time spent on it so far in the
+;;    mode-line (see timeclock-mode-line-display)
+;; 9. The default reason suggested is the last one used. Can't even
+;;    begin to explain how nonsensical that is. (might be an ido
+;;    problem)
 
 ;; BUGS
 ;; 1. RET -> create new project -> the idle timer will not update it
@@ -273,19 +269,11 @@ time spent on each today, based on their timelog file
 This is the 'listing command' for timeclock-list-mode."
   (interactive)
   (let ((buffer (get-buffer-create timeclock-list-buffer-name)))
-    ;; if we're in a timeclock-list buffer, kill it
-    ;; FIXME - kill buffer if it's visible, too
-    (if (and (equal (buffer-name) (buffer-name buffer))
-             (equal major-mode 'timeclock-list-mode))
-        (kill-this-buffer)
-      ;; otherwise create the buffer
+    (if (tcl/buffer-visible? timeclock-list-buffer-name)
+        (kill-buffer timeclock-list-buffer-name)
       (with-current-buffer buffer
-        (setq buffer-read-only nil)
         (timeclock-list-mode)
         (tabulated-list-print)
-        ;; using switch-to-buffer instead until we can preserve
-        ;; position of point across successive calls to timeclock-list
-        ;; (switch-to-buffer-other-window buffer)
         (switch-to-buffer buffer)))))
 
 (provide 'timeclock-list)
