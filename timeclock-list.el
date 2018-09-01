@@ -34,9 +34,7 @@
 ;;    problem)
 
 ;; BUGS
-;; 1. RET -> create new project -> the idle timer will not update it
-;;    until you re-create the buffer
-;; 2. (goto-char (point-max)) -> RET -> the time spent on the last
+;; 1. (goto-char (point-max)) -> RET -> the time spent on the last
 ;;    project in the list will be the first new project suggestion.
 
 ;; Style issues
@@ -96,9 +94,8 @@
 (defun tcl/timer-fn ()
   (when (and (tcl/buffer-exists? timeclock-list-buffer-name)
              (tcl/buffer-visible? timeclock-list-buffer-name))
-    (timeclock-reread-log)
     (with-current-buffer timeclock-list-buffer-name
-      (tabulated-list-print t t))))
+      (tabulated-list-print t))))
 
 ;; ## VARIABLES ##
 (defvar time-re "[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}")
@@ -218,6 +215,7 @@ day."
 (defun tcl/entries ()
   "Creates entries to be displayed in the buffer created by
 `timeclock-list'."
+  (timeclock-reread-log)
   (mapcar (lambda (project-name)
             (list project-name
                   (vector project-name
