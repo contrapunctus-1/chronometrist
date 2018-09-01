@@ -4,7 +4,6 @@
 (require 'timeclock-report)
 
 ;; 2018-08-27T12:45:03+0530
-;; has not yet been tested with comments in the timelog
 
 ;; TODO
 ;; 1. Refresh when you select the list buffer (impossible? make-thread
@@ -56,6 +55,11 @@
 ;; 3. Uses non-standard slashes in the date instead of dashes (e.g.
 ;;    "2018/01/01" instead of "2018-01-01") and a space for the
 ;;    date-time separator instead of T
+;;
+;; Limitations of tabulated-list-mode
+;; 1. Can't mix tabulated and non-tabulated data!!! What if I want
+;;    some buttons, separate from the data but part of the same
+;;    buffer?!
 
 ;; ## IDLE TIMER ##
 (defun tcl/buffer-exists? (buffer-name)
@@ -101,6 +105,29 @@
 (defvar timeclock-list-buffer-name "*Timeclock-List*")
 
 ;; ## FUNCTIONS ##
+
+;; tests -
+;; (mapcar #'tcr/format-time
+;;         '((0 0 0) (0 0 1) (0 0 10) (0 1 10) (0 10 10) (1 10 10) (10 10 10)))
+;; => ("" "00:01" "00:10" "01:10" "10:10" "01:10:10" "10:10:10")
+;; (mapcar #'tcr/format-time
+;;         '([0 0 0] [0 0 1] [0 0 10] [0 1 10] [0 10 10] [1 10 10] [10 10 10]))
+;; => ("" "00:01" "00:10" "01:10" "10:10" "01:10:10" "10:10:10")
+(defun tcl/format-time (time)
+  "Formats and displays TIME, where time is a vector or a list of
+the form [HOURS MINUTES SECONDS] or (HOURS MINUTES SECONDS)."
+  (let ((h (elt time 0))
+        (m (elt time 1))
+        (s (elt time 2)))
+    (if (and (zerop h) (zerop m) (zerop s))
+        "-"
+      (let ((h      (if (zerop h)
+                        ""
+                      (format "%02d:" h))) ;; can't change this just yet or all commands break
+            (m      (format "%02d:" m))
+            (s      (format "%02d" s)))
+        (concat h m s)))))
+
 (defun tcl/current-project ()
   "Returns the name of the currently clocked-in project, or nil
  if the user is not clocked in."
@@ -177,17 +204,10 @@ day."
                                 (elt it 1))))
               (setq interval-list
                     (append interval-list (list interval)))))
-          (let* ((time-vector (->>
-                               (seq-reduce #'+ interval-list 0)
-                               (tcl/seconds-to-hms)))
-                 (time-h      (elt time-vector 0))
-                 (time-m      (elt time-vector 1))
-                 (time-s      (elt time-vector 2)))
-            (concat (format "%02d" time-h)
-                    ":"
-                    (format "%02d" time-m)
-                    ":"
-                    (format "%02d" time-s))))))))
+          (->>
+           (seq-reduce #'+ interval-list 0)
+           (tcl/seconds-to-hms)
+           (tcl/format-time)))))))
 
 (defun tcl/entries ()
   "Creates entries to be displayed in the buffer created by
@@ -262,18 +282,20 @@ day."
   (find-file-other-window timeclock-file)
   (goto-char (point-max)))
 
-(defun timeclock-list ()
+(defun timeclock-list (&optional arg)
   "Displays a list of the user's timeclock.el projects and the
 time spent on each today, based on their timelog file
 `timeclock-file'. The user can hit RET to start/stop projects.
 This is the 'listing command' for timeclock-list-mode."
-  (interactive)
-  (let ((buffer (get-buffer-create timeclock-list-buffer-name)))
-    (if (tcl/buffer-visible? timeclock-list-buffer-name)
-        (kill-buffer timeclock-list-buffer-name)
-      (with-current-buffer buffer
-        (timeclock-list-mode)
-        (tabulated-list-print)
-        (switch-to-buffer buffer)))))
+  (interactive "P")
+  (if arg
+      (timeclock-report)
+    (let ((buffer (get-buffer-create timeclock-list-buffer-name)))
+      (if (tcl/buffer-visible? timeclock-list-buffer-name)
+          (kill-buffer timeclock-list-buffer-name)
+        (with-current-buffer buffer
+          (timeclock-list-mode)
+          (tabulated-list-print)
+          (switch-to-buffer buffer))))))
 
 (provide 'timeclock-list)

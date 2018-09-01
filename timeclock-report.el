@@ -4,8 +4,7 @@
 ;; 1. Previous/next week
 ;; 2. Highlight current day
 ;; 3. If hours and minutes aren't used, don't print them
-;; 4. Use - instead of "00:00:00"
-;; 5. Add total time clocked per day
+;; 4. Add total time clocked per day
 
 ;; ## VARIABLES ##
 (defvar timeclock-report-buffer-name "*Timeclock-Report")
@@ -107,6 +106,7 @@ timeclock-report-mode."
     (if (tcl/buffer-visible? timeclock-report-buffer-name)
         (kill-buffer timeclock-report-buffer-name)
       (with-current-buffer buffer
+        (delete-other-windows)
         (timeclock-report-mode)
         (tabulated-list-print)
         (switch-to-buffer buffer)))))
