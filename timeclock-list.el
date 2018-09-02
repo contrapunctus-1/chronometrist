@@ -26,6 +26,8 @@
 ;;    problem)
 ;; 9. Show shortcuts message by using the keymap rather than a
 ;;    hardcoded string.
+;; 10. Instead of showing point, just highlight the line it's on and
+;;     hide the point.
 
 ;; BUGS
 ;; 1. (goto-char (point-max)) -> RET -> the time spent on the last
@@ -85,11 +87,12 @@
    (mapcar #'car it)
    (if (car it) t nil)))
 
-(defun tcl/timer-fn ()
+(defun tcl/idle-timer ()
   (when (and (tcl/buffer-exists? timeclock-list-buffer-name)
              (tcl/buffer-visible? timeclock-list-buffer-name))
     (with-current-buffer timeclock-list-buffer-name
-      (tabulated-list-print t))))
+      (tabulated-list-print t)
+      (tcl/goto-last-project))))
 
 ;; ## VARIABLES ##
 (defvar time-re "[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}")
@@ -229,6 +232,11 @@ day."
             (match-beginning 0)))
          (replace-regexp-in-string "[ \t]*$" "" it))))
 
+(defun tcl/goto-last-project ()
+  (goto-char (point-min))
+  (re-search-forward timeclock-last-project nil t)
+  (beginning-of-line))
+
 ;; ## MAJOR-MODE ##
 (define-derived-mode timeclock-list-mode tabulated-list-mode "Timeclock-List"
   "Major mode for `timeclock-list'."
@@ -248,7 +256,7 @@ day."
 
   (tabulated-list-init-header)
 
-  (run-with-idle-timer 3 t #'tcl/timer-fn)
+  (run-with-idle-timer 3 t #'tcl/idle-timer)
   (define-key timeclock-list-mode-map (kbd "RET") 'tcl/toggle-project)
   (define-key timeclock-list-mode-map (kbd "l") 'tcl/open-timeclock-file)
   (define-key timeclock-list-mode-map (kbd "r") 'timeclock-report))
@@ -302,12 +310,7 @@ This is the 'listing command' for timeclock-list-mode."
         (with-current-buffer buffer
           (timeclock-list-mode)
           (tabulated-list-print)
-
-          ;; place point on the last or current project
-          (goto-char (point-min))
-          (re-search-forward timeclock-last-project nil t)
-          (beginning-of-line)
-
+          (tcl/goto-last-project)
           (switch-to-buffer buffer)
           (message "RET - clock in/out, r - see weekly report, l - open log file"))))))
 
