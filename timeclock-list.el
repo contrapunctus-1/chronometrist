@@ -224,6 +224,15 @@ day."
                               "*" ""))))
           timeclock-project-list))
 
+(defun tcl/project-at-point ()
+  (beginning-of-line)
+  (--> (buffer-substring-no-properties
+        (point)
+        (progn
+          (re-search-forward time-re-list nil t)
+          (match-beginning 0)))
+       (replace-regexp-in-string "[ \t]*$" "" it))  )
+
 ;; ## MAJOR-MODE ##
 (define-derived-mode timeclock-list-mode tabulated-list-mode "Timeclock-List"
   "Major mode for `timeclock-list'."
@@ -249,14 +258,7 @@ day."
 (defun tcl/toggle-project ()
   "In a `timeclock-list' buffer, start or stop the project at point."
   (interactive)
-  (let ((project-at-point (progn
-                            (beginning-of-line)
-                            (--> (buffer-substring-no-properties
-                                  (point)
-                                  (progn
-                                    (re-search-forward time-re-list nil t)
-                                    (match-beginning 0)))
-                                 (replace-regexp-in-string "[ \t]*$" "" it))))
+  (let ((project-at-point (tcl/project-at-point))
         (current-project  (tcl/current-project)))
     ;; When changing projects/clocking in, suggest the project at point
     (cl-letf (((symbol-function 'timeclock-ask-for-project)
@@ -300,6 +302,9 @@ This is the 'listing command' for timeclock-list-mode."
         (with-current-buffer buffer
           (timeclock-list-mode)
           (tabulated-list-print)
+          (when (progn (goto-char (point-min))
+                       (re-search-forward "\\*" nil t))
+            (beginning-of-line))
           (switch-to-buffer buffer))))))
 
 (provide 'timeclock-list)
