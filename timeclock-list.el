@@ -254,8 +254,8 @@ day."
                             (--> (buffer-substring-no-properties
                                   (point)
                                   (progn
-                                    (end-of-line)
-                                    (re-search-backward time-re-list nil t)))
+                                    (re-search-forward time-re-list nil t)
+                                    (match-beginning 0)))
                                  (replace-regexp-in-string "[ \t]*$" "" it))))
         (current-project  (tcl/current-project)))
     ;; When changing projects/clocking in, suggest the project at point
