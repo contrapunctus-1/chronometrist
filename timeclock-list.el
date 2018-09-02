@@ -210,22 +210,24 @@ day."
   "Creates entries to be displayed in the buffer created by
 `timeclock-list'."
   (timeclock-reread-log)
-  (mapcar (lambda (project-name)
-            (list project-name
-                  (vector project-name
-                          (tcl/project-time-one-day project-name)
-                          (if (tcl/project-active? project-name)
-                              "*" ""))))
-          timeclock-project-list))
+  (->> timeclock-project-list
+       (-sort #'string-lessp)
+       (--map-indexed (list it
+                            (vector (number-to-string (1+ it-index))
+                                    it
+                                    (tcl/project-time-one-day it)
+                                    (if (tcl/project-active? it)
+                                        "*" ""))))))
 
 (defun tcl/project-at-point ()
-  (beginning-of-line)
-  (--> (buffer-substring-no-properties
-        (point)
-        (progn
-          (re-search-forward time-re-list nil t)
-          (match-beginning 0)))
-       (replace-regexp-in-string "[ \t]*$" "" it))  )
+  (save-excursion
+    (beginning-of-line)
+    (--> (buffer-substring-no-properties
+          (re-search-forward "[0-9]+ +")
+          (progn
+            (re-search-forward time-re-list nil t)
+            (match-beginning 0)))
+         (replace-regexp-in-string "[ \t]*$" "" it))))
 
 ;; ## MAJOR-MODE ##
 (define-derived-mode timeclock-list-mode tabulated-list-mode "Timeclock-List"
@@ -233,7 +235,10 @@ day."
   (timeclock-reread-log)
 
   (make-local-variable 'tabulated-list-format)
-  (setq tabulated-list-format [("Project" 25 t) ("Time" 10 t) ("Active" 3 t)])
+  (setq tabulated-list-format [("#" 3 t)
+                               ("Project" 25 t)
+                               ("Time" 10 t)
+                               ("Active" 3 t)])
 
   (make-local-variable 'tabulated-list-entries)
   (setq tabulated-list-entries 'tcl/entries)
