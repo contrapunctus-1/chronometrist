@@ -13,9 +13,7 @@
 ;; 4. Option to use a specific time to define when a day starts/ends.
 ;;    e.g. 08:00 will mean a day starts and ends at 08:00 instead of
 ;;    the usual 24:00/00:00. Helpful for late sleepers.
-;; 5. When stopped, put cursor on the last activity.
-;;    - or better yet, give each line a number - press the number to
-;;      clock in/out
+;; 5. Give each line a number - press the number to clock in/out
 ;;    - shortcuts derived from the first alphabet of each project
 ;;      could be even nicer, but the code to generate them from
 ;;      similarly-named projects would be somewhat complex
@@ -299,9 +297,12 @@ This is the 'listing command' for timeclock-list-mode."
         (with-current-buffer buffer
           (timeclock-list-mode)
           (tabulated-list-print)
-          (when (progn (goto-char (point-min))
-                       (re-search-forward "\\*" nil t))
-            (beginning-of-line))
+
+          ;; place point on the last or current project
+          (goto-char (point-min))
+          (re-search-forward timeclock-last-project nil t)
+          (beginning-of-line)
+
           (switch-to-buffer buffer)
           (message "RET - clock in/out, r - see weekly report, l - open log file"))))))
 
