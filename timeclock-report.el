@@ -1,16 +1,17 @@
-(require 'cp-timeclock)
-
 ;; TODO
-;; 1. Previous/next week
-;; 2. Highlight current day
-;; 3. If hours and minutes aren't used, don't print them
-;; 4. Add total time clocked per day
-;; 5. If the week number is stored in the buffer name, we can't use
-;;    the name to kill it. We can't store the name as a variable
-;;    either, it will have to be a function.
+;; 1. Highlight column of current day
+;; 2. Add total time clocked per day
+;; 3. Add support for other locale weeks/weekday names
 
 ;; ## VARIABLES ##
-(defvar timeclock-report-buffer-name "*Timeclock-Report")
+(defvar timeclock-report-buffer-name "*Timeclock-Report*")
+(defvar --timeclock-report-year-week
+  nil
+  "Variable to determine the week displayed by
+`timeclock-report' (specifically `tcr/entries'). A value of nil
+means the current week (starting from Sunday). Otherwise, it must
+be a list in the form (YEAR WEEK), where WEEK is the numeric week
+of the year (1-52).")
 
 ;; ## FUNCTIONS ##
 
@@ -19,7 +20,7 @@
 ;; (starting on Sunday) in 2018...
 (defun tcr/week->date (year week)
   "Get the date of the first day of the WEEK in YEAR, where WEEK
-is a week number (01-52)."
+is a week number (1-52)."
   (let ((day    (* week 7))
         (month  1))
     (while (> day 31)
@@ -27,15 +28,52 @@ is a week number (01-52)."
             month (1+ month)))
     (list year month day)))
 
-(defun tcr/entries (&optional year week)
+(defun tcr/current-week ()
+  "Return current week as a number (1-52)."
+  (string-to-number
+   (format-time-string "%U")))
+
+(defun tcr/week ()
+  "Return current week from `tcr/current-week' or the week
+specified in `--timeclock-report-year-week'."
+  (if --timeclock-report-year-week
+      (cadr --timeclock-report-year-week)
+    (tcr/current-week)))
+
+(defun tcr/year ()
+  "Return current year, or the year specified in
+`--timeclock-report-year-week'."
+  (if --timeclock-report-year-week
+      (car --timeclock-report-year-week)
+    (elt (decode-time) 5)))
+
+(defun tcr/dec-year-week (year-week)
+  "Decrements YEAR-WEEK by one week. YEAR-WEEK must be a list in
+the form (YEAR WEEK), where WEEK is the numeric week in
+YEAR (1-52)."
+  (let ((y (car year-week))
+        (w (cadr year-week)))
+    (if (= w 1)
+        (list (1- y) 52)
+      (list y (1- w)))))
+
+(defun tcr/inc-year-week (year-week)
+  "Increments YEAR-WEEK by one week. YEAR-WEEK must be a list in
+the form (YEAR WEEK), where WEEK is the numeric week in
+YEAR (1-52)."
+  (let ((y (car year-week))
+        (w (cadr year-week)))
+    (if (= w 52)
+        (list (1+ y) 1)
+      (list y (1+ w)))))
+
+;; first-day-of-week and dates-in-week can be refactored
+(defun tcr/entries ()
   "Creates entries to be displayed in the buffer created by
 `timeclock-report'. WEEK should be a string containing the week
 of the year (01-52)."
-  (let* ((week           (if week week
-                           (string-to-number
-                            (format-time-string "%U"))))
-         (year           (if year year
-                           (elt (decode-time) 5)))
+  (let* ((week (tcr/week))
+         (year (tcr/year))
          ;; we need the time value to add to it
          (first-day-of-week (--> (tcr/week->date year week)
                                  (reverse it)
@@ -43,17 +81,17 @@ of the year (01-52)."
                                  (apply #'encode-time it)))
          ;; list of dates of each day in WEEK
          (dates-in-week      (--> '(0 1 2 3 4 5 6)
-                                 (--map (* 86400 it) it)
-                                 (--map (list
-                                         (car first-day-of-week)
-                                         (+ (cadr first-day-of-week) it))
-                                        it)
-                                 (--map (decode-time it) it)
-                                 (--map (format "%02d/%02d/%02d"
-                                                (elt it 5)
-                                                (elt it 4)
-                                                (elt it 3))
-                                        it))))
+                                  (--map (* 86400 it) it)
+                                  (--map (list
+                                          (car first-day-of-week)
+                                          (+ (cadr first-day-of-week) it))
+                                         it)
+                                  (--map (decode-time it) it)
+                                  (--map (format "%02d/%02d/%02d"
+                                                 (elt it 5)
+                                                 (elt it 4)
+                                                 (elt it 3))
+                                         it))))
     (mapcar (lambda (project)
               (list project
                     (vconcat
@@ -70,7 +108,6 @@ of the year (01-52)."
     (with-current-buffer timeclock-report-buffer-name
       (tabulated-list-print t t))))
 
-;; TODO - add support for other locale weeks/weekday names,
 (define-derived-mode timeclock-report-mode tabulated-list-mode "Timeclock-Report"
   "Major mode for `timeclock-report'."
   (timeclock-reread-log)
@@ -94,34 +131,61 @@ of the year (01-52)."
   (tabulated-list-init-header)
 
   (run-with-idle-timer 3 t #'tcr/idle-timer)
-  (define-key timeclock-list-mode-map (kbd "l") 'tcl/open-timeclock-file))
+  (define-key timeclock-report-mode-map (kbd "l") 'tcl/open-timeclock-file)
+  (define-key timeclock-report-mode-map (kbd "b") 'tcr/previous-week)
+  (define-key timeclock-report-mode-map (kbd "f") 'tcr/next-week))
 
 ;; ## COMMANDS ##
 
-(defun timeclock-report ()
+(defun timeclock-report (&optional keep-week)
   "Displays a weekly report of the user's timeclock.el projects
 and the time spent on them each day, based on their timelog file
 in `timeclock-file'. This is the 'listing command' for
-timeclock-report-mode."
+timeclock-report-mode.
+
+If KEEP-WEEK is nil (the default when not supplied), we set
+`--timeclock-report-year-week' to nil so that this command
+displays data from the current week."
   (interactive)
-  (let ((buffer (get-buffer-create (concat timeclock-report-buffer-name
-                                           (format-time-string "-Week-%U*")))))
+  (let ((buffer (get-buffer-create timeclock-report-buffer-name)))
     ;; we want this command to toggle viewing the report
-    (if (tcl/buffer-visible? timeclock-report-buffer-name)
+    (if (and (tcl/buffer-visible? timeclock-report-buffer-name)
+             (not keep-week))
         (kill-buffer buffer)
       (with-current-buffer buffer
-        (delete-other-windows)
-        (timeclock-report-mode)
-        (tabulated-list-print)
-        (switch-to-buffer buffer)))))
+        (let ((inhibit-read-only t))
+          (delete-other-windows)
+          (when (not keep-week)
+            (setq --timeclock-report-year-week nil))
+          (timeclock-report-mode)
+          (tabulated-list-print)
+          (goto-char (point-max))
+          (insert "\nWeek "
+                  (number-to-string (tcr/week))
+                  " of 52, "
+                  (number-to-string (tcr/year)))
+          (switch-to-buffer buffer))))))
 
 (defun tcr/previous-week ()
   "View the previous week's report."
   (interactive)
-  (let ((current-week (progn
-                        (string-match "[0-9]\\{1,2\\}"
-                                      (buffer-name))
-                        (match-string-no-properties 0 (buffer-name)))))
-    ))
+  (if --timeclock-report-year-week
+      (setq --timeclock-report-year-week
+            (tcr/dec-year-week --timeclock-report-year-week))
+    (setq --timeclock-report-year-week
+          (tcr/dec-year-week (list (tcr/year) (tcr/week)))))
+  (kill-buffer)
+  (timeclock-report t))
+
+(defun tcr/next-week ()
+  "View the next week's report."
+  (interactive)
+  (if --timeclock-report-year-week
+      (setq --timeclock-report-year-week
+            (tcr/inc-year-week --timeclock-report-year-week))
+    (setq --timeclock-report-year-week
+          (tcr/inc-year-week (list (tcr/year) (tcr/week)))))
+  (kill-buffer)
+  (timeclock-report t))
 
 (provide 'timeclock-report)
