@@ -8,23 +8,21 @@
 ;; TODO
 ;; 1. Refresh when you select the list buffer (impossible? make-thread
 ;;    in v26? Use emacs-async library?)
-;; 2. Add support for prefix args to tclist/toggle-project
-;; 3. Add variable to let user control prompting-for-reason behaviour
-;; 4. Option to use a specific time to define when a day starts/ends.
+;; 2. Add variable to let user control prompting-for-reason behaviour
+;; 3. Option to use a specific time to define when a day starts/ends.
 ;;    e.g. 08:00 will mean a day starts and ends at 08:00 instead of
 ;;    the usual 24:00/00:00. Helpful for late sleepers.
-;; 5. Give each line a number - press the number to clock in/out
-;;    - shortcuts derived from the first alphabet of each project
-;;      could be even nicer, but the code to generate them from
-;;      similarly-named projects would be somewhat complex
-;; 6. Make clocked-in project row bold, either in addition to the
+;; 4. Shortcuts derived from the first alphabet of each project could
+;;    be even nicer (but the code to generate them from
+;;    similarly-named projects would be somewhat complex...)
+;; 5. Make clocked-in project row bold, either in addition to the
 ;;    star, or replacing it.
-;; 7. Show currently active project + time spent on it so far in the
+;; 6. Show currently active project + time spent on it so far in the
 ;;    mode-line (see timeclock-mode-line-display)
-;; 8. The default reason suggested is the last one used. Can't even
+;; 7. The default reason suggested is the last one used. Can't even
 ;;    begin to explain how nonsensical that is. (might be an ido
 ;;    problem)
-;; 9. Show shortcuts message by using the keymap rather than a
+;; 8. Show shortcuts message by using the keymap rather than a
 ;;    hardcoded string.
 
 ;; BUGS
@@ -303,22 +301,26 @@ return a vector in the same form."
 
 ;; ## COMMANDS ##
 
-(defun tcl/toggle-project ()
+(defun tcl/toggle-project (&optional arg)
   "In a `timeclock-list' buffer, start or stop the project at point."
-  (interactive)
-  (let ((project-at-point (tcl/project-at-point))
+  (interactive "P")
+  (let ((target-project (progn
+                          (when arg
+                            (goto-char (point-min))
+                            (re-search-forward (format "^%d" arg) nil t))
+                          (tcl/project-at-point)))
         (current-project  (tcl/current-project)))
-    ;; When changing projects/clocking in, suggest the project at point
+    ;; We change this function so it suggests the project at point
     (cl-letf (((symbol-function 'timeclock-ask-for-project)
                (lambda ()
                  (timeclock-completing-read
                   (format "Clock into which project (default %s): "
-                          project-at-point)
+                          target-project)
                   (mapcar 'list timeclock-project-list)
-                  project-at-point))))
+                  target-project))))
       ;; If we're clocked in to anything - clock out or change projects
       (if current-project
-          (if (equal project-at-point current-project)
+          (if (equal target-project current-project)
               (timeclock-out nil nil t)
             ;; We don't use timeclock-change because it doesn't prompt for the reason
             (progn
@@ -335,11 +337,6 @@ return a vector in the same form."
   (interactive)
   (find-file-other-window timeclock-file)
   (goto-char (point-max)))
-
-;; How do I know the last key that was pressed?
-;; last-command-event ?
-(defun tcl/toggle-project-numberic ()
-  )
 
 (defun timeclock-list (&optional arg)
   "Displays a list of the user's timeclock.el projects and the
