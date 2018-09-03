@@ -26,8 +26,6 @@
 ;;    problem)
 ;; 9. Show shortcuts message by using the keymap rather than a
 ;;    hardcoded string.
-;; 10. Instead of showing point, just highlight the line it's on and
-;;     hide the point.
 
 ;; BUGS
 ;; 1. (goto-char (point-max)) -> RET -> the time spent on the last
@@ -103,6 +101,9 @@
                              (and (repeat 1 2 digit) ":" (repeat 2 digit)))
                         ,empty-time-string)))
 (defvar timeclock-list-buffer-name "*Timeclock-List*")
+(defvar timeclock-list-hide-cursor nil
+  "If non-nil, hide the cursor and only highlight the current
+line in the `timeclock-list' buffer.")
 
 ;; ## FUNCTIONS ##
 
@@ -296,6 +297,11 @@ day."
   (find-file-other-window timeclock-file)
   (goto-char (point-max)))
 
+;; How do I know the last key that was pressed?
+;; last-command-event ?
+(defun tcl/toggle-project-numberic ()
+  )
+
 (defun timeclock-list (&optional arg)
   "Displays a list of the user's timeclock.el projects and the
 time spent on each today, based on their timelog file
@@ -310,6 +316,11 @@ This is the 'listing command' for timeclock-list-mode."
         (with-current-buffer buffer
           (timeclock-list-mode)
           (tabulated-list-print)
+
+          (when timeclock-list-hide-cursor
+            (make-local-variable 'cursor-type)
+            (setq cursor-type nil)
+            (hl-line-mode))
           (tcl/goto-last-project)
           (switch-to-buffer buffer)
           (message "RET - clock in/out, r - see weekly report, l - open log file"))))))
