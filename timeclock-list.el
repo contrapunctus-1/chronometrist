@@ -24,6 +24,7 @@
 ;;    problem)
 ;; 8. Show shortcuts message by using the keymap rather than a
 ;;    hardcoded string.
+;; 9. Move help message to buffer.
 
 ;; BUGS
 ;; 1. (goto-char (point-max)) -> RET -> the time spent on the last
@@ -127,6 +128,7 @@ SECONDS)."
                         ""
                       ;; Can't change this just yet or all commands break spectacularly.
                       ;; Maybe it's best this way too? Looks uniform.
+                      ;; What if I pad with space?
                       (format "%02d:" h)))
             (m      (format "%02d:" m))
             (s      (format "%02d" s)))
@@ -357,9 +359,9 @@ This is the 'listing command' for timeclock-list-mode."
             (make-local-variable 'cursor-type)
             (setq cursor-type nil)
             (hl-line-mode))
-          (tcl/goto-last-project)
           (switch-to-buffer buffer)
           (tcl/print-non-tabular)
+          (tcl/goto-last-project)
           (message "RET - clock in/out, r - see weekly report, l - open log file"))))))
 
 (provide 'timeclock-list)
