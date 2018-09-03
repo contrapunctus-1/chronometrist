@@ -5,27 +5,6 @@
 
 ;; 2018-08-27T12:45:03+0530
 
-;; TODO
-;; 1. Refresh when you select the list buffer (impossible? make-thread
-;;    in v26? Use emacs-async library?)
-;; 2. Add variable to let user control prompting-for-reason behaviour
-;; 3. Option to use a specific time to define when a day starts/ends.
-;;    e.g. 08:00 will mean a day starts and ends at 08:00 instead of
-;;    the usual 24:00/00:00. Helpful for late sleepers.
-;; 4. Shortcuts derived from the first alphabet of each project could
-;;    be even nicer (but the code to generate them from
-;;    similarly-named projects would be somewhat complex...)
-;; 5. Make clocked-in project row bold, either in addition to the
-;;    star, or replacing it.
-;; 6. Show currently active project + time spent on it so far in the
-;;    mode-line (see timeclock-mode-line-display)
-;; 7. The default reason suggested is the last one used. Can't even
-;;    begin to explain how nonsensical that is. (might be an ido
-;;    problem)
-;; 8. Show shortcuts message by using the keymap rather than a
-;;    hardcoded string.
-;; 9. Move help message to buffer.
-
 ;; BUGS
 ;; 1. (goto-char (point-max)) -> RET -> the time spent on the last
 ;;    project in the list will be the first new project suggestion.
