@@ -108,15 +108,16 @@ line in the `timeclock-list' buffer.")
 ;; ## FUNCTIONS ##
 
 ;; tests -
-;; (mapcar #'tcr/format-time
+;; (mapcar #'tcl/format-time
 ;;         '((0 0 0) (0 0 1) (0 0 10) (0 1 10) (0 10 10) (1 10 10) (10 10 10)))
 ;; => ("" "00:01" "00:10" "01:10" "10:10" "01:10:10" "10:10:10")
-;; (mapcar #'tcr/format-time
+;; (mapcar #'tcl/format-time
 ;;         '([0 0 0] [0 0 1] [0 0 10] [0 1 10] [0 10 10] [1 10 10] [10 10 10]))
 ;; => ("" "00:01" "00:10" "01:10" "10:10" "01:10:10" "10:10:10")
 (defun tcl/format-time (time)
-  "Formats and displays TIME, where time is a vector or a list of
-the form [HOURS MINUTES SECONDS] or (HOURS MINUTES SECONDS)."
+  "Format and display TIME as a string, where time is a vector or
+a list of the form [HOURS MINUTES SECONDS] or (HOURS MINUTES
+SECONDS)."
   (let ((h (elt time 0))
         (m (elt time 1))
         (s (elt time 2)))
@@ -130,8 +131,8 @@ the form [HOURS MINUTES SECONDS] or (HOURS MINUTES SECONDS)."
         (concat h m s)))))
 
 (defun tcl/current-project ()
-  "Returns the name of the currently clocked-in project, or nil
- if the user is not clocked in."
+  "Return the name of the currently clocked-in project, or nil if
+ the user is not clocked in."
   (if (not (timeclock-currently-in-p))
       nil
     (with-current-buffer (find-file-noselect timeclock-file)
@@ -142,11 +143,11 @@ the form [HOURS MINUTES SECONDS] or (HOURS MINUTES SECONDS)."
         (buffer-substring-no-properties (point) (point-at-eol))))))
 
 (defun tcl/project-active? (project)
-  "Returns t if PROJECT is currently clocked in, else nil."
+  "Return t if PROJECT is currently clocked in, else nil."
   (equal (tcl/current-project) project))
 
 (defun tcl/timestamp->seconds (date-time)
-  "Converts a timestamp to seconds since 00:00"
+  "Convert a timestamp to seconds since 00:00"
   (--> date-time
        (split-string it "[/ :]")
        (mapcar #'string-to-number it)
@@ -164,7 +165,8 @@ the form [HOURS MINUTES SECONDS] or (HOURS MINUTES SECONDS)."
     (vector h m s)))
 
 ;; The multiple calls to re-search-forward/backward to get point at
-;; the right spot are just ugly :\
+;; the right spot are just ugly :\ (See if you can use match data
+;; instead)
 ;;
 ;; Could be refactored - one function to get ranges for an activity,
 ;; one to convert them to seconds, one to subtract them (get an
@@ -174,7 +176,9 @@ the form [HOURS MINUTES SECONDS] or (HOURS MINUTES SECONDS)."
   "Read `timeclock-file' and return total time spent on a project
 in one day. If DATE is a string in the form \"YYYY-MM-DD\", the
 time for that date is shown, otherwise calculate time for that
-day."
+day.
+
+The return value is a vector in the form [HOURS MINUTES SECONDS]"
   (if (not (member project timeclock-project-list))
       (error (concat "Unknown project: " project))
     (let* ((target-date   (if date
@@ -211,7 +215,7 @@ day."
            (tcl/format-time)))))))
 
 (defun tcl/entries ()
-  "Creates entries to be displayed in the buffer created by
+  "Create entries to be displayed in the buffer created by
 `timeclock-list'."
   (timeclock-reread-log)
   (->> timeclock-project-list
@@ -224,6 +228,7 @@ day."
                                         "*" ""))))))
 
 (defun tcl/project-at-point ()
+  "Get the project at point in the `timeclock-list' buffer."
   (save-excursion
     (beginning-of-line)
     (--> (buffer-substring-no-properties
