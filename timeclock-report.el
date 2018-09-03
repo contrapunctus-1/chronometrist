@@ -1,8 +1,3 @@
-;; TODO
-;; 1. Highlight column of current day
-;; 2. Add total time clocked per day
-;; 3. Add support for other locale weeks/weekday names
-
 ;; ## VARIABLES ##
 (defvar timeclock-report-buffer-name "*Timeclock-Report*")
 (defvar --timeclock-report-year-week
