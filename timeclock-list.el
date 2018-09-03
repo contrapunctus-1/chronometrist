@@ -88,9 +88,11 @@
 (defun tcl/idle-timer ()
   (when (and (tcl/buffer-exists? timeclock-list-buffer-name)
              (tcl/buffer-visible? timeclock-list-buffer-name))
+    ;; (message "tcl/idle-timer run at %s" (format-time-string "%T"))
     (with-current-buffer timeclock-list-buffer-name
       (tabulated-list-print t)
-      (tcl/goto-last-project))))
+      (tcl/goto-last-project)
+      (tcl/print-non-tabular))))
 
 ;; ## VARIABLES ##
 (defvar time-re "[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}")
@@ -125,7 +127,9 @@ SECONDS)."
         "-"
       (let ((h      (if (zerop h)
                         ""
-                      (format "%02d:" h))) ;; can't change this just yet or all commands break
+                      ;; Can't change this just yet or all commands break spectacularly.
+                      ;; Maybe it's best this way too? Looks uniform.
+                      (format "%02d:" h)))
             (m      (format "%02d:" m))
             (s      (format "%02d" s)))
         (concat h m s)))))
@@ -211,8 +215,7 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
                     (append interval-list (list interval)))))
           (->>
            (seq-reduce #'+ interval-list 0)
-           (tcl/seconds-to-hms)
-           (tcl/format-time)))))))
+           (tcl/seconds-to-hms)))))))
 
 (defun tcl/entries ()
   "Create entries to be displayed in the buffer created by
@@ -223,7 +226,8 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
        (--map-indexed (list it
                             (vector (number-to-string (1+ it-index))
                                     it
-                                    (tcl/project-time-one-day it)
+                                    (-> (tcl/project-time-one-day it)
+                                        (tcl/format-time))
                                     (if (tcl/project-active? it)
                                         "*" ""))))))
 
@@ -242,6 +246,36 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
   (goto-char (point-min))
   (re-search-forward timeclock-last-project nil t)
   (beginning-of-line))
+
+(defun tcl/time-add (a b)
+  "Add two vectors in the form [HOURS MINUTES SECONDS] and
+return a vector in the same form."
+  (let ((h1 (elt a 0))
+        (h2 (elt b 0))
+        (m1 (elt a 1))
+        (m2 (elt b 1))
+        (s1 (elt a 2))
+        (s2 (elt b 2)))
+    (tcl/seconds-to-hms (+ (* h1 3600) (* h2 3600)
+                           (* m1 60) (* m2 60)
+                           s1 s2))))
+
+(defun tcl/total-time-one-day (&optional date)
+  "Calculate the total time clocked today, or on DATE if non-nil."
+  (->>
+   timeclock-project-list
+   (--map (tcl/project-time-one-day it date))
+   (-reduce #'tcl/time-add)))
+
+(defun tcl/print-non-tabular ()
+  "Print the non-tabular part of the buffer in `timeclock-list'."
+  (let ((inhibit-read-only t))
+    (goto-char (point-max))
+    (->>
+     (tcl/total-time-one-day)
+     (tcl/format-time)
+     (format "\n    %- 26s%s" "Total")
+     (insert))))
 
 ;; ## MAJOR-MODE ##
 (define-derived-mode timeclock-list-mode tabulated-list-mode "Timeclock-List"
@@ -328,6 +362,7 @@ This is the 'listing command' for timeclock-list-mode."
             (hl-line-mode))
           (tcl/goto-last-project)
           (switch-to-buffer buffer)
+          (tcl/print-non-tabular)
           (message "RET - clock in/out, r - see weekly report, l - open log file"))))))
 
 (provide 'timeclock-list)

@@ -81,6 +81,7 @@ of the year (01-52)."
                                  (apply #'encode-time it)))
          ;; list of dates of each day in WEEK
          (dates-in-week      (--> '(0 1 2 3 4 5 6)
+                                  ;; 1 day = 86400 seconds
                                   (--map (* 86400 it) it)
                                   (--map (list
                                           (car first-day-of-week)
@@ -97,7 +98,8 @@ of the year (01-52)."
                     (vconcat
                      (vector project)
                      (apply #'vector
-                            (--map (tcl/project-time-one-day project it)
+                            (--map (tcl/format-time
+                                    (tcl/project-time-one-day project it))
                                    dates-in-week)))))
             timeclock-project-list)))
 
