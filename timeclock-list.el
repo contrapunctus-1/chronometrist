@@ -5,6 +5,11 @@
 ;; BUGS
 ;; 1. (goto-char (point-max)) -> RET -> the time spent on the last
 ;;    project in the list will be the first new project suggestion.
+;; 2. Start a project before midnight -> after midnight,
+;;    timeclock-list will display it as active, but the time spent will
+;;    be '-' (zero)
+;;    - We need to find ranges which span the time the day changes,
+;;      and split them during calculation
 
 ;; Style issues
 ;; 1. Uses Scheme-style ? and x->y naming conventions instead of

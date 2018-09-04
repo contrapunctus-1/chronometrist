@@ -1,5 +1,35 @@
 (require 'timeclock-ui-lib)
 
+;; ## BUGS ##
+;; 1. (tcr/week->date) needs a re-look - doesn't always start on a
+;;    Sunday, and sometimes misses days.
+;;      (tcr/week->date 2017 52) => (2017 12 30) (30th Dec 2017)
+;;      (tcr/week->date 2018 1) => (2018 1 7) (7th Jan 2018)
+
+;;    So if you're recreating a calendar using it, which we sort of are...
+;;      (defun year-week->week-dates (year week)
+;;        (->>
+;;         (tcr/week->date year week)
+;;         (reverse)
+;;         (append '(0 0 0))
+;;         (apply #'encode-time) ;; convert 'calendrical data' to time value
+;;         (tcr/date->dates-in-week)
+;;         (--map (decode-time it))
+;;         (--map (format "%02d/%02d/%02d"
+;;                        (elt it 5)
+;;                        (elt it 4)
+;;                        (elt it 3)))))
+;;
+;;      (year-week->week-dates 2017 52)
+;;      => ("2017/12/30" "2017/12/31" "2018/01/01" "2018/01/02" "2018/01/03" "2018/01/04" "2018/01/05")
+;;      (year-week->week-dates 2018 1)
+;;      ("2018/01/07" "2018/01/08" "2018/01/09" "2018/01/10" "2018/01/11" "2018/01/12" "2018/01/13")
+;;
+;;      ...we missed 6th Jan 2018!
+;;
+;;      This is because we're assuming the year has exactly 52 weeks,
+;;      but it has 52 weeks and 1 day (2 days in a leap year).
+
 ;; ## VARIABLES ##
 (defvar timeclock-report-buffer-name "*Timeclock-Report*")
 (defvar --timeclock-report-year-week
@@ -12,12 +42,13 @@ of the year (1-52).")
 
 ;; ## FUNCTIONS ##
 
-;; Bit weird - (tcr/week->date 1 2018) => (7 1) (7th of Jan)
+;; Bit weird - (tcr/week->date 2018 1) => (2018 1 7) (7th of Jan 2018)
 ;; Although that _is_ the first date of the first complete week
 ;; (starting on Sunday) in 2018...
 (defun tcr/week->date (year week)
-  "Get the date of the first day of the WEEK in YEAR, where WEEK
-is a week number (1-52)."
+  "Return the date as a list in the form (YEAR MONTH DAY) of the
+first day of the WEEK in YEAR, where WEEK is a week
+number (1-52)."
   (let ((day    (* week 7))
         (month  1))
     (while (> day 31)
@@ -44,6 +75,7 @@ specified in `--timeclock-report-year-week'."
       (car --timeclock-report-year-week)
     (elt (decode-time) 5)))
 
+;; maybe these two should take two arguments instead of a list?
 (defun tcr/dec-year-week (year-week)
   "Decrements YEAR-WEEK by one week. YEAR-WEEK must be a list in
 the form (YEAR WEEK), where WEEK is the numeric week in
