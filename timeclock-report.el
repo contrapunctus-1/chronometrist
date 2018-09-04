@@ -1,3 +1,5 @@
+(require 'timeclock-ui-lib)
+
 ;; ## VARIABLES ##
 (defvar timeclock-report-buffer-name "*Timeclock-Report*")
 (defvar --timeclock-report-year-week

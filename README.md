@@ -3,6 +3,13 @@ A nice user interface for Emacs' timeclock.el
 
 Largely modelled after the Android application, [A Time Tracker](https://github.com/netmackan/ATimeTracker)
 
+timeclock-ui provides two files, timeclock-list and timeclock-report, which are also the names of the two commands it provides.
+
+```cl
+(require 'timeclock-list)
+(require 'timeclock-report)
+```
+
 ## Commands
 ### timeclock-list
 Run `M-x timeclock-list` to see your projects, the time you spent on them today, which one is active, and the total time clocked today.
