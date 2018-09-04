@@ -141,11 +141,16 @@ return a vector in the same form."
   "Print the non-tabular part of the buffer in `timeclock-list'."
   (let ((inhibit-read-only t))
     (goto-char (point-max))
-    (->>
+    (-->
      (tcl/total-time-one-day)
-     (tcl/format-time)
-     (format "\n    %- 26s%s" "Total")
-     (insert))))
+     (tcl/format-time it)
+     (format "\n    %- 26s%s" "Total" it)
+     (concat it
+             "\n\n    RET - clock in/out"
+             "\n    <numeric argument N> RET - clock in/out from <N>th project"
+             "\n    r - see weekly report"
+             "\n    l - open log file")
+     (insert it))))
 
 ;; ## MAJOR-MODE ##
 (define-derived-mode timeclock-list-mode tabulated-list-mode "Timeclock-List"
@@ -203,7 +208,8 @@ return a vector in the same form."
         (timeclock-in nil nil t)))
     (timeclock-reread-log) ;; required when we create a new activity
     ;; Trying to update partially doesn't update the activity indicator. Why?
-    (tabulated-list-print t nil)))
+    (tabulated-list-print t nil)
+    (tcl/print-non-tabular)))
 
 (defun timeclock-list (&optional arg)
   "Displays a list of the user's timeclock.el projects and the
@@ -226,7 +232,6 @@ This is the 'listing command' for timeclock-list-mode."
             (hl-line-mode))
           (switch-to-buffer buffer)
           (tcl/print-non-tabular)
-          (tcl/goto-last-project)
-          (message "RET - clock in/out, r - see weekly report, l - open log file"))))))
+          (tcl/goto-last-project))))))
 
 (provide 'timeclock-list)
