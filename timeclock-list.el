@@ -35,8 +35,8 @@
     ;; (message "tcl/idle-timer run at %s" (format-time-string "%T"))
     (with-current-buffer timeclock-list-buffer-name
       (tabulated-list-print t)
-      (tcl/goto-last-project)
-      (tcl/print-non-tabular))))
+      (tcl/print-non-tabular)
+      (tcl/goto-last-project))))
 
 ;; ## VARIABLES ##
 (defvar time-re "[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}")
