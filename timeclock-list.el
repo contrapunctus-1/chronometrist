@@ -214,7 +214,8 @@ return a vector in the same form."
     (timeclock-reread-log) ;; required when we create a new activity
     ;; Trying to update partially doesn't update the activity indicator. Why?
     (tabulated-list-print t nil)
-    (tcl/print-non-tabular)))
+    (tcl/print-non-tabular)
+    (tcl/goto-last-project)))
 
 (defun timeclock-list (&optional arg)
   "Displays a list of the user's timeclock.el projects and the
