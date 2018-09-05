@@ -139,6 +139,25 @@ of the year (01-52)."
     (with-current-buffer timeclock-report-buffer-name
       (tabulated-list-print t t))))
 
+(defun tcr/print-non-tabular ()
+  "Print the non-tabular part of the buffer in `timeclock-report'."
+  (let ((inhibit-read-only t))
+    (goto-char (point-max))
+    (-->
+     ;; (tcl/total-time-one-day)
+     ;; (tcl/format-time it)
+     ;; (format "\n    %- 26s%s" "Total" it)
+     ""
+     (concat it
+             "\n\n    l - open log file")
+     (insert it))
+    (insert "\n\n    Week "
+            (number-to-string (tcr/week))
+            " of 52, "
+            (number-to-string (tcr/year)))))
+
+;; ## MAJOR MODE ##
+
 (define-derived-mode timeclock-report-mode tabulated-list-mode "Timeclock-Report"
   "Major mode for `timeclock-report'."
   (timeclock-reread-log)
@@ -184,18 +203,13 @@ displays data from the current week."
              (not keep-week))
         (kill-buffer buffer)
       (with-current-buffer buffer
-        (let ((inhibit-read-only t))
-          (delete-other-windows)
-          (when (not keep-week)
-            (setq --timeclock-report-year-week nil))
-          (timeclock-report-mode)
-          (tabulated-list-print)
-          (goto-char (point-max))
-          (insert "\nWeek "
-                  (number-to-string (tcr/week))
-                  " of 52, "
-                  (number-to-string (tcr/year)))
-          (switch-to-buffer buffer))))))
+        (delete-other-windows)
+        (when (not keep-week)
+          (setq --timeclock-report-year-week nil))
+        (timeclock-report-mode)
+        (tabulated-list-print)
+        (tcr/print-non-tabular)
+        (switch-to-buffer buffer)))))
 
 (defun tcr/previous-week ()
   "View the previous week's report."
