@@ -96,6 +96,18 @@ YEAR (1-52)."
         (list (1+ y) 1)
       (list y (1+ w)))))
 
+(defun tcr/date->dates-in-week (first-date-in-week)
+  "Return a list in the form (DAY-1 DAY-2 ... DAY-7), where each
+day is a time value (see (info \"(elisp)Time of Day\")).
+FIRST-DATE-IN-WEEK must be a time value representing DAY-1."
+  (--> '(0 1 2 3 4 5 6)
+       ;; 1 day = 86400 seconds
+       (--map (* 86400 it) it)
+       (--map (list
+               (car first-date-in-week)
+               (+ (cadr first-date-in-week) it))
+              it)))
+
 ;; first-day-of-week and dates-in-week can be refactored
 (defun tcr/entries ()
   "Creates entries to be displayed in the buffer created by
@@ -104,24 +116,17 @@ of the year (01-52)."
   (let* ((week (tcr/week))
          (year (tcr/year))
          ;; we need the time value to add to it
-         (first-day-of-week (--> (tcr/week->date year week)
-                                 (reverse it)
-                                 (append '(0 0 0) it)
-                                 (apply #'encode-time it)))
+         (first-date-of-week (--> (tcr/week->date year week)
+                                  (reverse it)
+                                  (append '(0 0 0) it)
+                                  (apply #'encode-time it)))
          ;; list of dates of each day in WEEK
-         (dates-in-week      (--> '(0 1 2 3 4 5 6)
-                                  ;; 1 day = 86400 seconds
-                                  (--map (* 86400 it) it)
-                                  (--map (list
-                                          (car first-day-of-week)
-                                          (+ (cadr first-day-of-week) it))
-                                         it)
-                                  (--map (decode-time it) it)
-                                  (--map (format "%02d/%02d/%02d"
-                                                 (elt it 5)
-                                                 (elt it 4)
-                                                 (elt it 3))
-                                         it))))
+         (dates-in-week     (->> (tcr/date->dates-in-week first-date-of-week)
+                                 (--map (decode-time it))
+                                 (--map (format "%02d/%02d/%02d"
+                                                (elt it 5)
+                                                (elt it 4)
+                                                (elt it 3))))))
     (mapcar (lambda (project)
               (list project
                     (vconcat
