@@ -13,25 +13,26 @@
   ;; (selected-frame) (window-list it) ...) - but it wouldn't be
   ;; robust, because it is possible that a frame partially covers
   ;; another and the buffer is visible to the user from the latter.
-  (-->
-   (visible-frame-list)
-   (mapcar #'window-list it)
-   (mapcar (lambda (list)
-             (mapcar #'window-buffer list))
-           it)
-   (mapcar (lambda (list)
-             (mapcar (lambda (buffer)
-                       (if (bufferp buffer-or-buffer-name)
-                           (equal buffer-or-buffer-name buffer)
-                         (equal (buffer-name buffer)
-                                buffer-or-buffer-name)))
-                     list))
-           it)
-   (mapcar (lambda (list)
-             (seq-filter #'identity list))
-           it)
-   (mapcar #'car it)
-   (if (car it) t nil)))
+  (let ((result (-->
+                 (visible-frame-list)
+                 (mapcar #'window-list it)
+                 (mapcar (lambda (list)
+                           (mapcar #'window-buffer list))
+                         it)
+                 (mapcar (lambda (list)
+                           (mapcar (lambda (buffer)
+                                     (if (bufferp buffer-or-buffer-name)
+                                         (equal buffer-or-buffer-name buffer)
+                                       (equal (buffer-name buffer)
+                                              buffer-or-buffer-name)))
+                                   list))
+                         it)
+                 (mapcar (lambda (list)
+                           (seq-filter #'identity list))
+                         it)
+                 (mapcar #'car it)
+                 (car it))))
+    (if result t nil)))
 
 ;; The multiple calls to re-search-forward/backward to get point at
 ;; the right spot are just ugly :\ (See if you can use match data
