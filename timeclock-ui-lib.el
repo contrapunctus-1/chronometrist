@@ -28,11 +28,84 @@
                                    list))
                          it)
                  (mapcar (lambda (list)
-                           (seq-filter #'identity list))
+                           (-filter #'identity list))
                          it)
                  (mapcar #'car it)
                  (car it))))
     (if result t nil)))
+
+(defun tcl/timestamp->list (date-time-string)
+  "Convert a string timestamp to a list of integers."
+  (--> date-time-string
+       (split-string it "[-/ :]")
+       (mapcar #'string-to-number it)))
+
+(defun tcl/timestamp-list->seconds (date-time-list)
+  "Convert DATE-TIME (which must be a list in the form (YEAR
+MONTH DAY HOURS MINUTES SECONDS), as returned by
+`timestamp->list') to seconds since the UNIX epoch
+(see (info \"(elisp)Time of Day\"))."
+  (->> date-time-list
+       (reverse)
+       (apply #'encode-time)))
+
+(defun tcl/timestamp->seconds (date-time-string)
+  "Convert a string timestamp in the form \"HH:MM:SS\" to seconds
+since the UNIX epoch (see (info \"(elisp)Time of Day\"))."
+  (tcl/timestamp-list->seconds
+   (tcl/timestamp->list date-time-string)))
+
+(defun tcl/time-interval-span-midnight? (t1 t2)
+  "Return t if time range T1 to T2 extends across midnight.
+
+T1 and T2 must be lists in the form (YEAR MONTH DAY HOURS MINUTES
+SECONDS), as returned by `timestamp->list'. T2 must be more
+recent than T1 in chronological order."
+  (let* ((day-1          (elt t1 2))
+         (day-2          (elt t2 2))
+         (month-1        (elt t1 1))
+         (month-2        (elt t2 1)))
+         ;; not Absolutely Perfect™, but should do for most situations
+    (or (= day-2   (1+ day-1))
+        (= month-2 (1+ month-1)))))
+
+;; fixing the midnight bug (next day)
+;; find first event for the day (clock-in _or_ out; no project involved)
+;; if it's an out -
+;; - get the previous event (clock-in)
+;; - check if the project is the one we want
+;;   - if it is, make the start time 00:00:00
+;;   - if not, ignore it, go to the next (clock-in) event for the required project
+(defun tcl/get-end-time (target-date)
+  "Return the date and time of the next clock-out event after
+point in the file `timeclock-file'.
+
+If there is no clock-out event after point, return the current
+date and time.
+
+If the clock-out time is past midnight, return the date in
+TARGET-DATE with the time at midnight (\"24:00:00\").
+
+Return value is a string with the form \"YYYY/MM/DD HH:MM:SS\".
+
+TARGET-DATE must be a date in the form \"YYYY/MM/DD\"
+
+Point must be on a clock-in event having the same date as
+TARGET-DATE."
+  (let* ((date-time        (if (progn
+                                 (forward-line)
+                                 (beginning-of-line)
+                                 (looking-at-p "^o "))
+                               (progn
+                                 (re-search-forward "o ")
+                                 (buffer-substring-no-properties (point)
+                                                                 (+ 10 1 8 (point))))
+                             (format-time-string "%Y/%m/%d %T")))
+         (date-time-list   (tcl/timestamp->list date-time))
+         (target-date-list (tcl/timestamp->list target-date)))
+    (if (tcl/time-interval-span-midnight? target-date-list date-time-list)
+        (concat target-date " 24:00:00")
+      date-time)))
 
 ;; The multiple calls to re-search-forward/backward to get point at
 ;; the right spot are just ugly :\ (See if you can use match data
@@ -52,8 +125,8 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
   (if (not (member project timeclock-project-list))
       (error (concat "Unknown project: " project))
     (let* ((target-date   (if date
-                              (replace-regexp-in-string "-" "/" date)    ;; should probably validate it...
-                              (format-time-string "%Y/%m/%d")))
+                              (replace-regexp-in-string "-" "/" date) ;; should probably validate it...
+                            (format-time-string "%Y/%m/%d")))
            (search-re     (concat target-date " " time-re " " project))
            (interval-list nil))
       (with-current-buffer (find-file-noselect timeclock-file)
@@ -61,26 +134,19 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
           (goto-char (point-min))
           (while (re-search-forward (concat "i " search-re) nil t)
             (re-search-backward target-date nil t)
-            (let* ((start-time (buffer-substring-no-properties
-                                (point)
-                                (+ 10 1 8 (point))))
-                   (end-time   (progn
-                                 (if (re-search-forward (concat "o " target-date) nil t)
-                                     (buffer-substring-no-properties (- (point) 10)
-                                                                     (+ 9 (point)))
-                                   ;; if the user hasn't clocked out
-                                   ;; from the project, the timelog does
-                                   ;; not have an ending time yet, so we
-                                   ;; use the current time
-                                   (format-time-string "%Y/%m/%d %T"))))
-                   (interval   (-->
-                                (time-subtract (tcl/timestamp->seconds end-time)
-                                               (tcl/timestamp->seconds start-time))
-                                (elt it 1))))
+            (let* ((start-time         (buffer-substring-no-properties
+                                        (point)
+                                        (+ 10 1 8 (point))))
+                   (end-time           (tcl/get-end-time target-date))
+                   (start-time-s       (tcl/timestamp->seconds start-time))
+                   (end-time-s         (tcl/timestamp->seconds end-time))
+                   (interval           (elt (time-subtract end-time-s
+                                                           start-time-s)
+                                            1)))
               (setq interval-list
                     (append interval-list (list interval)))))
           (->>
-           (seq-reduce #'+ interval-list 0)
+           (-reduce #'+ interval-list)
            (tcl/seconds-to-hms)))))))
 
 ;; tests -

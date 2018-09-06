@@ -10,6 +10,8 @@
 ;;    be '-' (zero)
 ;;    - We need to find ranges which span the time the day changes,
 ;;      and split them during calculation
+;;    - Test - time error in 2018/09/04 should be fixed, "Programming"
+;;      shouldn't be 12 hours
 
 ;; Style issues
 ;; 1. Uses Scheme-style ? and x->y naming conventions instead of
@@ -44,6 +46,7 @@
       (tcl/goto-last-project))))
 
 ;; ## VARIABLES ##
+(defvar date-re "[0-9]\\{4\\}/[0-9]\\{2\\}/[0-9]\\{2\\}")
 (defvar time-re "[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}")
 (defvar empty-time-string "-")
 (defvar time-re-list (rx-to-string
@@ -57,7 +60,6 @@
 line in the `timeclock-list' buffer.")
 
 ;; ## FUNCTIONS ##
-
 (defun tcl/current-project ()
   "Return the name of the currently clocked-in project, or nil if
  the user is not clocked in."
@@ -73,14 +75,6 @@ line in the `timeclock-list' buffer.")
 (defun tcl/project-active? (project)
   "Return t if PROJECT is currently clocked in, else nil."
   (equal (tcl/current-project) project))
-
-(defun tcl/timestamp->seconds (date-time)
-  "Convert a timestamp to seconds since 00:00"
-  (--> date-time
-       (split-string it "[/ :]")
-       (mapcar #'string-to-number it)
-       (reverse it)
-       (apply #'encode-time it)))
 
 ;; tests -
 ;; (mapcar #'tcl/seconds-to-hms '(1 60 61 3600 3660 3661))
