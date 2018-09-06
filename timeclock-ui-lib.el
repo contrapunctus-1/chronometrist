@@ -59,8 +59,8 @@ since the UNIX epoch (see (info \"(elisp)Time of Day\"))."
   "Return t if time range T1 to T2 extends across midnight.
 
 T1 and T2 must be lists in the form (YEAR MONTH DAY HOURS MINUTES
-SECONDS), as returned by `timestamp->list'. T2 must be more
-recent than T1 in chronological order."
+SECONDS), as returned by `timestamp->list'. T2 must be
+chronologically more recent than T1."
   (let* ((day-1          (elt t1 2))
          (day-2          (elt t2 2))
          (month-1        (elt t1 1))
@@ -69,13 +69,25 @@ recent than T1 in chronological order."
     (or (= day-2   (1+ day-1))
         (= month-2 (1+ month-1)))))
 
-;; fixing the midnight bug (next day)
-;; find first event for the day (clock-in _or_ out; no project involved)
-;; if it's an out -
-;; - get the previous event (clock-in)
-;; - check if the project is the one we want
-;;   - if it is, make the start time 00:00:00
-;;   - if not, ignore it, go to the next (clock-in) event for the required project
+(defun tcl/first-event-spans-midnight? (target-date project)
+  "Return t if the first event of PROJECT on TARGET-DATE in
+`timeclock-file' spans midnight (i.e. its clock-in time was
+before midnight), else nil.
+
+TARGET-DATE must be a date in the form \"YYYY/MM/DD\", and
+PROJECT a string."
+  ;; Go to the first event for TARGET-DATE, ignoring the project
+  (goto-char (point-min))
+  (re-search-forward target-date nil t)
+  (beginning-of-line)
+  ;; Is it a clock-out event?
+  (and (looking-at-p "^o ")
+       ;; We have a midnight-spanning range. Is it a range for PROJECT?
+       (progn
+         (forward-line -1)
+         (beginning-of-line)
+         (looking-at-p (concat "i " date-re " " time-re " " project)))))
+
 (defun tcl/get-end-time (target-date)
   "Return the date and time of the next clock-out event after
 point in the file `timeclock-file'.
@@ -86,7 +98,7 @@ date and time.
 If the clock-out time is past midnight, return the date in
 TARGET-DATE with the time at midnight (\"24:00:00\").
 
-Return value is a string with the form \"YYYY/MM/DD HH:MM:SS\".
+Return value is a string in the form \"YYYY/MM/DD HH:MM:SS\"
 
 TARGET-DATE must be a date in the form \"YYYY/MM/DD\"
 
@@ -115,6 +127,11 @@ TARGET-DATE."
 ;; one to convert them to seconds, one to subtract them (get an
 ;; interval from two timestamps), and one to output the time vector
 ;; from tcl/seconds-to-hms in the desired format
+;;
+;; Better idea - get all events for target-date as a list of strings,
+;; one per line. Operate on that. Will probably make for much nicer
+;; code.
+
 (defun tcl/project-time-one-day (project &optional date)
   "Read `timeclock-file' and return total time spent on a project
 in one day. If DATE is a string in the form \"YYYY-MM-DD\", the
@@ -124,29 +141,42 @@ day.
 The return value is a vector in the form [HOURS MINUTES SECONDS]"
   (if (not (member project timeclock-project-list))
       (error (concat "Unknown project: " project))
-    (let* ((target-date   (if date
-                              (replace-regexp-in-string "-" "/" date) ;; should probably validate it...
-                            (format-time-string "%Y/%m/%d")))
-           (search-re     (concat target-date " " time-re " " project))
-           (interval-list nil))
-      (with-current-buffer (find-file-noselect timeclock-file)
-        (save-excursion
-          (goto-char (point-min))
-          (while (re-search-forward (concat "i " search-re) nil t)
+    (with-current-buffer (find-file-noselect timeclock-file)
+      (save-excursion
+        (let* ((target-date          (if date
+                                         (replace-regexp-in-string "-" "/" date) ;; should probably validate it...
+                                       (format-time-string "%Y/%m/%d")))
+               (search-re            (concat target-date " " time-re " " project))
+               (interval-list        nil)
+               (first-event-midnight (tcl/first-event-spans-midnight? target-date
+                                                                      project)))
+          ;; (goto-char (point-min))
+          (while (if first-event-midnight
+                     (re-search-forward time-re nil t 2)
+                   (re-search-forward (concat "i " search-re) nil t))
             (re-search-backward target-date nil t)
-            (let* ((start-time         (buffer-substring-no-properties
-                                        (point)
-                                        (+ 10 1 8 (point))))
-                   (end-time           (tcl/get-end-time target-date))
+            (let* ((start-time         (if first-event-midnight
+                                           (concat target-date " 00:00:00")
+                                         (buffer-substring-no-properties
+                                          (point)
+                                          (+ 10 1 8 (point)))))
+                   (end-time           (if first-event-midnight
+                                           (buffer-substring-no-properties
+                                            (point)
+                                            (+ 10 1 8 (point)))
+                                         (tcl/get-end-time target-date)))
                    (start-time-s       (tcl/timestamp->seconds start-time))
                    (end-time-s         (tcl/timestamp->seconds end-time))
                    (interval           (elt (time-subtract end-time-s
                                                            start-time-s)
                                             1)))
               (setq interval-list
-                    (append interval-list (list interval)))))
+                    (append interval-list (list interval))
+                    ;; quick hack
+                    first-event-midnight nil)))
           (->>
-           (-reduce #'+ interval-list)
+           interval-list
+           (-reduce #'+)
            (tcl/seconds-to-hms)))))))
 
 ;; tests -

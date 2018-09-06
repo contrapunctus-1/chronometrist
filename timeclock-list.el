@@ -8,10 +8,6 @@
 ;; 2. Start a project before midnight -> after midnight,
 ;;    timeclock-list will display it as active, but the time spent will
 ;;    be '-' (zero)
-;;    - We need to find ranges which span the time the day changes,
-;;      and split them during calculation
-;;    - Test - time error in 2018/09/04 should be fixed, "Programming"
-;;      shouldn't be 12 hours
 
 ;; Style issues
 ;; 1. Uses Scheme-style ? and x->y naming conventions instead of
