@@ -43,6 +43,8 @@ Set this to non-nil if you want to hide the cursor in timeclock-list. The line t
 
 ## Roadmap
 * More statistics (current/longest streaks for activities, most productive $time_period (day, week, month, year...))
+* Update when the timeclock-file changes using a filesystem watcher
+* Mouse support
 
 ### timeclock-list
 1. Add variable to let user control prompting-for-reason behaviour
@@ -54,7 +56,7 @@ Set this to non-nil if you want to hide the cursor in timeclock-list. The line t
    - Make default blank?
    - Possibly make suggestions activity-sensitive e.g. when stopping activity A, don't suggest past reasons used for activity B, C, etc. Add a variable to customize this, because it might not be the behaviour everyone wants.
 7. **Improve help**
-   - Show shortcuts message by using the keymap rather than a hardcoded string.
+   - Show shortcuts by consulting the keymap rather than using a hardcoded string.
    - Change 'see weekly report' and 'open log file' to buttons
 8. Refresh when you select the list buffer (impossible? make-thread in v26? Use emacs-async library?)
 
@@ -65,7 +67,7 @@ Set this to non-nil if you want to hide the cursor in timeclock-list. The line t
 4. Show date in the day field too.
 
 ### Miscellaneous
-1. README - add images
+1. README - add images, link to a Jabber webclient
 2. Document API somewhere (list of functions, their argument lists, and outputs)
 
 ## Contact
@@ -73,7 +75,7 @@ Contact the creator and other Emacs users in the Emacs room on the Jabber networ
 (For help in getting started with Jabber, [click here](https://xmpp.org/getting-started/))
 
 ## License
-timeclock-ui is released into the public domain under your choice of [CC0](https://creativecommons.org/publicdomain/zero/1.0/), [Unlicense](https://unlicense.org/), and [WTFPL](http://www.wtfpl.net/).
+timeclock-ui is released under your choice of [CC0](https://creativecommons.org/publicdomain/zero/1.0/), [Unlicense](https://unlicense.org/), and [WTFPL](http://www.wtfpl.net/).
 
 ## Thanks
 wasamasa and #emacs for all their help and support
