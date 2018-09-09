@@ -299,3 +299,7 @@ current week. Otherwise, display data from the week specified by
   (timeclock-report t))
 
 (provide 'timeclock-report)
+
+;; Local Variables:
+;; nameless-current-name: "timeclock-report"
+;; End:

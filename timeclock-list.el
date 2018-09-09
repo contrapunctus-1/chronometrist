@@ -233,3 +233,7 @@ This is the 'listing command' for timeclock-list-mode."
           (timeclock-list-goto-last-project))))))
 
 (provide 'timeclock-list)
+
+;; Local Variables:
+;; nameless-current-name: "timeclock-list"
+;; End:

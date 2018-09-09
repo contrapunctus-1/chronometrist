@@ -230,3 +230,7 @@ SECONDS)."
   (goto-char (point-max)))
 
 (provide 'timeclock-ui-lib)
+
+;; Local Variables:
+;; nameless-current-name: "timeclock-ui"
+;; End:
