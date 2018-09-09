@@ -8,6 +8,9 @@
 ;; 2. Start a project before midnight -> after midnight,
 ;;    timeclock-list will display it as active, but the time spent will
 ;;    be '-' (zero)
+;; 3. Create (and start) a _new_ project -> kill buffer -> run
+;;    timeclock-list -> cursor is not at the new project
+;;    - can't reproduce it?
 
 ;; Style issues
 ;; 1. Uses Scheme-style ? and x->y naming conventions instead of
@@ -25,11 +28,18 @@
 ;; 3. Uses non-standard slashes in the date instead of dashes (e.g.
 ;;    "2018/01/01" instead of "2018-01-01") and a space for the
 ;;    date-time separator instead of T
-;;
+
 ;; Limitations of tabulated-list-mode
 ;; 1. Can't mix tabulated and non-tabulated data!!! What if I want
 ;;    some buttons, separate from the data but part of the same
 ;;    buffer?!
+;;    - adding non-tabular data after calling `tabulated-list-print' -
+;;      as we do - works, but is hacky and doesn't always print (e.g.
+;;      it vanishes when you sort). Then, you have to ensure you call
+;;      it after each time you call `tabulated-list-print' :\
+;;    - a post-print hook could help
+;;    - maybe use advice?
+;; 2. Can't have multi-line headers
 
 ;; ## VARIABLES ##
 (defvar timeclock-list-buffer-name "*Timeclock-List*")

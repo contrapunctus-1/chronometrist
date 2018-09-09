@@ -3,6 +3,6 @@
 
 ((emacs-lisp-mode
   (nameless-aliases
-   ("tcu" . "timeclock-ui")
-   ("tcl" . "timeclock-list")
-   ("tcr" . "timeclock-report"))))
+   ("tu" . "timeclock-ui")
+   ("tl" . "timeclock-list")
+   ("tr" . "timeclock-report"))))

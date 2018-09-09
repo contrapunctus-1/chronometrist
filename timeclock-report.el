@@ -1,34 +1,92 @@
 (require 'timeclock-ui-lib)
 
-;; ## BUGS ##
-;; 1. (timeclock-report-week->date) needs a re-look - doesn't always start on a
-;;    Sunday, and sometimes misses days.
-;;      (timeclock-report-week->date 2017 52) => (2017 12 30) (30th Dec 2017)
-;;      (timeclock-report-week->date 2018 1) => (2018 1 7) (7th Jan 2018)
+;; New week logic
+;; 1. ✓ get current date in calendrical form (decode-time)
+;; 2. ✓ check if we're on a Sunday/user-specified week start day, else
+;;    decrement till we are (timeclock-report-previous-week-start)
+;; 3. set global state to that date (`timeclock-report-week-start-day')
+;; 4. decrement/increment global date by 7 to get previous/next week
+;; 5. get week's dates using global date
 
-;;    So if you're recreating a calendar using it, which we sort of are...
-;;      (defun year-week->week-dates (year week)
-;;        (->>
-;;         (timeclock-report-week->date year week)
-;;         (reverse)
-;;         (append '(0 0 0))
-;;         (apply #'encode-time) ;; convert 'calendrical data' to time value
-;;         (timeclock-report-date->dates-in-week)
-;;         (--map (decode-time it))
-;;         (--map (format "%02d/%02d/%02d"
-;;                        (elt it 5)
-;;                        (elt it 4)
-;;                        (elt it 3)))))
-;;
-;;      (year-week->week-dates 2017 52)
-;;      => ("2017/12/30" "2017/12/31" "2018/01/01" "2018/01/02" "2018/01/03" "2018/01/04" "2018/01/05")
-;;      (year-week->week-dates 2018 1)
-;;      ("2018/01/07" "2018/01/08" "2018/01/09" "2018/01/10" "2018/01/11" "2018/01/12" "2018/01/13")
-;;
-;;      ...we missed 6th Jan 2018!
-;;
-;;      This is because we're assuming the year has exactly 52 weeks,
-;;      but it has 52 weeks and 1 day (2 days in a leap year).
+;; TODO - add support for custom week start day to
+;; tabulated-list-format. Have it use timeclock-report-weekday-number-alist for day
+;; names to aid i10n
+
+(defvar timeclock-report-week-start-day "Sunday"
+  "The day used for start of week by `timeclock-report'.")
+(defvar timeclock-report--ui-date
+  nil
+  "The first date of the week displayed by
+`timeclock-report' (specifically `timeclock-report-entries'). A
+value of nil means the current week. Otherwise, it must be a list
+in the form (YEAR WEEK), where WEEK is the numeric week of the
+year (1-52).")
+
+(defvar timeclock-report-weekday-number-alist
+  '(("Sunday"    . 0)
+    ("Monday"    . 1)
+    ("Tuesday"   . 2)
+    ("Wednesday" . 3)
+    ("Thursday"  . 4)
+    ("Friday"    . 5)
+    ("Saturday"  . 6))
+  "alist in the form (\"NAME\" . NUMBER), where \"NAME\" is the
+  name of a weekday and NUMBER its associated number.")
+
+(defun timeclock-report-day-of-week->number (day-of-week)
+  (cdr
+   (assoc-string day-of-week timeclock-report-weekday-number-alist)))
+
+(defun timeclock-report-increment-or-decrement-date (date operator &optional count)
+  "Increment or decrement DATE by COUNT days (1 if not supplied).
+
+DATE must be calendrical information (see (info \"(elisp)Time Conversion\"))
+
+OPERATOR must be either '+ or '-
+
+COUNT must be a positive integer."
+  (let ((seconds   (elt date 0))
+        (minutes   (elt date 1))
+        (hours     (elt date 2))
+        (day       (elt date 3))
+        (month     (elt date 4))
+        (year      (elt date 5))
+        (count     (if count count 1)))
+    (-->
+     (encode-time seconds minutes hours day month year)
+     (funcall (cond ((equal operator '+) 'time-add)
+                    ((equal operator '-) 'time-subtract)
+                    (t (error "Unknown operator %s" operator)))
+              it (list 0 (* 86400 count)))
+     (decode-time it))))
+
+(defun timeclock-report-previous-week-start (date)
+  "Return the date for the last start-of-week from DATE (using
+start-of-week defined in `timeclock-report-week-start-day'). If
+the day of DATE is the same as the
+`timeclock-report-week-start-day', return DATE.
+
+DATE must be calendrical information (see (info \"(elisp)Time Conversion\")).
+
+Any time data provided is reset to midnight (00:00:00)."
+  (let* ((date       (->> date
+                          (-drop 3)
+                          (append '(0 0 0))))
+         (day        (elt date 6)) ;; 0-6, where 0 = Sunday
+         (week-start (timeclock-report-day-of-week->number timeclock-report-week-start-day))
+         (gap        (cond ((> day week-start) (- day week-start))
+                           ((< day week-start) (+ day (- 7 week-start))))))
+    (if gap
+        (timeclock-report-increment-or-decrement-date date '- gap)
+      date)))
+
+(defun timeclock-report-date ()
+  "Return the date specified by `timeclock-report--ui-date'. If
+it is nil, return the current date as calendrical
+information (see (info \"(elisp)Time Conversion\"))."
+  (if timeclock-report--ui-date
+      timeclock-report--ui-date
+    (decode-time)))
 
 ;; ## VARIABLES ##
 (defvar timeclock-report-buffer-name "*Timeclock-Report*")
@@ -42,9 +100,6 @@ of the year (1-52).")
 
 ;; ## FUNCTIONS ##
 
-;; Bit weird - (tcr/week->date 2018 1) => (2018 1 7) (7th of Jan 2018)
-;; Although that _is_ the first date of the first complete week
-;; (starting on Sunday) in 2018...
 (defun timeclock-report-week->date (year week)
   "Return the date as a list in the form (YEAR MONTH DAY) of the
 first day of the WEEK in YEAR, where WEEK is a week
@@ -99,6 +154,7 @@ YEAR (1-52)."
 (defun timeclock-report-date->dates-in-week (first-date-in-week)
   "Return a list in the form (DAY-1 DAY-2 ... DAY-7), where each
 day is a time value (see (info \"(elisp)Time of Day\")).
+
 FIRST-DATE-IN-WEEK must be a time value representing DAY-1."
   (--> '(0 1 2 3 4 5 6)
        ;; 1 day = 86400 seconds
@@ -108,25 +164,21 @@ FIRST-DATE-IN-WEEK must be a time value representing DAY-1."
                (+ (cadr first-date-in-week) it))
               it)))
 
-;; first-day-of-week and dates-in-week can be refactored
 (defun timeclock-report-entries ()
   "Creates entries to be displayed in the buffer created by
-`timeclock-report'. WEEK should be a string containing the week
-of the year (01-52)."
-  (let* ((week (timeclock-report-week))
-         (year (timeclock-report-year))
-         ;; we need the time value to add to it
-         (first-date-of-week (--> (timeclock-report-week->date year week)
-                                  (reverse it)
-                                  (append '(0 0 0) it)
-                                  (apply #'encode-time it)))
+`timeclock-report'."
+  (let* ((date               (timeclock-report-date))
+         (first-date-of-week (->> date
+                                  (timeclock-report-previous-week-start)
+                                  (-take 6)
+                                  (apply #'encode-time)))
          ;; list of dates of each day in WEEK
-         (dates-in-week     (->> (timeclock-report-date->dates-in-week first-date-of-week)
-                                 (--map (decode-time it))
-                                 (--map (format "%02d/%02d/%02d"
-                                                (elt it 5)
-                                                (elt it 4)
-                                                (elt it 3))))))
+         (dates-in-week      (->> (timeclock-report-date->dates-in-week first-date-of-week)
+                                  (-map #'decode-time)
+                                  (--map (format "%02d/%02d/%02d"
+                                                 (elt it 5)
+                                                 (elt it 4)
+                                                 (elt it 3))))))
     (mapcar (lambda (project)
               (list project
                     (vconcat
@@ -144,6 +196,13 @@ of the year (01-52)."
     (with-current-buffer timeclock-report-buffer-name
       (tabulated-list-print t t))))
 
+(defun timeclock-report-format-date (date)
+  (->> date
+       (-take 6)
+       (-drop 3)
+       (reverse)
+       (apply #'format "%02d-%02d-%02d")))
+
 (defun timeclock-report-print-non-tabular ()
   "Print the non-tabular part of the buffer in `timeclock-report'."
   (let ((inhibit-read-only t))
@@ -156,10 +215,10 @@ of the year (01-52)."
      (concat it
              "\n\n    l - open log file")
      (insert it))
-    (insert "\n\n    Week "
-            (number-to-string (timeclock-report-week))
-            " of 52, "
-            (number-to-string (timeclock-report-year)))))
+    (insert  "\n\n    "
+             (if timeclock-report--ui-date
+                 (timeclock-report-format-date timeclock-report--ui-date)
+               (timeclock-report-format-date (decode-time))))))
 
 ;; ## MAJOR MODE ##
 
@@ -193,14 +252,15 @@ of the year (01-52)."
 ;; ## COMMANDS ##
 
 (defun timeclock-report (&optional keep-week)
-  "Displays a weekly report of the user's timeclock.el projects
+  "Display a weekly report of the user's timeclock.el projects
 and the time spent on them each day, based on their timelog file
 in `timeclock-file'. This is the 'listing command' for
 timeclock-report-mode.
 
-If KEEP-WEEK is nil (the default when not supplied), we set
-`timeclock-report--year-week' to nil so that this command
-displays data from the current week."
+If KEEP-WEEK is nil (the default when not supplied), set
+`timeclock-report--year-week' to nil and display data from the
+current week. Otherwise, display data from the week specified by
+`timeclock-report--year-week'."
   (interactive)
   (let ((buffer (get-buffer-create timeclock-report-buffer-name)))
     ;; we want this command to toggle viewing the report
@@ -210,7 +270,7 @@ displays data from the current week."
       (with-current-buffer buffer
         (delete-other-windows)
         (when (not keep-week)
-          (setq timeclock-report--year-week nil))
+          (setq timeclock-report--ui-date nil))
         (timeclock-report-mode)
         (tabulated-list-print)
         (timeclock-report-print-non-tabular)
@@ -219,22 +279,22 @@ displays data from the current week."
 (defun timeclock-report-previous-week ()
   "View the previous week's report."
   (interactive)
-  (if timeclock-report--year-week
-      (setq timeclock-report--year-week
-            (timeclock-report-dec-year-week timeclock-report--year-week))
-    (setq timeclock-report--year-week
-          (timeclock-report-dec-year-week (list (timeclock-report-year) (timeclock-report-week)))))
+  (if timeclock-report--ui-date
+      (setq timeclock-report--ui-date
+            (timeclock-report-increment-or-decrement-date timeclock-report--ui-date '- 7))
+    (setq timeclock-report--ui-date
+          (timeclock-report-increment-or-decrement-date (decode-time) '- 7)))
   (kill-buffer)
   (timeclock-report t))
 
 (defun timeclock-report-next-week ()
   "View the next week's report."
   (interactive)
-  (if timeclock-report--year-week
-      (setq timeclock-report--year-week
-            (timeclock-report-inc-year-week timeclock-report--year-week))
-    (setq timeclock-report--year-week
-          (timeclock-report-inc-year-week (list (timeclock-report-year) (timeclock-report-week)))))
+  (if timeclock-report--ui-date
+      (setq timeclock-report--ui-date
+            (timeclock-report-increment-or-decrement-date timeclock-report--ui-date '+ 7))
+    (setq timeclock-report--ui-date
+          (timeclock-report-increment-or-decrement-date (decode-time) '+ 7)))
   (kill-buffer)
   (timeclock-report t))
 

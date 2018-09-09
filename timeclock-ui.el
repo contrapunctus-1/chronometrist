@@ -1,4 +1,5 @@
 (require 'timeclock-ui-lib)
 (require 'timeclock-list)
 (require 'timeclock-report)
+(require 'timeclock-ui-tests)
 (provide 'timeclock-ui)
