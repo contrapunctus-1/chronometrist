@@ -299,27 +299,33 @@ current week. Otherwise, display data from the week specified by
         (timeclock-report-print-non-tabular)
         (switch-to-buffer buffer)))))
 
-(defun timeclock-report-previous-week ()
+(defun timeclock-report-previous-week (arg)
   "View the previous week's report."
-  (interactive)
-  (if timeclock-report--ui-date
+  (interactive "P")
+  (let ((arg (if (and arg (numberp arg))
+                 (abs arg)
+               1)))
+    (if timeclock-report--ui-date
+        (setq timeclock-report--ui-date
+              (timeclock-report-increment-or-decrement-date timeclock-report--ui-date '- (* 7 arg)))
       (setq timeclock-report--ui-date
-            (timeclock-report-increment-or-decrement-date timeclock-report--ui-date '- 7))
-    (setq timeclock-report--ui-date
-          (timeclock-report-increment-or-decrement-date (decode-time) '- 7)))
-  (kill-buffer)
-  (timeclock-report t))
+            (timeclock-report-increment-or-decrement-date (decode-time) '- (* 7 arg))))
+    (kill-buffer)
+    (timeclock-report t)))
 
-(defun timeclock-report-next-week ()
+(defun timeclock-report-next-week (arg)
   "View the next week's report."
-  (interactive)
-  (if timeclock-report--ui-date
+  (interactive "P")
+  (let ((arg (if (and arg (numberp arg))
+                 (abs arg)
+               1)))
+    (if timeclock-report--ui-date
+        (setq timeclock-report--ui-date
+              (timeclock-report-increment-or-decrement-date timeclock-report--ui-date '+ (* 7 arg)))
       (setq timeclock-report--ui-date
-            (timeclock-report-increment-or-decrement-date timeclock-report--ui-date '+ 7))
-    (setq timeclock-report--ui-date
-          (timeclock-report-increment-or-decrement-date (decode-time) '+ 7)))
-  (kill-buffer)
-  (timeclock-report t))
+            (timeclock-report-increment-or-decrement-date (decode-time) '+ (* 7 arg))))
+    (kill-buffer)
+    (timeclock-report t)))
 
 (provide 'timeclock-report)
 
