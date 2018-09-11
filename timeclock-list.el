@@ -41,6 +41,9 @@
 ;;    - maybe use advice?
 ;; 2. Can't have multi-line headers
 
+;; TODO - use variables instead of hardcoded numbers to determine spacing
+;; TODO - remove repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
+
 ;; ## VARIABLES ##
 (defvar timeclock-list-buffer-name "*Timeclock-List*")
 (defvar timeclock-list-hide-cursor nil
@@ -128,11 +131,14 @@ return a vector in the same form."
                         s1 s2))))
 
 (defun timeclock-list-total-time-one-day (&optional date)
-  "Calculate the total time clocked today, or on DATE if non-nil."
-  (->>
-   timeclock-project-list
-   (--map (timeclock-ui-project-time-one-day it date))
-   (-reduce #'timeclock-list-time-add)))
+  "Return the total time clocked on DATE (if non-nil) or
+ today, as a vector in the form [HOURS MINUTES SECONDS].
+
+DATE must be calendrical information calendrical
+information (see (info \"(elisp)Time Conversion\"))."
+  (->> timeclock-project-list
+       (--map (timeclock-ui-project-time-one-day it date))
+       (-reduce #'timeclock-list-time-add)))
 
 (defun timeclock-list-print-non-tabular ()
   "Print the non-tabular part of the buffer in `timeclock-list'."

@@ -153,9 +153,9 @@ TARGET-DATE."
 
 (defun timeclock-ui-project-time-one-day (project &optional date)
   "Read `timeclock-file' and return total time spent on a project
-in one day. If DATE is a string in the form \"YYYY-MM-DD\", the
-time for that date is shown, otherwise calculate time for that
-day.
+in one day. If DATE is a list containing calendrical
+information (see (info \"(elisp)Time Conversion\")), the time for
+that date is shown, otherwise calculate time for today.
 
 The return value is a vector in the form [HOURS MINUTES SECONDS]"
   (if (not (member project timeclock-project-list))
@@ -163,7 +163,10 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
     (with-current-buffer (find-file-noselect timeclock-file)
       (save-excursion
         (let* ((target-date          (if date
-                                         (replace-regexp-in-string "-" "/" date) ;; should probably validate it...
+                                         (format "%04d/%02d/%02d"
+                                                 (elt date 5)
+                                                 (elt date 4)
+                                                 (elt date 3))
                                        (format-time-string "%Y/%m/%d")))
                (search-re            (concat target-date " " timeclock-ui-time-re-file " " project))
                (interval-list        nil)
@@ -206,21 +209,23 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
 ;;         '([0 0 0] [0 0 1] [0 0 10] [0 1 10] [0 10 10] [1 10 10] [10 10 10]))
 ;; => ("" "00:01" "00:10" "01:10" "10:10" "01:10:10" "10:10:10")
 (defun timeclock-ui-format-time (time)
-  "Format and display TIME as a string, where time is a vector or
+  "Format and display TIME as a string, where TIME is a vector or
 a list of the form [HOURS MINUTES SECONDS] or (HOURS MINUTES
 SECONDS)."
   (let ((h (elt time 0))
         (m (elt time 1))
         (s (elt time 2)))
     (if (and (zerop h) (zerop m) (zerop s))
-        "-"
+        "       -"
       (let ((h      (if (zerop h)
-                        ""
+                        "   "
                       ;; Can't change this just yet or all commands break spectacularly.
                       ;; Maybe it's best this way too? Looks uniform.
                       ;; What if I pad with space?
-                      (format "%02d:" h)))
-            (m      (format "%02d:" m))
+                      (format "% 2d:" h)))
+            (m      (cond ((and (zerop h) (zerop m))            "   ")
+                          ((and (zerop h) (< m 10)) (format "% 2d:" m))
+                          (t                        (format "%02d:" m))))
             (s      (format "%02d" s)))
         (concat h m s)))))
 

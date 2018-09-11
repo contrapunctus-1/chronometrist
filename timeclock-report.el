@@ -12,6 +12,10 @@
 ;; tabulated-list-format. Have it use timeclock-report-weekday-number-alist for day
 ;; names to aid i10n
 
+;; TODO - add numeric arguments for next/previous week
+;; TODO - use variables instead of hardcoded numbers to determine spacing
+;; TODO - remove dead code
+
 (defvar timeclock-report-week-start-day "Sunday"
   "The day used for start of week by `timeclock-report'.")
 (defvar timeclock-report--ui-date
@@ -21,6 +25,11 @@
 value of nil means the current week. Otherwise, it must be a list
 in the form (YEAR WEEK), where WEEK is the numeric week of the
 year (1-52).")
+(defvar timeclock-report--ui-week-dates
+  nil
+  "List of dates currently displayed by
+`timeclock-report' (specifically `timeclock-report-entries').
+Each date is a list containing calendrical information (see (info \"(elisp)Time Conversion\"))")
 
 (defvar timeclock-report-weekday-number-alist
   '(("Sunday"    . 0)
@@ -84,9 +93,7 @@ Any time data provided is reset to midnight (00:00:00)."
   "Return the date specified by `timeclock-report--ui-date'. If
 it is nil, return the current date as calendrical
 information (see (info \"(elisp)Time Conversion\"))."
-  (if timeclock-report--ui-date
-      timeclock-report--ui-date
-    (decode-time)))
+  (if timeclock-report--ui-date timeclock-report--ui-date (decode-time)))
 
 ;; ## VARIABLES ##
 (defvar timeclock-report-buffer-name "*Timeclock-Report*")
@@ -132,7 +139,7 @@ specified in `timeclock-report--year-week'."
 
 ;; maybe these two should take two arguments instead of a list?
 (defun timeclock-report-dec-year-week (year-week)
-  "Decrements YEAR-WEEK by one week. YEAR-WEEK must be a list in
+  "Decrement YEAR-WEEK by one week. YEAR-WEEK must be a list in
 the form (YEAR WEEK), where WEEK is the numeric week in
 YEAR (1-52)."
   (let ((y (car year-week))
@@ -142,7 +149,7 @@ YEAR (1-52)."
       (list y (1- w)))))
 
 (defun timeclock-report-inc-year-week (year-week)
-  "Increments YEAR-WEEK by one week. YEAR-WEEK must be a list in
+  "Increment YEAR-WEEK by one week. YEAR-WEEK must be a list in
 the form (YEAR WEEK), where WEEK is the numeric week in
 YEAR (1-52)."
   (let ((y (car year-week))
@@ -164,21 +171,34 @@ FIRST-DATE-IN-WEEK must be a time value representing DAY-1."
                (+ (cadr first-date-in-week) it))
               it)))
 
+(defun timeclock-report-dates-in-week->string (dates-in-week)
+  "Return a list in the form (DAY-1 DAY-2 ... DAY-7), where each
+day is a string in the form \"YYYY/MM/DD\""
+  (--map (format "%04d/%02d/%02d"
+                 (elt it 5)
+                 (elt it 4)
+                 (elt it 3))
+         dates-in-week))
+
+(defun timeclock-report-date->week-dates ()
+  "Return dates in week as a list, where each element is
+calendrical information (see (info \"(elisp)Time Conversion\")).
+The first date is the first occurrence of
+`timeclock-report-week-start-day' before the date specified in
+`timeclock-report--ui-date' (if non-nil) or the current date."
+  (->> (timeclock-report-date)
+       (timeclock-report-previous-week-start)
+       (-take 6)
+       (apply #'encode-time)
+       (timeclock-report-date->dates-in-week)
+       (-map #'decode-time)))
+
 (defun timeclock-report-entries ()
   "Creates entries to be displayed in the buffer created by
 `timeclock-report'."
-  (let* ((date               (timeclock-report-date))
-         (first-date-of-week (->> date
-                                  (timeclock-report-previous-week-start)
-                                  (-take 6)
-                                  (apply #'encode-time)))
-         ;; list of dates of each day in WEEK
-         (dates-in-week      (->> (timeclock-report-date->dates-in-week first-date-of-week)
-                                  (-map #'decode-time)
-                                  (--map (format "%02d/%02d/%02d"
-                                                 (elt it 5)
-                                                 (elt it 4)
-                                                 (elt it 3))))))
+  (let* ((week-dates        (timeclock-report-date->week-dates))
+         (week-dates-string (timeclock-report-dates-in-week->string week-dates)))
+    (setq timeclock-report--ui-week-dates week-dates)
     (mapcar (lambda (project)
               (list project
                     (vconcat
@@ -186,7 +206,7 @@ FIRST-DATE-IN-WEEK must be a time value representing DAY-1."
                      (apply #'vector
                             (--map (timeclock-ui-format-time
                                     (timeclock-ui-project-time-one-day project it))
-                                   dates-in-week)))))
+                                   week-dates)))))
             timeclock-project-list)))
 
 (defun timeclock-report-idle-timer ()
@@ -194,31 +214,34 @@ FIRST-DATE-IN-WEEK must be a time value representing DAY-1."
              (timeclock-ui-buffer-visible? timeclock-report-buffer-name))
     (timeclock-reread-log)
     (with-current-buffer timeclock-report-buffer-name
-      (tabulated-list-print t t))))
+      (tabulated-list-print t nil)
+      (timeclock-report-print-non-tabular))))
 
-(defun timeclock-report-format-date (date)
-  (->> date
+(defun timeclock-report-format-date (format-string time-date)
+  "Extract date from TIME-DATE and format it according to
+FORMAT-STRING."
+  (->> time-date
        (-take 6)
        (-drop 3)
        (reverse)
-       (apply #'format "%02d-%02d-%02d")))
+       (apply #'format format-string)))
 
 (defun timeclock-report-print-non-tabular ()
   "Print the non-tabular part of the buffer in `timeclock-report'."
   (let ((inhibit-read-only t))
+    (goto-char (point-min))
+    (insert "                         ")
+    (--map (insert (timeclock-report-format-date "%04d-%02d-%02d " it))
+           (timeclock-report-date->week-dates))
+    (insert "\n")
     (goto-char (point-max))
-    (-->
-     ;; (timeclock-list-total-time-one-day)
-     ;; (timeclock-ui-format-time it)
-     ;; (format "\n    %- 26s%s" "Total" it)
-     ""
-     (concat it
-             "\n\n    l - open log file")
-     (insert it))
-    (insert  "\n\n    "
-             (if timeclock-report--ui-date
-                 (timeclock-report-format-date timeclock-report--ui-date)
-               (timeclock-report-format-date (decode-time))))))
+    (insert (format "\n    %- 21s" "Total"))
+    (->> timeclock-report--ui-week-dates
+         (mapcar #'timeclock-list-total-time-one-day)
+         (mapcar #'timeclock-ui-format-time)
+         (--map (format "% 9s  " it))
+         (apply #'insert))
+    (insert "\n\n    l - open log file")))
 
 ;; ## MAJOR MODE ##
 
@@ -244,7 +267,7 @@ FIRST-DATE-IN-WEEK must be a time value representing DAY-1."
 
   (tabulated-list-init-header)
 
-  (run-with-idle-timer 3 t #'timeclock-report-idle-timer)
+  (run-with-idle-timer 5 t #'timeclock-report-idle-timer)
   (define-key timeclock-report-mode-map (kbd "l") 'timeclock-list-open-timeclock-file)
   (define-key timeclock-report-mode-map (kbd "b") 'timeclock-report-previous-week)
   (define-key timeclock-report-mode-map (kbd "f") 'timeclock-report-next-week))
