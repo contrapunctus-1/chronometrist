@@ -4,7 +4,48 @@
 ;; 2018-08-27T12:45:03+0530
 ;; has not yet been tested with comments in the timelog
 ;; TODO -
-;; 1. Refresh when you select the list buffer (impossible?)
+;; 1. Refresh when you select the list buffer (impossible? make-thread
+;; in v26? Use emacs-async library?)
+;; 2. Some way to add a new task
+;;    - Simplest - instead of having tclist/toggle-project start the
+;;      task at point, have it run timeclock-in with the task at point
+;;      being the default.
+;; 3. Add support for prefix args to tclist/toggle-project
+;; 4. Add variable to change prompting-for-reason behaviour
+;; 5. Make "?" show help; show message saying "Press ? for help" in
+;;    minibuffer when running M-x timeclock-list
+
+(defun tclist/buffer-visible? (buffer-or-buffer-name)
+  "Returns t if BUFFER-OR-BUFFER-NAME is visible to user."
+  (-->
+   ;; It'd be simpler to start with this, but because it is possible
+   ;; that a frame partially covers another, and that frame has a
+   ;; buffer visible to the user; thus, using only the current frame
+   ;; isn't robust.
+   ;; (selected-frame)
+   ;; (window-list it)
+   (visible-frame-list)
+   (mapcar #'window-list it)
+   (mapcar (lambda (list)
+             (mapcar #'window-buffer list))
+           it)
+   (mapcar (lambda (list)
+             (mapcar (lambda (buffer)
+                       (if (bufferp buffer-or-buffer-name)
+                           (equal buffer-or-buffer-name buffer)
+                         (equal (buffer-name buffer)
+                                buffer-or-buffer-name)))
+                     list))
+           it)
+   (mapcar (lambda (list)
+             (seq-filter #'identity list))
+           it)
+   (if it t nil)))
+
+(defun tclist/timer-fn ()
+  (when (tclist/buffer-visible? timeclock-list-buffer-name)
+    (with-current-buffer timeclock-list-buffer-name
+      (tabulated-list-print t t))))
 
 (define-derived-mode timeclock-list-mode tabulated-list-mode "timeclock-list"
   "Display projects from timeclock.el and the time spent on each
@@ -20,6 +61,7 @@
 
   (tabulated-list-init-header)
 
+  (run-with-idle-timer 3 t #'tclist/timer-fn)
   (define-key timeclock-list-mode-map (kbd "RET") 'tclist/toggle-project))
 
 (defvar time-re "[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}")
@@ -56,7 +98,7 @@
     (if current-project
         ;; if yes and it's at point, clock out
         (if (equal project-at-point current-project)
-            (timeclock-out)
+            (timeclock-out nil nil t)
           ;; otherwise, stop that one and start this one
           (timeclock-change nil project-at-point))
       ;; else - start project at point
