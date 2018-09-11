@@ -2,12 +2,31 @@
 (require 'dash)
 (require 'cl-lib)
 
-(defun tcl/buffer-exists? (buffer-name)
+;; ## VARIABLES ##
+(defvar timeclock-ui-empty-time-string "-")
+(defvar timeclock-ui-date-re "[0-9]\\{4\\}/[0-9]\\{2\\}/[0-9]\\{2\\}")
+(defvar timeclock-ui-time-re-ui
+  (rx-to-string
+   `(or
+     (and (optional (repeat 1 2 digit) ":")
+          (and (repeat 1 2 digit) ":" (repeat 2 digit)))
+     ,timeclock-ui-empty-time-string))
+  "Regular expression to represent a timestamp in
+`timeclock-list'. This is distinct from
+`timeclock-ui-time-re-file' (which see) -
+`timeclock-ui-time-re-ui' is meant for the user interface, and
+must correspond to the output from `timeclock-ui-format-time'.")
+(defvar timeclock-ui-time-re-file "[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}"
+  "Regular expression to represent a timestamp in the file
+`timeclock-file'. This is distinct from
+`timeclock-ui-time-re-ui' (which see).")
+
+(defun timeclock-ui-buffer-exists? (buffer-name)
   (--> (buffer-list)
        (mapcar #'buffer-name it)
        (member buffer-name it)))
 
-(defun tcl/buffer-visible? (buffer-or-buffer-name)
+(defun timeclock-ui-buffer-visible? (buffer-or-buffer-name)
   "Returns t if BUFFER-OR-BUFFER-NAME is visible to user."
   ;; It'd be simpler to use only the windows of the current frame (-->
   ;; (selected-frame) (window-list it) ...) - but it wouldn't be
@@ -34,13 +53,13 @@
                  (car it))))
     (if result t nil)))
 
-(defun tcl/timestamp->list (date-time-string)
+(defun timeclock-ui-timestamp->list (date-time-string)
   "Convert a string timestamp to a list of integers."
   (--> date-time-string
        (split-string it "[-/ :]")
        (mapcar #'string-to-number it)))
 
-(defun tcl/timestamp-list->seconds (date-time-list)
+(defun timeclock-ui-timestamp-list->seconds (date-time-list)
   "Convert DATE-TIME (which must be a list in the form (YEAR
 MONTH DAY HOURS MINUTES SECONDS), as returned by
 `timestamp->list') to seconds since the UNIX epoch
@@ -49,13 +68,13 @@ MONTH DAY HOURS MINUTES SECONDS), as returned by
        (reverse)
        (apply #'encode-time)))
 
-(defun tcl/timestamp->seconds (date-time-string)
+(defun timeclock-ui-timestamp->seconds (date-time-string)
   "Convert a string timestamp in the form \"HH:MM:SS\" to seconds
 since the UNIX epoch (see (info \"(elisp)Time of Day\"))."
-  (tcl/timestamp-list->seconds
-   (tcl/timestamp->list date-time-string)))
+  (timeclock-ui-timestamp-list->seconds
+   (timeclock-ui-timestamp->list date-time-string)))
 
-(defun tcl/time-interval-span-midnight? (t1 t2)
+(defun timeclock-ui-time-interval-span-midnight? (t1 t2)
   "Return t if time range T1 to T2 extends across midnight.
 
 T1 and T2 must be lists in the form (YEAR MONTH DAY HOURS MINUTES
@@ -65,11 +84,11 @@ chronologically more recent than T1."
          (day-2          (elt t2 2))
          (month-1        (elt t1 1))
          (month-2        (elt t2 1)))
-         ;; not Absolutely Perfect™, but should do for most situations
+    ;; not Absolutely Perfect™, but should do for most situations
     (or (= day-2   (1+ day-1))
         (= month-2 (1+ month-1)))))
 
-(defun tcl/first-event-spans-midnight? (target-date project)
+(defun timeclock-ui-first-event-spans-midnight? (target-date project)
   "Return t if the first event of PROJECT on TARGET-DATE in
 `timeclock-file' spans midnight (i.e. its clock-in time was
 before midnight), else nil.
@@ -86,9 +105,9 @@ PROJECT a string."
        (progn
          (forward-line -1)
          (beginning-of-line)
-         (looking-at-p (concat "i " date-re " " time-re " " project)))))
+         (looking-at-p (concat "i " timeclock-ui-date-re " " timeclock-ui-time-re-file " " project)))))
 
-(defun tcl/get-end-time (target-date)
+(defun timeclock-ui-get-end-time (target-date)
   "Return the date and time of the next clock-out event after
 point in the file `timeclock-file'.
 
@@ -113,9 +132,9 @@ TARGET-DATE."
                                  (buffer-substring-no-properties (point)
                                                                  (+ 10 1 8 (point))))
                              (format-time-string "%Y/%m/%d %T")))
-         (date-time-list   (tcl/timestamp->list date-time))
-         (target-date-list (tcl/timestamp->list target-date)))
-    (if (tcl/time-interval-span-midnight? target-date-list date-time-list)
+         (date-time-list   (timeclock-ui-timestamp->list date-time))
+         (target-date-list (timeclock-ui-timestamp->list target-date)))
+    (if (timeclock-ui-time-interval-span-midnight? target-date-list date-time-list)
         (concat target-date " 24:00:00")
       date-time)))
 
@@ -126,13 +145,13 @@ TARGET-DATE."
 ;; Could be refactored - one function to get ranges for an activity,
 ;; one to convert them to seconds, one to subtract them (get an
 ;; interval from two timestamps), and one to output the time vector
-;; from tcl/seconds-to-hms in the desired format
+;; from timeclock-list-seconds-to-hms in the desired format
 ;;
 ;; Better idea - get all events for target-date as a list of strings,
 ;; one per line. Operate on that. Will probably make for much nicer
 ;; code.
 
-(defun tcl/project-time-one-day (project &optional date)
+(defun timeclock-ui-project-time-one-day (project &optional date)
   "Read `timeclock-file' and return total time spent on a project
 in one day. If DATE is a string in the form \"YYYY-MM-DD\", the
 time for that date is shown, otherwise calculate time for that
@@ -146,13 +165,13 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
         (let* ((target-date          (if date
                                          (replace-regexp-in-string "-" "/" date) ;; should probably validate it...
                                        (format-time-string "%Y/%m/%d")))
-               (search-re            (concat target-date " " time-re " " project))
+               (search-re            (concat target-date " " timeclock-ui-time-re-file " " project))
                (interval-list        nil)
-               (first-event-midnight (tcl/first-event-spans-midnight? target-date
-                                                                      project)))
+               (first-event-midnight (timeclock-ui-first-event-spans-midnight? target-date
+                                                                   project)))
           ;; (goto-char (point-min))
           (while (if first-event-midnight
-                     (re-search-forward time-re nil t 2)
+                     (re-search-forward timeclock-ui-time-re-file nil t 2)
                    (re-search-forward (concat "i " search-re) nil t))
             (re-search-backward target-date nil t)
             (let* ((start-time         (if first-event-midnight
@@ -164,9 +183,9 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
                                            (buffer-substring-no-properties
                                             (point)
                                             (+ 10 1 8 (point)))
-                                         (tcl/get-end-time target-date)))
-                   (start-time-s       (tcl/timestamp->seconds start-time))
-                   (end-time-s         (tcl/timestamp->seconds end-time))
+                                         (timeclock-ui-get-end-time target-date)))
+                   (start-time-s       (timeclock-ui-timestamp->seconds start-time))
+                   (end-time-s         (timeclock-ui-timestamp->seconds end-time))
                    (interval           (elt (time-subtract end-time-s
                                                            start-time-s)
                                             1)))
@@ -177,16 +196,16 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
           (->>
            interval-list
            (-reduce #'+)
-           (tcl/seconds-to-hms)))))))
+           (timeclock-list-seconds-to-hms)))))))
 
 ;; tests -
-;; (mapcar #'tcl/format-time
+;; (mapcar #'timeclock-ui-format-time
 ;;         '((0 0 0) (0 0 1) (0 0 10) (0 1 10) (0 10 10) (1 10 10) (10 10 10)))
 ;; => ("" "00:01" "00:10" "01:10" "10:10" "01:10:10" "10:10:10")
-;; (mapcar #'tcl/format-time
+;; (mapcar #'timeclock-ui-format-time
 ;;         '([0 0 0] [0 0 1] [0 0 10] [0 1 10] [0 10 10] [1 10 10] [10 10 10]))
 ;; => ("" "00:01" "00:10" "01:10" "10:10" "01:10:10" "10:10:10")
-(defun tcl/format-time (time)
+(defun timeclock-ui-format-time (time)
   "Format and display TIME as a string, where time is a vector or
 a list of the form [HOURS MINUTES SECONDS] or (HOURS MINUTES
 SECONDS)."
@@ -205,7 +224,7 @@ SECONDS)."
             (s      (format "%02d" s)))
         (concat h m s)))))
 
-(defun tcl/open-timeclock-file ()
+(defun timeclock-ui-open-timeclock-file ()
   (interactive)
   (find-file-other-window timeclock-file)
   (goto-char (point-max)))
