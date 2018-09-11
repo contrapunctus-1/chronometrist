@@ -4,7 +4,7 @@
 ;; 2018-08-27T12:45:03+0530
 ;; has not yet been tested with comments in the timelog
 ;; TODO -
-;; 1. Refresh when you select the list buffer
+;; 1. Refresh when you select the list buffer (impossible?)
 
 (define-derived-mode timeclock-list-mode tabulated-list-mode "timeclock-list"
   "Display projects from timeclock.el and the time spent on each
@@ -23,6 +23,7 @@
   (define-key timeclock-list-mode-map (kbd "RET") 'tclist/toggle-project))
 
 (defvar time-re "[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}")
+(defvar timeclock-list-buffer-name "*Timeclock-List*")
 
 (defun tclist/current-project ()
   "Returns the name of the currently clocked-in project, or nil
@@ -69,7 +70,7 @@
 ;;    timer.
 (defun timeclock-list ()
   (interactive)
-  (let ((buffer (get-buffer-create "*Timeclock-List*")))
+  (let ((buffer (get-buffer-create timeclock-list-buffer-name)))
     (with-current-buffer buffer
       (setq buffer-read-only nil)
       (timeclock-list-mode)
@@ -146,5 +147,39 @@
                   (format "%02d" time-m)
                   ":"
                   (format "%02d" time-s)))))))
+
+(defun tclist/buffer-visible? (buffer-or-buffer-name)
+  "Returns t if BUFFER-OR-BUFFER-NAME is visible to user."
+  (-->
+   ;; It'd be simpler to start with this, but because it is possible
+   ;; that a frame partially covers another, and that frame has a
+   ;; buffer visible to the user; thus, using only the current frame
+   ;; isn't robust.
+   ;; (selected-frame)
+   ;; (window-list it)
+   (visible-frame-list)
+   (mapcar #'window-list it)
+   (mapcar (lambda (list)
+             (mapcar #'window-buffer list))
+           it)
+   (mapcar (lambda (list)
+             (mapcar (lambda (buffer)
+                       (if (bufferp buffer-or-buffer-name)
+                           (equal buffer-or-buffer-name buffer)
+                         (equal (buffer-name buffer)
+                                buffer-or-buffer-name)))
+                     list))
+           it)
+   (mapcar (lambda (list)
+             (seq-filter #'identity list))
+           it)
+   (if it t nil)))
+
+(defun tclist/timer-fn ()
+  (when (tclist/buffer-visible? timeclock-list-buffer-name)
+    (with-current-buffer timeclock-list-buffer-name
+      (tabulated-list-print t))))
+
+(run-with-idle-timer 3 t #'tclist/timer-fn)
 
 (provide 'timeclock-list)
