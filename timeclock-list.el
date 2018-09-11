@@ -37,7 +37,6 @@
 ;; 11. The default reason suggested is the last one used. Can't even
 ;;     begin to explain how nonsensical that is. (might be an ido
 ;;     problem)
-;; 12. Replace tclist/ prefix with tl/
 
 ;; BUGS
 ;; 1. RET -> create new project -> the idle timer will not update it
@@ -63,12 +62,12 @@
 ;;    date-time separator instead of T
 
 ;; ## IDLE TIMER ##
-(defun tclist/buffer-exists? (buffer-name)
+(defun tcl/buffer-exists? (buffer-name)
   (--> (buffer-list)
        (mapcar #'buffer-name it)
        (member buffer-name it)))
 
-(defun tclist/buffer-visible? (buffer-or-buffer-name)
+(defun tcl/buffer-visible? (buffer-or-buffer-name)
   "Returns t if BUFFER-OR-BUFFER-NAME is visible to user."
   ;; It'd be simpler to use only the windows of the current frame (-->
   ;; (selected-frame) (window-list it) ...) - but it wouldn't be
@@ -94,9 +93,9 @@
    (mapcar #'car it)
    (if (car it) t nil)))
 
-(defun tclist/timer-fn ()
-  (when (and (tclist/buffer-exists? timeclock-list-buffer-name)
-             (tclist/buffer-visible? timeclock-list-buffer-name))
+(defun tcl/timer-fn ()
+  (when (and (tcl/buffer-exists? timeclock-list-buffer-name)
+             (tcl/buffer-visible? timeclock-list-buffer-name))
     (timeclock-reread-log)
     (with-current-buffer timeclock-list-buffer-name
       (tabulated-list-print t t))))
@@ -106,7 +105,7 @@
 (defvar timeclock-list-buffer-name "*Timeclock-List*")
 
 ;; ## FUNCTIONS ##
-(defun tclist/current-project ()
+(defun tcl/current-project ()
   "Returns the name of the currently clocked-in project, or nil
  if the user is not clocked in."
   (if (not (timeclock-currently-in-p))
@@ -118,11 +117,11 @@
         (re-search-forward (concat time-re " ") nil t)
         (buffer-substring-no-properties (point) (point-at-eol))))))
 
-(defun tclist/project-active? (project)
+(defun tcl/project-active? (project)
   "Returns t if PROJECT is currently clocked in, else nil."
-  (equal (tclist/current-project) project))
+  (equal (tcl/current-project) project))
 
-(defun tclist/timestamp->seconds (date-time)
+(defun tcl/timestamp->seconds (date-time)
   "Converts a timestamp to seconds since 00:00"
   (--> date-time
        (split-string it "[/ :]")
@@ -131,9 +130,9 @@
        (apply #'encode-time it)))
 
 ;; tests -
-;; (mapcar #'tclist/seconds-to-hms '(1 60 61 3600 3660 3661))
+;; (mapcar #'tcl/seconds-to-hms '(1 60 61 3600 3660 3661))
 ;; => ([0 0 1] [0 1 0] [0 1 1] [1 0 0] [1 1 0] [1 1 1])
-(defun tclist/seconds-to-hms (seconds)
+(defun tcl/seconds-to-hms (seconds)
   (setq seconds (truncate seconds))
   (let* ((s (% seconds 60))
          (m (% (/ seconds 60) 60))
@@ -146,8 +145,8 @@
 ;; Could be refactored - one function to get ranges for an activity,
 ;; one to convert them to seconds, one to subtract them (get an
 ;; interval from two timestamps), and one to output the time vector
-;; from tclist/seconds-to-hms in the desired format
-(defun tclist/project-time-one-day (project &optional date)
+;; from tcl/seconds-to-hms in the desired format
+(defun tcl/project-time-one-day (project &optional date)
   "Read `timeclock-file' and return total time spent on a project
 in one day. If DATE is a string in the form \"YYYY-MM-DD\", the
 time for that date is shown, otherwise calculate time for that
@@ -177,14 +176,14 @@ day."
                                    ;; use the current time
                                    (format-time-string "%Y/%m/%d %T"))))
                    (interval   (-->
-                                (time-subtract (tclist/timestamp->seconds end-time)
-                                               (tclist/timestamp->seconds start-time))
+                                (time-subtract (tcl/timestamp->seconds end-time)
+                                               (tcl/timestamp->seconds start-time))
                                 (elt it 1))))
               (setq interval-list
                     (append interval-list (list interval)))))
           (let* ((time-vector (->>
                                (seq-reduce #'+ interval-list 0)
-                               (tclist/seconds-to-hms)))
+                               (tcl/seconds-to-hms)))
                  (time-h      (elt time-vector 0))
                  (time-m      (elt time-vector 1))
                  (time-s      (elt time-vector 2)))
@@ -194,14 +193,14 @@ day."
                     ":"
                     (format "%02d" time-s))))))))
 
-(defun tclist/entries ()
+(defun tcl/entries ()
   "Creates entries to be displayed in the buffer created by
 `timeclock-list'."
   (mapcar (lambda (project-name)
             (list project-name
                   (vector project-name
-                          (tclist/project-time-one-day project-name)
-                          (if (tclist/project-active? project-name)
+                          (tcl/project-time-one-day project-name)
+                          (if (tcl/project-active? project-name)
                               "*" ""))))
           timeclock-project-list))
 
@@ -214,20 +213,20 @@ day."
   (setq tabulated-list-format [("Project" 25 t) ("Time" 10 t) ("Active" 3 t)])
 
   (make-local-variable 'tabulated-list-entries)
-  (setq tabulated-list-entries 'tclist/entries)
+  (setq tabulated-list-entries 'tcl/entries)
 
   (make-local-variable 'tabulated-list-sort-key)
   (setq tabulated-list-sort-key '("Project" . nil))
 
   (tabulated-list-init-header)
 
-  (run-with-idle-timer 3 t #'tclist/timer-fn)
-  (define-key timeclock-list-mode-map (kbd "RET") 'tclist/toggle-project)
-  (define-key timeclock-list-mode-map (kbd "l") 'tclist/open-timeclock-file))
+  (run-with-idle-timer 3 t #'tcl/timer-fn)
+  (define-key timeclock-list-mode-map (kbd "RET") 'tcl/toggle-project)
+  (define-key timeclock-list-mode-map (kbd "l") 'tcl/open-timeclock-file))
 
 ;; ## COMMANDS ##
 
-(defun tclist/toggle-project ()
+(defun tcl/toggle-project ()
   "In a `timeclock-list' buffer, start or stop the project at point."
   (interactive)
   (let ((project-at-point (progn
@@ -238,7 +237,7 @@ day."
                                     (end-of-line)
                                     (re-search-backward time-re nil t)))
                                  (replace-regexp-in-string "[ \t]*$" "" it))))
-        (current-project  (tclist/current-project)))
+        (current-project  (tcl/current-project)))
     ;; When changing projects/clocking in, suggest the project at point
     (cl-letf (((symbol-function 'timeclock-ask-for-project)
                (lambda ()
@@ -262,7 +261,7 @@ day."
     ;; Trying to update partially doesn't update the activity indicator. Why?
     (tabulated-list-print t nil)))
 
-(defun tclist/open-timeclock-file ()
+(defun tcl/open-timeclock-file ()
   (interactive)
   (find-file-other-window timeclock-file)
   (goto-char (point-max)))

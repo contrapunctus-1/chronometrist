@@ -12,10 +12,10 @@
 
 ;; ## FUNCTIONS ##
 
-;; Bit weird - (tr/week->date 1 2018) => (7 1) (7th of Jan)
+;; Bit weird - (tcr/week->date 1 2018) => (7 1) (7th of Jan)
 ;; Although that _is_ the first date of the first complete week
 ;; (starting on Sunday) in 2018...
-(defun tr/week->date (year week)
+(defun tcr/week->date (year week)
   "Get the date of the first day of the WEEK in YEAR, where WEEK
 is a week number (01-52)."
   (let ((day    (* week 7))
@@ -25,7 +25,7 @@ is a week number (01-52)."
             month (1+ month)))
     (list year month day)))
 
-(defun tr/entries (&optional year week)
+(defun tcr/entries (&optional year week)
   "Creates entries to be displayed in the buffer created by
 `timeclock-report'. WEEK should be a string containing the week
 of the year (01-52)."
@@ -35,7 +35,7 @@ of the year (01-52)."
          (year           (if year year
                            (elt (decode-time) 5)))
          ;; we need the time value to add to it
-         (first-day-of-week (--> (tr/week->date year week)
+         (first-day-of-week (--> (tcr/week->date year week)
                                  (reverse it)
                                  (append '(0 0 0) it)
                                  (apply #'encode-time it)))
@@ -57,13 +57,13 @@ of the year (01-52)."
                     (vconcat
                      (vector project)
                      (apply #'vector
-                            (--map (tclist/project-time-one-day project it)
+                            (--map (tcl/project-time-one-day project it)
                                    dates-in-week)))))
             timeclock-project-list)))
 
-(defun tr/idle-timer ()
-  (when (and (tclist/buffer-exists? timeclock-list-buffer-name)
-             (tclist/buffer-visible? timeclock-list-buffer-name))
+(defun tcr/idle-timer ()
+  (when (and (tcl/buffer-exists? timeclock-list-buffer-name)
+             (tcl/buffer-visible? timeclock-list-buffer-name))
     (timeclock-reread-log)
     (with-current-buffer timeclock-list-buffer-name
       (tabulated-list-print t t))))
@@ -84,15 +84,15 @@ of the year (01-52)."
                                ("Saturday"  10 t)])
 
   (make-local-variable 'tabulated-list-entries)
-  (setq tabulated-list-entries 'tr/entries)
+  (setq tabulated-list-entries 'tcr/entries)
 
   (make-local-variable 'tabulated-list-sort-key)
   (setq tabulated-list-sort-key '("Project" . nil))
 
   (tabulated-list-init-header)
 
-  (run-with-idle-timer 3 t #'tr/idle-timer)
-  (define-key timeclock-list-mode-map (kbd "l") 'tclist/open-timeclock-file))
+  (run-with-idle-timer 3 t #'tcr/idle-timer)
+  (define-key timeclock-list-mode-map (kbd "l") 'tcl/open-timeclock-file))
 
 ;; ## COMMANDS ##
 
@@ -104,7 +104,7 @@ timeclock-report-mode."
   (interactive)
   (let ((buffer (get-buffer-create timeclock-report-buffer-name)))
     ;; we want this command to toggle viewing the report
-    (if (tclist/buffer-visible? timeclock-report-buffer-name)
+    (if (tcl/buffer-visible? timeclock-report-buffer-name)
         (kill-buffer timeclock-report-buffer-name)
       (with-current-buffer buffer
         ;; (setq buffer-read-only nil)
