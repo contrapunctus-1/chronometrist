@@ -10,28 +10,24 @@
 ;;    in v26? Use emacs-async library?)
 ;; 2. Add support for prefix args to tclist/toggle-project
 ;; 3. Add variable to let user control prompting-for-reason behaviour
-;; 4. Make "?" show help; show message saying "Press ? for help" in
-;;    minibuffer when running M-x timeclock-list
-;;    - Not really necessary, now that we only use one key to do
-;;      everything?
-;;    - Maybe only "Press RET to clock in/out, r to view a project's
-;;      weekly report"?
-;; 5. Option to use a specific time to define when a day starts/ends.
+;; 4. Option to use a specific time to define when a day starts/ends.
 ;;    e.g. 08:00 will mean a day starts and ends at 08:00 instead of
 ;;    the usual 24:00/00:00. Helpful for late sleepers.
-;; 6. When stopped, put cursor on the last activity.
+;; 5. When stopped, put cursor on the last activity.
 ;;    - or better yet, give each line a number - press the number to
 ;;      clock in/out
 ;;    - shortcuts derived from the first alphabet of each project
 ;;      could be even nicer, but the code to generate them from
 ;;      similarly-named projects would be somewhat complex
-;; 7. Make clocked-in project row bold, either in addition to the
+;; 6. Make clocked-in project row bold, either in addition to the
 ;;    star, or replacing it.
-;; 8. Show currently active project + time spent on it so far in the
+;; 7. Show currently active project + time spent on it so far in the
 ;;    mode-line (see timeclock-mode-line-display)
-;; 9. The default reason suggested is the last one used. Can't even
+;; 8. The default reason suggested is the last one used. Can't even
 ;;    begin to explain how nonsensical that is. (might be an ido
 ;;    problem)
+;; 9. Show shortcuts message by using the keymap rather than a
+;;    hardcoded string.
 
 ;; BUGS
 ;; 1. (goto-char (point-max)) -> RET -> the time spent on the last
@@ -251,7 +247,8 @@ day."
 
   (run-with-idle-timer 3 t #'tcl/timer-fn)
   (define-key timeclock-list-mode-map (kbd "RET") 'tcl/toggle-project)
-  (define-key timeclock-list-mode-map (kbd "l") 'tcl/open-timeclock-file))
+  (define-key timeclock-list-mode-map (kbd "l") 'tcl/open-timeclock-file)
+  (define-key timeclock-list-mode-map (kbd "r") 'timeclock-report))
 
 ;; ## COMMANDS ##
 
@@ -305,6 +302,7 @@ This is the 'listing command' for timeclock-list-mode."
           (when (progn (goto-char (point-min))
                        (re-search-forward "\\*" nil t))
             (beginning-of-line))
-          (switch-to-buffer buffer))))))
+          (switch-to-buffer buffer)
+          (message "RET - clock in/out, r - see weekly report, l - open log file"))))))
 
 (provide 'timeclock-list)
