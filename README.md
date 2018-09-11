@@ -45,6 +45,7 @@ Set this to non-nil if you want to hide the cursor in timeclock-list. The line t
 * More statistics (current/longest streaks for activities, most productive $time_period (day, week, month, year...))
 * Update when the timeclock-file changes using a filesystem watcher
 * Mouse support
+* [inflatable raptor](https://github.com/MichaelMure/git-bug/#planned-features)
 
 ### timeclock-list
 1. Add variable to let user control prompting-for-reason behaviour
@@ -69,6 +70,7 @@ Set this to non-nil if you want to hide the cursor in timeclock-list. The line t
 ### Miscellaneous
 1. README - add images, link to a Jabber webclient
 2. Document API somewhere (list of functions, their argument lists, and outputs)
+3. Use Cask?
 
 ## Contact
 Contact the creator and other Emacs users in the Emacs room on the Jabber network - [xmpp:emacs@salas.suchat.org?join](xmpp:emacs@salas.suchat.org?join)
