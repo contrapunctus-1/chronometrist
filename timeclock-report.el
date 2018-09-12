@@ -47,7 +47,8 @@ Each date is a list containing calendrical information (see (info \"(elisp)Time 
    (assoc-string day-of-week timeclock-report-weekday-number-alist)))
 
 (defun timeclock-report-increment-or-decrement-date (date operator &optional count)
-  "Increment or decrement DATE by COUNT days (1 if not supplied).
+  "Return DATE incremented or decremented by COUNT days (1 if not
+supplied).
 
 DATE must be calendrical information (see (info \"(elisp)Time Conversion\"))
 
