@@ -42,7 +42,9 @@ Just like `timeclock-list`, `timeclock-report` will also toggle the visibilty of
 Set this to non-nil if you want to hide the cursor in timeclock-list. The line the cursor is on will be highlighted instead.
 
 ## Roadmap
-* More statistics (current/longest streaks for activities, most productive $time_period (day, week, month, year...))
+* New commands for statistics
+  - activity-specific - average time spent in $time_period, average days worked on in $time_period, current/longest streaks, ...
+  - general - most productive $time_period, GitHub-style work heatmap calendar, ...
 * Update when the timeclock-file changes using a filesystem watcher
 * Mouse support
 * [inflatable raptor](https://github.com/MichaelMure/git-bug/#planned-features)
@@ -63,14 +65,13 @@ Set this to non-nil if you want to hide the cursor in timeclock-list. The line t
 
 ### timeclock-report
 1. Highlight column of current day
-2. Add total time clocked per day
-3. Add support for other locale weeks/weekday names
-4. Show date in the day field too.
+2. Add support for other locale weeks/weekday names
 
 ### Miscellaneous
 1. README - add images, link to a Jabber webclient
-2. Document API somewhere (list of functions, their argument lists, and outputs)
+2. [-] Document API somewhere (list of functions, their argument lists, and outputs)
 3. Use Cask?
+4. Create test timelog file and UI behaviour tests
 
 ## Contact
 Contact the creator and other Emacs users in the Emacs room on the Jabber network - [xmpp:emacs@salas.suchat.org?join](xmpp:emacs@salas.suchat.org?join)
