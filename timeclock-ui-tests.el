@@ -207,6 +207,27 @@
     (should (equal (timeclock-report-previous-week-start '(0 0 0 8 9 2018 6 nil 19800))
                    '(0 0 0 8  9 2018 6 nil 19800)))))
 
+(ert-deftest timeclock-ui-ptod-tests ()
+  "Tests for `timeclock-ui-project-time-one-day'."
+  (let ((timeclock-file "test.timelog"))
+    (timeclock-reread-log)
+    ;; basic 1 hour test
+    (should (equal (timeclock-ui-project-time-one-day "Programming" '(0 0 0 1 1 2018))
+                   [1 0 0]))
+    (should (equal (timeclock-ui-project-time-one-day "Swimming"    '(0 0 0 1 1 2018))
+                   [1 0 0]))
+    (should (equal (timeclock-ui-project-time-one-day "Cooking"     '(0 0 0 1 1 2018))
+                   [1 0 0]))
+    (should (equal (timeclock-ui-project-time-one-day "Guitar"      '(0 0 0 1 1 2018))
+                   [1 0 0]))
+    (should (equal (timeclock-ui-project-time-one-day "Cycling"     '(0 0 0 1 1 2018))
+                   [1 0 0]))
+    ;; across midnight
+    (should (equal (timeclock-ui-project-time-one-day "Programming" '(0 0 0 2 1 2018))
+                   [1 0 0]))
+    (should (equal (timeclock-ui-project-time-one-day "Programming" '(0 0 0 3 1 2018))
+                   [1 0 0]))))
+
 (provide 'timeclock-ui-tests)
 
 ;; Local Variables:
