@@ -152,10 +152,12 @@ TARGET-DATE."
 ;; code.
 
 (defun timeclock-ui-project-time-one-day (project &optional date)
-  "Read `timeclock-file' and return total time spent on a project
-in one day. If DATE is a list containing calendrical
-information (see (info \"(elisp)Time Conversion\")), the time for
-that date is shown, otherwise calculate time for today.
+  "Read `timeclock-file' and return total time spent on PROJECT
+today or on DATE.
+
+DATE must be a list containing calendrical information (see (info
+\"(elisp)Time Conversion\")), the time for that date is shown,
+otherwise calculate time for today.
 
 The return value is a vector in the form [HOURS MINUTES SECONDS]"
   (if (not (member project timeclock-project-list))
