@@ -1,12 +1,12 @@
-* TODO Test coverage [3/44]
+* TODO Test coverage [5/44]
   - [ ] timeclock-list-idle-timer ()
   - [ ] timeclock-list-current-project ()
   - [ ] timeclock-list-project-active? (project)
-  - [ ] timeclock-list-seconds-to-hms (seconds)
+  - [X] timeclock-list-seconds-to-hms (seconds)
   - [ ] timeclock-list-entries ()
   - [ ] timeclock-list-project-at-point ()
   - [ ] timeclock-list-goto-last-project ()
-  - [ ] timeclock-list-time-add (a b)
+  - [X] timeclock-list-time-add (a b)
   - [ ] timeclock-list-total-time-one-day (&optional date)
   - [ ] timeclock-list-print-non-tabular ()
   - [ ] timeclock-list-toggle-project (&optional arg)

@@ -2,6 +2,9 @@
 (require 'timeclock-list)
 (require 'timeclock-report)
 
+;; TODO - add tests for timeclock-ui-project-time-one-day with custom day start
+;; times.
+
 (defun interval-test (start target)
   "Basic logic used to derive 'gap' in
 `timeclock-report-previous-week-start'"
@@ -227,6 +230,32 @@
                    [1 0 0]))
     (should (equal (timeclock-ui-project-time-one-day "Programming" '(0 0 0 3 1 2018))
                    [1 0 0]))))
+
+(ert-deftest timeclock-list-seconds-to-hms-tests ()
+  (should (equal (timeclock-list-seconds-to-hms 1)
+                 [0 0 1]))
+  (should (equal (timeclock-list-seconds-to-hms 60)
+                 [0 1 0]))
+  (should (equal (timeclock-list-seconds-to-hms 61)
+                 [0 1 1]))
+  (should (equal (timeclock-list-seconds-to-hms 3600)
+                 [1 0 0]))
+  (should (equal (timeclock-list-seconds-to-hms 3660)
+                 [1 1 0]))
+  (should (equal (timeclock-list-seconds-to-hms 3661)
+                 [1 1 1])))
+
+(ert-deftest timeclock-list-time-add-tests ()
+  (should (equal (timeclock-list-time-add [0 0 0] [0 0 0])
+                 [0 0 0]))
+  (should (equal (timeclock-list-time-add [0 0 1] [0 0 0])
+                 [0 0 1]))
+  (should (equal (timeclock-list-time-add [0 0 1] [0 0 59])
+                 [0 1 0]))
+  (should (equal (timeclock-list-time-add [0 1 0] [0 0 1])
+                 [0 1 1]))
+  (should (equal (timeclock-list-time-add [0 1 1] [0 59 59])
+                 [1 1 0])))
 
 (provide 'timeclock-ui-tests)
 
