@@ -269,9 +269,9 @@ FORMAT-STRING."
   (tabulated-list-init-header)
 
   (run-with-idle-timer 5 t #'timeclock-report-idle-timer)
-  (define-key timeclock-report-mode-map (kbd "l") 'timeclock-list-open-timeclock-file)
-  (define-key timeclock-report-mode-map (kbd "b") 'timeclock-report-previous-week)
-  (define-key timeclock-report-mode-map (kbd "f") 'timeclock-report-next-week))
+  (define-key timeclock-report-mode-map (kbd "l") #'timeclock-ui-open-timeclock-file)
+  (define-key timeclock-report-mode-map (kbd "b") #'timeclock-report-previous-week)
+  (define-key timeclock-report-mode-map (kbd "f") #'timeclock-report-next-week))
 
 ;; ## COMMANDS ##
 
