@@ -214,21 +214,26 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
   "Format and display TIME as a string, where TIME is a vector or
 a list of the form [HOURS MINUTES SECONDS] or (HOURS MINUTES
 SECONDS)."
-  (let ((h (elt time 0))
-        (m (elt time 1))
-        (s (elt time 2)))
+  (let ((h     (elt time 0))
+        (m     (elt time 1))
+        (s     (elt time 2))
+        (blank "   "))
     (if (and (zerop h) (zerop m) (zerop s))
         "       -"
       (let ((h      (if (zerop h)
-                        "   "
-                      ;; Can't change this just yet or all commands break spectacularly.
-                      ;; Maybe it's best this way too? Looks uniform.
-                      ;; What if I pad with space?
-                      (format "% 2d:" h)))
-            (m      (cond ((and (zerop h) (zerop m))            "   ")
-                          ((and (zerop h) (< m 10)) (format "% 2d:" m))
-                          (t                        (format "%02d:" m))))
-            (s      (format "%02d" s)))
+                        blank
+                      (format "%2d:" h)))
+            (m      (cond ((and (zerop h)
+                                (zerop m))
+                           blank)
+                          ((zerop h)
+                           (format "%2d:" m))
+                          (t
+                           (format "%02d:" m))))
+            (s      (if (and (zerop h)
+                             (zerop m))
+                        (format "%2d" s)
+                        (format "%02d" s))))
         (concat h m s)))))
 
 (defun timeclock-ui-open-timeclock-file ()
