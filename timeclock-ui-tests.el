@@ -246,6 +246,7 @@
                  [1 1 1])))
 
 (ert-deftest timeclock-list-time-add-tests ()
+  "Tests for `timeclock-list-time-add'."
   (should (equal (timeclock-list-time-add [0 0 0] [0 0 0])
                  [0 0 0]))
   (should (equal (timeclock-list-time-add [0 0 1] [0 0 0])
@@ -256,6 +257,20 @@
                  [0 1 1]))
   (should (equal (timeclock-list-time-add [0 1 1] [0 59 59])
                  [1 1 0])))
+
+(ert-deftest timeclock-list-ttod-tests ()
+  "Tests for `timeclock-list-total-time-one-day'."
+  (let ((timeclock-file "test.timelog"))
+    (timeclock-reread-log)
+    (should (equal (timeclock-list-total-time-one-day '(0 0 0 1 1 2018))
+                   [5 0 0]))
+    (should (equal (timeclock-list-total-time-one-day '(0 0 0 2 1 2018))
+                   [1 0 0]))
+    (should (equal (timeclock-list-total-time-one-day '(0 0 0 3 1 2018))
+                   [1 0 0]))))
+
+;; (ert-deftest timeclock-report-iodd-tests ()
+;;   (should (equal (timeclock-report-increment-or-decrement-date '(0 0 0 28 2 2020) '+))))
 
 (provide 'timeclock-ui-tests)
 
