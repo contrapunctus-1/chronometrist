@@ -2,6 +2,9 @@
 (require 'timeclock-list)
 (require 'timeclock-report)
 
+;; TODO - add tests for timeclock-ui-project-time-one-day with custom day start
+;; times.
+
 (defun interval-test (start target)
   "Basic logic used to derive 'gap' in
 `timeclock-report-previous-week-start'"
@@ -206,6 +209,68 @@
                    '(0 0 0 1  9 2018 6 nil 19800)))
     (should (equal (timeclock-report-previous-week-start '(0 0 0 8 9 2018 6 nil 19800))
                    '(0 0 0 8  9 2018 6 nil 19800)))))
+
+(ert-deftest timeclock-ui-ptod-tests ()
+  "Tests for `timeclock-ui-project-time-one-day'."
+  (let ((timeclock-file "test.timelog"))
+    (timeclock-reread-log)
+    ;; basic 1 hour test
+    (should (equal (timeclock-ui-project-time-one-day "Programming" '(0 0 0 1 1 2018))
+                   [1 0 0]))
+    (should (equal (timeclock-ui-project-time-one-day "Swimming"    '(0 0 0 1 1 2018))
+                   [1 0 0]))
+    (should (equal (timeclock-ui-project-time-one-day "Cooking"     '(0 0 0 1 1 2018))
+                   [1 0 0]))
+    (should (equal (timeclock-ui-project-time-one-day "Guitar"      '(0 0 0 1 1 2018))
+                   [1 0 0]))
+    (should (equal (timeclock-ui-project-time-one-day "Cycling"     '(0 0 0 1 1 2018))
+                   [1 0 0]))
+    ;; across midnight
+    (should (equal (timeclock-ui-project-time-one-day "Programming" '(0 0 0 2 1 2018))
+                   [1 0 0]))
+    (should (equal (timeclock-ui-project-time-one-day "Programming" '(0 0 0 3 1 2018))
+                   [1 0 0]))))
+
+(ert-deftest timeclock-list-seconds-to-hms-tests ()
+  (should (equal (timeclock-list-seconds-to-hms 1)
+                 [0 0 1]))
+  (should (equal (timeclock-list-seconds-to-hms 60)
+                 [0 1 0]))
+  (should (equal (timeclock-list-seconds-to-hms 61)
+                 [0 1 1]))
+  (should (equal (timeclock-list-seconds-to-hms 3600)
+                 [1 0 0]))
+  (should (equal (timeclock-list-seconds-to-hms 3660)
+                 [1 1 0]))
+  (should (equal (timeclock-list-seconds-to-hms 3661)
+                 [1 1 1])))
+
+(ert-deftest timeclock-list-time-add-tests ()
+  "Tests for `timeclock-list-time-add'."
+  (should (equal (timeclock-list-time-add [0 0 0] [0 0 0])
+                 [0 0 0]))
+  (should (equal (timeclock-list-time-add [0 0 1] [0 0 0])
+                 [0 0 1]))
+  (should (equal (timeclock-list-time-add [0 0 1] [0 0 59])
+                 [0 1 0]))
+  (should (equal (timeclock-list-time-add [0 1 0] [0 0 1])
+                 [0 1 1]))
+  (should (equal (timeclock-list-time-add [0 1 1] [0 59 59])
+                 [1 1 0])))
+
+(ert-deftest timeclock-list-ttod-tests ()
+  "Tests for `timeclock-list-total-time-one-day'."
+  (let ((timeclock-file "test.timelog"))
+    (timeclock-reread-log)
+    (should (equal (timeclock-list-total-time-one-day '(0 0 0 1 1 2018))
+                   [5 0 0]))
+    (should (equal (timeclock-list-total-time-one-day '(0 0 0 2 1 2018))
+                   [1 0 0]))
+    (should (equal (timeclock-list-total-time-one-day '(0 0 0 3 1 2018))
+                   [1 0 0]))))
+
+;; (ert-deftest timeclock-report-iodd-tests ()
+;;   (should (equal (timeclock-report-increment-or-decrement-date '(0 0 0 28 2 2020) '+))))
 
 (provide 'timeclock-ui-tests)
 

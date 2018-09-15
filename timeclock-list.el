@@ -78,10 +78,9 @@ line in the `timeclock-list' buffer.")
   "Return t if PROJECT is currently clocked in, else nil."
   (equal (timeclock-list-current-project) project))
 
-;; tests -
-;; (mapcar #'timeclock-list-seconds-to-hms '(1 60 61 3600 3660 3661))
-;; => ([0 0 1] [0 1 0] [0 1 1] [1 0 0] [1 1 0] [1 1 1])
 (defun timeclock-list-seconds-to-hms (seconds)
+  "Convert SECONDS to a vector in the form [HOURS MINUTES
+SECONDS]. SECONDS must be a positive integer."
   (setq seconds (truncate seconds))
   (let* ((s (% seconds 60))
          (m (% (/ seconds 60) 60))
@@ -122,10 +121,10 @@ line in the `timeclock-list' buffer.")
   "Add two vectors in the form [HOURS MINUTES SECONDS] and
 return a vector in the same form."
   (let ((h1 (elt a 0))
-        (h2 (elt b 0))
         (m1 (elt a 1))
-        (m2 (elt b 1))
         (s1 (elt a 2))
+        (h2 (elt b 0))
+        (m2 (elt b 1))
         (s2 (elt b 2)))
     (timeclock-list-seconds-to-hms (+ (* h1 3600) (* h2 3600)
                         (* m1 60) (* m2 60)
