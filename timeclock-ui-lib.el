@@ -8,8 +8,9 @@
 (defvar timeclock-ui-time-re-ui
   (rx-to-string
    `(or
-     (and (optional (repeat 1 2 digit) ":")
-          (and (repeat 1 2 digit) ":" (repeat 2 digit)))
+     (and (repeat 0 2
+                  (optional (repeat 1 2 digit) ":"))
+          (repeat 1 2 digit))
      ,timeclock-ui-empty-time-string))
   "Regular expression to represent a timestamp in
 `timeclock-list'. This is distinct from

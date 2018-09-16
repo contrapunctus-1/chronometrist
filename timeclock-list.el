@@ -11,8 +11,6 @@
 ;; 3. Create (and start) a _new_ project -> kill buffer -> run
 ;;    timeclock-list -> cursor is not at the new project
 ;;    - can't reproduce it?
-;; 4. Start a project -> stop it before it clocks >60s. Something goes
-;;    wrong.
 
 ;; Style issues
 ;; 1. Uses Scheme-style ? and x->y naming conventions instead of
