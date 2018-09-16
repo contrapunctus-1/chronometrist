@@ -3,12 +3,10 @@ A nice user interface for Emacs' timeclock.el
 
 Largely modelled after the Android application, [A Time Tracker](https://github.com/netmackan/ATimeTracker)
 
-timeclock-ui provides two files, timeclock-list and timeclock-report, which are also the names of the two commands it provides.
+## Installation
+`timeclock-ui` requires [dash.el](https://github.com/magnars/dash.el)
 
-```cl
-(require 'timeclock-list)
-(require 'timeclock-report)
-```
+Add timeclock-ui to your load-path, and `(require 'timeclock-ui)`.
 
 ## Commands
 ### timeclock-list
