@@ -12,7 +12,6 @@
 ;;    timeclock-list -> cursor is not at the new project
 ;;    - can't reproduce it?
 ;; 4. Idle timer stops running after some time?
-;; 5. Idle timer changes position of point. Yuck.
 
 ;; Style issues
 ;; 1. Uses Scheme-style ? and x->y naming conventions instead of
@@ -58,8 +57,10 @@ line in the `timeclock-list' buffer.")
              (timeclock-ui-buffer-visible? timeclock-list-buffer-name))
     ;; (message "timeclock-list-idle-timer run at %s" (format-time-string "%T"))
     (with-current-buffer timeclock-list-buffer-name
-      (tabulated-list-print t)
-      (timeclock-list-print-non-tabular))))
+      (let ((position (point)))
+        (tabulated-list-print t)
+        (timeclock-list-print-non-tabular)
+        (goto-char position)))))
 
 ;; ## FUNCTIONS ##
 (defun timeclock-list-current-project ()
