@@ -1,55 +1,55 @@
 **WARNING - NOT STABLE YET**
 
-# timeclock-ui-lib
+# chronometrist-lib
 ## Predicates
-### timeclock-ui-buffer-exists?
+### chronometrist-buffer-exists?
 String -> List?
-### timeclock-ui-buffer-visible?
+### chronometrist-buffer-visible?
 Buffer | String -> Boolean
 
 ## Time operations
-### timeclock-ui-timestamp->list
+### chronometrist-timestamp->list
 String -> (Int ...)
-### timeclock-ui-timestamp-list->seconds
+### chronometrist-timestamp-list->seconds
 (Int Int Int Int Int Int) -> (Int Int Int Int)
 (year month day hours minutes seconds) -> (sec-high sec-low microsec picosec)
 
-# timeclock-list
+# chronometrist
 ## Predicates
-### timeclock-list-project-active?
+### chronometrist-project-active?
 String -> Boolean
 
 ## Time operations
-### timeclock-list-seconds-to-hms
+### chronometrist-seconds-to-hms
 Integer -> [Integer Integer Integer]
 seconds -> [hours minutes seconds]
-### timeclock-list-time-add
+### chronometrist-time-add
 [Int Int Int] [Int Int Int] -> [Int Int Int]
 [hours minutes seconds] [hours minutes seconds] -> [hours minutes seconds]
 
 ## Navigation
-### timeclock-list-goto-last-project
+### chronometrist-goto-last-project
 -> nil
 
 ## Side-effects
-### timeclock-list-print-non-tabular
+### chronometrist-print-non-tabular
 
 ## Etc
-### timeclock-list-current-project
+### chronometrist-current-project
 -> String
-### timeclock-list-entries
+### chronometrist-entries
 -> (String . [String String String String])
 -> (project . ["index" "project" "(hh:)?(mm:)?ss" "indicator"])
-### timeclock-list-total-time-one-day
+### chronometrist-total-time-one-day
 (Int Int Int Int Int Int Int?) -> [Int Int Int]
 (seconds minutes hours day month year &optional zone) -> [hours minutes seconds]
-### timeclock-list-project-at-point
+### chronometrist-project-at-point
 -> String
 
-# timeclock-report
+# chronometrist-report
 ## Time operations
-### timeclock-report-day-of-week->number
+### chronometrist-report-day-of-week->number
 String -> Integer
-### timeclock-report-increment-or-decrement-date
+### chronometrist-report-increment-or-decrement-date
 (Int Int Int Int Int Int) Symbol Int? -> (Int Int Int Int Int Int Int?)
 (seconds minutes hours day month year) operator count? -> (seconds minutes hours day month year dow dst utcoff)

@@ -1,37 +1,37 @@
-(require 'timeclock-ui-lib)
+(require 'chronometrist-lib)
 
 ;; New week logic
 ;; 1. ✓ get current date in calendrical form (decode-time)
 ;; 2. ✓ check if we're on a Sunday/user-specified week start day, else
-;;    decrement till we are (timeclock-report-previous-week-start)
-;; 3. set global state to that date (`timeclock-report-week-start-day')
+;;    decrement till we are (chronometrist-report-previous-week-start)
+;; 3. set global state to that date (`chronometrist-report-week-start-day')
 ;; 4. decrement/increment global date by 7 to get previous/next week
 ;; 5. get week's dates using global date
 
 ;; TODO - add support for custom week start day to
-;; tabulated-list-format. Have it use timeclock-report-weekday-number-alist for day
+;; tabulated-list-format. Have it use chronometrist-report-weekday-number-alist for day
 ;; names to aid i10n
 
 ;; TODO - add numeric arguments for next/previous week
 ;; TODO - use variables instead of hardcoded numbers to determine spacing
 ;; TODO - remove dead code
 
-(defvar timeclock-report-week-start-day "Sunday"
-  "The day used for start of week by `timeclock-report'.")
-(defvar timeclock-report--ui-date
+(defvar chronometrist-report-week-start-day "Sunday"
+  "The day used for start of week by `chronometrist-report'.")
+(defvar chronometrist-report--ui-date
   nil
   "The first date of the week displayed by
-`timeclock-report' (specifically `timeclock-report-entries'). A
+`chronometrist-report' (specifically `chronometrist-report-entries'). A
 value of nil means the current week. Otherwise, it must be a list
 in the form (YEAR WEEK), where WEEK is the numeric week of the
 year (1-52).")
-(defvar timeclock-report--ui-week-dates
+(defvar chronometrist-report--ui-week-dates
   nil
   "List of dates currently displayed by
-`timeclock-report' (specifically `timeclock-report-entries').
+`chronometrist-report' (specifically `chronometrist-report-entries').
 Each date is a list containing calendrical information (see (info \"(elisp)Time Conversion\"))")
 
-(defvar timeclock-report-weekday-number-alist
+(defvar chronometrist-report-weekday-number-alist
   '(("Sunday"    . 0)
     ("Monday"    . 1)
     ("Tuesday"   . 2)
@@ -42,11 +42,11 @@ Each date is a list containing calendrical information (see (info \"(elisp)Time 
   "alist in the form (\"NAME\" . NUMBER), where \"NAME\" is the
   name of a weekday and NUMBER its associated number.")
 
-(defun timeclock-report-day-of-week->number (day-of-week)
+(defun chronometrist-report-day-of-week->number (day-of-week)
   (cdr
-   (assoc-string day-of-week timeclock-report-weekday-number-alist)))
+   (assoc-string day-of-week chronometrist-report-weekday-number-alist)))
 
-(defun timeclock-report-increment-or-decrement-date (date operator &optional count)
+(defun chronometrist-report-increment-or-decrement-date (date operator &optional count)
   "Return DATE incremented or decremented by COUNT days (1 if not
 supplied).
 
@@ -70,11 +70,11 @@ COUNT must be a positive integer."
               it (list 0 (* 86400 count)))
      (decode-time it))))
 
-(defun timeclock-report-previous-week-start (date)
+(defun chronometrist-report-previous-week-start (date)
   "Return the date for the last start-of-week from DATE (using
-start-of-week defined in `timeclock-report-week-start-day'). If
+start-of-week defined in `chronometrist-report-week-start-day'). If
 the day of DATE is the same as the
-`timeclock-report-week-start-day', return DATE.
+`chronometrist-report-week-start-day', return DATE.
 
 DATE must be calendrical information (see (info \"(elisp)Time Conversion\")).
 
@@ -83,32 +83,32 @@ Any time data provided is reset to midnight (00:00:00)."
                           (-drop 3)
                           (append '(0 0 0))))
          (day        (elt date 6)) ;; 0-6, where 0 = Sunday
-         (week-start (timeclock-report-day-of-week->number timeclock-report-week-start-day))
+         (week-start (chronometrist-report-day-of-week->number chronometrist-report-week-start-day))
          (gap        (cond ((> day week-start) (- day week-start))
                            ((< day week-start) (+ day (- 7 week-start))))))
     (if gap
-        (timeclock-report-increment-or-decrement-date date '- gap)
+        (chronometrist-report-increment-or-decrement-date date '- gap)
       date)))
 
-(defun timeclock-report-date ()
-  "Return the date specified by `timeclock-report--ui-date'. If
+(defun chronometrist-report-date ()
+  "Return the date specified by `chronometrist-report--ui-date'. If
 it is nil, return the current date as calendrical
 information (see (info \"(elisp)Time Conversion\"))."
-  (if timeclock-report--ui-date timeclock-report--ui-date (decode-time)))
+  (if chronometrist-report--ui-date chronometrist-report--ui-date (decode-time)))
 
 ;; ## VARIABLES ##
-(defvar timeclock-report-buffer-name "*Timeclock-Report*")
-(defvar timeclock-report--year-week
+(defvar chronometrist-report-buffer-name "*Chronometrist-Report*")
+(defvar chronometrist-report--year-week
   nil
   "Variable to determine the week displayed by
-`timeclock-report' (specifically `timeclock-report-entries'). A value of nil
+`chronometrist-report' (specifically `chronometrist-report-entries'). A value of nil
 means the current week (starting from Sunday). Otherwise, it must
 be a list in the form (YEAR WEEK), where WEEK is the numeric week
 of the year (1-52).")
 
 ;; ## FUNCTIONS ##
 
-(defun timeclock-report-week->date (year week)
+(defun chronometrist-report-week->date (year week)
   "Return the date as a list in the form (YEAR MONTH DAY) of the
 first day of the WEEK in YEAR, where WEEK is a week
 number (1-52)."
@@ -119,27 +119,27 @@ number (1-52)."
             month (1+ month)))
     (list year month day)))
 
-(defun timeclock-report-current-week ()
+(defun chronometrist-report-current-week ()
   "Return current week as a number (1-52)."
   (string-to-number
    (format-time-string "%U")))
 
-(defun timeclock-report-week ()
-  "Return current week from `timeclock-report-current-week' or the week
-specified in `timeclock-report--year-week'."
-  (if timeclock-report--year-week
-      (cadr timeclock-report--year-week)
-    (timeclock-report-current-week)))
+(defun chronometrist-report-week ()
+  "Return current week from `chronometrist-report-current-week' or the week
+specified in `chronometrist-report--year-week'."
+  (if chronometrist-report--year-week
+      (cadr chronometrist-report--year-week)
+    (chronometrist-report-current-week)))
 
-(defun timeclock-report-year ()
+(defun chronometrist-report-year ()
   "Return current year, or the year specified in
-`timeclock-report--year-week'."
-  (if timeclock-report--year-week
-      (car timeclock-report--year-week)
+`chronometrist-report--year-week'."
+  (if chronometrist-report--year-week
+      (car chronometrist-report--year-week)
     (elt (decode-time) 5)))
 
 ;; maybe these two should take two arguments instead of a list?
-(defun timeclock-report-dec-year-week (year-week)
+(defun chronometrist-report-dec-year-week (year-week)
   "Decrement YEAR-WEEK by one week. YEAR-WEEK must be a list in
 the form (YEAR WEEK), where WEEK is the numeric week in
 YEAR (1-52)."
@@ -149,7 +149,7 @@ YEAR (1-52)."
         (list (1- y) 52)
       (list y (1- w)))))
 
-(defun timeclock-report-inc-year-week (year-week)
+(defun chronometrist-report-inc-year-week (year-week)
   "Increment YEAR-WEEK by one week. YEAR-WEEK must be a list in
 the form (YEAR WEEK), where WEEK is the numeric week in
 YEAR (1-52)."
@@ -159,7 +159,7 @@ YEAR (1-52)."
         (list (1+ y) 1)
       (list y (1+ w)))))
 
-(defun timeclock-report-date->dates-in-week (first-date-in-week)
+(defun chronometrist-report-date->dates-in-week (first-date-in-week)
   "Return a list in the form (DAY-1 DAY-2 ... DAY-7), where each
 day is a time value (see (info \"(elisp)Time of Day\")).
 
@@ -172,7 +172,7 @@ FIRST-DATE-IN-WEEK must be a time value representing DAY-1."
                (+ (cadr first-date-in-week) it))
               it)))
 
-(defun timeclock-report-dates-in-week->string (dates-in-week)
+(defun chronometrist-report-dates-in-week->string (dates-in-week)
   "Return a list in the form (DAY-1 DAY-2 ... DAY-7), where each
 day is a string in the form \"YYYY/MM/DD\""
   (--map (format "%04d/%02d/%02d"
@@ -181,44 +181,44 @@ day is a string in the form \"YYYY/MM/DD\""
                  (elt it 3))
          dates-in-week))
 
-(defun timeclock-report-date->week-dates ()
+(defun chronometrist-report-date->week-dates ()
   "Return dates in week as a list, where each element is
 calendrical information (see (info \"(elisp)Time Conversion\")).
 The first date is the first occurrence of
-`timeclock-report-week-start-day' before the date specified in
-`timeclock-report--ui-date' (if non-nil) or the current date."
-  (->> (timeclock-report-date)
-       (timeclock-report-previous-week-start)
+`chronometrist-report-week-start-day' before the date specified in
+`chronometrist-report--ui-date' (if non-nil) or the current date."
+  (->> (chronometrist-report-date)
+       (chronometrist-report-previous-week-start)
        (-take 6)
        (apply #'encode-time)
-       (timeclock-report-date->dates-in-week)
+       (chronometrist-report-date->dates-in-week)
        (-map #'decode-time)))
 
-(defun timeclock-report-entries ()
+(defun chronometrist-report-entries ()
   "Creates entries to be displayed in the buffer created by
-`timeclock-report'."
-  (let* ((week-dates        (timeclock-report-date->week-dates))
-         (week-dates-string (timeclock-report-dates-in-week->string week-dates)))
-    (setq timeclock-report--ui-week-dates week-dates)
+`chronometrist-report'."
+  (let* ((week-dates        (chronometrist-report-date->week-dates))
+         (week-dates-string (chronometrist-report-dates-in-week->string week-dates)))
+    (setq chronometrist-report--ui-week-dates week-dates)
     (mapcar (lambda (project)
               (list project
                     (vconcat
                      (vector project)
                      (apply #'vector
-                            (--map (timeclock-ui-format-time
-                                    (timeclock-ui-project-time-one-day project it))
+                            (--map (chronometrist-format-time
+                                    (chronometrist-project-time-one-day project it))
                                    week-dates)))))
             timeclock-project-list)))
 
-(defun timeclock-report-idle-timer ()
-  (when (and (timeclock-ui-buffer-exists? timeclock-report-buffer-name)
-             (timeclock-ui-buffer-visible? timeclock-report-buffer-name))
+(defun chronometrist-report-idle-timer ()
+  (when (and (chronometrist-buffer-exists? chronometrist-report-buffer-name)
+             (chronometrist-buffer-visible? chronometrist-report-buffer-name))
     (timeclock-reread-log)
-    (with-current-buffer timeclock-report-buffer-name
+    (with-current-buffer chronometrist-report-buffer-name
       (tabulated-list-print t nil)
-      (timeclock-report-print-non-tabular))))
+      (chronometrist-report-print-non-tabular))))
 
-(defun timeclock-report-format-date (format-string time-date)
+(defun chronometrist-report-format-date (format-string time-date)
   "Extract date from TIME-DATE and format it according to
 FORMAT-STRING."
   (->> time-date
@@ -227,27 +227,27 @@ FORMAT-STRING."
        (reverse)
        (apply #'format format-string)))
 
-(defun timeclock-report-print-non-tabular ()
-  "Print the non-tabular part of the buffer in `timeclock-report'."
+(defun chronometrist-report-print-non-tabular ()
+  "Print the non-tabular part of the buffer in `chronometrist-report'."
   (let ((inhibit-read-only t))
     (goto-char (point-min))
     (insert "                         ")
-    (--map (insert (timeclock-report-format-date "%04d-%02d-%02d " it))
-           (timeclock-report-date->week-dates))
+    (--map (insert (chronometrist-report-format-date "%04d-%02d-%02d " it))
+           (chronometrist-report-date->week-dates))
     (insert "\n")
     (goto-char (point-max))
     (insert (format "\n    %- 21s" "Total"))
-    (->> timeclock-report--ui-week-dates
-         (mapcar #'timeclock-list-total-time-one-day)
-         (mapcar #'timeclock-ui-format-time)
+    (->> chronometrist-report--ui-week-dates
+         (mapcar #'chronometrist-total-time-one-day)
+         (mapcar #'chronometrist-format-time)
          (--map (format "% 9s  " it))
          (apply #'insert))
     (insert "\n\n    l - open log file")))
 
 ;; ## MAJOR MODE ##
 
-(define-derived-mode timeclock-report-mode tabulated-list-mode "Timeclock-Report"
-  "Major mode for `timeclock-report'."
+(define-derived-mode chronometrist-report-mode tabulated-list-mode "Chronometrist-Report"
+  "Major mode for `chronometrist-report'."
   (timeclock-reread-log)
 
   (make-local-variable 'tabulated-list-format)
@@ -261,75 +261,75 @@ FORMAT-STRING."
                                ("Saturday"  10 t)])
 
   (make-local-variable 'tabulated-list-entries)
-  (setq tabulated-list-entries 'timeclock-report-entries)
+  (setq tabulated-list-entries 'chronometrist-report-entries)
 
   (make-local-variable 'tabulated-list-sort-key)
   (setq tabulated-list-sort-key '("Project" . nil))
 
   (tabulated-list-init-header)
 
-  (run-with-idle-timer 5 t #'timeclock-report-idle-timer)
-  (define-key timeclock-report-mode-map (kbd "l") #'timeclock-ui-open-timeclock-file)
-  (define-key timeclock-report-mode-map (kbd "b") #'timeclock-report-previous-week)
-  (define-key timeclock-report-mode-map (kbd "f") #'timeclock-report-next-week))
+  (run-with-idle-timer 5 t #'chronometrist-report-idle-timer)
+  (define-key chronometrist-report-mode-map (kbd "l") #'chronometrist-open-timeclock-file)
+  (define-key chronometrist-report-mode-map (kbd "b") #'chronometrist-report-previous-week)
+  (define-key chronometrist-report-mode-map (kbd "f") #'chronometrist-report-next-week))
 
 ;; ## COMMANDS ##
 
-(defun timeclock-report (&optional keep-week)
+(defun chronometrist-report (&optional keep-week)
   "Display a weekly report of the user's timeclock.el projects
 and the time spent on them each day, based on their timelog file
 in `timeclock-file'. This is the 'listing command' for
-timeclock-report-mode.
+chronometrist-report-mode.
 
 If KEEP-WEEK is nil (the default when not supplied), set
-`timeclock-report--year-week' to nil and display data from the
+`chronometrist-report--year-week' to nil and display data from the
 current week. Otherwise, display data from the week specified by
-`timeclock-report--year-week'."
+`chronometrist-report--year-week'."
   (interactive)
-  (let ((buffer (get-buffer-create timeclock-report-buffer-name)))
+  (let ((buffer (get-buffer-create chronometrist-report-buffer-name)))
     ;; we want this command to toggle viewing the report
-    (if (and (timeclock-ui-buffer-visible? timeclock-report-buffer-name)
+    (if (and (chronometrist-buffer-visible? chronometrist-report-buffer-name)
              (not keep-week))
         (kill-buffer buffer)
       (with-current-buffer buffer
         (delete-other-windows)
         (when (not keep-week)
-          (setq timeclock-report--ui-date nil))
-        (timeclock-report-mode)
+          (setq chronometrist-report--ui-date nil))
+        (chronometrist-report-mode)
         (tabulated-list-print)
-        (timeclock-report-print-non-tabular)
+        (chronometrist-report-print-non-tabular)
         (switch-to-buffer buffer)))))
 
-(defun timeclock-report-previous-week (arg)
+(defun chronometrist-report-previous-week (arg)
   "View the previous week's report."
   (interactive "P")
   (let ((arg (if (and arg (numberp arg))
                  (abs arg)
                1)))
-    (if timeclock-report--ui-date
-        (setq timeclock-report--ui-date
-              (timeclock-report-increment-or-decrement-date timeclock-report--ui-date '- (* 7 arg)))
-      (setq timeclock-report--ui-date
-            (timeclock-report-increment-or-decrement-date (decode-time) '- (* 7 arg))))
+    (if chronometrist-report--ui-date
+        (setq chronometrist-report--ui-date
+              (chronometrist-report-increment-or-decrement-date chronometrist-report--ui-date '- (* 7 arg)))
+      (setq chronometrist-report--ui-date
+            (chronometrist-report-increment-or-decrement-date (decode-time) '- (* 7 arg))))
     (kill-buffer)
-    (timeclock-report t)))
+    (chronometrist-report t)))
 
-(defun timeclock-report-next-week (arg)
+(defun chronometrist-report-next-week (arg)
   "View the next week's report."
   (interactive "P")
   (let ((arg (if (and arg (numberp arg))
                  (abs arg)
                1)))
-    (if timeclock-report--ui-date
-        (setq timeclock-report--ui-date
-              (timeclock-report-increment-or-decrement-date timeclock-report--ui-date '+ (* 7 arg)))
-      (setq timeclock-report--ui-date
-            (timeclock-report-increment-or-decrement-date (decode-time) '+ (* 7 arg))))
+    (if chronometrist-report--ui-date
+        (setq chronometrist-report--ui-date
+              (chronometrist-report-increment-or-decrement-date chronometrist-report--ui-date '+ (* 7 arg)))
+      (setq chronometrist-report--ui-date
+            (chronometrist-report-increment-or-decrement-date (decode-time) '+ (* 7 arg))))
     (kill-buffer)
-    (timeclock-report t)))
+    (chronometrist-report t)))
 
-(provide 'timeclock-report)
+(provide 'chronometrist-report)
 
 ;; Local Variables:
-;; nameless-current-name: "timeclock-report"
+;; nameless-current-name: "chronometrist-report"
 ;; End:
