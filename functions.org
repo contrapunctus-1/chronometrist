@@ -1,4 +1,4 @@
-* TODO Test coverage [6/44]
+* TODO Test coverage [6/38]
   - [ ] chronometrist-idle-timer ()
   - [ ] chronometrist-current-project ()
   - [ ] chronometrist-project-active? (project)
@@ -15,12 +15,6 @@
   - [ ] chronometrist-report-increment-or-decrement-date (date operator &optional count)
   - [X] chronometrist-report-previous-week-start (date)
   - [ ] chronometrist-report-date ()
-  - [ ] chronometrist-report-week->date (year week)
-  - [ ] chronometrist-report-current-week ()
-  - [ ] chronometrist-report-week ()
-  - [ ] chronometrist-report-year ()
-  - [ ] chronometrist-report-dec-year-week (year-week)
-  - [ ] chronometrist-report-inc-year-week (year-week)
   - [ ] chronometrist-report-date->dates-in-week (first-date-in-week)
   - [ ] chronometrist-report-dates-in-week->string (dates-in-week)
   - [ ] chronometrist-report-date->week-dates ()

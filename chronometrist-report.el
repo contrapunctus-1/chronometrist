@@ -108,57 +108,6 @@ of the year (1-52).")
 
 ;; ## FUNCTIONS ##
 
-(defun chronometrist-report-week->date (year week)
-  "Return the date as a list in the form (YEAR MONTH DAY) of the
-first day of the WEEK in YEAR, where WEEK is a week
-number (1-52)."
-  (let ((day    (* week 7))
-        (month  1))
-    (while (> day 31)
-      (setq day (- day (calendar-last-day-of-month month year))
-            month (1+ month)))
-    (list year month day)))
-
-(defun chronometrist-report-current-week ()
-  "Return current week as a number (1-52)."
-  (string-to-number
-   (format-time-string "%U")))
-
-(defun chronometrist-report-week ()
-  "Return current week from `chronometrist-report-current-week' or the week
-specified in `chronometrist-report--year-week'."
-  (if chronometrist-report--year-week
-      (cadr chronometrist-report--year-week)
-    (chronometrist-report-current-week)))
-
-(defun chronometrist-report-year ()
-  "Return current year, or the year specified in
-`chronometrist-report--year-week'."
-  (if chronometrist-report--year-week
-      (car chronometrist-report--year-week)
-    (elt (decode-time) 5)))
-
-;; maybe these two should take two arguments instead of a list?
-(defun chronometrist-report-dec-year-week (year-week)
-  "Decrement YEAR-WEEK by one week. YEAR-WEEK must be a list in
-the form (YEAR WEEK), where WEEK is the numeric week in
-YEAR (1-52)."
-  (let ((y (car year-week))
-        (w (cadr year-week)))
-    (if (= w 1)
-        (list (1- y) 52)
-      (list y (1- w)))))
-
-(defun chronometrist-report-inc-year-week (year-week)
-  "Increment YEAR-WEEK by one week. YEAR-WEEK must be a list in
-the form (YEAR WEEK), where WEEK is the numeric week in
-YEAR (1-52)."
-  (let ((y (car year-week))
-        (w (cadr year-week)))
-    (if (= w 52)
-        (list (1+ y) 1)
-      (list y (1+ w)))))
-
 (defun chronometrist-report-date->dates-in-week (first-date-in-week)
   "Return a list in the form (DAY-1 DAY-2 ... DAY-7), where each
 day is a time value (see (info \"(elisp)Time of Day\")).
