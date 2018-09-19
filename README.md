@@ -60,6 +60,10 @@ Set this to non-nil if you want to hide the cursor in in the Chronometrist buffe
    - Show shortcuts by consulting the keymap rather than using a hardcoded string.
    - Change 'see weekly report' and 'open log file' to buttons
 8. Refresh when you select the list buffer (impossible? make-thread in v26? Use emacs-async library?)
+9. Add a 'kill'/discard command (bind to 'k'), which will delete the interval currently being recorded.
+   - Most conservative option - it will only operate on the project at point, and will only kill for a clocked-in project.
+   - Somewhat less conservative option - it will operate on the currently clocked-in project, no matter where point is.
+   - It _should_ ask for confirmation.
 
 ### chronometrist-report
 1. Highlight column of current day
