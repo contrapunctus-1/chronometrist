@@ -6,7 +6,7 @@ Largely modelled after the Android application, [A Time Tracker](https://github.
 ## Installation
 `chronometrist` requires [dash.el](https://github.com/magnars/dash.el)
 
-Add chronometrist to your load-path, and `(require 'chronometrist)`.
+Add the Chronometrist directory to your load-path, and `(require 'chronometrist)`.
 
 ## Commands
 ### chronometrist
@@ -20,7 +20,7 @@ Alternatively, hit `<numeric prefix> RET` anywhere in the buffer to toggle the c
 
 Press `l` to view your `timeclock-file` (`~/.emacs.d/timelog` by default). Press `r` to see a weekly report (see `chronometrist-report`)
 
-Running `M-x chronometrist` when the chronometrist is visible will kill it, so the key you bind it to can function as a toggle.
+Running `M-x chronometrist` when the Chronometrist buffer is visible will kill it, so the key you bind it to can function as a toggle.
 
 `chronometrist` keeps itself updated via an idle timer - no pressing `g` to update.
 
@@ -37,7 +37,7 @@ Just like `chronometrist`, `chronometrist-report` will also toggle the visibilty
 
 ## Customization
 ### chronometrist-hide-cursor
-Set this to non-nil if you want to hide the cursor in chronometrist. The line the cursor is on will be highlighted instead.
+Set this to non-nil if you want to hide the cursor in in the Chronometrist buffer. The line the cursor is on will be highlighted instead.
 
 ## Roadmap
 * New commands for statistics
@@ -76,7 +76,7 @@ Contact the creator and other Emacs users in the Emacs room on the Jabber networ
 (For help in getting started with Jabber, [click here](https://xmpp.org/getting-started/))
 
 ## License
-chronometrist is released under your choice of [CC0](https://creativecommons.org/publicdomain/zero/1.0/), [Unlicense](https://unlicense.org/), and [WTFPL](http://www.wtfpl.net/).
+Chronometrist is released under your choice of [CC0](https://creativecommons.org/publicdomain/zero/1.0/), [Unlicense](https://unlicense.org/), and [WTFPL](http://www.wtfpl.net/).
 
 ## Thanks
 wasamasa and #emacs for all their help and support
