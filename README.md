@@ -1,5 +1,5 @@
 # chronometrist
-A nice user interface for Emacs' timeclock.el
+A time tracker with a nice interface, using Emacs' timeclock.el
 
 Largely modelled after the Android application, [A Time Tracker](https://github.com/netmackan/ATimeTracker)
 
