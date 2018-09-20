@@ -18,6 +18,7 @@
 
 (defvar chronometrist-report-week-start-day "Sunday"
   "The day used for start of week by `chronometrist-report'.")
+
 (defvar chronometrist-report--ui-date
   nil
   "The first date of the week displayed by
@@ -25,6 +26,7 @@
 value of nil means the current week. Otherwise, it must be a list
 in the form (YEAR WEEK), where WEEK is the numeric week of the
 year (1-52).")
+
 (defvar chronometrist-report--ui-week-dates
   nil
   "List of dates currently displayed by
@@ -98,13 +100,6 @@ information (see (info \"(elisp)Time Conversion\"))."
 
 ;; ## VARIABLES ##
 (defvar chronometrist-report-buffer-name "*Chronometrist-Report*")
-(defvar chronometrist-report--year-week
-  nil
-  "Variable to determine the week displayed by
-`chronometrist-report' (specifically `chronometrist-report-entries'). A value of nil
-means the current week (starting from Sunday). Otherwise, it must
-be a list in the form (YEAR WEEK), where WEEK is the numeric week
-of the year (1-52).")
 
 ;; ## FUNCTIONS ##
 
@@ -224,25 +219,25 @@ FORMAT-STRING."
 
 ;; ## COMMANDS ##
 
-(defun chronometrist-report (&optional keep-week)
+(defun chronometrist-report (&optional keep-date)
   "Display a weekly report of the user's timeclock.el projects
 and the time spent on them each day, based on their timelog file
 in `timeclock-file'. This is the 'listing command' for
 chronometrist-report-mode.
 
-If KEEP-WEEK is nil (the default when not supplied), set
-`chronometrist-report--year-week' to nil and display data from the
+If KEEP-DATE is nil (the default when not supplied), set
+`chronometrist-report--ui-date' to nil and display data from the
 current week. Otherwise, display data from the week specified by
-`chronometrist-report--year-week'."
+`chronometrist-report--ui-date'."
   (interactive)
   (let ((buffer (get-buffer-create chronometrist-report-buffer-name)))
     ;; we want this command to toggle viewing the report
     (if (and (chronometrist-buffer-visible? chronometrist-report-buffer-name)
-             (not keep-week))
+             (not keep-date))
         (kill-buffer buffer)
       (with-current-buffer buffer
         (delete-other-windows)
-        (when (not keep-week)
+        (when (not keep-date)
           (setq chronometrist-report--ui-date nil))
         (chronometrist-report-mode)
         (tabulated-list-print)
