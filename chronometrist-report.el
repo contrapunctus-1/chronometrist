@@ -1,13 +1,5 @@
 (require 'chronometrist-lib)
 
-;; New week logic
-;; 1. ✓ get current date in calendrical form (decode-time)
-;; 2. ✓ check if we're on a Sunday/user-specified week start day, else
-;;    decrement till we are (chronometrist-report-previous-week-start)
-;; 3. set global state to that date (`chronometrist-report-week-start-day')
-;; 4. decrement/increment global date by 7 to get previous/next week
-;; 5. get week's dates using global date
-
 ;; TODO - add support for custom week start day to
 ;; tabulated-list-format. Have it use chronometrist-report-weekday-number-alist for day
 ;; names to aid i10n
