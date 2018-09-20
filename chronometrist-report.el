@@ -153,8 +153,10 @@ The first date is the first occurrence of
              (chronometrist-buffer-visible? chronometrist-report-buffer-name))
     (timeclock-reread-log)
     (with-current-buffer chronometrist-report-buffer-name
-      (tabulated-list-print t nil)
-      (chronometrist-report-print-non-tabular))))
+      (let ((position (point)))
+        (tabulated-list-print t nil)
+        (chronometrist-report-print-non-tabular)
+        (goto-char position)))))
 
 (defun chronometrist-report-format-date (format-string time-date)
   "Extract date from TIME-DATE and format it according to
