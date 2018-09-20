@@ -242,6 +242,21 @@ SECONDS)."
   (find-file-other-window timeclock-file)
   (goto-char (point-max)))
 
+(defun chronometrist-common-create-timeclock-file ()
+  "Create `timeclock-file' if it doesn't already exist."
+  (unless (file-exists-p timeclock-file)
+    (with-current-buffer (find-file-noselect timeclock-file)
+      (write-file timeclock-file))))
+
+(defun chronometrist-common-file-empty-p (file)
+  (let ((size (elt (file-attributes file) 7)))
+    (if (zerop size) t nil)))
+
+(defun chronometrist-common-clear-buffer (buffer)
+  (with-current-buffer buffer
+    (goto-char (point-min))
+    (delete-region (point-min) (point-max))))
+
 (provide 'chronometrist-lib)
 
 ;; Local Variables:

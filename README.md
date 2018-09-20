@@ -89,3 +89,5 @@ wasamasa and #emacs for all their help and support
 jwiegley for timeclock.el
 
 blandest for helping me with the name
+
+fiete for testing

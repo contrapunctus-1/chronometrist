@@ -276,12 +276,17 @@
   "Tests for `chronometrist-total-time-one-day'."
   (let ((timeclock-file "test.timelog"))
     (timeclock-reread-log)
+    ;; 1 hour per activity test
     (should (equal (chronometrist-total-time-one-day '(0 0 0 1 1 2018))
                    [5 0 0]))
+    ;; pan-midnight tests
     (should (equal (chronometrist-total-time-one-day '(0 0 0 2 1 2018))
                    [1 0 0]))
     (should (equal (chronometrist-total-time-one-day '(0 0 0 3 1 2018))
-                   [1 0 0]))))
+                   [1 0 0]))
+    ;; 1 second test
+    (should (equal (chronometrist-total-time-one-day '(0 0 0 4 1 2018))
+                   [0 0 1]))))
 
 (ert-deftest chronometrist-format-time-tests ()
   "Tests for `chronometrist-format-time'."

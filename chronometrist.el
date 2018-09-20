@@ -1,7 +1,11 @@
 (require 'chronometrist-lib)
 (require 'chronometrist-report)
 
-;; 2018-08-27T12:45:03+0530
+;; TODO - don't suggest nil when asking for first project on first run
+
+;; TODO - use variables instead of hardcoded numbers to determine spacing
+
+;; TODO - remove repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
 
 ;; BUGS
 ;; 1. (goto-char (point-max)) -> RET -> the time spent on the last
@@ -43,14 +47,14 @@
 ;;    - maybe use advice?
 ;; 2. Can't have multi-line headers
 
-;; TODO - use variables instead of hardcoded numbers to determine spacing
-;; TODO - remove repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
-
 ;; ## VARIABLES ##
 (defvar chronometrist-buffer-name "*Chronometrist*")
+
 (defvar chronometrist-hide-cursor nil
   "If non-nil, hide the cursor and only highlight the current
 line in the `chronometrist' buffer.")
+
+(defvar chronometrist--timer-object nil)
 
 ;; ## IDLE TIMER ##
 (defun chronometrist-idle-timer ()
@@ -157,6 +161,11 @@ information (see (info \"(elisp)Time Conversion\"))."
              "\n    l - open log file")
      (insert it))))
 
+(defun chronometrist-maybe-start-idle-timer ()
+  (unless chronometrist--timer-object
+    (setq chronometrist--timer-object
+          (run-with-idle-timer 3 t #'chronometrist-idle-timer))))
+
 ;; ## MAJOR-MODE ##
 (define-derived-mode chronometrist-mode tabulated-list-mode "Chronometrist"
   "Major mode for `chronometrist'."
@@ -176,7 +185,6 @@ information (see (info \"(elisp)Time Conversion\"))."
 
   (tabulated-list-init-header)
 
-  (run-with-idle-timer 3 t #'chronometrist-idle-timer)
   (define-key chronometrist-mode-map (kbd "RET") 'chronometrist-toggle-project)
   (define-key chronometrist-mode-map (kbd "l") 'chronometrist-open-timeclock-file)
   (define-key chronometrist-mode-map (kbd "r") 'chronometrist-report))
@@ -186,36 +194,39 @@ information (see (info \"(elisp)Time Conversion\"))."
 (defun chronometrist-toggle-project (&optional arg)
   "In a `chronometrist' buffer, start or stop the project at point."
   (interactive "P")
-  (let ((target-project (progn
-                          (when arg
-                            (goto-char (point-min))
-                            (re-search-forward (format "^%d" arg) nil t))
-                          (chronometrist-project-at-point)))
-        (current-project  (chronometrist-current-project)))
-    ;; We change this function so it suggests the project at point
-    (cl-letf (((symbol-function 'timeclock-ask-for-project)
-               (lambda ()
-                 (timeclock-completing-read
-                  (format "Clock into which project (default %s): "
-                          target-project)
-                  (mapcar 'list timeclock-project-list)
-                  target-project))))
-      ;; If we're clocked in to anything - clock out or change projects
-      (if current-project
-          (if (equal target-project current-project)
-              (timeclock-out nil nil t)
-            ;; We don't use timeclock-change because it doesn't prompt for the reason
-            (progn
-              (timeclock-out nil nil t)
-              (timeclock-in nil nil t)))
-        ;; Otherwise, run timeclock-in with project at point as default
-        ;; suggestion
-        (timeclock-in nil nil t)))
-    (timeclock-reread-log) ;; required when we create a new activity
-    ;; Trying to update partially doesn't update the activity indicator. Why?
-    (tabulated-list-print t nil)
-    (chronometrist-print-non-tabular)
-    (chronometrist-goto-last-project)))
+  (if (chronometrist-common-file-empty-p timeclock-file)
+      (timeclock-in nil nil t)
+    (let ((target-project (progn
+                            (when arg
+                              (goto-char (point-min))
+                              (re-search-forward (format "^%d" arg) nil t))
+                            (chronometrist-project-at-point)))
+          (current-project  (chronometrist-current-project)))
+      ;; We change this function so it suggests the project at point
+      (cl-letf (((symbol-function 'timeclock-ask-for-project)
+                 (lambda ()
+                   (timeclock-completing-read
+                    (format "Clock into which project (default %s): "
+                            target-project)
+                    (mapcar 'list timeclock-project-list)
+                    target-project))))
+        ;; If we're clocked in to anything - clock out or change projects
+        (if current-project
+            (if (equal target-project current-project)
+                (timeclock-out nil nil t)
+              ;; We don't use timeclock-change because it doesn't prompt for the reason
+              (progn
+                (timeclock-out nil nil t)
+                (timeclock-in nil nil t)))
+          ;; Otherwise, run timeclock-in with project at point as default
+          ;; suggestion
+          (timeclock-in nil nil t)))))
+  (timeclock-reread-log) ;; required when we create a new activity
+  ;; Trying to update partially doesn't update the activity indicator. Why?
+  (tabulated-list-print t nil)
+  (chronometrist-print-non-tabular)
+  (chronometrist-goto-last-project)
+  (chronometrist-maybe-start-idle-timer))
 
 (defun chronometrist (&optional arg)
   "Displays a list of the user's timeclock.el projects and the
@@ -229,16 +240,26 @@ This is the 'listing command' for chronometrist-mode."
       (if (chronometrist-buffer-visible? chronometrist-buffer-name)
           (kill-buffer chronometrist-buffer-name)
         (with-current-buffer buffer
-          (chronometrist-mode)
-          (tabulated-list-print)
-
-          (when chronometrist-hide-cursor
-            (make-local-variable 'cursor-type)
-            (setq cursor-type nil)
-            (hl-line-mode))
-          (switch-to-buffer buffer)
-          (chronometrist-print-non-tabular)
-          (chronometrist-goto-last-project))))))
+          (if (or (not (file-exists-p timeclock-file))
+                  (chronometrist-common-file-empty-p timeclock-file))
+              (progn
+                (chronometrist-common-create-timeclock-file)
+                (let ((inhibit-read-only t))
+                  (chronometrist-common-clear-buffer buffer)
+                  (insert "Welcome to Chronometrist! Hit RET to create a new task and start logging time.")
+                  (chronometrist-mode)
+                  (switch-to-buffer buffer)))
+            (progn
+              (chronometrist-mode)
+              (tabulated-list-print)
+              (when chronometrist-hide-cursor
+                (make-local-variable 'cursor-type)
+                (setq cursor-type nil)
+                (hl-line-mode))
+              (switch-to-buffer buffer)
+              (chronometrist-print-non-tabular)
+              (chronometrist-goto-last-project)
+              (chronometrist-maybe-start-idle-timer))))))))
 
 (provide 'chronometrist)
 

@@ -1,12 +1,14 @@
 (require 'chronometrist-lib)
 
+;; TODO - improve first-run (no file, or no data in file) behaviour
+
 ;; TODO - add support for custom week start day to
 ;; tabulated-list-format. Have it use chronometrist-report-weekday-number-alist for day
 ;; names to aid i10n
 
 ;; TODO - add numeric arguments for next/previous week
+
 ;; TODO - use variables instead of hardcoded numbers to determine spacing
-;; TODO - remove dead code
 
 (defvar chronometrist-report-week-start-day "Sunday"
   "The day used for start of week by `chronometrist-report'.")
@@ -231,6 +233,7 @@ current week. Otherwise, display data from the week specified by
         (delete-other-windows)
         (when (not keep-date)
           (setq chronometrist-report--ui-date nil))
+        (chronometrist-common-create-timeclock-file)
         (chronometrist-report-mode)
         (tabulated-list-print)
         (chronometrist-report-print-non-tabular)
