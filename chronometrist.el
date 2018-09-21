@@ -155,7 +155,7 @@ information (see (info \"(elisp)Time Conversion\"))."
      (chronometrist-format-time it)
      (format "\n    %- 26s%s" "Total" it)
      (concat it
-             "\n\n    RET - clock in/out"
+             "\n\n    RET or [mouse-1] - clock in/out"
              "\n    <numeric argument N> RET - clock in/out from <N>th project"
              "\n    r - see weekly report"
              "\n    l - open log file")
@@ -185,9 +185,10 @@ information (see (info \"(elisp)Time Conversion\"))."
 
   (tabulated-list-init-header)
 
-  (define-key chronometrist-mode-map (kbd "RET") 'chronometrist-toggle-project)
-  (define-key chronometrist-mode-map (kbd "l") 'chronometrist-open-timeclock-file)
-  (define-key chronometrist-mode-map (kbd "r") 'chronometrist-report))
+  (define-key chronometrist-mode-map (kbd "RET") #'chronometrist-toggle-project)
+  (define-key chronometrist-mode-map (kbd "l")   #'chronometrist-open-timeclock-file)
+  (define-key chronometrist-mode-map (kbd "r")   #'chronometrist-report)
+  (define-key chronometrist-mode-map [mouse-1]   #'chronometrist-toggle-project))
 
 ;; ## COMMANDS ##
 
