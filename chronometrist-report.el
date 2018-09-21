@@ -1,5 +1,8 @@
 (require 'chronometrist-lib)
 
+;; TODO - timers in chronometrist-report and chronometrist can
+;; probably be merged into one function
+
 ;; TODO - improve first-run (no file, or no data in file) behaviour
 
 ;; TODO - add support for custom week start day to
@@ -9,6 +12,30 @@
 ;; TODO - add numeric arguments for next/previous week
 
 ;; TODO - use variables instead of hardcoded numbers to determine spacing
+
+;; ## TIMER ##
+
+(defun chronometrist-report-timer ()
+  (when (and (chronometrist-buffer-exists? chronometrist-report-buffer-name)
+             (chronometrist-buffer-visible? chronometrist-report-buffer-name))
+    (timeclock-reread-log)
+    (with-current-buffer chronometrist-report-buffer-name
+      (let ((position (point)))
+        (tabulated-list-print t nil)
+        (chronometrist-report-print-non-tabular)
+        (goto-char position)))))
+
+(defun chronometrist-report-maybe-start-timer ()
+  (unless chronometrist-report--timer-object
+    (setq chronometrist-report--timer-object
+          (run-at-time t chronometrist-report-update-interval #'chronometrist-timer))))
+
+(defun chronometrist-change-update-interval (arg)
+  (interactive "NEnter new interval (in seconds): ")
+  (cancel-timer chronometrist-report--timer-object)
+  (setq chronometrist-report--update-interval arg
+        chronometrist-report--timer-object nil)
+  (chronometrist-report-maybe-start-timer))
 
 (defvar chronometrist-report-week-start-day "Sunday"
   "The day used for start of week by `chronometrist-report'.")
@@ -95,6 +122,13 @@ information (see (info \"(elisp)Time Conversion\"))."
 ;; ## VARIABLES ##
 (defvar chronometrist-report-buffer-name "*Chronometrist-Report*")
 
+(defvar chronometrist-report--timer-object nil)
+
+(defvar chronometrist-report-update-interval 5
+  "How often the `chronometrist-report' buffer should be updated,
+in seconds. This is not guaranteed to be accurate - see (info
+\"(elisp)Timers\").")
+
 ;; ## FUNCTIONS ##
 
 (defun chronometrist-report-date->dates-in-week (first-date-in-week)
@@ -148,16 +182,6 @@ The first date is the first occurrence of
                                    week-dates)))))
             timeclock-project-list)))
 
-(defun chronometrist-report-idle-timer ()
-  (when (and (chronometrist-buffer-exists? chronometrist-report-buffer-name)
-             (chronometrist-buffer-visible? chronometrist-report-buffer-name))
-    (timeclock-reread-log)
-    (with-current-buffer chronometrist-report-buffer-name
-      (let ((position (point)))
-        (tabulated-list-print t nil)
-        (chronometrist-report-print-non-tabular)
-        (goto-char position)))))
-
 (defun chronometrist-report-format-date (format-string time-date)
   "Extract date from TIME-DATE and format it according to
 FORMAT-STRING."
@@ -208,7 +232,7 @@ FORMAT-STRING."
 
   (tabulated-list-init-header)
 
-  (run-with-idle-timer 5 t #'chronometrist-report-idle-timer)
+  (chronometrist-report-maybe-start-timer)
   (define-key chronometrist-report-mode-map (kbd "l") #'chronometrist-open-timeclock-file)
   (define-key chronometrist-report-mode-map (kbd "b") #'chronometrist-report-previous-week)
   (define-key chronometrist-report-mode-map (kbd "f") #'chronometrist-report-next-week))

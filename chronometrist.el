@@ -21,7 +21,6 @@
 ;; 3. Create (and start) a _new_ project -> kill buffer -> run
 ;;    chronometrist -> cursor is not at the new project
 ;;    - can't reproduce it?
-;; 4. Idle timer stops running after some time?
 
 ;; Style issues
 ;; 1. Uses Scheme-style ? and x->y naming conventions instead of
@@ -61,8 +60,13 @@ line in the `chronometrist' buffer.")
 
 (defvar chronometrist--timer-object nil)
 
-;; ## IDLE TIMER ##
-(defun chronometrist-idle-timer ()
+(defvar chronometrist-update-interval 5
+  "How often the `chronometrist' buffer should be updated, in
+seconds. This is not guaranteed to be accurate - see (info
+\"(elisp)Timers\").")
+
+;; ## TIMER ##
+(defun chronometrist-timer ()
   (when (and (chronometrist-buffer-exists? chronometrist-buffer-name)
              (chronometrist-buffer-visible? chronometrist-buffer-name))
     ;; (message "chronometrist-idle-timer run at %s" (format-time-string "%T"))
@@ -71,6 +75,18 @@ line in the `chronometrist' buffer.")
         (tabulated-list-print t)
         (chronometrist-print-non-tabular)
         (goto-char position)))))
+
+(defun chronometrist-maybe-start-timer ()
+  (unless chronometrist--timer-object
+    (setq chronometrist--timer-object
+          (run-at-time t chronometrist-update-interval #'chronometrist-timer))))
+
+(defun chronometrist-change-update-interval (arg)
+  (interactive "NEnter new interval (in seconds): ")
+  (cancel-timer chronometrist--timer-object)
+  (setq chronometrist-update-interval arg
+        chronometrist--timer-object nil)
+  (chronometrist-maybe-start-timer))
 
 ;; ## FUNCTIONS ##
 (defun chronometrist-current-project ()
@@ -169,11 +185,6 @@ information (see (info \"(elisp)Time Conversion\"))."
              "\n    l - open log file")
      (insert it))))
 
-(defun chronometrist-maybe-start-idle-timer ()
-  (unless chronometrist--timer-object
-    (setq chronometrist--timer-object
-          (run-with-idle-timer 3 t #'chronometrist-idle-timer))))
-
 (defun chronometrist-get-nth-project (n)
   "Return the Nth project in a `chronometrist' buffer, or nil if
 there is no corresponding project."
@@ -248,7 +259,7 @@ is no corresponding project, do nothing."
                (tabulated-list-print t nil)
                (chronometrist-print-non-tabular)
                (chronometrist-goto-last-project)
-               (chronometrist-maybe-start-idle-timer)))))))
+               (chronometrist-maybe-start-timer)))))))
 
 (defun chronometrist (&optional arg)
   "Displays a list of the user's timeclock.el projects and the
@@ -281,7 +292,7 @@ This is the 'listing command' for chronometrist-mode."
               (switch-to-buffer buffer)
               (chronometrist-print-non-tabular)
               (chronometrist-goto-last-project)
-              (chronometrist-maybe-start-idle-timer))))))))
+              (chronometrist-maybe-start-timer))))))))
 
 (provide 'chronometrist)
 
