@@ -7,6 +7,11 @@
 
 ;; TODO - remove repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
 
+;; Maybe we should just make the projects into buttons (links),
+;; instead of hacking the same functionality in `chronometrist-toggle-project' with
+;; a possibly stranger UI (no visual hint that only projects will do
+;; something when clicked/hit RET on)
+
 ;; BUGS
 ;; 1. (goto-char (point-max)) -> RET -> the time spent on the last
 ;;    project in the list will be the first new project suggestion.
@@ -108,15 +113,18 @@ SECONDS]. SECONDS must be a positive integer."
                                         "*" ""))))))
 
 (defun chronometrist-project-at-point ()
-  "Get the project at point in the `chronometrist' buffer."
+  "Return the project at point in the `chronometrist' buffer, or
+nil if there is no project at point."
   (save-excursion
     (beginning-of-line)
-    (--> (buffer-substring-no-properties
-          (re-search-forward "[0-9]+ +")
-          (progn
-            (re-search-forward chronometrist-time-re-ui nil t)
-            (match-beginning 0)))
-         (replace-regexp-in-string "[ \t]*$" "" it))))
+    (if (re-search-forward "[0-9]+ +" nil t)
+        (--> (buffer-substring-no-properties
+              (point)
+              (progn
+                (re-search-forward chronometrist-time-re-ui nil t)
+                (match-beginning 0)))
+             (replace-regexp-in-string "[ \t]*$" "" it))
+      nil)))
 
 (defun chronometrist-goto-last-project ()
   (goto-char (point-min))
@@ -166,6 +174,15 @@ information (see (info \"(elisp)Time Conversion\"))."
     (setq chronometrist--timer-object
           (run-with-idle-timer 3 t #'chronometrist-idle-timer))))
 
+(defun chronometrist-get-nth-project (n)
+  "Return the Nth project in a `chronometrist' buffer, or nil if
+there is no corresponding project."
+  (save-excursion
+    (goto-char (point-min))
+    (if (re-search-forward (format "^%d" n) nil t)
+        (chronometrist-project-at-point)
+      nil)))
+
 ;; ## MAJOR-MODE ##
 (define-derived-mode chronometrist-mode tabulated-list-mode "Chronometrist"
   "Major mode for `chronometrist'."
@@ -193,41 +210,45 @@ information (see (info \"(elisp)Time Conversion\"))."
 ;; ## COMMANDS ##
 
 (defun chronometrist-toggle-project (&optional arg)
-  "In a `chronometrist' buffer, start or stop the project at point."
+  "In a `chronometrist' buffer, start or stop the project at
+point. If there is no project at point, do nothing.
+
+With a numeric prefix argument, toggle the Nth project. If there
+is no corresponding project, do nothing."
   (interactive "P")
-  (if (chronometrist-common-file-empty-p timeclock-file)
-      (timeclock-in nil nil t)
-    (let ((target-project (progn
-                            (when arg
-                              (goto-char (point-min))
-                              (re-search-forward (format "^%d" arg) nil t))
-                            (chronometrist-project-at-point)))
-          (current-project  (chronometrist-current-project)))
-      ;; We change this function so it suggests the project at point
-      (cl-letf (((symbol-function 'timeclock-ask-for-project)
-                 (lambda ()
-                   (timeclock-completing-read
-                    (format "Clock into which project (default %s): "
-                            target-project)
-                    (mapcar 'list timeclock-project-list)
-                    target-project))))
-        ;; If we're clocked in to anything - clock out or change projects
-        (if current-project
-            (if (equal target-project current-project)
-                (timeclock-out nil nil t)
-              ;; We don't use timeclock-change because it doesn't prompt for the reason
-              (progn
-                (timeclock-out nil nil t)
-                (timeclock-in nil nil t)))
-          ;; Otherwise, run timeclock-in with project at point as default
-          ;; suggestion
-          (timeclock-in nil nil t)))))
-  (timeclock-reread-log) ;; required when we create a new activity
-  ;; Trying to update partially doesn't update the activity indicator. Why?
-  (tabulated-list-print t nil)
-  (chronometrist-print-non-tabular)
-  (chronometrist-goto-last-project)
-  (chronometrist-maybe-start-idle-timer))
+  (let* ((target-project   (when arg (chronometrist-get-nth-project arg)))
+         (project-at-point (chronometrist-project-at-point))
+         (suggested-project (or target-project project-at-point)))
+    (cond ((chronometrist-common-file-empty-p timeclock-file)
+           (timeclock-in nil nil t))
+          ;; What should we do if the user provides an invalid argument? Currently - nothing.
+          ((and arg (not target-project)))
+          (suggested-project ;; do nothing if there's no project at point
+           (let ((current-project (chronometrist-current-project)))
+             ;; We redefine this function so it suggests the project at point
+             (cl-letf (((symbol-function 'timeclock-ask-for-project)
+                        (lambda ()
+                          (timeclock-completing-read
+                           (format "Clock into which project (default %s): "
+                                   suggested-project)
+                           (mapcar 'list timeclock-project-list)
+                           suggested-project))))
+               ;; If we're clocked in to anything - clock out or change projects
+               (if current-project
+                   (if (equal suggested-project current-project)
+                       (timeclock-out nil nil t)
+                     ;; We don't use timeclock-change because it doesn't prompt for the reason
+                     (progn
+                       (timeclock-out nil nil t)
+                       (timeclock-in nil nil t)))
+                 ;; Otherwise, run timeclock-in with project at point as default suggestion
+                 (timeclock-in nil nil t))
+               (timeclock-reread-log) ;; required when we create a new activity
+               ;; Trying to update partially doesn't update the activity indicator. Why?
+               (tabulated-list-print t nil)
+               (chronometrist-print-non-tabular)
+               (chronometrist-goto-last-project)
+               (chronometrist-maybe-start-idle-timer)))))))
 
 (defun chronometrist (&optional arg)
   "Displays a list of the user's timeclock.el projects and the
