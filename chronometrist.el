@@ -13,11 +13,14 @@
 ;; something when clicked/hit RET on)
 
 ;; BUGS
-;; 1. (goto-char (point-max)) -> RET -> the time spent on the last
+
+;; 1. Start a project before midnight -> after midnight, chronometrist
+;;    will display it as active, but the time spent will be '-' (zero)
+;;    _until you clock out._ Probably a `chronometrist-project-time-one-day' bug.
+
+;; 2. (goto-char (point-max)) -> RET -> the time spent on the last
 ;;    project in the list will be the first new project suggestion.
-;; 2. Start a project before midnight -> after midnight,
-;;    chronometrist will display it as active, but the time spent will
-;;    be '-' (zero)
+
 ;; 3. Create (and start) a _new_ project -> kill buffer -> run
 ;;    chronometrist -> cursor is not at the new project
 ;;    - can't reproduce it?

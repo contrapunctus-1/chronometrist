@@ -242,6 +242,17 @@
     (should (equal (chronometrist-project-time-one-day "Programming" '(0 0 0 3 1 2018))
                    [1 0 0]))))
 
+(ert-deftest chronometrist-ptod-midnight-clocked-in ()
+  "Tests for `chronometrist-project-time-one-day' behaviour
+across midnight + when not clocked out."
+  :expected-result :failed
+  (let ((timeclock-file "test2.timelog"))
+    (timeclock-reread-log)
+    (should (equal (chronometrist-project-time-one-day "Test" '(0 0 0 1 1 2018))
+                   [1 0 0]))
+    (should (equal (chronometrist-project-time-one-day "Test" '(0 0 0 2 1 2018))
+                   [24 0 0]))))
+
 ;; #### CHRONOMETRIST ####
 
 (ert-deftest chronometrist-seconds-to-hms-tests ()
