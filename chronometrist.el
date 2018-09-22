@@ -18,10 +18,12 @@
 ;;    will display it as active, but the time spent will be '-' (zero)
 ;;    _until you clock out._ Probably a `chronometrist-project-time-one-day' bug.
 
-;; 2. (goto-char (point-max)) -> RET -> the time spent on the last
+;; 2. timer function makes line highlight vanish
+
+;; 3. (goto-char (point-max)) -> RET -> the time spent on the last
 ;;    project in the list will be the first new project suggestion.
 
-;; 3. Create (and start) a _new_ project -> kill buffer -> run
+;; 4. Create (and start) a _new_ project -> kill buffer -> run
 ;;    chronometrist -> cursor is not at the new project
 ;;    - can't reproduce it?
 
