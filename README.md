@@ -55,16 +55,22 @@ Set this to non-nil if you want to hide the cursor in in the Chronometrist buffe
    - Somewhat less conservative option - it will operate on the currently clocked-in project, no matter where point is.
    - It _should_ ask for confirmation.
 4. **Custom day start/end time** - option to use a specific time to define when a day starts/ends. e.g. 08:00 will mean a day starts and ends at 08:00 instead of the usual 24:00/00:00. Helpful for late sleepers.
-5. **Fix completion** - the default reason suggested is the last one used. Can't even begin to explain how nonsensical that is. (might be an ido or timeclock.el problem)
+5. **Fix suggested reasons** - the default reason suggested is the last one used. Can't even begin to explain how nonsensical that is. (might be an ido or timeclock.el problem)
    - Make default blank?
    - Possibly make suggestions activity-sensitive e.g. when stopping activity A, don't suggest past reasons used for activity B, C, etc. Add a variable to customize this, because it might not be the behaviour everyone wants.
+   - Suggest reasons by frequency? So your most used reason for the task is the default suggestion. If you usually _don't_ provide a reason for the task, the default is nil.
 6. **Better shortcuts** - Shortcuts derived from the first alphabet of each project could be even nicer (but the code to generate them from similarly-named projects would be somewhat complex...)
 7. **Modeline support** - show currently active project + time spent on it so far in the mode-line (see timeclock-mode-line-display)
    - Maybe make modeline slowly change color the longer you do something?
 8. **Improve help**
    - Show shortcuts by consulting the keymap rather than using a hardcoded string.
    - Change 'see weekly report' and 'open log file' to buttons
-9. Refresh when you select the list buffer (impossible? make-thread in v26? Use emacs-async library?)
+9. **Reminder notifications** - a common issue with time trackers is that people forget to clock in/out. A potential solution can be to have Emacs remind people (ideally via desktop notifications?) -
+    - when they haven't clocked in, every X minutes (e.g. 30)
+    - that they are clocked in, every X minutes (e.g. 30)
+    - of course, modeline support might help too.
+10. Use `make-thread` in v26 or the emacs-async library for `chronometrist-entries`/`chronometrist-report-entries`
+11. Some way to update buffers every second without making Emacs unusable. (impossible?)
 
 ### chronometrist-report
 1. Highlight column of current day
