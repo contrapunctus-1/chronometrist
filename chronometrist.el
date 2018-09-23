@@ -259,24 +259,16 @@ is no corresponding project, do nothing."
           ;; What should we do if the user provides an invalid argument? Currently - nothing.
           ((and arg (not nth-project)))
           (target-project ;; do nothing if there's no project at point
-           ;; We redefine this function so it suggests the project at point
-           (cl-letf (((symbol-function 'timeclock-ask-for-project)
-                      (lambda ()
-                        (timeclock-completing-read
-                         (format "Clock into which project (default %s): "
-                                 target-project)
-                         (mapcar 'list timeclock-project-list)
-                         target-project))))
-             ;; If we're clocked in to anything - clock out or change projects
-             (if current-project
-                 (if (equal target-project current-project)
-                     (timeclock-out nil nil t)
-                   ;; We don't use timeclock-change because it doesn't prompt for the reason
-                   (progn
-                     (timeclock-out nil nil t)
-                     (timeclock-in  nil target-project nil)))
-               ;; Otherwise, run timeclock-in with project at point as default suggestion
-               (timeclock-in nil target-project nil)))))
+           ;; If we're clocked in to anything - clock out or change projects
+           (if current-project
+               (if (equal target-project current-project)
+                   (timeclock-out nil nil t)
+                 ;; We don't use timeclock-change because it doesn't prompt for the reason
+                 (progn
+                   (timeclock-out nil nil t)
+                   (timeclock-in  nil target-project nil)))
+             ;; Otherwise, run timeclock-in with project at point as default suggestion
+             (timeclock-in nil target-project nil))))
     (timeclock-reread-log) ;; required when we create a new activity
     ;; Trying to update partially doesn't update the activity indicator. Why?
     (tabulated-list-print t nil)
