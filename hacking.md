@@ -3,7 +3,9 @@ The files [chronometrist.el](chronometrist.el) and [chronometrist-report.el](chr
 
 Both use (info "(elisp)Tabulated List Mode"). Each of them also contains a "-print-non-tabular" function, which prints the non-tabular parts of the buffer.
 
-[chronometrist-lib.el](chronometrist-lib.el) contains definitions used by both chronometrist.el and chronometrist-report.el
+[chronometrist-lib.el](chronometrist-lib.el) contains definitions used by both chronometrist.el and chronometrist-report.el.
+
+The files [chronometrist-custom.el](chronometrist-custom.el) and [chronometrist-report-custom.el](chronometrist-report-custom.el) contain the Customize group and custom variable definitions for user-facing variables.
 
 I recommend using
 * [nameless-mode](https://github.com/Malabarba/Nameless) for easier reading of Emacs Lisp code, and
