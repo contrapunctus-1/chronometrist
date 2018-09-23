@@ -70,6 +70,7 @@ See the Customize groups `chronometrist` and `chronometrist-report` for variable
     - of course, modeline support might help too.
 10. Use `make-thread` in v26 or the emacs-async library for `chronometrist-entries`/`chronometrist-report-entries`
 11. Some way to update buffers every second without making Emacs unusable. (impossible?)
+12. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
 
 ### chronometrist-report
 1. Highlight column of current day
