@@ -72,9 +72,13 @@
         (goto-char position)))))
 
 (defun chronometrist-maybe-start-timer ()
+  "If `chronometrist--timer-object' is non-nil, add
+`chronometrist-timer' to the list of active timers and return t,
+else do nothing and return nil."
   (unless chronometrist--timer-object
     (setq chronometrist--timer-object
-          (run-at-time t chronometrist-update-interval #'chronometrist-timer))))
+          (run-at-time t chronometrist-update-interval #'chronometrist-timer))
+    t))
 
 (defun chronometrist-change-update-interval (arg)
   (interactive "NEnter new interval (in seconds): ")
