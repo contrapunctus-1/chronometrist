@@ -1,4 +1,5 @@
 (require 'chronometrist-lib)
+(require 'chronometrist-custom)
 (require 'chronometrist-report)
 
 ;; TODO - don't suggest nil when asking for first project on first run
@@ -57,18 +58,7 @@
 ;; 2. Can't have multi-line headers
 
 ;; ## VARIABLES ##
-(defvar chronometrist-buffer-name "*Chronometrist*")
-
-(defvar chronometrist-hide-cursor nil
-  "If non-nil, hide the cursor and only highlight the current
-line in the `chronometrist' buffer.")
-
 (defvar chronometrist--timer-object nil)
-
-(defvar chronometrist-update-interval 5
-  "How often the `chronometrist' buffer should be updated, in
-seconds. This is not guaranteed to be accurate - see (info
-\"(elisp)Timers\").")
 
 ;; ## TIMER ##
 (defun chronometrist-timer ()

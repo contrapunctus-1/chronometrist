@@ -36,8 +36,7 @@ Just like `chronometrist`, `chronometrist-report` will also toggle the visibilty
 `chronometrist-report` keeps itself updated via an idle timer - no pressing `g` to update.
 
 ## Customization
-### chronometrist-hide-cursor
-Set this to non-nil if you want to hide the cursor in in the Chronometrist buffer. The line the cursor is on will be highlighted instead.
+See the Customize groups `chronometrist` and `chronometrist-report` for variables intended to be user-customizable.
 
 ## Roadmap
 * New commands for statistics

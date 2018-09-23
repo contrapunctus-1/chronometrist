@@ -1,4 +1,5 @@
 (require 'chronometrist-lib)
+(provide 'chronometrist-report-custom)
 
 ;; TODO - timers in chronometrist-report and chronometrist can
 ;; probably be merged into one function
@@ -18,7 +19,6 @@
 ;; active project + to check it continuously for the latest + the
 ;; toggle behaviour already updates it.
 
-
 ;; ## TIMER ##
 
 (defun chronometrist-report-timer ()
@@ -36,6 +36,8 @@
     (setq chronometrist-report--timer-object
           (run-at-time t chronometrist-report-update-interval #'chronometrist-timer))))
 
+(defvar chronometrist-report--timer-object nil)
+
 (defun chronometrist-change-update-interval (arg)
   (interactive "NEnter new interval (in seconds): ")
   (cancel-timer chronometrist-report--timer-object)
@@ -43,8 +45,7 @@
         chronometrist-report--timer-object nil)
   (chronometrist-report-maybe-start-timer))
 
-(defvar chronometrist-report-week-start-day "Sunday"
-  "The day used for start of week by `chronometrist-report'.")
+;; ## FUNCTIONS ##
 
 (defvar chronometrist-report--ui-date
   nil
@@ -59,17 +60,6 @@ year (1-52).")
   "List of dates currently displayed by
 `chronometrist-report' (specifically `chronometrist-report-entries').
 Each date is a list containing calendrical information (see (info \"(elisp)Time Conversion\"))")
-
-(defvar chronometrist-report-weekday-number-alist
-  '(("Sunday"    . 0)
-    ("Monday"    . 1)
-    ("Tuesday"   . 2)
-    ("Wednesday" . 3)
-    ("Thursday"  . 4)
-    ("Friday"    . 5)
-    ("Saturday"  . 6))
-  "alist in the form (\"NAME\" . NUMBER), where \"NAME\" is the
-  name of a weekday and NUMBER its associated number.")
 
 (defun chronometrist-report-day-of-week->number (day-of-week)
   (cdr
@@ -124,18 +114,6 @@ Any time data provided is reset to midnight (00:00:00)."
 it is nil, return the current date as calendrical
 information (see (info \"(elisp)Time Conversion\"))."
   (if chronometrist-report--ui-date chronometrist-report--ui-date (decode-time)))
-
-;; ## VARIABLES ##
-(defvar chronometrist-report-buffer-name "*Chronometrist-Report*")
-
-(defvar chronometrist-report--timer-object nil)
-
-(defvar chronometrist-report-update-interval 5
-  "How often the `chronometrist-report' buffer should be updated,
-in seconds. This is not guaranteed to be accurate - see (info
-\"(elisp)Timers\").")
-
-;; ## FUNCTIONS ##
 
 (defun chronometrist-report-date->dates-in-week (first-date-in-week)
   "Return a list in the form (DAY-1 DAY-2 ... DAY-7), where each
