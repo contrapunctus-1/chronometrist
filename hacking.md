@@ -1,5 +1,5 @@
 # Project overview
-The files [chronometrist.el](chronometrist.el) and [chronometrist-report.el](chronometrist-report.el) contain definitions specific to the commands of the same name, most notably the major mode definitions, commands, and idle timers.
+The files [chronometrist.el](chronometrist.el) and [chronometrist-report.el](chronometrist-report.el) contain definitions specific to the commands of the same name, most notably the major mode definitions, commands, and timers.
 
 Both use (info "(elisp)Tabulated List Mode"). Each of them also contains a "-print-non-tabular" function, which prints the non-tabular parts of the buffer.
 
