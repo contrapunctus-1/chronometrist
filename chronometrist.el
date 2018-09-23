@@ -276,6 +276,12 @@ is no corresponding project, do nothing."
     (chronometrist-goto-last-project)
     (chronometrist-maybe-start-timer)))
 
+(defun chronometrist-add-new-project (project)
+  (interactive "MNew project name: ")
+  (unless (chronometrist-current-project)
+    (timeclock-out nil nil t))
+  (timeclock-in nil project nil))
+
 (defun chronometrist (&optional arg)
   "Displays a list of the user's timeclock.el projects and the
 time spent on each today, based on their timelog file
