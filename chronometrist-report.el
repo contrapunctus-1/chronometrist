@@ -1,5 +1,5 @@
 (require 'chronometrist-lib)
-(provide 'chronometrist-report-custom)
+(require 'chronometrist-report-custom)
 
 ;; TODO - timers in chronometrist-report and chronometrist can
 ;; probably be merged into one function
