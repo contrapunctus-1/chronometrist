@@ -236,6 +236,7 @@ there is no corresponding project."
             (timeclock-out nil nil t)
             (timeclock-in  nil project-at-point nil)))
       (timeclock-in nil project-at-point nil))
+    (timeclock-reread-log) ;; required when we create a new activity
     ;; Trying to update partially doesn't update the activity indicator. Why?
     (tabulated-list-print t nil)
     (chronometrist-print-non-tabular)
