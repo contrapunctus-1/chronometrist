@@ -9,6 +9,8 @@ I recommend using
 * [nameless-mode](https://github.com/Malabarba/Nameless) for easier reading of Emacs Lisp code, and
 * [visual-fill-column-mode](https://github.com/joostkremers/visual-fill-column) for easier reading of the Markdown files (without actually "filling" i.e. inserting newlines, so the same file is equally readable on any viewer/editor which supports line-wrapping).
 
+Both [chronometrist.el](chronometrist.el) and [chronometrist-report.el](chronometrist-report.el) use timers to keep themselves updated. Sometimes, when hacking, the timers may cause subtle bugs which are very hard to debug. Restarting Emacs can fix them, so try that as a first sanity check.
+
 # chronometrist-report date range logic
 A quick description -
 1. We get the current date in calendrical form using `(decode-time)`.

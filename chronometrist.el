@@ -115,13 +115,16 @@ SECONDS]. SECONDS must be a positive integer."
   (timeclock-reread-log)
   (->> timeclock-project-list
        (-sort #'string-lessp)
-       (--map-indexed (list it
-                            (vector (number-to-string (1+ it-index))
-                                    it
-                                    (-> (chronometrist-project-time-one-day it)
-                                        (chronometrist-format-time))
-                                    (if (chronometrist-project-active? it)
-                                        "*" ""))))))
+       (--map-indexed
+        (list it
+              (vector (number-to-string (1+ it-index))
+                      (list it
+                            'action 'chronometrist-toggle-project-button
+                            'follow-link t)
+                      (-> (chronometrist-project-time-one-day it)
+                          (chronometrist-format-time))
+                      (if (chronometrist-project-active? it)
+                          "*" ""))))))
 
 (defun chronometrist-project-at-point ()
   "Return the project at point in the `chronometrist' buffer, or
@@ -195,10 +198,10 @@ there is no corresponding project."
   (timeclock-reread-log)
 
   (make-local-variable 'tabulated-list-format)
-  (setq tabulated-list-format [("#" 3 t)
+  (setq tabulated-list-format [("#"       3  t)
                                ("Project" 25 t)
-                               ("Time" 10 t)
-                               ("Active" 3 t)])
+                               ("Time"    10 t)
+                               ("Active"  3  t)])
 
   (make-local-variable 'tabulated-list-entries)
   (setq tabulated-list-entries 'chronometrist-entries)
@@ -214,6 +217,26 @@ there is no corresponding project."
   (define-key chronometrist-mode-map [mouse-1]   #'chronometrist-toggle-project))
 
 ;; ## COMMANDS ##
+
+;; Duplication between this function and `chronometrist-toggle-project's logic
+(defun chronometrist-toggle-project-button (button)
+  (let ((current-project  (chronometrist-current-project))
+        (project-at-point (chronometrist-project-at-point)))
+    ;; If we're clocked in to anything - clock out or change projects
+    ;; Otherwise, just clock in
+    (if current-project
+        (if (equal project-at-point current-project)
+            (timeclock-out nil nil t)
+          ;; We don't use timeclock-change because it doesn't prompt for the reason
+          (progn
+            (timeclock-out nil nil t)
+            (timeclock-in  nil project-at-point nil)))
+      (timeclock-in nil project-at-point nil))
+    ;; Trying to update partially doesn't update the activity indicator. Why?
+    (tabulated-list-print t nil)
+    (chronometrist-print-non-tabular)
+    (chronometrist-goto-last-project)
+    (chronometrist-maybe-start-timer)))
 
 (defun chronometrist-toggle-project (&optional arg)
   "In a `chronometrist' buffer, start or stop the project at
