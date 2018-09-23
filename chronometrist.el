@@ -245,39 +245,39 @@ point. If there is no project at point, do nothing.
 With a numeric prefix argument, toggle the Nth project. If there
 is no corresponding project, do nothing."
   (interactive "P")
-  (let* ((target-project   (when arg (chronometrist-get-nth-project arg)))
-         (project-at-point (chronometrist-project-at-point))
-         (suggested-project (or target-project project-at-point)))
+  (let* ((nth-project       (when arg (chronometrist-get-nth-project arg)))
+         (project-at-point  (chronometrist-project-at-point))
+         (suggested-project (or nth-project project-at-point))
+         (current-project   (chronometrist-current-project)))
     (cond ((chronometrist-common-file-empty-p timeclock-file)
            (timeclock-in nil nil t))
           ;; What should we do if the user provides an invalid argument? Currently - nothing.
-          ((and arg (not target-project)))
+          ((and arg (not nth-project)))
           (suggested-project ;; do nothing if there's no project at point
-           (let ((current-project (chronometrist-current-project)))
-             ;; We redefine this function so it suggests the project at point
-             (cl-letf (((symbol-function 'timeclock-ask-for-project)
-                        (lambda ()
-                          (timeclock-completing-read
-                           (format "Clock into which project (default %s): "
-                                   suggested-project)
-                           (mapcar 'list timeclock-project-list)
-                           suggested-project))))
-               ;; If we're clocked in to anything - clock out or change projects
-               (if current-project
-                   (if (equal suggested-project current-project)
-                       (timeclock-out nil nil t)
-                     ;; We don't use timeclock-change because it doesn't prompt for the reason
-                     (progn
-                       (timeclock-out nil nil t)
-                       (timeclock-in nil nil t)))
-                 ;; Otherwise, run timeclock-in with project at point as default suggestion
-                 (timeclock-in nil nil t))
-               (timeclock-reread-log) ;; required when we create a new activity
-               ;; Trying to update partially doesn't update the activity indicator. Why?
-               (tabulated-list-print t nil)
-               (chronometrist-print-non-tabular)
-               (chronometrist-goto-last-project)
-               (chronometrist-maybe-start-timer)))))))
+           ;; We redefine this function so it suggests the project at point
+           (cl-letf (((symbol-function 'timeclock-ask-for-project)
+                      (lambda ()
+                        (timeclock-completing-read
+                         (format "Clock into which project (default %s): "
+                                 suggested-project)
+                         (mapcar 'list timeclock-project-list)
+                         suggested-project))))
+             ;; If we're clocked in to anything - clock out or change projects
+             (if current-project
+                 (if (equal suggested-project current-project)
+                     (timeclock-out nil nil t)
+                   ;; We don't use timeclock-change because it doesn't prompt for the reason
+                   (progn
+                     (timeclock-out nil nil t)
+                     (timeclock-in  nil nil t)))
+               ;; Otherwise, run timeclock-in with project at point as default suggestion
+               (timeclock-in nil nil t)))))
+    (timeclock-reread-log) ;; required when we create a new activity
+    ;; Trying to update partially doesn't update the activity indicator. Why?
+    (tabulated-list-print t nil)
+    (chronometrist-print-non-tabular)
+    (chronometrist-goto-last-project)
+    (chronometrist-maybe-start-timer)))
 
 (defun chronometrist (&optional arg)
   "Displays a list of the user's timeclock.el projects and the
