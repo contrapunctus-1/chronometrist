@@ -63,14 +63,18 @@
 
 ;; ## TIMER ##
 (defun chronometrist-timer ()
-  (when (and (chronometrist-buffer-exists? chronometrist-buffer-name)
-             (chronometrist-buffer-visible? chronometrist-buffer-name))
-    ;; (message "chronometrist-idle-timer run at %s" (format-time-string "%T"))
-    (with-current-buffer chronometrist-buffer-name
-      (let ((position (point)))
-        (tabulated-list-print t)
-        (chronometrist-print-non-tabular)
-        (goto-char position)))))
+  (let ((buffer-window (get-buffer-window chronometrist-buffer-name t)))
+    (when (and (chronometrist-buffer-exists? chronometrist-buffer-name)
+               buffer-window)
+      (with-current-buffer chronometrist-buffer-name
+        (let ((position (window-point buffer-window)))
+          (tabulated-list-print t)
+          (chronometrist-print-non-tabular)
+          (set-window-point buffer-window position))))))
+
+(defun chronometrist-stop-timer ()
+  (cancel-timer chronometrist--timer-object)
+  (setq chronometrist--timer-object nil))
 
 (defun chronometrist-maybe-start-timer ()
   "If `chronometrist--timer-object' is non-nil, add
