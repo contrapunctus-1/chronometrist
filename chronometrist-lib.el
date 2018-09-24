@@ -237,7 +237,7 @@ SECONDS)."
                  (format "%02d" s))))
         (concat h m s)))))
 
-(defun chronometrist-open-timeclock-file ()
+(defun chronometrist-open-timeclock-file (&optional button)
   (interactive)
   (find-file-other-window timeclock-file)
   (goto-char (point-max)))

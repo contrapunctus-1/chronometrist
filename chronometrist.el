@@ -174,18 +174,29 @@ information (see (info \"(elisp)Time Conversion\"))."
 
 (defun chronometrist-print-non-tabular ()
   "Print the non-tabular part of the buffer in `chronometrist'."
-  (let ((inhibit-read-only t))
+  (let ((inhibit-read-only t)
+        (w "\n    "))
     (goto-char (point-max))
     (-->
      (chronometrist-total-time-one-day)
      (chronometrist-format-time it)
-     (format "\n    %- 26s%s" "Total" it)
-     (concat it
-             "\n\n    RET or [mouse-1] - clock in/out"
-             "\n    <numeric argument N> RET - clock in/out from <N>th project"
-             "\n    r - see weekly report"
-             "\n    l - open log file")
-     (insert it))))
+     (format "%s%- 26s%s" w "Total" it)
+     (insert it))
+    (insert "\n")
+    (insert w "Keys")
+    (insert w "a - ")
+    (insert-text-button "start a new project"
+                        'action #'chronometrist-add-new-project
+                        'follow-link t)
+    (insert w "<numeric argument N> RET - toggle <N>th project")
+    (insert w "r - ")
+    (insert-text-button "see weekly report"
+                        'action #'chronometrist-report
+                        'follow-link t)
+    (insert w "l - ")
+    (insert-text-button "open log file"
+                        'action #'chronometrist-open-timeclock-file
+                        'follow-link t)))
 
 (defun chronometrist-get-nth-project (n)
   "Return the Nth project in a `chronometrist' buffer, or nil if
