@@ -56,6 +56,7 @@
 ;;    - a post-print hook could help
 ;;    - maybe use advice?
 ;; 2. Can't have multi-line headers
+;; 3. Can't have multiple tables in a buffer
 
 ;; ## VARIABLES ##
 (defvar chronometrist--timer-object nil)
