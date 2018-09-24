@@ -226,7 +226,8 @@ there is no corresponding project."
   (define-key chronometrist-mode-map (kbd "RET") #'chronometrist-toggle-project)
   (define-key chronometrist-mode-map (kbd "l")   #'chronometrist-open-timeclock-file)
   (define-key chronometrist-mode-map (kbd "r")   #'chronometrist-report)
-  (define-key chronometrist-mode-map [mouse-1]   #'chronometrist-toggle-project))
+  (define-key chronometrist-mode-map [mouse-1]   #'chronometrist-toggle-project)
+  (define-key chronometrist-mode-map (kbd "a")   #'(lambda () (interactive) (chronometrist-add-new-project nil))))
 
 ;; ## COMMANDS ##
 
@@ -274,11 +275,14 @@ is no corresponding project, do nothing."
              (timeclock-in nil target-project nil))))
     (chronometrist-refresh)))
 
-(defun chronometrist-add-new-project (project)
-  (interactive "MNew project name: ")
-  (unless (chronometrist-current-project)
+(defun chronometrist-add-new-project (button)
+  (when (chronometrist-current-project)
     (timeclock-out nil nil t))
-  (timeclock-in nil project nil))
+  (timeclock-in nil
+                (read-from-minibuffer "New project name: "
+                                      nil nil nil nil nil t)
+                nil)
+  (chronometrist-refresh))
 
 (defun chronometrist (&optional arg)
   "Displays a list of the user's timeclock.el projects and the
