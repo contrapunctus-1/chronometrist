@@ -72,6 +72,7 @@ See the Customize groups `chronometrist` and `chronometrist-report` for variable
 11. Some way to update buffers every second without making Emacs unusable. (impossible?)
 12. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
 13. Commands to rename a project, delete a project (erasing all records)
+14. Hooks to be run before clocking in and after clocking out. The functions must accept a single parameter - the name of the project. (see `run-hook-with-args`)
 
 ### chronometrist-report
 1. Highlight column of current day
