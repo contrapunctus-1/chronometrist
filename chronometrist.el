@@ -196,6 +196,14 @@ there is no corresponding project."
         (chronometrist-project-at-point)
       nil)))
 
+(defun chronometrist-refresh ()
+  (timeclock-reread-log) ;; required when we create a new activity
+  ;; Trying to update partially doesn't update the activity indicator. Why?
+  (tabulated-list-print t nil)
+  (chronometrist-print-non-tabular)
+  (chronometrist-goto-last-project)
+  (chronometrist-maybe-start-timer))
+
 ;; ## MAJOR-MODE ##
 (define-derived-mode chronometrist-mode tabulated-list-mode "Chronometrist"
   "Major mode for `chronometrist'."
@@ -236,12 +244,7 @@ there is no corresponding project."
             (timeclock-out nil nil t)
             (timeclock-in  nil project-at-point nil)))
       (timeclock-in nil project-at-point nil))
-    (timeclock-reread-log) ;; required when we create a new activity
-    ;; Trying to update partially doesn't update the activity indicator. Why?
-    (tabulated-list-print t nil)
-    (chronometrist-print-non-tabular)
-    (chronometrist-goto-last-project)
-    (chronometrist-maybe-start-timer)))
+    (chronometrist-refresh)))
 
 (defun chronometrist-toggle-project (&optional arg)
   "In a `chronometrist' buffer, start or stop the project at
@@ -269,12 +272,7 @@ is no corresponding project, do nothing."
                    (timeclock-in  nil target-project nil)))
              ;; Otherwise, run timeclock-in with project at point as default suggestion
              (timeclock-in nil target-project nil))))
-    (timeclock-reread-log) ;; required when we create a new activity
-    ;; Trying to update partially doesn't update the activity indicator. Why?
-    (tabulated-list-print t nil)
-    (chronometrist-print-non-tabular)
-    (chronometrist-goto-last-project)
-    (chronometrist-maybe-start-timer)))
+    (chronometrist-refresh)))
 
 (defun chronometrist-add-new-project (project)
   (interactive "MNew project name: ")
@@ -305,15 +303,12 @@ This is the 'listing command' for chronometrist-mode."
                   (switch-to-buffer buffer)))
             (progn
               (chronometrist-mode)
-              (tabulated-list-print)
               (when chronometrist-hide-cursor
                 (make-local-variable 'cursor-type)
                 (setq cursor-type nil)
                 (hl-line-mode))
               (switch-to-buffer buffer)
-              (chronometrist-print-non-tabular)
-              (chronometrist-goto-last-project)
-              (chronometrist-maybe-start-timer))))))))
+              (chronometrist-refresh))))))))
 
 (provide 'chronometrist)
 
