@@ -90,6 +90,8 @@ Contact the creator and other Emacs users in the Emacs room on the Jabber networ
 ## License
 Chronometrist is released under your choice of [CC0](https://creativecommons.org/publicdomain/zero/1.0/), [Unlicense](https://unlicense.org/), and [WTFPL](http://www.wtfpl.net/).
 
+(See files [LICENSE](LICENSE), [LICENSE.1](LICENSE.1), and [LICENSE.2](LICENSE.2))
+
 ## Thanks
 wasamasa and #emacs for all their help and support
 
