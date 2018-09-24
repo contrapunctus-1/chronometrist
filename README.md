@@ -14,7 +14,7 @@ Run `M-x chronometrist` to see your projects, the time you spent on them today, 
 
 Hit `RET` on a project to clock in for it. If it's already clocked in, it will be clocked out (and you'll be prompted for an optional reason).
 
-Whenever you call `chronometrist`, the cursor will helpfully be placed on the last activity you clocked out of or the current activity clocked in.
+Whenever you call `chronometrist`, the cursor will helpfully be placed on the last activity you clocked out of, or the current activity clocked in.
 
 Alternatively, hit `<numeric prefix> RET` anywhere in the buffer to toggle the corresponding project, e.g. `C-1 RET` will toggle the project with index 1.
 
@@ -58,7 +58,7 @@ See the Customize groups `chronometrist` and `chronometrist-report` for variable
    - Make default blank?
    - Possibly make suggestions activity-sensitive e.g. when stopping activity A, don't suggest past reasons used for activity B, C, etc. Add a variable to customize this, because it might not be the behaviour everyone wants.
    - Suggest reasons by frequency? So your most used reason for the task is the default suggestion. If you usually _don't_ provide a reason for the task, the default is nil.
-6. **Better shortcuts** - Shortcuts derived from the first alphabet of each project could be even nicer (but the code to generate them from similarly-named projects would be somewhat complex...)
+6. **Better shortcuts** - Shortcuts derived from the first alphabet of each project could be even nicer.
 7. **Modeline support** - show currently active project + time spent on it so far in the mode-line (see timeclock-mode-line-display)
    - Maybe make modeline slowly change color the longer you do something?
 8. **Improve help**
@@ -71,6 +71,7 @@ See the Customize groups `chronometrist` and `chronometrist-report` for variable
 10. Use `make-thread` in v26 or the emacs-async library for `chronometrist-entries`/`chronometrist-report-entries`
 11. Some way to update buffers every second without making Emacs unusable. (impossible?)
 12. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
+13. Commands to rename a project, delete a project (erasing all records)
 
 ### chronometrist-report
 1. Highlight column of current day
