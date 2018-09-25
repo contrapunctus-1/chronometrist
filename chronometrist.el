@@ -64,12 +64,10 @@
 ;; ## TIMER ##
 (defun chronometrist-timer ()
   (let ((buffer-window (get-buffer-window chronometrist-buffer-name t)))
-    (when (and (chronometrist-buffer-exists? chronometrist-buffer-name)
-               buffer-window)
+    (when (and buffer-window (chronometrist-current-project))
       (with-current-buffer chronometrist-buffer-name
         (let ((position (window-point buffer-window)))
-          (tabulated-list-print t)
-          (chronometrist-print-non-tabular)
+          (chronometrist-refresh)
           (set-window-point buffer-window position))))))
 
 (defun chronometrist-stop-timer ()
