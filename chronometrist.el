@@ -189,8 +189,10 @@ information (see (info \"(elisp)Time Conversion\"))."
     (insert w "Keys")
     (insert w "a - ")
     (insert-text-button "start a new project"
-                        'action #'chronometrist-add-new-project
+                        'action #'chronometrist-add-new-project-button
                         'follow-link t)
+    (insert w "RET/[mouse-1] - toggle project at point")
+    (insert w "M-RET/[mouse-3] - toggle without asking for reason")
     (insert w "<numeric argument N> RET - toggle <N>th project")
     (insert w "r - ")
     (insert-text-button "see weekly report"
@@ -237,13 +239,16 @@ there is no corresponding project."
 
   (tabulated-list-init-header)
 
-  (define-key chronometrist-mode-map (kbd "RET") #'chronometrist-toggle-project)
-  (define-key chronometrist-mode-map (kbd "l")   #'chronometrist-open-timeclock-file)
-  (define-key chronometrist-mode-map (kbd "r")   #'chronometrist-report)
-  (define-key chronometrist-mode-map [mouse-1]   #'chronometrist-toggle-project)
-  (define-key chronometrist-mode-map (kbd "a")   #'(lambda () (interactive) (chronometrist-add-new-project nil))))
+  (define-key chronometrist-mode-map (kbd "RET")   #'chronometrist-toggle-project)
+  (define-key chronometrist-mode-map (kbd "M-RET") #'chronometrist-toggle-project-no-reason)
+  (define-key chronometrist-mode-map (kbd "l")     #'chronometrist-open-timeclock-file)
+  (define-key chronometrist-mode-map (kbd "r")     #'chronometrist-report)
+  (define-key chronometrist-mode-map [mouse-1]     #'chronometrist-toggle-project)
+  (define-key chronometrist-mode-map [mouse-3]     #'chronometrist-toggle-project-no-reason)
+  (define-key chronometrist-mode-map (kbd "a")     #'chronometrist-add-new-project))
 
-;; ## COMMANDS ##
+
+;; ## BUTTONS ##
 
 ;; Duplication between this function and `chronometrist-toggle-project's logic
 (defun chronometrist-toggle-project-button (button)
@@ -261,35 +266,7 @@ there is no corresponding project."
       (timeclock-in nil project-at-point nil))
     (chronometrist-refresh)))
 
-(defun chronometrist-toggle-project (&optional arg)
-  "In a `chronometrist' buffer, start or stop the project at
-point. If there is no project at point, do nothing.
-
-With a numeric prefix argument, toggle the Nth project. If there
-is no corresponding project, do nothing."
-  (interactive "P")
-  (let* ((nth-project       (when arg (chronometrist-get-nth-project arg)))
-         (project-at-point  (chronometrist-project-at-point))
-         (target-project    (or nth-project project-at-point))
-         (current-project   (chronometrist-current-project)))
-    (cond ((chronometrist-common-file-empty-p timeclock-file)
-           (timeclock-in nil nil t))
-          ;; What should we do if the user provides an invalid argument? Currently - nothing.
-          ((and arg (not nth-project)))
-          (target-project ;; do nothing if there's no project at point
-           ;; If we're clocked in to anything - clock out or change projects
-           (if current-project
-               (if (equal target-project current-project)
-                   (timeclock-out nil nil t)
-                 ;; We don't use timeclock-change because it doesn't prompt for the reason
-                 (progn
-                   (timeclock-out nil nil t)
-                   (timeclock-in  nil target-project nil)))
-             ;; Otherwise, run timeclock-in with project at point as default suggestion
-             (timeclock-in nil target-project nil))))
-    (chronometrist-refresh)))
-
-(defun chronometrist-add-new-project (button)
+(defun chronometrist-add-new-project-button (button)
   (when (chronometrist-current-project)
     (timeclock-out nil nil t))
   (timeclock-in nil
@@ -297,6 +274,47 @@ is no corresponding project, do nothing."
                                       nil nil nil nil nil t)
                 nil)
   (chronometrist-refresh))
+
+;; ## COMMANDS ##
+
+(defun chronometrist-toggle-project (&optional prefix no-prompt)
+  "In a `chronometrist' buffer, start or stop the project at
+point. If there is no project at point, do nothing.
+
+With a numeric prefix argument, toggle the Nth project. If there
+is no corresponding project, do nothing."
+  (interactive "P")
+  (let* ((nth-project       (when prefix (chronometrist-get-nth-project prefix)))
+         (project-at-point  (chronometrist-project-at-point))
+         (target-project    (or nth-project project-at-point))
+         (current-project   (chronometrist-current-project))
+         (ask               (not no-prompt)))
+    (cond ((chronometrist-common-file-empty-p timeclock-file)
+           (timeclock-in nil nil t))
+          ;; What should we do if the user provides an invalid argument? Currently - nothing.
+          ((and prefix (not nth-project)))
+          (target-project ;; do nothing if there's no project at point
+           ;; If we're clocked in to anything - clock out or change projects
+           (if current-project
+               (if (equal target-project current-project)
+                   (timeclock-out nil nil ask)
+                 ;; We don't use timeclock-change because it doesn't prompt for the reason
+                 (progn
+                   (timeclock-out nil nil ask)
+                   (timeclock-in  nil target-project nil)))
+             ;; Otherwise, run timeclock-in with project at point as default suggestion
+             (timeclock-in nil target-project nil))))
+    (chronometrist-refresh)))
+
+(defun chronometrist-toggle-project-no-reason (&optional prefix)
+  "Like `chronometrist-toggle-project', but do not ask for a
+reason if clocking out."
+  (interactive "P")
+  (funcall-interactively #'chronometrist-toggle-project prefix t))
+
+(defun chronometrist-add-new-project ()
+  (interactive)
+  (chronometrist-add-new-project-button nil))
 
 (defun chronometrist (&optional arg)
   "Displays a list of the user's timeclock.el projects and the
