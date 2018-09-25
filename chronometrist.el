@@ -71,6 +71,7 @@
           (set-window-point buffer-window position))))))
 
 (defun chronometrist-stop-timer ()
+  (interactive)
   (cancel-timer chronometrist--timer-object)
   (setq chronometrist--timer-object nil))
 
@@ -220,6 +221,12 @@ there is no corresponding project."
   (chronometrist-goto-last-project)
   (chronometrist-maybe-start-timer))
 
+(defun chronometrist-run-project-start-hook (project)
+  (run-hook-with-args chronometrist-project-start-hook project))
+
+(defun chronometrist-run-project-end-hook (project)
+  (run-hook-with-args chronometrist-project-end-hook project))
+
 ;; ## MAJOR-MODE ##
 (define-derived-mode chronometrist-mode tabulated-list-mode "Chronometrist"
   "Major mode for `chronometrist'."
@@ -252,28 +259,30 @@ there is no corresponding project."
 
 ;; Duplication between this function and `chronometrist-toggle-project's logic
 (defun chronometrist-toggle-project-button (button)
-  (let ((current-project  (chronometrist-current-project))
-        (project-at-point (chronometrist-project-at-point)))
-    ;; If we're clocked in to anything - clock out or change projects
-    ;; Otherwise, just clock in
-    (if current-project
-        (if (equal project-at-point current-project)
-            (timeclock-out nil nil t)
-          ;; We don't use timeclock-change because it doesn't prompt for the reason
-          (progn
-            (timeclock-out nil nil t)
-            (timeclock-in  nil project-at-point nil)))
-      (timeclock-in nil project-at-point nil))
+  (let ((current (chronometrist-current-project))
+        (at-point (chronometrist-project-at-point)))
+    ;; clocked in + point on current    = clock out
+    ;; clocked in + point on some other project = clock out, clock in to project
+    ;; clocked out = clock in
+    (when current
+      (chronometrist-run-project-end-hook at-point)
+      (timeclock-out nil nil t))
+    (unless (equal at-point current)
+      (chronometrist-run-project-start-hook at-point)
+      (timeclock-in nil at-point nil))
     (chronometrist-refresh)))
 
 (defun chronometrist-add-new-project-button (button)
-  (when (chronometrist-current-project)
-    (timeclock-out nil nil t))
-  (timeclock-in nil
-                (read-from-minibuffer "New project name: "
-                                      nil nil nil nil nil t)
-                nil)
-  (chronometrist-refresh))
+  (let ((current (chronometrist-current-project)))
+    (when current
+      (chronometrist-run-project-end-hook current)
+      (timeclock-out nil nil t))
+    (chronometrist-run-project-start-hook at-point)
+    (timeclock-in nil
+                  (read-from-minibuffer "New project name: "
+                                        nil nil nil nil nil t)
+                  nil)
+    (chronometrist-refresh)))
 
 ;; ## COMMANDS ##
 
