@@ -84,14 +84,17 @@ See the Customize groups `chronometrist` and `chronometrist-report` for variable
 3. Use Cask?
 4. Create test timelog file and UI behaviour tests
 
-## Contact
-Contact the creator and other Emacs users in the Emacs room on the Jabber network - [xmpp:emacs@salas.suchat.org?join](xmpp:emacs@salas.suchat.org?join)
+## Contributions and contact
+Feedback and MRs very welcome. 🙂
+
+Contact the creator and other Emacs users in the Emacs room on the Jabber network - [xmpp:emacs@salas.suchat.org?join](xmpp:emacs@salas.suchat.org?join) ([web chat](https://inverse.chat/#converse/room?jid=emacs@salas.suchat.org))
+
 (For help in getting started with Jabber, [click here](https://xmpp.org/getting-started/))
 
 ## License
-Chronometrist is released under your choice of [CC0](https://creativecommons.org/publicdomain/zero/1.0/), [Unlicense](https://unlicense.org/), and [WTFPL](http://www.wtfpl.net/).
+Chronometrist is released under your choice of [Unlicense](https://unlicense.org/) and the [WTFPL](http://www.wtfpl.net/).
 
-(See files [LICENSE](LICENSE), [LICENSE.1](LICENSE.1), and [LICENSE.2](LICENSE.2))
+(See files [LICENSE](LICENSE) and [LICENSE.1](LICENSE.1)).
 
 ## Thanks
 wasamasa and #emacs for all their help and support
