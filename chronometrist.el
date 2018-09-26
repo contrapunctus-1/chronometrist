@@ -222,10 +222,10 @@ there is no corresponding project."
   (chronometrist-maybe-start-timer))
 
 (defun chronometrist-run-project-start-hook (project)
-  (run-hook-with-args chronometrist-project-start-hook project))
+  (run-hook-with-args 'chronometrist-project-start-hook project))
 
 (defun chronometrist-run-project-end-hook (project)
-  (run-hook-with-args chronometrist-project-end-hook project))
+  (run-hook-with-args 'chronometrist-project-end-hook project))
 
 ;; ## MAJOR-MODE ##
 (define-derived-mode chronometrist-mode tabulated-list-mode "Chronometrist"
