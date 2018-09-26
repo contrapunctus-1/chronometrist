@@ -40,8 +40,8 @@ See the Customize groups `chronometrist` and `chronometrist-report` for variable
 
 If you find that you usually _don't_ want to enter a reason, you can switch the default bindings -
 ```elisp
-(define-key chronometrist-mode-map (kbd "M-RET")   #'chronometrist-toggle-project)
-(define-key chronometrist-mode-map (kbd "RET") #'chronometrist-toggle-project-no-reason)
+(define-key chronometrist-mode-map (kbd "M-RET") #'chronometrist-toggle-project)
+(define-key chronometrist-mode-map (kbd "RET")   #'chronometrist-toggle-project-no-reason)
 ```
 
 ## Roadmap
@@ -63,7 +63,7 @@ If you find that you usually _don't_ want to enter a reason, you can switch the 
    - Make default blank?
    - Possibly make suggestions activity-sensitive e.g. when stopping activity A, don't suggest past reasons used for activity B, C, etc. Add a variable to customize this, because it might not be the behaviour everyone wants.
    - Suggest reasons by frequency? So your most used reason for the task is the default suggestion. If you usually _don't_ provide a reason for the task, the default is nil.
-5. **Better shortcuts** - Shortcuts derived from the first alphabet of each project could be even nicer.
+5. **Better shortcuts** - shortcuts derived from the first alphabet of each project might be nicer.
 6. **Modeline support** - show currently active project + time spent on it so far in the mode-line (see timeclock-mode-line-display)
    - Maybe make modeline slowly change color the longer you do something?
 7. **Improve help**
