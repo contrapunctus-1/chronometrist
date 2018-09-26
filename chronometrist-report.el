@@ -177,20 +177,21 @@ FORMAT-STRING."
 
 (defun chronometrist-report-print-non-tabular ()
   "Print the non-tabular part of the buffer in `chronometrist-report'."
-  (let ((inhibit-read-only t))
+  (let ((inhibit-read-only t)
+        (w "\n    "))
     (goto-char (point-min))
     (insert "                         ")
     (--map (insert (chronometrist-report-format-date "%04d-%02d-%02d " it))
            (chronometrist-report-date->week-dates))
     (insert "\n")
     (goto-char (point-max))
-    (insert (format "\n    %- 21s" "Total"))
+    (insert w (format "%- 21s" "Total"))
     (->> chronometrist-report--ui-week-dates
          (mapcar #'chronometrist-total-time-one-day)
          (mapcar #'chronometrist-format-time)
          (--map (format "% 9s  " it))
          (apply #'insert))
-    (insert "\n\n    l - open log file")))
+    (insert "\n" w "l - open log file")))
 
 ;; ## MAJOR MODE ##
 
