@@ -265,8 +265,8 @@ there is no corresponding project."
     ;; clocked in + point on some other project = clock out, clock in to project
     ;; clocked out = clock in
     (when current
-      (chronometrist-run-project-end-hook current)
-      (timeclock-out nil nil t))
+      (timeclock-out nil nil t)
+      (chronometrist-run-project-end-hook current))
     (unless (equal at-point current)
       (chronometrist-run-project-start-hook at-point)
       (timeclock-in nil at-point nil))
@@ -275,8 +275,8 @@ there is no corresponding project."
 (defun chronometrist-add-new-project-button (button)
   (let ((current (chronometrist-current-project)))
     (when current
-      (chronometrist-run-project-end-hook current)
-      (timeclock-out nil nil t))
+      (timeclock-out nil nil t)
+      (chronometrist-run-project-end-hook current))
     (chronometrist-run-project-start-hook at-point)
     (timeclock-in nil
                   (read-from-minibuffer "New project name: "
