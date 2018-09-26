@@ -68,7 +68,6 @@ If you find that you usually _don't_ want to enter a reason, you can switch the 
    - Maybe make modeline slowly change color the longer you do something?
 7. **Improve help**
    - Show shortcuts by consulting the keymap rather than using a hardcoded string.
-   - Change 'see weekly report' and 'open log file' to buttons
 8. **Reminder notifications** - a common issue with time trackers is that people forget to clock in/out. A potential solution can be to have Emacs remind people (ideally via desktop notifications?) -
     - when they haven't clocked in, every X minutes (e.g. 30)
     - that they are clocked in, every X minutes (e.g. 30)
