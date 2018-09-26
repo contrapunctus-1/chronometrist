@@ -259,13 +259,13 @@ there is no corresponding project."
 
 ;; Duplication between this function and `chronometrist-toggle-project's logic
 (defun chronometrist-toggle-project-button (button)
-  (let ((current (chronometrist-current-project))
+  (let ((current  (chronometrist-current-project))
         (at-point (chronometrist-project-at-point)))
     ;; clocked in + point on current    = clock out
     ;; clocked in + point on some other project = clock out, clock in to project
     ;; clocked out = clock in
     (when current
-      (chronometrist-run-project-end-hook at-point)
+      (chronometrist-run-project-end-hook current)
       (timeclock-out nil nil t))
     (unless (equal at-point current)
       (chronometrist-run-project-start-hook at-point)
