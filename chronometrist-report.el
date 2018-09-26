@@ -74,13 +74,13 @@ DATE must be calendrical information (see (info \"(elisp)Time Conversion\"))
 OPERATOR must be either '+ or '-
 
 COUNT must be a positive integer."
-  (let ((seconds   (elt date 0))
-        (minutes   (elt date 1))
-        (hours     (elt date 2))
-        (day       (elt date 3))
-        (month     (elt date 4))
-        (year      (elt date 5))
-        (count     (if count count 1)))
+  (let ((seconds (elt date 0))
+        (minutes (elt date 1))
+        (hours   (elt date 2))
+        (day     (elt date 3))
+        (month   (elt date 4))
+        (year    (elt date 5))
+        (count   (if count count 1)))
     (-->
      (encode-time seconds minutes hours day month year)
      (funcall (cond ((equal operator '+) 'time-add)
@@ -216,10 +216,15 @@ FORMAT-STRING."
 
   (tabulated-list-init-header)
 
-  (chronometrist-report-maybe-start-timer)
-  (define-key chronometrist-report-mode-map (kbd "l") #'chronometrist-open-timeclock-file)
-  (define-key chronometrist-report-mode-map (kbd "b") #'chronometrist-report-previous-week)
-  (define-key chronometrist-report-mode-map (kbd "f") #'chronometrist-report-next-week))
+  (chronometrist-report-maybe-start-timer))
+
+(defvar chronometrist-report-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "l") #'chronometrist-open-timeclock-file)
+    (define-key map (kbd "b") #'chronometrist-report-previous-week)
+    (define-key map (kbd "f") #'chronometrist-report-next-week)
+    map)
+  "Keymap used by `chronometrist-report-mode'.")
 
 ;; ## COMMANDS ##
 

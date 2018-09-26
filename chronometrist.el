@@ -237,16 +237,19 @@ there is no corresponding project."
   (make-local-variable 'tabulated-list-sort-key)
   (setq tabulated-list-sort-key '("Project" . nil))
 
-  (tabulated-list-init-header)
+  (tabulated-list-init-header))
 
-  (define-key chronometrist-mode-map (kbd "RET")   #'chronometrist-toggle-project)
-  (define-key chronometrist-mode-map (kbd "M-RET") #'chronometrist-toggle-project-no-reason)
-  (define-key chronometrist-mode-map (kbd "l")     #'chronometrist-open-timeclock-file)
-  (define-key chronometrist-mode-map (kbd "r")     #'chronometrist-report)
-  (define-key chronometrist-mode-map [mouse-1]     #'chronometrist-toggle-project)
-  (define-key chronometrist-mode-map [mouse-3]     #'chronometrist-toggle-project-no-reason)
-  (define-key chronometrist-mode-map (kbd "a")     #'chronometrist-add-new-project))
-
+(defvar chronometrist-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "RET")   #'chronometrist-toggle-project)
+    (define-key map (kbd "M-RET") #'chronometrist-toggle-project-no-reason)
+    (define-key map (kbd "l")     #'chronometrist-open-timeclock-file)
+    (define-key map (kbd "r")     #'chronometrist-report)
+    (define-key map [mouse-1]     #'chronometrist-toggle-project)
+    (define-key map [mouse-3]     #'chronometrist-toggle-project-no-reason)
+    (define-key map (kbd "a")     #'chronometrist-add-new-project)
+    map)
+  "Keymap used by `chronometrist-mode'.")
 
 ;; ## BUTTONS ##
 
