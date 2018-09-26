@@ -59,7 +59,7 @@ If you find that you usually _don't_ want to enter a reason, you can switch the 
    - Somewhat less conservative option - it will operate on the currently clocked-in project, no matter where point is.
    - It _should_ ask for confirmation.
 3. **Custom day start/end time** - option to use a specific time to define when a day starts/ends. e.g. 08:00 will mean a day starts and ends at 08:00 instead of the usual 24:00/00:00. Helpful for late sleepers.
-4. **Fix suggested reasons** - the default reason suggested is the last one used. Can't even begin to explain how nonsensical that is. (might be an ido or timeclock.el problem)
+4. **Fix suggested reasons** - when using `ido` (via `ido-ubiquitous`), the default reason suggested is the last one used, which I personally find silly.
    - Make default blank?
    - Possibly make suggestions activity-sensitive e.g. when stopping activity A, don't suggest past reasons used for activity B, C, etc. Add a variable to customize this, because it might not be the behaviour everyone wants.
    - Suggest reasons by frequency? So your most used reason for the task is the default suggestion. If you usually _don't_ provide a reason for the task, the default is nil.
