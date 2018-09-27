@@ -10,8 +10,6 @@
 ;; tabulated-list-format. Have it use chronometrist-report-weekday-number-alist for day
 ;; names to aid i10n
 
-;; TODO - add numeric arguments for next/previous week
-
 ;; TODO - use variables instead of hardcoded numbers to determine spacing
 
 ;; BUG - the timer for chronometrist-report doesn't currently seem to
