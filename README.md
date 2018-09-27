@@ -44,6 +44,19 @@ If you find that you usually _don't_ want to enter a reason, you can switch the 
 (define-key chronometrist-mode-map (kbd "RET")   #'chronometrist-toggle-project-no-reason)
 ```
 
+### Hooks
+See `chronometrist-project-start-hook` and `chronometrist-project-stop-hook`.
+
+As an example from the author's own init -
+
+```
+(defun my-start-guitar (project)
+  (when (equal project "Guitar")
+  (find-file-other-window "~/repertoire.org")))
+
+(add-hook 'chronometrist-project-start-hook 'my-start-guitar)
+```
+
 ## Roadmap
 * New commands for statistics
   - activity-specific - average time spent in $time_period, average days worked on in $time_period, current/longest streaks, ...
@@ -76,7 +89,6 @@ If you find that you usually _don't_ want to enter a reason, you can switch the 
 10. Some way to update buffers every second without making Emacs unusable. (impossible?)
 11. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
 12. Commands to rename a project, delete a project (erasing all records)
-13. Hooks to be run before clocking in and after clocking out. The functions must accept a single parameter - the name of the project. (see `run-hook-with-args`)
 
 ### chronometrist-report
 1. Highlight column of current day
