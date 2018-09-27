@@ -190,11 +190,17 @@ FORMAT-STRING."
     (insert "\n")
     (goto-char (point-max))
     (insert w (format "%- 21s" "Total"))
-    (->> chronometrist-report--ui-week-dates
-         (mapcar #'chronometrist-total-time-one-day)
-         (mapcar #'chronometrist-format-time)
-         (--map (format "% 9s  " it))
-         (apply #'insert))
+    (let ((total-time-daily (->> chronometrist-report--ui-week-dates
+                                 (mapcar #'chronometrist-total-time-one-day))))
+      (->> total-time-daily
+           (mapcar #'chronometrist-format-time)
+           (--map (format "% 9s  " it))
+           (apply #'insert))
+      (->> total-time-daily
+           (-reduce #'chronometrist-time-add)
+           (chronometrist-format-time)
+           (format "% 13s")
+           (insert)))
     (insert "\n" w "l - open log file")))
 
 ;; ## MAJOR MODE ##
