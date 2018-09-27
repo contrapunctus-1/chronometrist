@@ -12,6 +12,18 @@
 
 This is not guaranteed to be accurate - see (info \"(elisp)Timers\").")
 
+(defvar chronometrist-project-start-hook nil
+  "Hook run before a project is clocked in. Each function in this hook must accept a single argument, which is the project to be clocked-in.
+
+The commands `chronometrist-toggle-project-button',
+`chronometrist-add-new-project-button',
+`chronometrist-toggle-project',
+`chronometrist-add-new-project', and
+`chronometrist-toggle-project-no-reason' will run this hook.")
+
+(defvar chronometrist-project-end-hook nil
+  "Hook run after a project is clocked out. Each function in this hook must accept a single argument, which is the clocked-out project.")
+
 (provide 'chronometrist-custom)
 
 ;; Local Variables:

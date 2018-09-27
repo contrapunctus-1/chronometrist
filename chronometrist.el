@@ -71,6 +71,7 @@
           (set-window-point buffer-window position))))))
 
 (defun chronometrist-stop-timer ()
+  (interactive)
   (cancel-timer chronometrist--timer-object)
   (setq chronometrist--timer-object nil))
 
@@ -214,11 +215,18 @@ there is no corresponding project."
 
 (defun chronometrist-refresh ()
   (timeclock-reread-log) ;; required when we create a new activity
-  ;; Trying to update partially doesn't update the activity indicator. Why?
-  (tabulated-list-print t nil)
-  (chronometrist-print-non-tabular)
-  (chronometrist-goto-last-project)
-  (chronometrist-maybe-start-timer))
+  (with-current-buffer chronometrist-buffer-name
+    ;; Trying to update partially doesn't update the activity indicator. Why?
+    (tabulated-list-print t nil)
+    (chronometrist-print-non-tabular)
+    (chronometrist-goto-last-project)
+    (chronometrist-maybe-start-timer)))
+
+(defun chronometrist-run-project-start-hook (project)
+  (run-hook-with-args 'chronometrist-project-start-hook project))
+
+(defun chronometrist-run-project-end-hook (project)
+  (run-hook-with-args 'chronometrist-project-end-hook project))
 
 ;; ## MAJOR-MODE ##
 (define-derived-mode chronometrist-mode tabulated-list-mode "Chronometrist"
@@ -255,28 +263,30 @@ there is no corresponding project."
 
 ;; Duplication between this function and `chronometrist-toggle-project's logic
 (defun chronometrist-toggle-project-button (button)
-  (let ((current-project  (chronometrist-current-project))
-        (project-at-point (chronometrist-project-at-point)))
-    ;; If we're clocked in to anything - clock out or change projects
-    ;; Otherwise, just clock in
-    (if current-project
-        (if (equal project-at-point current-project)
-            (timeclock-out nil nil t)
-          ;; We don't use timeclock-change because it doesn't prompt for the reason
-          (progn
-            (timeclock-out nil nil t)
-            (timeclock-in  nil project-at-point nil)))
-      (timeclock-in nil project-at-point nil))
+  (let ((current  (chronometrist-current-project))
+        (at-point (chronometrist-project-at-point)))
+    ;; clocked in + point on current    = clock out
+    ;; clocked in + point on some other project = clock out, clock in to project
+    ;; clocked out = clock in
+    (when current
+      (timeclock-out nil nil t)
+      (chronometrist-run-project-end-hook current))
+    (unless (equal at-point current)
+      (chronometrist-run-project-start-hook at-point)
+      (timeclock-in nil at-point nil))
     (chronometrist-refresh)))
 
 (defun chronometrist-add-new-project-button (button)
-  (when (chronometrist-current-project)
-    (timeclock-out nil nil t))
-  (timeclock-in nil
-                (read-from-minibuffer "New project name: "
-                                      nil nil nil nil nil t)
-                nil)
-  (chronometrist-refresh))
+  (let ((current (chronometrist-current-project)))
+    (when current
+      (timeclock-out nil nil t)
+      (chronometrist-run-project-end-hook current))
+    (chronometrist-run-project-start-hook at-point)
+    (timeclock-in nil
+                  (read-from-minibuffer "New project name: "
+                                        nil nil nil nil nil t)
+                  nil)
+    (chronometrist-refresh)))
 
 ;; ## COMMANDS ##
 
@@ -287,26 +297,25 @@ point. If there is no project at point, do nothing.
 With a numeric prefix argument, toggle the Nth project. If there
 is no corresponding project, do nothing."
   (interactive "P")
-  (let* ((nth-project       (when prefix (chronometrist-get-nth-project prefix)))
-         (project-at-point  (chronometrist-project-at-point))
-         (target-project    (or nth-project project-at-point))
-         (current-project   (chronometrist-current-project))
-         (ask               (not no-prompt)))
-    (cond ((chronometrist-common-file-empty-p timeclock-file)
-           (timeclock-in nil nil t))
+  (let* ((empty-file (chronometrist-common-file-empty-p timeclock-file))
+         (nth        (when prefix (chronometrist-get-nth-project prefix)))
+         (at-point   (chronometrist-project-at-point))
+         (target     (or nth at-point))
+         (current    (chronometrist-current-project))
+         (ask        (not no-prompt)))
+    (cond (empty-file (chronometrist-add-new-project)) ;; do not run hooks - chronometrist-add-new-project will do it
           ;; What should we do if the user provides an invalid argument? Currently - nothing.
-          ((and prefix (not nth-project)))
-          (target-project ;; do nothing if there's no project at point
-           ;; If we're clocked in to anything - clock out or change projects
-           (if current-project
-               (if (equal target-project current-project)
-                   (timeclock-out nil nil ask)
-                 ;; We don't use timeclock-change because it doesn't prompt for the reason
-                 (progn
-                   (timeclock-out nil nil ask)
-                   (timeclock-in  nil target-project nil)))
-             ;; Otherwise, run timeclock-in with project at point as default suggestion
-             (timeclock-in nil target-project nil))))
+          ((and prefix (not nth)))
+          (target ;; do nothing if there's no project at point
+           ;; clocked in + target is current = clock out
+           ;; clocked in + target is some other project = clock out, clock in to project
+           ;; clocked out = clock in
+           (when current
+             (timeclock-out nil nil ask)
+             (chronometrist-run-project-end-hook current))
+           (unless (equal target current)
+             (chronometrist-run-project-start-hook at-point)
+             (timeclock-in nil target nil))))
     (chronometrist-refresh)))
 
 (defun chronometrist-toggle-project-no-reason (&optional prefix)
