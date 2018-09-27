@@ -157,13 +157,17 @@ The first date is the first occurrence of
          (week-dates-string (chronometrist-report-dates-in-week->string week-dates)))
     (setq chronometrist-report--ui-week-dates week-dates)
     (mapcar (lambda (project)
-              (list project
-                    (vconcat
-                     (vector project)
-                     (apply #'vector
-                            (--map (chronometrist-format-time
-                                    (chronometrist-project-time-one-day project it))
-                                   week-dates)))))
+              (let ((project-daily-time-list (--map (chronometrist-project-time-one-day project it) week-dates)))
+                (list project
+                      (vconcat
+                       (vector project)
+                       (->> project-daily-time-list
+                            (mapcar #'chronometrist-format-time)
+                            (apply #'vector))
+                       (->> project-daily-time-list
+                            (-reduce #'chronometrist-time-add)
+                            (chronometrist-format-time)
+                            (vector))))))
             timeclock-project-list)))
 
 (defun chronometrist-report-format-date (format-string time-date)
@@ -177,20 +181,27 @@ FORMAT-STRING."
 
 (defun chronometrist-report-print-non-tabular ()
   "Print the non-tabular part of the buffer in `chronometrist-report'."
-  (let ((inhibit-read-only t))
+  (let ((inhibit-read-only t)
+        (w "\n    "))
     (goto-char (point-min))
     (insert "                         ")
     (--map (insert (chronometrist-report-format-date "%04d-%02d-%02d " it))
            (chronometrist-report-date->week-dates))
     (insert "\n")
     (goto-char (point-max))
-    (insert (format "\n    %- 21s" "Total"))
-    (->> chronometrist-report--ui-week-dates
-         (mapcar #'chronometrist-total-time-one-day)
-         (mapcar #'chronometrist-format-time)
-         (--map (format "% 9s  " it))
-         (apply #'insert))
-    (insert "\n\n    l - open log file")))
+    (insert w (format "%- 21s" "Total"))
+    (let ((total-time-daily (->> chronometrist-report--ui-week-dates
+                                 (mapcar #'chronometrist-total-time-one-day))))
+      (->> total-time-daily
+           (mapcar #'chronometrist-format-time)
+           (--map (format "% 9s  " it))
+           (apply #'insert))
+      (->> total-time-daily
+           (-reduce #'chronometrist-time-add)
+           (chronometrist-format-time)
+           (format "% 13s")
+           (insert)))
+    (insert "\n" w "l - open log file")))
 
 ;; ## MAJOR MODE ##
 
@@ -206,7 +217,8 @@ FORMAT-STRING."
                                ("Wednesday" 10 t)
                                ("Thursday"  10 t)
                                ("Friday"    10 t)
-                               ("Saturday"  10 t)])
+                               ("Saturday"  10 t :pad-right 5)
+                               ("Total"     12 t)])
 
   (make-local-variable 'tabulated-list-entries)
   (setq tabulated-list-entries 'chronometrist-report-entries)
