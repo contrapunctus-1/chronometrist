@@ -45,7 +45,7 @@ If you find that you usually _don't_ want to enter a reason, you can switch the 
 ```
 
 ### Hooks
-See `chronometrist-project-start-hook` and `chronometrist-project-stop-hook`.
+See `chronometrist-project-start-hook` and `chronometrist-project-stop-hook`. Note that these are 'abnormal' hooks, i.e. the functions they contain must accept arguments. In this case, each function must accept exactly one argument, which is the project which is being started or stopped.
 
 As an example from the author's own init -
 
