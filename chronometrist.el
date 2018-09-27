@@ -215,11 +215,12 @@ there is no corresponding project."
 
 (defun chronometrist-refresh ()
   (timeclock-reread-log) ;; required when we create a new activity
-  ;; Trying to update partially doesn't update the activity indicator. Why?
-  (tabulated-list-print t nil)
-  (chronometrist-print-non-tabular)
-  (chronometrist-goto-last-project)
-  (chronometrist-maybe-start-timer))
+  (with-current-buffer chronometrist-buffer-name
+    ;; Trying to update partially doesn't update the activity indicator. Why?
+    (tabulated-list-print t nil)
+    (chronometrist-print-non-tabular)
+    (chronometrist-goto-last-project)
+    (chronometrist-maybe-start-timer)))
 
 (defun chronometrist-run-project-start-hook (project)
   (run-hook-with-args 'chronometrist-project-start-hook project))
