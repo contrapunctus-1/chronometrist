@@ -3,6 +3,5 @@
 
 ((emacs-lisp-mode
   (nameless-aliases
-   ("tu" . "timeclock-ui")
-   ("tl" . "timeclock-list")
-   ("tr" . "timeclock-report"))))
+   ("c" . "chronometrist")
+   ("cr" . "chronometrist-report"))))
