@@ -157,13 +157,17 @@ The first date is the first occurrence of
          (week-dates-string (chronometrist-report-dates-in-week->string week-dates)))
     (setq chronometrist-report--ui-week-dates week-dates)
     (mapcar (lambda (project)
-              (list project
-                    (vconcat
-                     (vector project)
-                     (apply #'vector
-                            (--map (chronometrist-format-time
-                                    (chronometrist-project-time-one-day project it))
-                                   week-dates)))))
+              (let ((project-daily-time-list (--map (chronometrist-project-time-one-day project it) week-dates)))
+                (list project
+                      (vconcat
+                       (vector project)
+                       (->> project-daily-time-list
+                            (mapcar #'chronometrist-format-time)
+                            (apply #'vector))
+                       (->> project-daily-time-list
+                            (-reduce #'chronometrist-time-add)
+                            (chronometrist-format-time)
+                            (vector))))))
             timeclock-project-list)))
 
 (defun chronometrist-report-format-date (format-string time-date)
@@ -207,7 +211,8 @@ FORMAT-STRING."
                                ("Wednesday" 10 t)
                                ("Thursday"  10 t)
                                ("Friday"    10 t)
-                               ("Saturday"  10 t)])
+                               ("Saturday"  10 t :pad-right 5)
+                               ("Total"     12 t)])
 
   (make-local-variable 'tabulated-list-entries)
   (setq tabulated-list-entries 'chronometrist-report-entries)
