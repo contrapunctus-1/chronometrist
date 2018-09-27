@@ -337,7 +337,10 @@ This is the 'listing command' for chronometrist-mode."
                 (chronometrist-common-create-timeclock-file)
                 (let ((inhibit-read-only t))
                   (chronometrist-common-clear-buffer buffer)
-                  (insert "Welcome to Chronometrist! Hit RET to create a new task and start logging time.")
+                  (insert "Welcome to Chronometrist! Hit RET to ")
+                  (insert-text-button "start a new project."
+                                      'action #'chronometrist-add-new-project-button
+                                      'follow-link t)
                   (chronometrist-mode)
                   (switch-to-buffer buffer)))
             (progn
