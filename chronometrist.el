@@ -222,11 +222,27 @@ there is no corresponding project."
     (chronometrist-goto-last-project)
     (chronometrist-maybe-start-timer)))
 
+;; ## HOOKS ##
+
+(defvar chronometrist-project-start-hook nil
+  "Hook run before a project is clocked in. Each function in this hook must accept a single argument, which is the project to be clocked-in.
+
+The commands `chronometrist-toggle-project-button',
+`chronometrist-add-new-project-button',
+`chronometrist-toggle-project',
+`chronometrist-add-new-project', and
+`chronometrist-toggle-project-no-reason' will run this hook.")
+
+(defvar chronometrist-project-stop-hook nil
+  "Hook run after a project is clocked out. Each function in this
+hook must accept a single argument, which is the clocked-out
+project.")
+
 (defun chronometrist-run-project-start-hook (project)
   (run-hook-with-args 'chronometrist-project-start-hook project))
 
 (defun chronometrist-run-project-end-hook (project)
-  (run-hook-with-args 'chronometrist-project-end-hook project))
+  (run-hook-with-args 'chronometrist-project-stop-hook project))
 
 ;; ## MAJOR-MODE ##
 (define-derived-mode chronometrist-mode tabulated-list-mode "Chronometrist"
