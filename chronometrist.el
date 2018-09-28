@@ -359,7 +359,7 @@ is no corresponding project, do nothing."
              (timeclock-out nil nil ask)
              (chronometrist-run-project-end-hook current))
            (unless (equal target current)
-             (chronometrist-run-project-start-hook at-point)
+             (chronometrist-run-project-start-hook target)
              (timeclock-in nil target nil))))
     (chronometrist-refresh)))
 
