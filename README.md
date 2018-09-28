@@ -39,6 +39,7 @@ Just like `chronometrist`, `chronometrist-report` will also toggle the visibilty
 See the Customize groups `chronometrist` and `chronometrist-report` for variables intended to be user-customizable.
 
 If you find that you usually _don't_ want to enter a reason, you can switch the default bindings -
+
 ```elisp
 (define-key chronometrist-mode-map (kbd "M-RET") #'chronometrist-toggle-project)
 (define-key chronometrist-mode-map (kbd "RET")   #'chronometrist-toggle-project-no-reason)
@@ -49,10 +50,10 @@ See `chronometrist-project-start-hook` and `chronometrist-project-stop-hook`. No
 
 As an example from the author's own init -
 
-```
+```elisp
 (defun my-start-guitar (project)
   (when (equal project "Guitar")
-  (find-file-other-window "~/repertoire.org")))
+    (find-file-other-window "~/repertoire.org")))
 
 (add-hook 'chronometrist-project-start-hook 'my-start-guitar)
 ```
