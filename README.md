@@ -80,16 +80,14 @@ As an example from the author's own init -
 5. **Better shortcuts** - shortcuts derived from the first alphabet of each project might be nicer.
 6. **Modeline support** - show currently active project + time spent on it so far in the mode-line (see timeclock-mode-line-display)
    - Maybe make modeline slowly change color the longer you do something?
-7. **Improve help**
-   - Show shortcuts by consulting the keymap rather than using a hardcoded string.
-8. **Reminder notifications** - a common issue with time trackers is that people forget to clock in/out. A potential solution can be to have Emacs remind people (ideally via desktop notifications?) -
+7. **Reminder notifications** - a common issue with time trackers is that people forget to clock in/out. A potential solution can be to have Emacs remind people (ideally via desktop notifications?) -
     - when they haven't clocked in, every X minutes (e.g. 30)
     - that they are clocked in, every X minutes (e.g. 30)
     - of course, modeline support might help too.
-9. Use `make-thread` in v26 or the emacs-async library for `chronometrist-entries`/`chronometrist-report-entries`
-10. Some way to update buffers every second without making Emacs unusable. (impossible?)
-11. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
-12. Commands to rename a project, delete a project (erasing all records)
+8. Use `make-thread` in v26 or the emacs-async library for `chronometrist-entries`/`chronometrist-report-entries`
+9. Some way to update buffers every second without making Emacs unusable. (impossible?)
+10. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
+11. Commands to rename a project, delete a project (erasing all records)
 
 ### chronometrist-report
 1. Highlight column of current day

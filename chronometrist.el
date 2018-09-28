@@ -174,33 +174,66 @@ information (see (info \"(elisp)Time Conversion\"))."
        (--map (chronometrist-project-time-one-day it date))
        (-reduce #'chronometrist-time-add)))
 
+(defun chronometrist-format-keybinds (command &optional firstonly)
+  (if firstonly
+      (key-description
+       (where-is-internal command chronometrist-mode-map firstonly))
+      (->> (where-is-internal command chronometrist-mode-map)
+           (mapcar #'key-description)
+           (-take 2)
+           (-interpose "/")
+           (apply #'concat))))
+
+(defun chronometrist-print-keybind (command &optional description firstonly)
+  (insert
+   w
+   (format "%s - %s"
+           (chronometrist-format-keybinds command firstonly)
+           (if description description ""))))
+
 (defun chronometrist-print-non-tabular ()
   "Print the non-tabular part of the buffer in `chronometrist'."
-  (let ((inhibit-read-only t)
-        (w "\n    "))
-    (goto-char (point-max))
-    (-->
-     (chronometrist-total-time-one-day)
-     (chronometrist-format-time it)
-     (format "%s%- 26s%s" w "Total" it)
-     (insert it))
-    (insert "\n")
-    (insert w "Keys")
-    (insert w "a - ")
-    (insert-text-button "start a new project"
-                        'action #'chronometrist-add-new-project-button
-                        'follow-link t)
-    (insert w "RET/[mouse-1] - toggle project at point")
-    (insert w "M-RET/[mouse-3] - toggle without asking for reason")
-    (insert w "<numeric argument N> RET - toggle <N>th project")
-    (insert w "r - ")
-    (insert-text-button "see weekly report"
-                        'action #'chronometrist-report
-                        'follow-link t)
-    (insert w "l - ")
-    (insert-text-button "open log file"
-                        'action #'chronometrist-open-timeclock-file
-                        'follow-link t)))
+  (with-current-buffer chronometrist-buffer-name
+    (let ((inhibit-read-only t)
+          (w "\n    ")
+          (keybind-start-new (chronometrist-format-keybinds 'chronometrist-add-new-project))
+          (keybind-toggle    (chronometrist-format-keybinds 'chronometrist-toggle-project t)))
+      (goto-char (point-max))
+      (-->
+       (chronometrist-total-time-one-day)
+       (chronometrist-format-time it)
+       (format "%s%- 26s%s" w "Total" it)
+       (insert it))
+
+      (insert "\n")
+      (insert w "Keys")
+
+      (insert w (format "%s - " keybind-start-new))
+
+      (insert-text-button "start a new project"
+                          'action #'chronometrist-add-new-project-button
+                          'follow-link t)
+
+      (chronometrist-print-keybind 'chronometrist-toggle-project
+                      "toggle project at point")
+
+      (chronometrist-print-keybind 'chronometrist-toggle-project-no-reason
+                      "toggle without asking for reason")
+
+      (insert w (format "%s %s - %s"
+                        "<numeric argument N>"
+                        keybind-toggle
+                        "toggle <N>th project"))
+
+      (chronometrist-print-keybind 'chronometrist-report)
+      (insert-text-button "see weekly report"
+                          'action #'chronometrist-report
+                          'follow-link t)
+
+      (insert w "l - ")
+      (insert-text-button "open log file"
+                          'action #'chronometrist-open-timeclock-file
+                          'follow-link t))))
 
 (defun chronometrist-get-nth-project (n)
   "Return the Nth project in a `chronometrist' buffer, or nil if
