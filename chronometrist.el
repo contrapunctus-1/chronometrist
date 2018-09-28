@@ -209,7 +209,6 @@ information (see (info \"(elisp)Time Conversion\"))."
       (insert w "Keys")
 
       (insert w (format "%s - " keybind-start-new))
-
       (insert-text-button "start a new project"
                           'action #'chronometrist-add-new-project-button
                           'follow-link t)
@@ -328,11 +327,9 @@ project.")
     (when current
       (timeclock-out nil nil t)
       (chronometrist-run-project-end-hook current))
-    (chronometrist-run-project-start-hook at-point)
-    (timeclock-in nil
-                  (read-from-minibuffer "New project name: "
-                                        nil nil nil nil nil t)
-                  nil)
+    (let ((p (read-from-minibuffer "New project name: " nil nil nil nil nil t)))
+      (chronometrist-run-project-start-hook p)
+      (timeclock-in nil p nil))
     (chronometrist-refresh)))
 
 ;; ## COMMANDS ##
