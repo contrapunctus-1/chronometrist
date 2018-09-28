@@ -181,13 +181,13 @@ information (see (info \"(elisp)Time Conversion\"))."
       (->> (where-is-internal command chronometrist-mode-map)
            (mapcar #'key-description)
            (-take 2)
-           (-interpose "/")
+           (-interpose ", ")
            (apply #'concat))))
 
 (defun chronometrist-print-keybind (command &optional description firstonly)
   (insert
-   w
-   (format "%s - %s"
+   "\n"
+   (format "% 18s - %s"
            (chronometrist-format-keybinds command firstonly)
            (if description description ""))))
 
@@ -206,9 +206,10 @@ information (see (info \"(elisp)Time Conversion\"))."
        (insert it))
 
       (insert "\n")
-      (insert w "Keys")
+      (insert w (format "% 17s" "Keys")
+              w (format "% 17s" "----"))
 
-      (insert w (format "%s - " keybind-start-new))
+      (chronometrist-print-keybind 'chronometrist-add-new-project)
       (insert-text-button "start a new project"
                           'action #'chronometrist-add-new-project-button
                           'follow-link t)
@@ -219,17 +220,17 @@ information (see (info \"(elisp)Time Conversion\"))."
       (chronometrist-print-keybind 'chronometrist-toggle-project-no-reason
                       "toggle without asking for reason")
 
-      (insert w (format "%s %s - %s"
-                        "<numeric argument N>"
-                        keybind-toggle
-                        "toggle <N>th project"))
+      (insert "\n " (format "%s %s - %s"
+                            "<numeric argument N>"
+                            keybind-toggle
+                            "toggle <N>th project"))
 
       (chronometrist-print-keybind 'chronometrist-report)
       (insert-text-button "see weekly report"
                           'action #'chronometrist-report
                           'follow-link t)
 
-      (insert w "l - ")
+      (chronometrist-print-keybind 'chronometrist-open-timeclock-file)
       (insert-text-button "open log file"
                           'action #'chronometrist-open-timeclock-file
                           'follow-link t))))
