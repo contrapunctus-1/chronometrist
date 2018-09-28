@@ -203,6 +203,14 @@ FORMAT-STRING."
 
 ;; ## MAJOR MODE ##
 
+(defvar chronometrist-report-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "l") #'chronometrist-open-timeclock-file)
+    (define-key map (kbd "b") #'chronometrist-report-previous-week)
+    (define-key map (kbd "f") #'chronometrist-report-next-week)
+    map)
+  "Keymap used by `chronometrist-report-mode'.")
+
 (define-derived-mode chronometrist-report-mode tabulated-list-mode "Chronometrist-Report"
   "Major mode for `chronometrist-report'."
   (timeclock-reread-log)
@@ -227,14 +235,6 @@ FORMAT-STRING."
   (tabulated-list-init-header)
 
   (chronometrist-report-maybe-start-timer))
-
-(defvar chronometrist-report-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "l") #'chronometrist-open-timeclock-file)
-    (define-key map (kbd "b") #'chronometrist-report-previous-week)
-    (define-key map (kbd "f") #'chronometrist-report-next-week)
-    map)
-  "Keymap used by `chronometrist-report-mode'.")
 
 ;; ## COMMANDS ##
 

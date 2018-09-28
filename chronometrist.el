@@ -275,6 +275,18 @@ project.")
   (run-hook-with-args 'chronometrist-project-stop-hook project))
 
 ;; ## MAJOR-MODE ##
+(defvar chronometrist-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "RET")   #'chronometrist-toggle-project)
+    (define-key map (kbd "M-RET") #'chronometrist-toggle-project-no-reason)
+    (define-key map (kbd "l")     #'chronometrist-open-timeclock-file)
+    (define-key map (kbd "r")     #'chronometrist-report)
+    (define-key map [mouse-1]     #'chronometrist-toggle-project)
+    (define-key map [mouse-3]     #'chronometrist-toggle-project-no-reason)
+    (define-key map (kbd "a")     #'chronometrist-add-new-project)
+    map)
+  "Keymap used by `chronometrist-mode'.")
+
 (define-derived-mode chronometrist-mode tabulated-list-mode "Chronometrist"
   "Major mode for `chronometrist'."
   (timeclock-reread-log)
@@ -292,18 +304,6 @@ project.")
   (setq tabulated-list-sort-key '("Project" . nil))
 
   (tabulated-list-init-header))
-
-(defvar chronometrist-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "RET")   #'chronometrist-toggle-project)
-    (define-key map (kbd "M-RET") #'chronometrist-toggle-project-no-reason)
-    (define-key map (kbd "l")     #'chronometrist-open-timeclock-file)
-    (define-key map (kbd "r")     #'chronometrist-report)
-    (define-key map [mouse-1]     #'chronometrist-toggle-project)
-    (define-key map [mouse-3]     #'chronometrist-toggle-project-no-reason)
-    (define-key map (kbd "a")     #'chronometrist-add-new-project)
-    map)
-  "Keymap used by `chronometrist-mode'.")
 
 ;; ## BUTTONS ##
 
