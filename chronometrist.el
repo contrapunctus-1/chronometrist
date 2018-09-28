@@ -2,16 +2,14 @@
 (require 'chronometrist-custom)
 (require 'chronometrist-report)
 
+;; TODO - make it clear that reasons are optional! Redefine
+;; `timeclock-ask-for-reason'?
+
 ;; TODO - don't suggest nil when asking for first project on first run
 
 ;; TODO - use variables instead of hardcoded numbers to determine spacing
 
 ;; TODO - remove repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
-
-;; Maybe we should just make the projects into buttons (links),
-;; instead of hacking the same functionality in `chronometrist-toggle-project' with
-;; a possibly stranger UI (no visual hint that only projects will do
-;; something when clicked/hit RET on)
 
 ;; BUGS
 
