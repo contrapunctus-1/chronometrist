@@ -61,12 +61,9 @@
 
 ;; ## TIMER ##
 (defun chronometrist-timer ()
-  (let ((buffer-window (get-buffer-window chronometrist-buffer-name t)))
-    (when buffer-window
-      (with-current-buffer chronometrist-buffer-name
-        (let ((position (window-point buffer-window)))
-          (chronometrist-refresh)
-          (set-window-point buffer-window position))))))
+  (when (get-buffer-window chronometrist-buffer-name t)
+    (with-current-buffer chronometrist-buffer-name
+      (chronometrist-refresh))))
 
 (defun chronometrist-stop-timer ()
   (interactive)
@@ -245,13 +242,16 @@ there is no corresponding project."
       nil)))
 
 (defun chronometrist-refresh ()
-  (timeclock-reread-log) ;; required when we create a new activity
-  (with-current-buffer chronometrist-buffer-name
-    ;; Trying to update partially doesn't update the activity indicator. Why?
-    (tabulated-list-print t nil)
-    (chronometrist-print-non-tabular)
-    (chronometrist-goto-last-project)
-    (chronometrist-maybe-start-timer)))
+  (let* ((w (get-buffer-window chronometrist-buffer-name t))
+         (p (window-point w)))
+    (with-current-buffer chronometrist-buffer-name
+      (timeclock-reread-log) ;; required when we create a new activity
+      ;; Trying to update partially doesn't update the activity indicator. Why?
+      (tabulated-list-print t nil)
+      (chronometrist-print-non-tabular)
+      (chronometrist-goto-last-project)
+      (chronometrist-maybe-start-timer)
+      (set-window-point w p))))
 
 ;; ## HOOKS ##
 
