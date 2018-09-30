@@ -233,13 +233,14 @@ information (see (info \"(elisp)Time Conversion\"))."
                           'follow-link t))))
 
 (defun chronometrist-get-nth-project (n)
-  "Return the Nth project in a `chronometrist' buffer, or nil if
-there is no corresponding project."
-  (save-excursion
-    (goto-char (point-min))
-    (if (re-search-forward (format "^%d" n) nil t)
-        (chronometrist-project-at-point)
-      nil)))
+  "Move point to the beginning of the line containing the Nth
+project in a `chronometrist' buffer. Return the project at point,
+or nil if there is no corresponding project. N must be a positive
+integer."
+  (goto-char (point-min))
+  (when (re-search-forward (format "^%d" n) nil t)
+    (beginning-of-line)
+    (chronometrist-project-at-point)))
 
 (defun chronometrist-refresh ()
   (let* ((w (get-buffer-window chronometrist-buffer-name t))
@@ -343,7 +344,7 @@ With a numeric prefix argument, toggle the Nth project. If there
 is no corresponding project, do nothing."
   (interactive "P")
   (let* ((empty-file (chronometrist-common-file-empty-p timeclock-file))
-         (nth        (when prefix (chronometrist-get-nth-project prefix)))
+         (nth        (when prefix (chronometrist-goto-nth-project prefix)))
          (at-point   (chronometrist-project-at-point))
          (target     (or nth at-point))
          (current    (chronometrist-current-project))
