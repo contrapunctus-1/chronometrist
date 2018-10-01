@@ -3,6 +3,18 @@ A time tracker with a nice interface, using Emacs' timeclock.el
 
 Largely modelled after the Android application, [A Time Tracker](https://github.com/netmackan/ATimeTracker)
 
+* Benefits
+  1. Extremely simple and efficient to use
+  2. Displays useful information about your time usage
+  3. Support for both mouse and keyboard
+  4. Human errors in tracking are easily fixed by editing a plain text file
+  5. Hooks to let you perform arbitrary actions when starting/stopping tasks
+  6. Built using timeclock.el in stock Emacs
+
+* Limitations
+  1. No support (yet) for adding a task without clocking into it.
+  2. Will probably never support concurrent tasks. (timeclock.el limitation)
+
 ## Installation
 `chronometrist` requires [dash.el](https://github.com/magnars/dash.el)
 
