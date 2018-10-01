@@ -174,10 +174,29 @@ FORMAT-STRING."
        (reverse)
        (apply #'format format-string)))
 
+(defun chronometrist-report-format-keybinds (command &optional firstonly)
+  (if firstonly
+      (key-description
+       (where-is-internal command chronometrist-report-mode-map firstonly))
+      (->> (where-is-internal command chronometrist-report-mode-map)
+           (mapcar #'key-description)
+           (-take 2)
+           (-interpose ", ")
+           (apply #'concat))))
+
+(defun chronometrist-report-print-keybind (command &optional description firstonly)
+  (insert
+   "\n    "
+   (chronometrist-report-format-keybinds command firstonly)
+   " - "
+   (if description description "")))
+
 (defun chronometrist-report-print-non-tabular ()
   "Print the non-tabular part of the buffer in `chronometrist-report'."
   (let ((inhibit-read-only t)
-        (w "\n    "))
+        (w            "\n    ")
+        (key-previous (chronometrist-format-keybinds #'chronometrist-report-previous-week t))
+        (key-next     (chronometrist-format-keybinds #'chronometrist-report-next-week t)))
     (goto-char (point-min))
     (insert "                         ")
     (--map (insert (chronometrist-report-format-date "%04d-%02d-%02d " it))
@@ -196,7 +215,29 @@ FORMAT-STRING."
            (chronometrist-format-time)
            (format "% 13s")
            (insert)))
-    (insert "\n" w "l - open log file")))
+
+    (insert "\n" w)
+    (insert-text-button "<<"
+                        'action #'chronometrist-report-previous-week
+                        'follow-link t)
+    (insert (format "% 4s" " "))
+    (insert-text-button ">>"
+                        'action #'chronometrist-report-next-week
+                        'follow-link t)
+
+    (insert "\n")
+    (chronometrist-report-print-keybind 'chronometrist-report-previous-week)
+    (insert-text-button "previous week"
+                        'action #'chronometrist-open-timeclock-file
+                        'follow-link t)
+    (chronometrist-report-print-keybind 'chronometrist-report-next-week)
+    (insert-text-button "next week"
+                        'action #'chronometrist-open-timeclock-file
+                        'follow-link t)
+    (chronometrist-report-print-keybind 'chronometrist-open-timeclock-file)
+    (insert-text-button "open log file"
+                        'action #'chronometrist-open-timeclock-file
+                        'follow-link t)))
 
 ;; ## MAJOR MODE ##
 
