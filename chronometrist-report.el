@@ -12,11 +12,6 @@
 
 ;; TODO - use variables instead of hardcoded numbers to determine spacing
 
-;; BUG - the timer for chronometrist-report doesn't currently seem to
-;; be working. Not very high priority, as it's rare to see it with an
-;; active project + to check it continuously for the latest + the
-;; toggle behaviour already updates it.
-
 ;; ## TIMER ##
 
 (defun chronometrist-report-timer ()
@@ -32,7 +27,9 @@
 (defun chronometrist-report-maybe-start-timer ()
   (unless chronometrist-report--timer-object
     (setq chronometrist-report--timer-object
-          (run-at-time t chronometrist-report-update-interval #'chronometrist-timer))))
+          (run-at-time t
+                       chronometrist-report-update-interval
+                       #'chronometrist-report-timer))))
 
 (defvar chronometrist-report--timer-object nil)
 
