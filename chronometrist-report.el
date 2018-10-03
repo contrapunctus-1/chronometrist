@@ -15,14 +15,9 @@
 ;; ## TIMER ##
 
 (defun chronometrist-report-timer ()
-  (when (and (chronometrist-buffer-exists? chronometrist-report-buffer-name)
-             (chronometrist-buffer-visible? chronometrist-report-buffer-name))
-    (timeclock-reread-log)
+  (when (get-buffer-window chronometrist-report-buffer-name t)
     (with-current-buffer chronometrist-report-buffer-name
-      (let ((position (point)))
-        (tabulated-list-print t nil)
-        (chronometrist-report-print-non-tabular)
-        (goto-char position)))))
+      (chronometrist-report-refresh))))
 
 (defun chronometrist-report-maybe-start-timer ()
   (unless chronometrist-report--timer-object
@@ -40,21 +35,21 @@
         chronometrist-report--timer-object nil)
   (chronometrist-report-maybe-start-timer))
 
-;; ## FUNCTIONS ##
+;; ## VARIABLES ##
 
-(defvar chronometrist-report--ui-date
-  nil
-  "The first date of the week displayed by
-`chronometrist-report' (specifically `chronometrist-report-entries'). A
-value of nil means the current week. Otherwise, it must be a list
-in the form (YEAR WEEK), where WEEK is the numeric week of the
-year (1-52).")
+(defvar chronometrist-report--ui-date nil
+  "The first date of the week displayed by `chronometrist-report' (specifically `chronometrist-report-entries').
+A value of nil means the current week. Otherwise, it must be a
+list in the form (YEAR WEEK), where WEEK is the numeric week of
+the year (1-52).")
 
-(defvar chronometrist-report--ui-week-dates
-  nil
-  "List of dates currently displayed by
-`chronometrist-report' (specifically `chronometrist-report-entries').
+(defvar chronometrist-report--ui-week-dates nil
+  "List of dates currently displayed by `chronometrist-report' (specifically `chronometrist-report-entries').
 Each date is a list containing calendrical information (see (info \"(elisp)Time Conversion\"))")
+
+(defvar chronometrist-report--point nil)
+
+;; ## FUNCTIONS ##
 
 (defun chronometrist-report-day-of-week->number (day-of-week)
   (cdr
@@ -152,7 +147,8 @@ The first date is the first occurrence of
          (week-dates-string (chronometrist-report-dates-in-week->string week-dates)))
     (setq chronometrist-report--ui-week-dates week-dates)
     (mapcar (lambda (project)
-              (let ((project-daily-time-list (--map (chronometrist-project-time-one-day project it) week-dates)))
+              (let ((project-daily-time-list
+                     (--map (chronometrist-project-time-one-day project it) week-dates)))
                 (list project
                       (vconcat
                        (vector project)
@@ -185,11 +181,10 @@ FORMAT-STRING."
            (apply #'concat))))
 
 (defun chronometrist-report-print-keybind (command &optional description firstonly)
-  (insert
-   "\n    "
-   (chronometrist-report-format-keybinds command firstonly)
-   " - "
-   (if description description "")))
+  (insert "\n    "
+          (chronometrist-report-format-keybinds command firstonly)
+          " - "
+          (if description description "")))
 
 (defun chronometrist-report-print-non-tabular ()
   "Print the non-tabular part of the buffer in `chronometrist-report'."
@@ -204,8 +199,7 @@ FORMAT-STRING."
     (insert "\n")
     (goto-char (point-max))
     (insert w (format "%- 21s" "Total"))
-    (let ((total-time-daily (->> chronometrist-report--ui-week-dates
-                                 (mapcar #'chronometrist-total-time-one-day))))
+    (let ((total-time-daily (mapcar #'chronometrist-total-time-one-day chronometrist-report--ui-week-dates)))
       (->> total-time-daily
            (mapcar #'chronometrist-format-time)
            (--map (format "% 9s  " it))
@@ -238,6 +232,20 @@ FORMAT-STRING."
     (insert-text-button "open log file"
                         'action #'chronometrist-open-timeclock-file
                         'follow-link t)))
+
+(defun chronometrist-report-refresh ()
+  (with-current-buffer chronometrist-report-buffer-name
+    (let* ((w  (get-buffer-window chronometrist-report-buffer-name t))
+           (wp (window-point w))
+           (p  (point)))
+      ;; (setq chronometrist-report--point p)
+      (timeclock-reread-log)
+      (tabulated-list-print t nil)
+      (chronometrist-report-print-non-tabular)
+      (chronometrist-report-maybe-start-timer)
+      (if (equal w (frame-selected-window))
+          (goto-char chronometrist-report--point)
+        (set-window-point w wp)))))
 
 ;; ## MAJOR MODE ##
 
@@ -282,25 +290,28 @@ and the time spent on them each day, based on their timelog file
 in `timeclock-file'. This is the 'listing command' for
 chronometrist-report-mode.
 
+If a buffer called `chronometrist-report-buffer-name' already
+exists and is visible, kill the buffer.
+
 If KEEP-DATE is nil (the default when not supplied), set
 `chronometrist-report--ui-date' to nil and display data from the
 current week. Otherwise, display data from the week specified by
 `chronometrist-report--ui-date'."
   (interactive)
   (let ((buffer (get-buffer-create chronometrist-report-buffer-name)))
-    ;; we want this command to toggle viewing the report
-    (if (and (chronometrist-buffer-visible? chronometrist-report-buffer-name)
-             (not keep-date))
-        (kill-buffer buffer)
-      (with-current-buffer buffer
-        (delete-other-windows)
-        (when (not keep-date)
-          (setq chronometrist-report--ui-date nil))
-        (chronometrist-common-create-timeclock-file)
-        (chronometrist-report-mode)
-        (tabulated-list-print)
-        (chronometrist-report-print-non-tabular)
-        (switch-to-buffer buffer)))))
+    (with-current-buffer buffer
+      (cond ((and (get-buffer-window chronometrist-report-buffer-name)
+                  (not keep-date))
+             (setq chronometrist-report--point (point))
+             (kill-buffer buffer))
+            (t ;; (delete-other-windows)
+               (when (not keep-date)
+                 (setq chronometrist-report--ui-date nil))
+               (chronometrist-common-create-timeclock-file)
+               (chronometrist-report-mode)
+               (switch-to-buffer buffer)
+               (chronometrist-report-refresh)
+               (goto-char chronometrist-report--point))))))
 
 (defun chronometrist-report-previous-week (arg)
   "View the previous week's report."

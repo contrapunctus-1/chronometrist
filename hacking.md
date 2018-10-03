@@ -13,6 +13,14 @@ I recommend using
 
 Both [chronometrist.el](chronometrist.el) and [chronometrist-report.el](chronometrist-report.el) use timers to keep themselves updated. Sometimes, when hacking, the timers may cause subtle bugs which are very hard to debug. Restarting Emacs can fix them, so try that as a first sanity check.
 
+# Point restore behaviour
+After hacking, always test for and ensure the following -
+1. Toggling the buffer via chronometrist/chronometrist-should preserve point
+   - TODO - actually, this should be implemented in a kill-buffer-hook, so it works whenever the buffer is killed, not just when we call the command.
+2. The timer function should preserve point when the buffer is current
+3. The timer function should preserve point when the buffer is not current, but is visible in another window
+4. The next/previous week keys and buttons should preserve point.
+
 # chronometrist-report date range logic
 A quick description -
 1. We get the current date in calendrical form using `(decode-time)`.

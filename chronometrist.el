@@ -86,6 +86,8 @@ else do nothing and return nil."
         chronometrist--timer-object nil)
   (chronometrist-maybe-start-timer))
 
+(defvar chronometrist--point nil)
+
 ;; ## FUNCTIONS ##
 (defun chronometrist-current-project ()
   "Return the name of the currently clocked-in project, or nil if
@@ -232,7 +234,7 @@ information (see (info \"(elisp)Time Conversion\"))."
                           'action #'chronometrist-open-timeclock-file
                           'follow-link t))))
 
-(defun chronometrist-get-nth-project (n)
+(defun chronometrist-goto-nth-project (n)
   "Move point to the beginning of the line containing the Nth
 project in a `chronometrist' buffer. Return the project at point,
 or nil if there is no corresponding project. N must be a positive
@@ -250,7 +252,6 @@ integer."
       ;; Trying to update partially doesn't update the activity indicator. Why?
       (tabulated-list-print t nil)
       (chronometrist-print-non-tabular)
-      (chronometrist-goto-last-project)
       (chronometrist-maybe-start-timer)
       (set-window-point w p))))
 
@@ -380,32 +381,34 @@ time spent on each today, based on their timelog file
 `timeclock-file'. The user can hit RET to start/stop projects.
 This is the 'listing command' for chronometrist-mode."
   (interactive "P")
-  (if arg
-      (chronometrist-report)
-    (let ((buffer (get-buffer-create chronometrist-buffer-name)))
-      (if (chronometrist-buffer-visible? chronometrist-buffer-name)
-          (kill-buffer chronometrist-buffer-name)
-        (with-current-buffer buffer
-          (if (or (not (file-exists-p timeclock-file))
-                  (chronometrist-common-file-empty-p timeclock-file))
-              (progn
-                (chronometrist-common-create-timeclock-file)
-                (let ((inhibit-read-only t))
-                  (chronometrist-common-clear-buffer buffer)
-                  (insert "Welcome to Chronometrist! Hit RET to ")
-                  (insert-text-button "start a new project."
-                                      'action #'chronometrist-add-new-project-button
-                                      'follow-link t)
-                  (chronometrist-mode)
-                  (switch-to-buffer buffer)))
-            (progn
-              (chronometrist-mode)
-              (when chronometrist-hide-cursor
-                (make-local-variable 'cursor-type)
-                (setq cursor-type nil)
-                (hl-line-mode))
-              (switch-to-buffer buffer)
-              (chronometrist-refresh))))))))
+  (let ((buffer (get-buffer-create chronometrist-buffer-name))
+        (w      (get-buffer-window chronometrist-buffer-name t)))
+    (cond
+     (arg (chronometrist-report))
+     (w   (with-current-buffer buffer
+            (setq chronometrist--point (point))
+            (kill-buffer chronometrist-buffer-name)))
+     (t   (with-current-buffer buffer
+            (cond ((or (not (file-exists-p timeclock-file))
+                       (chronometrist-common-file-empty-p timeclock-file))
+                   ;; first run
+                   (chronometrist-common-create-timeclock-file)
+                   (let ((inhibit-read-only t))
+                     (chronometrist-common-clear-buffer buffer)
+                     (insert "Welcome to Chronometrist! Hit RET to ")
+                     (insert-text-button "start a new project."
+                                         'action #'chronometrist-add-new-project-button
+                                         'follow-link t)
+                     (chronometrist-mode)
+                     (switch-to-buffer buffer)))
+                  (t (chronometrist-mode)
+                     (when chronometrist-hide-cursor
+                       (make-local-variable 'cursor-type)
+                       (setq cursor-type nil)
+                       (hl-line-mode))
+                     (switch-to-buffer buffer)
+                     (chronometrist-refresh)
+                     (goto-char chronometrist--point))))))))
 
 (provide 'chronometrist)
 
