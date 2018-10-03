@@ -59,6 +59,8 @@
 ;; ## VARIABLES ##
 (defvar chronometrist--timer-object nil)
 
+(defvar chronometrist--point nil)
+
 ;; ## TIMER ##
 (defun chronometrist-timer ()
   (when (get-buffer-window chronometrist-buffer-name t)
@@ -85,8 +87,6 @@ else do nothing and return nil."
   (setq chronometrist-update-interval arg
         chronometrist--timer-object nil)
   (chronometrist-maybe-start-timer))
-
-(defvar chronometrist--point nil)
 
 ;; ## FUNCTIONS ##
 (defun chronometrist-current-project ()
@@ -248,8 +248,7 @@ integer."
   (let* ((w (get-buffer-window chronometrist-buffer-name t))
          (p (window-point w)))
     (with-current-buffer chronometrist-buffer-name
-      (timeclock-reread-log) ;; required when we create a new activity
-      ;; Trying to update partially doesn't update the activity indicator. Why?
+      (timeclock-reread-log)
       (tabulated-list-print t nil)
       (chronometrist-print-non-tabular)
       (chronometrist-maybe-start-timer)

@@ -22,9 +22,8 @@
 (defun chronometrist-report-maybe-start-timer ()
   (unless chronometrist-report--timer-object
     (setq chronometrist-report--timer-object
-          (run-at-time t
-                       chronometrist-report-update-interval
-                       #'chronometrist-report-timer))))
+          (run-at-time t chronometrist-report-update-interval #'chronometrist-report-timer))
+    t))
 
 (defvar chronometrist-report--timer-object nil)
 
@@ -238,13 +237,12 @@ FORMAT-STRING."
     (let* ((w  (get-buffer-window chronometrist-report-buffer-name t))
            (wp (window-point w))
            (p  (point)))
-      ;; (setq chronometrist-report--point p)
       (timeclock-reread-log)
       (tabulated-list-print t nil)
       (chronometrist-report-print-non-tabular)
       (chronometrist-report-maybe-start-timer)
       (if (equal w (frame-selected-window))
-          (goto-char chronometrist-report--point)
+          (goto-char (or chronometrist-report--point p))
         (set-window-point w wp)))))
 
 ;; ## MAJOR MODE ##
@@ -311,7 +309,7 @@ current week. Otherwise, display data from the week specified by
                (chronometrist-report-mode)
                (switch-to-buffer buffer)
                (chronometrist-report-refresh)
-               (goto-char chronometrist-report--point))))))
+               (goto-char (or chronometrist-report--point 1)))))))
 
 (defun chronometrist-report-previous-week (arg)
   "View the previous week's report."
