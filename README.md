@@ -75,11 +75,11 @@ As an example from the author's own init -
   - activity-specific - average time spent in $time_period, average days worked on in $time_period, current/longest streaks, ...
   - general - most productive $time_period, GitHub-style work heatmap calendar, ...
 * Update when the timeclock-file changes using a filesystem watcher
-* Mouse support
 * [inflatable raptor](https://github.com/MichaelMure/git-bug/#planned-features)
 
 ### chronometrist
 1. Make clocked-in project row bold, either in addition to the star, or replacing it.
+   - Another activity-indication enhancement - show the current time interval being recorded instead of the star.
 2. **'kill'/discard command** (bind to 'k'), which will delete the interval currently being recorded.
    - Most conservative option - it will only operate on the project at point, and will only kill for a clocked-in project.
    - Somewhat less conservative option - it will operate on the currently clocked-in project, no matter where point is.
@@ -100,16 +100,17 @@ As an example from the author's own init -
 9. Some way to update buffers every second without making Emacs unusable. (impossible?)
 10. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
 11. Commands to rename a project, delete a project (erasing all records)
+12. Tree of tasks (i.e. sub-tasks etc)
 
 ### chronometrist-report
 1. Highlight column of current day
 2. Add support for other locale weeks/weekday names
 
 ### Miscellaneous
-1. README - add images, link to a Jabber webclient
+1. README - add images
 2. [-] Document API somewhere (list of functions, their argument lists, and outputs)
 3. Use Cask?
-4. Create test timelog file and UI behaviour tests
+4. [-] Create test timelog file and UI behaviour tests
 
 ## Contributions and contact
 Feedback and MRs very welcome. 🙂
