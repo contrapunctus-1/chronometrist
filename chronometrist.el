@@ -407,7 +407,7 @@ This is the 'listing command' for chronometrist-mode."
                        (hl-line-mode))
                      (switch-to-buffer buffer)
                      (chronometrist-refresh)
-                     (goto-char chronometrist--point))))))))
+                     (goto-char (or chronometrist--point 1)))))))))
 
 (provide 'chronometrist)
 
