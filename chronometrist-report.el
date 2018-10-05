@@ -302,7 +302,7 @@ current week. Otherwise, display data from the week specified by
                   (not keep-date))
              (setq chronometrist-report--point (point))
              (kill-buffer buffer))
-            (t ;; (delete-other-windows)
+            (t (delete-other-windows)
                (when (not keep-date)
                  (setq chronometrist-report--ui-date nil))
                (chronometrist-common-create-timeclock-file)
