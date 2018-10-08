@@ -185,6 +185,7 @@ FORMAT-STRING."
           " - "
           (if description description "")))
 
+;; TODO - preserve point when clicking buttons
 (defun chronometrist-report-print-non-tabular ()
   "Print the non-tabular part of the buffer in `chronometrist-report'."
   (let ((inhibit-read-only t)
@@ -221,11 +222,11 @@ FORMAT-STRING."
     (insert "\n")
     (chronometrist-report-print-keybind 'chronometrist-report-previous-week)
     (insert-text-button "previous week"
-                        'action #'chronometrist-open-timeclock-file
+                        'action #'chronometrist-report-previous-week
                         'follow-link t)
     (chronometrist-report-print-keybind 'chronometrist-report-next-week)
     (insert-text-button "next week"
-                        'action #'chronometrist-open-timeclock-file
+                        'action #'chronometrist-report-next-week
                         'follow-link t)
     (chronometrist-report-print-keybind 'chronometrist-open-timeclock-file)
     (insert-text-button "open log file"
