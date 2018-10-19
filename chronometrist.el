@@ -336,6 +336,7 @@ project.")
 
 ;; ## COMMANDS ##
 
+;; TODO - if clocked in and point not on a project, just clock out
 (defun chronometrist-toggle-project (&optional prefix no-prompt)
   "In a `chronometrist' buffer, start or stop the project at
 point. If there is no project at point, do nothing.

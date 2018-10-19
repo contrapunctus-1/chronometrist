@@ -323,6 +323,7 @@ current week. Otherwise, display data from the week specified by
               (chronometrist-report-increment-or-decrement-date chronometrist-report--ui-date '- (* 7 arg)))
       (setq chronometrist-report--ui-date
             (chronometrist-report-increment-or-decrement-date (decode-time) '- (* 7 arg))))
+    (setq chronometrist-report--point (point))
     (kill-buffer)
     (chronometrist-report t)))
 
@@ -337,6 +338,7 @@ current week. Otherwise, display data from the week specified by
               (chronometrist-report-increment-or-decrement-date chronometrist-report--ui-date '+ (* 7 arg)))
       (setq chronometrist-report--ui-date
             (chronometrist-report-increment-or-decrement-date (decode-time) '+ (* 7 arg))))
+    (setq chronometrist-report--point (point))
     (kill-buffer)
     (chronometrist-report t)))
 

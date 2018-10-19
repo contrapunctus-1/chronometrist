@@ -74,6 +74,7 @@ As an example from the author's own init -
 * New commands for statistics
   - activity-specific - average time spent in $time_period, average days worked on in $time_period, current/longest streaks, ...
   - general - most productive $time_period, GitHub-style work heatmap calendar, ...
+  - press 1 for weekly stats, 2 for monthly, 3 for yearly
 * Update when the timeclock-file changes using a filesystem watcher
 * [inflatable raptor](https://github.com/MichaelMure/git-bug/#planned-features)
 
