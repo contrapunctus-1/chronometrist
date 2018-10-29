@@ -23,6 +23,7 @@
 ;; visualizing the table loading gradually, field by field, like an
 ;; image in a browser.
 
+;; TODO - Use a hash table. Consider using a state machine.
 (defun chronometrist-events ()
   "Return events from `timeclock-file' as a list, where each
 element is in the form (IN-OR-OUT YEAR MONTH DAY HOURS MINUTES SECONDS \"PROJECT-NAME-OR-COMMENT\")"
@@ -31,28 +32,23 @@ element is in the form (IN-OR-OUT YEAR MONTH DAY HOURS MINUTES SECONDS \"PROJECT
       (goto-char (point-min))
       (let ((events))
         (while (not (= (point) (point-max)))
-          (let* ((event-string (buffer-substring-no-properties (point-at-bol)
-                                                               (point-at-eol)))
-                 (comment  (-> (replace-regexp-in-string
-                                (concat "[io] " chronometrist-date-re
-                                        " " chronometrist-time-re-file
-                                        " ?") "" event-string)))
-                 (the-rest (--> event-string
-                                (replace-regexp-in-string (concat "\\(" "[io] " chronometrist-date-re
-                                                                  " " chronometrist-time-re-file
-                                                                  "\\)" ".*")
-                                                          "\\1" it)
-                                (split-string it "[ /:]"))))
-            (setq events
-                  (append events
-                          (list
-                           (append (append (-> the-rest ;; convert the "i" or "o" to a symbol
-                                               (car)
-                                               (make-symbol)
-                                               (list))
-                                           (mapcar #'string-to-number
-                                                   (-slice the-rest 1 7)))
-                                   (list comment))))))
+          (let* ((event-string       (buffer-substring-no-properties (point-at-bol)
+                                                                     (point-at-eol)))
+                 (info-re            (concat ". " chronometrist-date-re " " chronometrist-time-re-file))
+                 (project-or-comment (->> event-string
+                                          (replace-regexp-in-string (concat info-re " ?") "")
+                                          (list)))
+                 (the-rest           (--> (concat "\\(" info-re "\\)" ".*")
+                                          (replace-regexp-in-string it "\\1" event-string)
+                                          (split-string it "[ /:]")
+                                          (append
+                                           ;; convert the code ("i", "o", etc) to a symbol
+                                           (-> it (car) (make-symbol) (list))
+                                           (mapcar #'string-to-number (-slice it 1 7))))))
+            (->> (append the-rest project-or-comment)
+                 (list)
+                 (append events)
+                 (setq events)))
           (forward-line))
         events))))
 
