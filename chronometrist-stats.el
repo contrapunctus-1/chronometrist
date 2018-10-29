@@ -23,10 +23,14 @@
 ;; visualizing the table loading gradually, field by field, like an
 ;; image in a browser.
 
-;; TODO - Use a hash table. Consider using a state machine.
+(defvar chronometrist-events (make-hash-table :test #'equal))
+
+;; TODO - Use '(YEAR MONTH DAY) as keys instead of "YYYY-MM-DD". Strip dates from values, since they're part of the key anyway. Consider using a state machine.
 (defun chronometrist-events ()
-  "Return events from `timeclock-file' as a list, where each
-element is in the form (IN-OR-OUT YEAR MONTH DAY HOURS MINUTES SECONDS \"PROJECT-NAME-OR-COMMENT\")"
+  "Return events from `timeclock-file' as a hash table, where
+each key is a date in the form \"YYYY-MM-DD\". Values are vectors
+containing events, where each event is a vector in the form
+[CODE YEAR MONTH DAY HOURS MINUTES SECONDS \"PROJECT-NAME-OR-COMMENT\"]"
   (with-current-buffer (find-file-noselect timeclock-file)
     (save-excursion
       (goto-char (point-min))
@@ -37,18 +41,22 @@ element is in the form (IN-OR-OUT YEAR MONTH DAY HOURS MINUTES SECONDS \"PROJECT
                  (info-re            (concat ". " chronometrist-date-re " " chronometrist-time-re-file))
                  (project-or-comment (->> event-string
                                           (replace-regexp-in-string (concat info-re " ?") "")
-                                          (list)))
+                                          (vector)))
                  (the-rest           (--> (concat "\\(" info-re "\\)" ".*")
                                           (replace-regexp-in-string it "\\1" event-string)
                                           (split-string it "[ /:]")
                                           (append
                                            ;; convert the code ("i", "o", etc) to a symbol
                                            (-> it (car) (make-symbol) (list))
-                                           (mapcar #'string-to-number (-slice it 1 7))))))
-            (->> (append the-rest project-or-comment)
-                 (list)
-                 (append events)
-                 (setq events)))
+                                           (mapcar #'string-to-number (-slice it 1 7)))))
+                 (key                (->> (-slice the-rest 1 4)
+                                          (apply #'format "%04d-%02d-%02d")))
+                 (value              (gethash key chronometrist-events))
+                 (new-value          (vector (vconcat the-rest ;; vconcat converts lists to vectors
+                                                      project-or-comment))))
+            (if value
+                (puthash key (vconcat value new-value) chronometrist-events)
+              (puthash key new-value chronometrist-events)))
           (forward-line))
         events))))
 
