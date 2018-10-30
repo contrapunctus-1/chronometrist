@@ -25,12 +25,14 @@
 
 (defvar chronometrist-events (make-hash-table :test #'equal))
 
-;; TODO - Use '(YEAR MONTH DAY) as keys instead of "YYYY-MM-DD". Strip dates from values, since they're part of the key anyway. Consider using a state machine.
+;; TODO - Maybe strip dates from values, since they're part of the key
+;; anyway. Consider using a state machine.
 (defun chronometrist-events ()
   "Return events from `timeclock-file' as a hash table, where
 each key is a date in the form \"YYYY-MM-DD\". Values are vectors
 containing events, where each event is a vector in the form
-[CODE YEAR MONTH DAY HOURS MINUTES SECONDS \"PROJECT-NAME-OR-COMMENT\"]"
+\[CODE YEAR MONTH DAY HOURS MINUTES SECONDS \"PROJECT-NAME-OR-COMMENT\"]"
+  (clrhash chronometrist-events)
   (with-current-buffer (find-file-noselect timeclock-file)
     (save-excursion
       (goto-char (point-min))
@@ -45,20 +47,48 @@ containing events, where each event is a vector in the form
                  (the-rest           (--> (concat "\\(" info-re "\\)" ".*")
                                           (replace-regexp-in-string it "\\1" event-string)
                                           (split-string it "[ /:]")
-                                          (append
-                                           ;; convert the code ("i", "o", etc) to a symbol
-                                           (-> it (car) (make-symbol) (list))
-                                           (mapcar #'string-to-number (-slice it 1 7)))))
-                 (key                (->> (-slice the-rest 1 4)
-                                          (apply #'format "%04d-%02d-%02d")))
-                 (value              (gethash key chronometrist-events))
+                                          (append (list (car it))
+                                                  (mapcar #'string-to-number (-slice it 1 7)))))
+                 (key                (-slice the-rest 1 4))
+                 (old-value          (gethash key chronometrist-events))
                  (new-value          (vector (vconcat the-rest ;; vconcat converts lists to vectors
                                                       project-or-comment))))
-            (if value
-                (puthash key (vconcat value new-value) chronometrist-events)
+            (if old-value
+                (puthash key (vconcat old-value new-value) chronometrist-events)
               (puthash key new-value chronometrist-events)))
           (forward-line))
         events))))
+
+;; unused function
+(defun chronometrist-date->time (date)
+  "Converts DATE to a time value (see (info \"(elisp)Time of Day\")).
+DATE must be a list in the form (YEAR MONTH DAY)."
+  (->> date (reverse) (apply #'encode-time 0 0 0)))
+
+;; unused function
+(defun chronometrist-date-less-p (date1 date2)
+  "Like `time-less-p' but for dates. Returns ‘t’ if date1 is less
+than date2. Both must be lists in the form (YEAR MONTH DAY)."
+  (time-less-p (chronometrist-date->time date1) (chronometrist-date->time date2)))
+
+(defun chronometrist-count-project-days (project &optional table)
+  "Return the number of days the user worked on PROJECT based on
+their `timeclock-file'. TABLE must be a hash table - if not
+supplied, `chronometrist-events' is used.
+
+This will not return correct results if TABLE contains records
+which span midnights, so make sure the hash table does not have
+them."
+  (let ((count 0)
+        (table (if table table chronometrist-events)))
+    (maphash (lambda (date events)
+               (when (seq-find (lambda (event)
+                                 (and (equal (elt event 0) "i")
+                                      (equal (elt event 7) project)))
+                               events)
+                 (setq count (1+ count))))
+             table)
+    count))
 
 ;; ## TIMER ##
 
