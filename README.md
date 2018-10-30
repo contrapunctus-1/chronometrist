@@ -16,6 +16,8 @@ Largely modelled after the Android application, [A Time Tracker](https://github.
   2. Will probably never support concurrent tasks. (timeclock.el limitation)
 
 ## Installation
+You can get `chronometrist` from https://framagit.org/contrapunctus/chronometrist/
+
 `chronometrist` requires [dash.el](https://github.com/magnars/dash.el)
 
 Add the Chronometrist directory to your load-path, and `(require 'chronometrist)`.
@@ -102,6 +104,7 @@ As an example from the author's own init -
 10. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
 11. Commands to rename a project, delete a project (erasing all records)
 12. Tree of tasks (i.e. sub-tasks etc)
+    - Alternatively - each task can have tags. The tags will be used to decide the super-tasks a task belongs to, and stored in a new file in the user's .emacs.d
 
 ### chronometrist-report
 1. Highlight column of current day
