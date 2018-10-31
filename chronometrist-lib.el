@@ -154,25 +154,24 @@ TARGET-DATE."
 
 (defun chronometrist-project-time-one-day (project &optional date)
   "Read `timeclock-file' and return total time spent on PROJECT
-today or on DATE.
+today or (if supplied) on DATE.
 
 DATE must be a list containing calendrical information (see (info
-\"(elisp)Time Conversion\")), the time for that date is shown,
-otherwise calculate time for today.
+\"(elisp)Time Conversion\")).
 
 The return value is a vector in the form [HOURS MINUTES SECONDS]"
   (if (not (member project timeclock-project-list))
       (error (concat "Unknown project: " project))
     (with-current-buffer (find-file-noselect timeclock-file)
       (save-excursion
-        (let* ((target-date          (if date
-                                         (format "%04d/%02d/%02d"
-                                                 (elt date 5)
-                                                 (elt date 4)
-                                                 (elt date 3))
-                                       (format-time-string "%Y/%m/%d")))
-               (search-re            (concat target-date " " chronometrist-time-re-file " " project))
-               (interval-list        nil)
+        (let* ((target-date   (if date
+                                  (format "%04d/%02d/%02d"
+                                          (elt date 5)
+                                          (elt date 4)
+                                          (elt date 3))
+                                (format-time-string "%Y/%m/%d")))
+               (search-re     (concat target-date " " chronometrist-time-re-file " " project))
+               (interval-list nil)
                (first-event-midnight (chronometrist-first-event-spans-midnight? target-date
                                                                    project)))
           ;; (goto-char (point-min))
@@ -180,29 +179,28 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
                      (re-search-forward chronometrist-time-re-file nil t 2)
                    (re-search-forward (concat "i " search-re) nil t))
             (re-search-backward target-date nil t)
-            (let* ((start-time         (if first-event-midnight
-                                           (concat target-date " 00:00:00")
-                                         (buffer-substring-no-properties
-                                          (point)
-                                          (+ 10 1 8 (point)))))
-                   (end-time           (if first-event-midnight
-                                           (buffer-substring-no-properties
-                                            (point)
-                                            (+ 10 1 8 (point)))
-                                         (chronometrist-get-end-time target-date)))
-                   (start-time-s       (chronometrist-timestamp->seconds start-time))
-                   (end-time-s         (chronometrist-timestamp->seconds end-time))
-                   (interval           (elt (time-subtract end-time-s
-                                                           start-time-s)
-                                            1)))
+            (let* ((start-time   (if first-event-midnight
+                                     (concat target-date " 00:00:00")
+                                   (buffer-substring-no-properties
+                                    (point)
+                                    (+ 10 1 8 (point)))))
+                   (end-time     (if first-event-midnight
+                                     (buffer-substring-no-properties
+                                      (point)
+                                      (+ 10 1 8 (point)))
+                                   (chronometrist-get-end-time target-date)))
+                   (start-time-s (chronometrist-timestamp->seconds start-time))
+                   (end-time-s   (chronometrist-timestamp->seconds end-time))
+                   (interval     (elt (time-subtract end-time-s
+                                                     start-time-s)
+                                      1)))
               (setq interval-list
                     (append interval-list (list interval))
                     ;; quick hack
                     first-event-midnight nil)))
-          (->>
-           interval-list
-           (-reduce #'+)
-           (chronometrist-seconds-to-hms)))))))
+          (->> interval-list
+               (-reduce #'+)
+               (chronometrist-seconds-to-hms)))))))
 
 ;; tests -
 ;; (mapcar #'chronometrist-format-time
