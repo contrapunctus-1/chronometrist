@@ -19,19 +19,29 @@
 
 ;; Really might need emacs-async for this...buttloads of big
 ;; calculations which will only get bigger as the timelog file grows,
-;; and there more the activities the more the calculations! I'm
+;; and the more the activities the more the calculations! I'm
 ;; visualizing the table loading gradually, field by field, like an
 ;; image in a browser.
 
 (defvar chronometrist-events (make-hash-table :test #'equal))
 
+(defun chronometrist-clean-ht ()
+  "Clean `chronometrist-events' by splitting intervals which span
+midnights into two. For event data to be processed accurately,
+this must be called after `chronometrist-populate-ht'."
+  ;; if the first event of a day has a code of "o", it's a midnight spanning event
+  )
+
 ;; TODO - Maybe strip dates from values, since they're part of the key
 ;; anyway. Consider using a state machine.
-(defun chronometrist-events ()
-  "Return events from `timeclock-file' as a hash table, where
-each key is a date in the form \"YYYY-MM-DD\". Values are vectors
-containing events, where each event is a vector in the form
-\[CODE YEAR MONTH DAY HOURS MINUTES SECONDS \"PROJECT-NAME-OR-COMMENT\"]"
+(defun chronometrist-populate-ht ()
+  "Clears hash table `chronometrist-events' and populates it
+using data from `timeclock-file', with each key being a date in
+the form (YEAR MONTH DAY). Values are vectors containing events,
+where each event is a vector in the form \[CODE YEAR MONTH DAY
+HOURS MINUTES SECONDS \"PROJECT-NAME-OR-COMMENT\"].
+
+This function always returns nil."
   (clrhash chronometrist-events)
   (with-current-buffer (find-file-noselect timeclock-file)
     (save-excursion
@@ -57,7 +67,7 @@ containing events, where each event is a vector in the form
                 (puthash key (vconcat old-value new-value) chronometrist-events)
               (puthash key new-value chronometrist-events)))
           (forward-line))
-        events))))
+        nil))))
 
 ;; unused function
 (defun chronometrist-date->time (date)
