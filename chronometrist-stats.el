@@ -25,12 +25,55 @@
 
 (defvar chronometrist-events (make-hash-table :test #'equal))
 
+(defun chronometrist-vfirst (vector)
+  "Return the first element of VECTOR."
+  (elt vector 0))
+
+(defun chronometrist-vlast (vector)
+  "Return the last element of VECTOR."
+  (elt vector (1- (length vector))))
+
+;; test function
+(defun chronometrist-list-midnight-spanning-events ()
+  (let ((dates))
+    (maphash (lambda (key value)
+               (when (-> value (chronometrist-vfirst) (chronometrist-vfirst) (equal "o"))
+                 (->> key (list) (append dates) (setq dates))
+             chronometrist-events)
+    dates))
+
 (defun chronometrist-clean-ht ()
   "Clean `chronometrist-events' by splitting intervals which span
 midnights into two. For event data to be processed accurately,
-this must be called after `chronometrist-populate-ht'."
-  ;; if the first event of a day has a code of "o", it's a midnight spanning event
-  )
+this must be called after `chronometrist-populate-ht'. Returns t
+if the table was modified, else nil."
+  ;; for each key-value, see if the first event has an "o" code
+  (let ((prev-date)
+        (modified))
+    (maphash (lambda (key value)
+               (when (-> value (chronometrist-vfirst) (chronometrist-vfirst) (equal "o"))
+                 ;; Add new "o" event on previous date with 24:00:00
+                 ;; as end time, reusing the ending reason.
+                 ;; Add new "i" event on current date with 00:00:00
+                 ;; as start time, with the same project.
+                 (let* ((reason  (->> value (chronometrist-vfirst) (chronometrist-vlast)))
+                        (prev-events (gethash prev-date chronometrist-events))
+                        (prev-event  (chronometrist-vlast prev-events))
+                        (o-event     (vconcat ["o"] prev-date `[24 0 0 ,reason]))
+
+                        (current-event (chronometrist-vfirst value))
+                        (project       (chronometrist-vlast prev-event))
+                        (i-event       (vconcat ["i"] key `[0 0 0 ,project])))
+                   (--> prev-events
+                        (vconcat it (vector o-event))
+                        (puthash prev-date it chronometrist-events))
+                   (--> (vconcat (vector i-event) value)
+                        (puthash key it chronometrist-events))
+                   (setq modified t)))
+               (setq prev-date key))    ; this assumes that the first event of the first date doesn't
+                                        ; have an "o" code (which a correct file shouldn't)
+             chronometrist-events)
+    modified))
 
 ;; TODO - Maybe strip dates from values, since they're part of the key
 ;; anyway. Consider using a state machine.
@@ -88,7 +131,7 @@ supplied, `chronometrist-events' is used.
 
 This will not return correct results if TABLE contains records
 which span midnights, so make sure the hash table does not have
-them."
+them. (see `chronometrist-clean-ht')"
   (let ((count 0)
         (table (if table table chronometrist-events)))
     (maphash (lambda (date events)
