@@ -87,9 +87,11 @@ which span midnights. (see `chronometrist-clean-ht')")
 
 ;; ## VARIABLES ##
 
-(defvar chronometrist-statistics--ui-mode nil
-  "The display mode for `chronometrist-statistics'. Valid values are
-'week, 'month, 'year, 'full, or 'custom.
+(defvar chronometrist-statistics--ui-state nil
+  "The display state for `chronometrist-statistics'. Must be a
+plist in the form (:mode :start-date :end-date).
+
+:MODE is either 'week, 'month, 'year, 'full, or 'custom.
 
 'week, 'month, and 'year mean display statistics
 weekly/monthly/yearly respectively.
@@ -97,17 +99,10 @@ weekly/monthly/yearly respectively.
 'full means display statistics from the beginning to the end of
 the `timeclock-file'.
 
-'custom means display statistics from an arbitrary date range.")
+'custom means display statistics from an arbitrary date range.
 
-(defvar chronometrist-statistics--ui-date nil
-  "The first date of the week displayed by `chronometrist-statistics' (specifically `chronometrist-statistics-entries').
-A value of nil means the current week. Otherwise, it must be a
-list in the form (YEAR WEEK), where WEEK is the numeric week of
-the year (1-52).")
-
-(defvar chronometrist-statistics--ui-week-dates nil
-  "List of dates currently displayed by `chronometrist-statistics' (specifically `chronometrist-statistics-entries').
-Each date is a list containing calendrical information (see (info \"(elisp)Time Conversion\"))")
+:START-DATE and :END-DATE are the start and end of the date range
+to be displayed. They must be dates in the form (YEAR MONTH DAY).")
 
 (defvar chronometrist-statistics--point nil)
 
@@ -189,7 +184,7 @@ Each date is a list containing calendrical information (see (info \"(elisp)Time 
 
 ;; ## COMMANDS ##
 
-(defun chronometrist-statistics (&optional keep-date)
+(defun chronometrist-statistics (&optional preserve-state)
   "Display statistics of the user's timeclock.el projects, based
 on their timelog file in `timeclock-file'. This is the 'listing
 command' for chronometrist-statistics-mode.
@@ -197,21 +192,23 @@ command' for chronometrist-statistics-mode.
 If a buffer called `chronometrist-statistics-buffer-name' already
 exists and is visible, kill the buffer.
 
-If KEEP-DATE is nil (the default when not supplied), set
-`chronometrist-statistics--ui-date' to nil and display data from the
-current week. Otherwise, display data from the week specified by
-`chronometrist-statistics--ui-date'."
+If PRESERVE-STATE is nil (the default when not supplied), set
+`chronometrist-statistics--ui-state' to nil and display data from
+the current week. Otherwise, display data from the week specified
+by `chronometrist-statistics--ui-state'."
   (interactive)
   (let ((buffer (get-buffer-create chronometrist-statistics-buffer-name)))
     (with-current-buffer buffer
       (cond ((get-buffer-window chronometrist-statistics-buffer-name)
              (kill-buffer buffer))
             (t ;; (delete-other-windows)
-               (chronometrist-common-create-timeclock-file)
-               (chronometrist-statistics-mode)
-               (switch-to-buffer buffer)
-               ;; (chronometrist-statistics-refresh)
-               (tabulated-list-print))))))
+             (when (not preserve-state)
+               (setq chronometrist-statistics--ui-state nil))
+             (chronometrist-common-create-timeclock-file)
+             (chronometrist-statistics-mode)
+             (switch-to-buffer buffer)
+             ;; (chronometrist-statistics-refresh)
+             (tabulated-list-print))))))
 
 (defun chronometrist-statistics-previous-range (arg)
   "View the statistics in the previous time range."
@@ -219,10 +216,10 @@ current week. Otherwise, display data from the week specified by
   (let ((arg (if (and arg (numberp arg))
                  (abs arg)
                1)))
-    (if chronometrist-statistics--ui-date
-        (setq chronometrist-statistics--ui-date
-              (chronometrist-statistics-increment-or-decrement-date chronometrist-statistics--ui-date '- (* 7 arg)))
-      (setq chronometrist-statistics--ui-date
+    (if chronometrist-statistics--ui-state
+        (setq chronometrist-statistics--ui-state
+              (chronometrist-statistics-increment-or-decrement-date chronometrist-statistics--ui-state '- (* 7 arg)))
+      (setq chronometrist-statistics--ui-state
             (chronometrist-statistics-increment-or-decrement-date (decode-time) '- (* 7 arg))))
     (setq chronometrist-statistics--point (point))
     (kill-buffer)
@@ -234,10 +231,10 @@ current week. Otherwise, display data from the week specified by
   (let ((arg (if (and arg (numberp arg))
                  (abs arg)
                1)))
-    (if chronometrist-statistics--ui-date
-        (setq chronometrist-statistics--ui-date
-              (chronometrist-statistics-increment-or-decrement-date chronometrist-statistics--ui-date '+ (* 7 arg)))
-      (setq chronometrist-statistics--ui-date
+    (if chronometrist-statistics--ui-state
+        (setq chronometrist-statistics--ui-state
+              (chronometrist-statistics-increment-or-decrement-date chronometrist-statistics--ui-state '+ (* 7 arg)))
+      (setq chronometrist-statistics--ui-state
             (chronometrist-statistics-increment-or-decrement-date (decode-time) '+ (* 7 arg))))
     (setq chronometrist-statistics--point (point))
     (kill-buffer)
