@@ -151,15 +151,14 @@ supplied, `chronometrist-events' is used.
 This will not return correct results if TABLE contains records
 which span midnights. (see `chronometrist-clean-ht')")
 
-(defun chronometrist-ht-subset (start-key end-key table)
-  "Return a subset of hash table TABLE, containing values between
-START-KEY and END-KEY (both inclusive). START-KEY and END-KEY
-must be keys in TABLE."
-  (let ((subset (make-hash-table))
-        (match-flag))
+(defun chronometrist-events-subset (start-date end-date)
+  "Return a subset of `chronometrist-events', containing values
+between START-DATE and END-DATE (both inclusive). START-DATE and
+END-DATE must be dates in the form '(YEAR MONTH DAY)."
+  (let ((subset (make-hash-table :test #'equal)))
     (maphash (lambda (key value)
-               (when (and (not (chronometrist-date-less-p key start-key))
-                          (not (chronometrist-date-less-p end-key key)))
+               (when (and (not (chronometrist-date-less-p key start-date))
+                          (not (chronometrist-date-less-p end-date key)))
                  (puthash key value subset)))
              table)
     subset))
