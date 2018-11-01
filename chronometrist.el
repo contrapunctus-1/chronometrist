@@ -11,6 +11,10 @@
 
 ;; TODO - remove repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
 
+;; TODO - when starting a project with time of "-" (i.e. not worked on
+;; today until now), immediately set time to 0 instead of waiting for
+;; the first timer refresh
+
 ;; BUGS
 
 ;; 1. Start a project before midnight -> after midnight, chronometrist
