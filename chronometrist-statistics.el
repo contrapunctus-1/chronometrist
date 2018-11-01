@@ -37,10 +37,10 @@ DATE must be a list in the form (YEAR MONTH DAY)."
 than date2. Both must be lists in the form (YEAR MONTH DAY)."
   (time-less-p (chronometrist-date->time date1) (chronometrist-date->time date2)))
 
-(defun chronometrist-statistics-count-project-days (project &optional table)
-  "Return the number of days the user worked on PROJECT based on
-their `timeclock-file'. TABLE must be a hash table - if not
-supplied, `chronometrist-events' is used.
+(defun chronometrist-statistics-count-active-days (project &optional table)
+  "Return the number of days the user spent a non-zero amount of
+time on PROJECT, based on their `timeclock-file'. TABLE must be a
+hash table - if not supplied, `chronometrist-events' is used.
 
 This will not return correct results if TABLE contains records
 which span midnights. (see `chronometrist-clean-ht')"
@@ -164,7 +164,7 @@ to be displayed. They must be dates in the form (YEAR MONTH DAY).")
   (make-local-variable 'tabulated-list-format)
   (setq tabulated-list-format
         [("Project"     25 t)
-         ("Days worked" 10 t)
+         ("Active days" 10 t)
          ;; ("Average time spent"       10 t)
          ;; ("Current streak"           10 t)
          ;; ("Last streak"              10 t)
