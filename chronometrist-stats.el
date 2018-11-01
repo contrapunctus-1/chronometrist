@@ -1,4 +1,5 @@
 (require 'chronometrist-lib)
+(require 'chronometrist-statistics-custom)
 
 ;; for each activity -
 ;; + days on which time spent - int (float percent)
@@ -38,7 +39,7 @@
   (let ((dates))
     (maphash (lambda (key value)
                (when (-> value (chronometrist-vfirst) (chronometrist-vfirst) (equal "o"))
-                 (->> key (list) (append dates) (setq dates))
+                 (->> key (list) (append dates) (setq dates))))
              chronometrist-events)
     dates))
 
@@ -124,14 +125,13 @@ DATE must be a list in the form (YEAR MONTH DAY)."
 than date2. Both must be lists in the form (YEAR MONTH DAY)."
   (time-less-p (chronometrist-date->time date1) (chronometrist-date->time date2)))
 
-(defun chronometrist-count-project-days (project &optional table)
+(defun chronometrist-statistics-count-project-days (project &optional table)
   "Return the number of days the user worked on PROJECT based on
 their `timeclock-file'. TABLE must be a hash table - if not
 supplied, `chronometrist-events' is used.
 
 This will not return correct results if TABLE contains records
-which span midnights, so make sure the hash table does not have
-them. (see `chronometrist-clean-ht')"
+which span midnights. (see `chronometrist-clean-ht')"
   (let ((count 0)
         (table (if table table chronometrist-events)))
     (maphash (lambda (date events)
@@ -143,32 +143,49 @@ them. (see `chronometrist-clean-ht')"
              table)
     count))
 
+(defun chronometrist-statistics-count-average-time-spent (project &optional table)
+  "Return the average time the user has spent on PROJECT based on
+their `timeclock-file'. TABLE must be a hash table - if not
+supplied, `chronometrist-events' is used.
+
+This will not return correct results if TABLE contains records
+which span midnights. (see `chronometrist-clean-ht')")
+
+(defun chronometrist-subset-ht (start-key end-key table)
+  "Return a subset of hash table TABLE, containing values between
+START-KEY and END-KEY. START-KEY and END-KEY must be keys in
+TABLE."
+  (let ((subset)
+        (match-area))
+    (maphash (lambda (key value)
+               (if (equal key start-key))))))
+
 ;; ## TIMER ##
 
-(defun chronometrist-stats-timer ()
-  (when (get-buffer-window chronometrist-stats-buffer-name t)
-    (with-current-buffer chronometrist-stats-buffer-name
-      (chronometrist-stats-refresh))))
+(defun chronometrist-statistics-timer ()
+  (when (get-buffer-window chronometrist-statistics-buffer-name t)
+    (with-current-buffer chronometrist-statistics-buffer-name
+      (chronometrist-statistics-refresh))))
 
-(defun chronometrist-stats-maybe-start-timer ()
-  (unless chronometrist-stats--timer-object
-    (setq chronometrist-stats--timer-object
-          (run-at-time t chronometrist-stats-update-interval #'chronometrist-stats-timer))
+(defun chronometrist-statistics-maybe-start-timer ()
+  (unless chronometrist-statistics--timer-object
+    (setq chronometrist-statistics--timer-object
+          (run-at-time t chronometrist-statistics-update-interval #'chronometrist-statistics-timer))
     t))
 
-(defvar chronometrist-stats--timer-object nil)
+(defvar chronometrist-statistics--timer-object nil)
 
 (defun chronometrist-change-update-interval (arg)
   (interactive "NEnter new interval (in seconds): ")
-  (cancel-timer chronometrist-stats--timer-object)
-  (setq chronometrist-stats--update-interval arg
-        chronometrist-stats--timer-object nil)
-  (chronometrist-stats-maybe-start-timer))
+  (cancel-timer chronometrist-statistics--timer-object)
+  (setq chronometrist-statistics-update-interval arg
+        chronometrist-statistics--timer-object nil)
+  (chronometrist-statistics-maybe-start-timer))
 
 ;; ## VARIABLES ##
 
-(defvar chronometrist-stats--ui-mode nil
-  "The display mode for `chronometrist-stats'. Valid values are
+(defvar chronometrist-statistics--ui-mode nil
+  "The display mode for `chronometrist-statistics'. Valid values are
 'week, 'month, 'year, 'full, or 'custom.
 
 'week, 'month, and 'year mean display statistics
@@ -179,165 +196,152 @@ the `timeclock-file'.
 
 'custom means display statistics from an arbitrary date range.")
 
-(defvar chronometrist-stats--ui-date nil
-  "The first date of the week displayed by `chronometrist-stats' (specifically `chronometrist-stats-entries').
+(defvar chronometrist-statistics--ui-date nil
+  "The first date of the week displayed by `chronometrist-statistics' (specifically `chronometrist-statistics-entries').
 A value of nil means the current week. Otherwise, it must be a
 list in the form (YEAR WEEK), where WEEK is the numeric week of
 the year (1-52).")
 
-(defvar chronometrist-stats--ui-week-dates nil
-  "List of dates currently displayed by `chronometrist-stats' (specifically `chronometrist-stats-entries').
+(defvar chronometrist-statistics--ui-week-dates nil
+  "List of dates currently displayed by `chronometrist-statistics' (specifically `chronometrist-statistics-entries').
 Each date is a list containing calendrical information (see (info \"(elisp)Time Conversion\"))")
 
-(defvar chronometrist-stats--point nil)
+(defvar chronometrist-statistics--point nil)
 
 ;; ## FUNCTIONS ##
 
-(defun chronometrist-stats-entries ()
+(defun chronometrist-statistics-entries ()
   "Creates entries to be displayed in the buffer created by
-`chronometrist-stats', as specified by `tabulated-list-entries'."
-  (let* ((week-dates        (chronometrist-stats-date->week-dates))
-         (week-dates-string (chronometrist-stats-dates-in-week->string week-dates)))
-    (setq chronometrist-stats--ui-week-dates week-dates)
-    (mapcar (lambda (project)
-              (let ((project-daily-time-list
-                     (--map (chronometrist-project-time-one-day project it) week-dates)))
-                (list project
-                      (vconcat
-                       (vector project)
-                       (->> project-daily-time-list
-                            (mapcar #'chronometrist-format-time)
-                            (apply #'vector))
-                       (->> project-daily-time-list
-                            (-reduce #'chronometrist-time-add)
-                            (chronometrist-format-time)
-                            (vector))))))
-            timeclock-project-list)))
+`chronometrist-statistics', as specified by `tabulated-list-entries'."
+  (mapcar (lambda (project)
+            (list project
+                  (vector project
+                          (format "% 10s"
+                                  (chronometrist-statistics-count-project-days project)))))
+          timeclock-project-list))
 
-(defun chronometrist-stats-format-keybinds (command &optional firstonly)
+(defun chronometrist-statistics-format-keybinds (command &optional firstonly)
   (if firstonly
       (key-description
-       (where-is-internal command chronometrist-stats-mode-map firstonly))
-      (->> (where-is-internal command chronometrist-stats-mode-map)
+       (where-is-internal command chronometrist-statistics-mode-map firstonly))
+      (->> (where-is-internal command chronometrist-statistics-mode-map)
            (mapcar #'key-description)
            (-take 2)
            (-interpose ", ")
            (apply #'concat))))
 
-(defun chronometrist-stats-print-keybind (command &optional description firstonly)
+(defun chronometrist-statistics-print-keybind (command &optional description firstonly)
   (insert "\n    "
-          (chronometrist-stats-format-keybinds command firstonly)
+          (chronometrist-statistics-format-keybinds command firstonly)
           " - "
           (if description description "")))
 
-(defun chronometrist-stats-refresh ()
-  (with-current-buffer chronometrist-stats-buffer-name
-    (let* ((w  (get-buffer-window chronometrist-stats-buffer-name t))
+(defun chronometrist-statistics-refresh ()
+  (with-current-buffer chronometrist-statistics-buffer-name
+    (let* ((w  (get-buffer-window chronometrist-statistics-buffer-name t))
            (wp (window-point w))
            (p  (point)))
       (timeclock-reread-log)
       (tabulated-list-print t nil)
-      (chronometrist-stats-print-non-tabular)
-      (chronometrist-stats-maybe-start-timer)
+      (chronometrist-statistics-print-non-tabular)
+      (chronometrist-statistics-maybe-start-timer)
       (if (equal w (frame-selected-window))
-          (goto-char (or chronometrist-stats--point p))
+          (goto-char (or chronometrist-statistics--point p))
         (set-window-point w wp)))))
 
 ;; ## MAJOR MODE ##
 
-(defvar chronometrist-stats-mode-map
+(defvar chronometrist-statistics-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "l") #'chronometrist-open-timeclock-file)
-    (define-key map (kbd "b") #'chronometrist-stats-previous-range)
-    (define-key map (kbd "f") #'chronometrist-stats-next-range)
+    (define-key map (kbd "b") #'chronometrist-statistics-previous-range)
+    (define-key map (kbd "f") #'chronometrist-statistics-next-range)
     map)
-  "Keymap used by `chronometrist-stats-mode'.")
+  "Keymap used by `chronometrist-statistics-mode'.")
 
-(define-derived-mode chronometrist-stats-mode tabulated-list-mode "Chronometrist-Stats"
-  "Major mode for `chronometrist-stats'."
+(define-derived-mode chronometrist-statistics-mode tabulated-list-mode "Chronometrist-Statistics"
+  "Major mode for `chronometrist-statistics'."
   (timeclock-reread-log)
 
   (make-local-variable 'tabulated-list-format)
   (setq tabulated-list-format
-        [("Project"                  25 t)
-         ("Days on which time spent" 10 t)
-         ("Average time spent"       10 t)
-         ("Current streak"           10 t)
-         ("Last streak"              10 t)
-         ("Longest streak"           10 t)])
+        [("Project"     25 t)
+         ("Days worked" 10 t)
+         ;; ("Average time spent"       10 t)
+         ;; ("Current streak"           10 t)
+         ;; ("Last streak"              10 t)
+         ;; ("Longest streak"           10 t)
+         ])
 
   (make-local-variable 'tabulated-list-entries)
-  (setq tabulated-list-entries 'chronometrist-stats-entries)
+  (setq tabulated-list-entries 'chronometrist-statistics-entries)
 
   (make-local-variable 'tabulated-list-sort-key)
   (setq tabulated-list-sort-key '("Project" . nil))
 
   (tabulated-list-init-header)
 
-  (chronometrist-stats-maybe-start-timer))
+  ;; (chronometrist-statistics-maybe-start-timer)
+  )
 
 ;; ## COMMANDS ##
 
-(defun chronometrist-stats (&optional keep-date)
+(defun chronometrist-statistics (&optional keep-date)
   "Display statistics of the user's timeclock.el projects, based
 on their timelog file in `timeclock-file'. This is the 'listing
-command' for chronometrist-stats-mode.
+command' for chronometrist-statistics-mode.
 
-If a buffer called `chronometrist-stats-buffer-name' already
+If a buffer called `chronometrist-statistics-buffer-name' already
 exists and is visible, kill the buffer.
 
 If KEEP-DATE is nil (the default when not supplied), set
-`chronometrist-stats--ui-date' to nil and display data from the
+`chronometrist-statistics--ui-date' to nil and display data from the
 current week. Otherwise, display data from the week specified by
-`chronometrist-stats--ui-date'."
+`chronometrist-statistics--ui-date'."
   (interactive)
-  (let ((buffer (get-buffer-create chronometrist-stats-buffer-name)))
+  (let ((buffer (get-buffer-create chronometrist-statistics-buffer-name)))
     (with-current-buffer buffer
-      (cond ((and (get-buffer-window chronometrist-stats-buffer-name)
-                  (not keep-date))
-             (setq chronometrist-stats--point (point))
+      (cond ((get-buffer-window chronometrist-statistics-buffer-name)
              (kill-buffer buffer))
-            (t (delete-other-windows)
-               (when (not keep-date)
-                 (setq chronometrist-stats--ui-date nil))
+            (t ;; (delete-other-windows)
                (chronometrist-common-create-timeclock-file)
-               (chronometrist-stats-mode)
+               (chronometrist-statistics-mode)
                (switch-to-buffer buffer)
-               (chronometrist-stats-refresh)
-               (goto-char (or chronometrist-stats--point 1)))))))
+               ;; (chronometrist-statistics-refresh)
+               (tabulated-list-print))))))
 
-(defun chronometrist-stats-previous-range (arg)
+(defun chronometrist-statistics-previous-range (arg)
   "View the statistics in the previous time range."
   (interactive "P")
   (let ((arg (if (and arg (numberp arg))
                  (abs arg)
                1)))
-    (if chronometrist-stats--ui-date
-        (setq chronometrist-stats--ui-date
-              (chronometrist-stats-increment-or-decrement-date chronometrist-stats--ui-date '- (* 7 arg)))
-      (setq chronometrist-stats--ui-date
-            (chronometrist-stats-increment-or-decrement-date (decode-time) '- (* 7 arg))))
-    (setq chronometrist-stats--point (point))
+    (if chronometrist-statistics--ui-date
+        (setq chronometrist-statistics--ui-date
+              (chronometrist-statistics-increment-or-decrement-date chronometrist-statistics--ui-date '- (* 7 arg)))
+      (setq chronometrist-statistics--ui-date
+            (chronometrist-statistics-increment-or-decrement-date (decode-time) '- (* 7 arg))))
+    (setq chronometrist-statistics--point (point))
     (kill-buffer)
-    (chronometrist-stats t)))
+    (chronometrist-statistics t)))
 
-(defun chronometrist-stats-next-range (arg)
+(defun chronometrist-statistics-next-range (arg)
   "View the statistics in the next time range."
   (interactive "P")
   (let ((arg (if (and arg (numberp arg))
                  (abs arg)
                1)))
-    (if chronometrist-stats--ui-date
-        (setq chronometrist-stats--ui-date
-              (chronometrist-stats-increment-or-decrement-date chronometrist-stats--ui-date '+ (* 7 arg)))
-      (setq chronometrist-stats--ui-date
-            (chronometrist-stats-increment-or-decrement-date (decode-time) '+ (* 7 arg))))
-    (setq chronometrist-stats--point (point))
+    (if chronometrist-statistics--ui-date
+        (setq chronometrist-statistics--ui-date
+              (chronometrist-statistics-increment-or-decrement-date chronometrist-statistics--ui-date '+ (* 7 arg)))
+      (setq chronometrist-statistics--ui-date
+            (chronometrist-statistics-increment-or-decrement-date (decode-time) '+ (* 7 arg))))
+    (setq chronometrist-statistics--point (point))
     (kill-buffer)
-    (chronometrist-stats t)))
+    (chronometrist-statistics t)))
 
-(provide 'chronometrist-stats)
+(provide 'chronometrist-statistics)
 
 ;; Local Variables:
-;; nameless-current-name: "chronometrist-stats"
+;; nameless-current-name: "chronometrist-statistics"
 ;; End:
