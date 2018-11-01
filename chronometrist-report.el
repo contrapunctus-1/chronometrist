@@ -142,7 +142,7 @@ The first date is the first occurrence of
 (defun chronometrist-report-entries ()
   "Creates entries to be displayed in the buffer created by
 `chronometrist-report'."
-  (let* ((week-dates        (chronometrist-report-date->week-dates))
+  (let* ((week-dates        (chronometrist-report-date->week-dates)) ;; uses today if chronometrist-report--ui-date is nil
          (week-dates-string (chronometrist-report-dates-in-week->string week-dates)))
     (setq chronometrist-report--ui-week-dates week-dates)
     (mapcar (lambda (project)

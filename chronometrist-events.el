@@ -96,7 +96,7 @@ END-DATE must be dates in the form '(YEAR MONTH DAY)."
                (when (and (not (chronometrist-date-less-p key start-date))
                           (not (chronometrist-date-less-p end-date key)))
                  (puthash key value subset)))
-             table)
+             chronometrist-events)
     subset))
 
 (provide 'chronometrist-events)

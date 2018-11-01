@@ -144,9 +144,9 @@ TARGET-DATE."
 ;; instead)
 ;;
 ;; Could be refactored - one function to get ranges for an activity,
-;; one to convert them to seconds, one to subtract them (get an
-;; interval from two timestamps), and one to output the time vector
-;; from chronometrist-seconds-to-hms in the desired format
+;; one to convert them to time values (AKA UNIX epoch time), one to
+;; subtract them (get an interval from two timestamps), and one to
+;; output the time vector from chronometrist-seconds-to-hms in the desired format
 ;;
 ;; Better idea - get all events for target-date as a list of strings,
 ;; one per line. Operate on that. Will probably make for much nicer

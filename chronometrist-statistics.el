@@ -55,6 +55,12 @@ which span midnights. (see `chronometrist-clean-ht')"
              table)
     count))
 
+(defun chronometrist-project-ranges-in-day (project date))
+
+(defun chronometrist-ranges->time-values (ranges))
+
+(defun chronometrist-time-values->intervals (time-values))
+
 (defun chronometrist-statistics-count-average-time-spent (project &optional table)
   "Return the average time the user has spent on PROJECT based on
 their `timeclock-file'. TABLE must be a hash table - if not
@@ -89,7 +95,7 @@ which span midnights. (see `chronometrist-clean-ht')")
 
 (defvar chronometrist-statistics--ui-state nil
   "The display state for `chronometrist-statistics'. Must be a
-plist in the form (:mode :start-date :end-date).
+plist in the form (:mode :start :end).
 
 :MODE is either 'week, 'month, 'year, 'full, or 'custom.
 
@@ -101,22 +107,35 @@ the `timeclock-file'.
 
 'custom means display statistics from an arbitrary date range.
 
-:START-DATE and :END-DATE are the start and end of the date range
-to be displayed. They must be dates in the form (YEAR MONTH DAY).")
+:START and :END are the start and end of the date range to be
+displayed. They must be dates in the form (YEAR MONTH DAY).")
 
 (defvar chronometrist-statistics--point nil)
 
 ;; ## FUNCTIONS ##
 
+(defun chronometrist-calendrical->date (date)
+  "Convert calendrical information (see (info \"(elisp)Time of Day\"))
+to a date in the form (YEAR MONTH DAY)."
+  (-> date (-slice 3 6) (reverse)))
+
 (defun chronometrist-statistics-entries ()
   "Creates entries to be displayed in the buffer created by
 `chronometrist-statistics', as specified by `tabulated-list-entries'."
-  (mapcar (lambda (project)
-            (list project
-                  (vector project
-                          (format "% 10s"
-                                  (chronometrist-statistics-count-project-days project)))))
-          timeclock-project-list))
+  ;; if ui-state is non-nil, use subset of events based on that
+  ;; if it's nil, set ui-state to weekly with current week's dates
+  (let* ((start       (chronometrist-report-previous-week-start (decode-time)))
+         (end         (chronometrist-report-increment-or-decrement-date start '+ 7))
+         (start-short (chronometrist-calendrical->date start))
+         (end-short   (chronometrist-calendrical->date end))
+         (table       (chronometrist-events-subset start-short end-short)))
+    (mapcar (lambda (project)
+              (->> table
+                   (chronometrist-statistics-count-active-days project)
+                   (format "% 10s")
+                   (vector project)
+                   (list project)))
+            timeclock-project-list)))
 
 (defun chronometrist-statistics-format-keybinds (command &optional firstonly)
   (if firstonly
