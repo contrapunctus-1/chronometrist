@@ -1,4 +1,4 @@
-(require 'chronometrist-lib)
+(require 'chronometrist-common)
 (require 'chronometrist-custom)
 (require 'chronometrist-report)
 

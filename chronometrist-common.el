@@ -289,7 +289,7 @@ COUNT must be a positive integer."
                                        day month year
                                        operator count))))))
 
-(provide 'chronometrist-lib)
+(provide 'chronometrist-common)
 
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"

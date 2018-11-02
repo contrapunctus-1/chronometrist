@@ -219,7 +219,7 @@
     (should (equal (chronometrist-report-previous-week-start '(0 0 0 8 9 2018 6 nil 19800))
                    '(0 0 0 8  9 2018 6 nil 19800)))))
 
-;; #### CHRONOMETRIST-LIB ####
+;; #### CHRONOMETRIST-COMMON ####
 
 (ert-deftest chronometrist-ptod-tests ()
   "Tests for `chronometrist-project-time-one-day'."

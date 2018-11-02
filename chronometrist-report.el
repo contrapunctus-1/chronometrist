@@ -1,4 +1,4 @@
-(require 'chronometrist-lib)
+(require 'chronometrist-common)
 (require 'chronometrist-report-custom)
 
 ;; TODO - timers in chronometrist-report and chronometrist can

@@ -1,6 +1,6 @@
 **WARNING - NOT STABLE YET**
 
-# chronometrist-lib
+# chronometrist-common
 ## Predicates
 ### chronometrist-buffer-exists?
 String -> List?
