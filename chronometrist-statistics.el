@@ -3,16 +3,16 @@
 (require 'chronometrist-statistics-custom)
 
 ;; for each activity -
-;; + days on which time spent - int (float percent)
-;;   - get days in range - count days on which worked on activity
-;; + average time spent - HH:MM:SS
-;;   - get days in range - get time spent per day for activity in range - get the length and the total -> (/ (+ durations) length)
-;; + current streak - [int years, int months,] int days
-;;   - get days in range - calculate all streaks - see if last streak is on current day
-;; + last streak    - [int years, int months,] int days
-;;   - get days in range - calculate all streaks - if current streak, return second-last streak, else return last streak
-;; + longest streak - [int years, int months,] int days
-;;   - get days in range - calculate all streaks - find longest streak
+;; [x] days active - int (float percent)
+;;     - get days in range - count days on which worked on activity
+;; [ ] average time - HH:MM:SS
+;;     - get days in range - get time spent per day for activity in range - get the length and the total -> (/ (+ durations) length)
+;; [ ] current streak - [int years, int months,] int days
+;;     - get days in range - calculate all streaks - see if last streak is on current day
+;; [ ] last streak    - [int years, int months,] int days
+;;     - get days in range - calculate all streaks - if current streak, return second-last streak, else return last streak
+;; [ ] longest streak - [int years, int months,] int days
+;;     - get days in range - calculate all streaks - find longest streak
 ;; ...where "range" is a week, a month, a year, the entire range of records, or an arbitrary date range
 
 ;; details!
@@ -24,6 +24,13 @@
 ;; and the more the activities the more the calculations! I'm
 ;; visualizing the table loading gradually, field by field, like an
 ;; image in a browser.
+
+;; TODO -
+;; 1. show dash instead of zero
+;; 2. buttons
+;; 3. display date ranges
+;; 4. month and year ranges
+;; 5. totals for each column
 
 ;; unused function
 (defun chronometrist-date->time (date)
@@ -224,10 +231,9 @@ command' for chronometrist-statistics-mode.
 If a buffer called `chronometrist-statistics-buffer-name' already
 exists and is visible, kill the buffer.
 
-If PRESERVE-STATE is nil (the default when not supplied), set
-`chronometrist-statistics--ui-state' to nil and display data from
-the current week. Otherwise, display data from the week specified
-by `chronometrist-statistics--ui-state'."
+If PRESERVE-STATE is nil (the default when not supplied), display
+data from the current week. Otherwise, display data from the week
+specified by `chronometrist-statistics--ui-state'."
   (interactive)
   (let ((buffer (get-buffer-create chronometrist-statistics-buffer-name))
         (today  (chronometrist-calendrical->date (decode-time))))
