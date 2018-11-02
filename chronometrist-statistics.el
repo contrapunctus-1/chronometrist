@@ -13,6 +13,7 @@
 ;;     - get days in range - calculate all streaks - if current streak, return second-last streak, else return last streak
 ;; [ ] longest streak - [int years, int months,] int days
 ;;     - get days in range - calculate all streaks - find longest streak
+;; [ ] days since last active - int
 ;; ...where "range" is a week, a month, a year, the entire range of records, or an arbitrary date range
 
 ;; details!
@@ -21,7 +22,7 @@
 
 ;; Really might need emacs-async for this...buttloads of big
 ;; calculations which will only get bigger as the timelog file grows,
-;; and the more the activities the more the calculations! I'm
+;; and the more the activities, the more the calculations! I'm
 ;; visualizing the table loading gradually, field by field, like an
 ;; image in a browser.
 
@@ -53,7 +54,7 @@ time on PROJECT, based on their `timeclock-file'. TABLE must be a
 hash table - if not supplied, `chronometrist-events' is used.
 
 This will not return correct results if TABLE contains records
-which span midnights. (see `chronometrist-clean-ht')"
+which span midnights. (see `chronometrist-events-clean')"
   (let ((count 0)
         (table (if table table chronometrist-events)))
     (maphash (lambda (date events)
@@ -65,11 +66,41 @@ which span midnights. (see `chronometrist-clean-ht')"
              table)
     count))
 
-(defun chronometrist-project-ranges-in-day (project date))
+(defun chronometrist-project-events-in-day (project date)
+  "Get events for PROJECT on DATE. DATE must be in the form (YEAR MONTH DAY).
 
-(defun chronometrist-ranges->time-values (ranges))
+Returns a list of events, where each event is a vector in the
+form [CODE YEAR MONTH DAY HOURS MINUTES SECONDS PROJECT-OR-COMMENT].
 
-(defun chronometrist-time-values->intervals (time-values))
+This will not return correct results if TABLE contains records
+which span midnights. (see `chronometrist-events-clean')"
+  (let ((save-next)
+        (results))
+    (seq-do (lambda (event)
+              (cond ((and (equal "i" (chronometrist-vfirst event))
+                          (equal project (chronometrist-vlast event)))
+                     (->> event (list) (append results) (setq results))
+                     (setq save-next t))
+                    (save-next
+                     (->> event (list) (append results) (setq results))
+                     (setq save-next nil))
+                    (t nil)))
+            (gethash date chronometrist-events))
+    results))
+
+(defun chronometrist-events->time-list (events)
+  (--map (pcase it
+           (`[,_ ,year ,month ,day ,h ,m ,s ,_]
+            (encode-time s m h day month year)))
+         events))
+
+(defun chronometrist-time-list->sum-of-intervals (time-values)
+  "Takes a list of time values (see (info \"(elisp)Time of Day\")),
+treats them as alternating start/end times, finds the intervals
+between them, and adds the intervals to return a single time value."
+  (->> (-partition 2 time-values)
+       (--map (time-subtract (cadr it) (car it)))
+       (-reduce #'time-add)))
 
 (defun chronometrist-statistics-count-average-time-spent (project &optional table)
   "Return the average time the user has spent on PROJECT based on
@@ -77,7 +108,33 @@ their `timeclock-file'. TABLE must be a hash table - if not
 supplied, `chronometrist-events' is used.
 
 This will not return correct results if TABLE contains records
-which span midnights. (see `chronometrist-clean-ht')")
+which span midnights. (see `chronometrist-events-clean')"
+  (let ((table (if table table chronometrist-events))
+        (days  0)
+        (per-day-time-list))
+    (maphash (lambda (key value)
+               (let ((events-in-day (chronometrist-project-events-in-day project key)))
+                 (when events-in-day
+                   (setq days (1+ days))
+                   ;; (->> (chronometrist-project-events-in-day project key)
+                   ;;      (chronometrist-events->time-list)
+                   ;;      (chronometrist-time-list->sum-of-intervals)
+                   ;;      (list)
+                   ;;      (append per-day-time-list)
+                   ;;      (setq per-day-time-list))
+                   (setq per-day-time-list
+                         (append per-day-time-list
+                                 (list
+                                  (chronometrist-time-list->sum-of-intervals
+                                   (chronometrist-events->time-list
+                                    events-in-day))))))))
+             table)
+    (if per-day-time-list
+        (--> per-day-time-list
+             (-reduce #'time-add it)
+             (cadr it)
+             (/ it days))
+      0)))
 
 ;; ## TIMER ##
 
@@ -132,12 +189,15 @@ to a date in the form (YEAR MONTH DAY)."
 (defun chronometrist-statistics-entries-internal (table)
   "Helper function for `chronometrist-statistics-entries'."
   (mapcar (lambda (project)
-            (--> table
-                 (chronometrist-statistics-count-active-days project it)
-                 (if (zerop it) "-" it)
-                 (format "% 10s" it)
-                 (vector project it)
-                 (list project it)))
+            (let* ((active-days  (chronometrist-statistics-count-active-days project table))
+                   (active-days  (if (zerop active-days) "-" active-days))
+                   (average-time (->> (chronometrist-statistics-count-average-time-spent project table)
+                                      (chronometrist-seconds-to-hms)
+                                      (chronometrist-format-time))))
+              (->> (list project active-days average-time)
+                   (--map (format "% 5s" it))
+                   (vconcat)
+                   (list project))))
           timeclock-project-list))
 
 (defun chronometrist-statistics-entries ()
@@ -220,8 +280,8 @@ to a date in the form (YEAR MONTH DAY)."
   (make-local-variable 'tabulated-list-format)
   (setq tabulated-list-format
         [("Project"     25 t)
-         ("Active days" 10 t)
-         ;; ("Average time spent"       10 t)
+         ("Active days" 15 t)
+         ("Average time" 10 t)
          ;; ("Current streak"           10 t)
          ;; ("Last streak"              10 t)
          ;; ("Longest streak"           10 t)
@@ -259,8 +319,8 @@ specified by `chronometrist-statistics--ui-state'."
             (t ;; (delete-other-windows)
              (when (not preserve-state)
                (setq chronometrist-statistics--ui-state `(:mode week
-                                        :start ,week-start
-                                        :end ,week-end)))
+                                  :start ,week-start
+                                  :end ,week-end)))
              (chronometrist-common-create-timeclock-file)
              (chronometrist-statistics-mode)
              (switch-to-buffer buffer)

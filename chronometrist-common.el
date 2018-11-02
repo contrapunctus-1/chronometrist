@@ -266,6 +266,8 @@ SECONDS)."
             (list 0 (* 86400 count)))
    (decode-time it)))
 
+;; TODO - remove operator argument - use negative/positive integers
+;; instead, and rename it to date-add
 (defun chronometrist-date-op (date operator &optional count)
   "Return DATE incremented or decremented by COUNT days (1 if not
 supplied).
@@ -280,14 +282,21 @@ COUNT must be a positive integer."
       (3 (cl-destructuring-bind (year month day)
              date
            (-> (chronometrist-date-op-internal 0 0 0
-                                           day month year
-                                           operator count)
+                                  day month year
+                                  operator count)
                (chronometrist-calendrical->date))))
       (t (cl-destructuring-bind (s m h day month year _ _ _)
              date
            (chronometrist-date-op-internal s m h
-                                       day month year
-                                       operator count))))))
+                              day month year
+                              operator count))))))
+
+(defun chronometrist-time->seconds (time)
+  "TIME must be a vector in the form [HOURS MINUTES SECONDS]."
+  (-let [[h m s] time]
+    (+ (* h 60 60)
+       (* m 60)
+       s)))
 
 (provide 'chronometrist-common)
 
