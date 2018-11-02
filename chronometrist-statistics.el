@@ -343,8 +343,8 @@ specified by `chronometrist-statistics--ui-state'."
          (end   (plist-get chronometrist-statistics--ui-state :end)))
     (case (plist-get chronometrist-statistics--ui-state :mode)
       ('week
-       (let* ((new-start (chronometrist-date-op start #'- (* 7 arg)))
-              (new-end   (chronometrist-date-op new-start #'+ (* 6 arg))))
+       (let* ((new-start (chronometrist-date-op start     #'- (* 7 arg)))
+              (new-end   (chronometrist-date-op new-start #'+ 6)))
          (plist-put chronometrist-statistics--ui-state :start new-start)
          (plist-put chronometrist-statistics--ui-state :end new-end))))
     (setq chronometrist-statistics--point (point))
@@ -361,8 +361,8 @@ specified by `chronometrist-statistics--ui-state'."
          (end   (plist-get chronometrist-statistics--ui-state :end)))
     (case (plist-get chronometrist-statistics--ui-state :mode)
       ('week
-       (let* ((new-start (chronometrist-date-op start #'+ (* 7 arg)))
-              (new-end   (chronometrist-date-op new-start #'+ (* 6 arg))))
+       (let* ((new-start (chronometrist-date-op start     #'+ (* 7 arg)))
+              (new-end   (chronometrist-date-op new-start #'+ 6)))
          (plist-put chronometrist-statistics--ui-state :start new-start)
          (plist-put chronometrist-statistics--ui-state :end new-end))))
     (setq chronometrist-statistics--point (point))
