@@ -28,11 +28,12 @@
 
 ;; TODO -
 ;; 1. [x] show dash instead of zero
-;; 2. buttons
-;; 3. display date ranges in a nicer way
-;; 4. month and year ranges
-;; 5. totals for each column
-;; 6. (maybe) jump between chronometrist-report and chronometrist-statistics for viewing the same week's data
+;; 2. percent for active days
+;; 3. buttons
+;; 4. [x] display date ranges in a nicer way
+;; 5. month and year ranges
+;; 6. totals for each column
+;; 7. (maybe) jump between chronometrist-report and chronometrist-statistics for viewing the same week's data
 ;;    - in chronometrist-statistics, this only makes sense in week mode
 
 ;; TODO - convert all functions which take dates as arguments to use
@@ -237,20 +238,25 @@ to a date in the form (YEAR MONTH DAY)."
           " - "
           (if description description "")))
 
+(defun chronometrist-statistics-format-date (date)
+  (-let [(year month day) date]
+    (format "%04d-%02d-%02d" year month day)))
+
 (defun chronometrist-statistics-print-non-tabular ()
   "Print the non-tabular part of the buffer in `chronometrist-statistics'."
   (let ((w "\n    ")
         (inhibit-read-only t))
     (goto-char (point-max))
-    (insert w "Showing ")
+    (insert w)
     (insert-text-button (case (plist-get chronometrist-statistics--ui-state :mode)
-                          ('week "week"))
+                          ('week "Weekly view"))
                         ;; 'action #'chronometrist-report-previous-week ;; TODO - make interactive function to accept new mode from user
                         'follow-link t)
+    (insert ", from")
     (insert
      (format " %s to %s"
-             (plist-get chronometrist-statistics--ui-state :start)
-             (plist-get chronometrist-statistics--ui-state :end)))))
+             (chronometrist-statistics-format-date (plist-get chronometrist-statistics--ui-state :start))
+             (chronometrist-statistics-format-date (plist-get chronometrist-statistics--ui-state :end))))))
 
 (defun chronometrist-statistics-refresh ()
   (with-current-buffer chronometrist-statistics-buffer-name
@@ -281,7 +287,7 @@ to a date in the form (YEAR MONTH DAY)."
   (make-local-variable 'tabulated-list-format)
   (setq tabulated-list-format
         [("Project"     25 t)
-         ("Active days" 15 t)
+         ("Active days" 12 t)
          ("Average time" 10 t)
          ;; ("Current streak"           10 t)
          ;; ("Last streak"              10 t)
