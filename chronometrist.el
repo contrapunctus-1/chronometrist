@@ -296,19 +296,15 @@ project.")
 (define-derived-mode chronometrist-mode tabulated-list-mode "Chronometrist"
   "Major mode for `chronometrist'."
   (timeclock-reread-log)
-
   (make-local-variable 'tabulated-list-format)
   (setq tabulated-list-format [("#"       3  t)
                                ("Project" 25 t)
                                ("Time"    10 t)
                                ("Active"  3  t)])
-
   (make-local-variable 'tabulated-list-entries)
   (setq tabulated-list-entries 'chronometrist-entries)
-
   (make-local-variable 'tabulated-list-sort-key)
   (setq tabulated-list-sort-key '("Project" . nil))
-
   (tabulated-list-init-header))
 
 ;; ## BUTTONS ##

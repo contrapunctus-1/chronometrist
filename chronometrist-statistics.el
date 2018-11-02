@@ -199,7 +199,6 @@ to a date in the form (YEAR MONTH DAY)."
 (define-derived-mode chronometrist-statistics-mode tabulated-list-mode "Chronometrist-Statistics"
   "Major mode for `chronometrist-statistics'."
   (timeclock-reread-log)
-
   (make-local-variable 'tabulated-list-format)
   (setq tabulated-list-format
         [("Project"     25 t)
@@ -209,15 +208,11 @@ to a date in the form (YEAR MONTH DAY)."
          ;; ("Last streak"              10 t)
          ;; ("Longest streak"           10 t)
          ])
-
   (make-local-variable 'tabulated-list-entries)
   (setq tabulated-list-entries 'chronometrist-statistics-entries)
-
   (make-local-variable 'tabulated-list-sort-key)
   (setq tabulated-list-sort-key '("Project" . nil))
-
   (tabulated-list-init-header)
-
   ;; (chronometrist-statistics-maybe-start-timer)
   )
 

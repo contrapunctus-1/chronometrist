@@ -233,7 +233,6 @@ FORMAT-STRING."
 (define-derived-mode chronometrist-report-mode tabulated-list-mode "Chronometrist-Report"
   "Major mode for `chronometrist-report'."
   (timeclock-reread-log)
-
   (make-local-variable 'tabulated-list-format)
   (setq tabulated-list-format [("Project"   25 t)
                                ("Sunday"    10 t)
@@ -244,15 +243,11 @@ FORMAT-STRING."
                                ("Friday"    10 t)
                                ("Saturday"  10 t :pad-right 5)
                                ("Total"     12 t)])
-
   (make-local-variable 'tabulated-list-entries)
   (setq tabulated-list-entries 'chronometrist-report-entries)
-
   (make-local-variable 'tabulated-list-sort-key)
   (setq tabulated-list-sort-key '("Project" . nil))
-
   (tabulated-list-init-header)
-
   (chronometrist-report-maybe-start-timer))
 
 ;; ## COMMANDS ##
