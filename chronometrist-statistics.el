@@ -26,11 +26,13 @@
 ;; image in a browser.
 
 ;; TODO -
-;; 1. show dash instead of zero
+;; 1. [x] show dash instead of zero
 ;; 2. buttons
 ;; 3. display date ranges in a nicer way
 ;; 4. month and year ranges
 ;; 5. totals for each column
+;; 6. (maybe) jump between chronometrist-report and chronometrist-statistics for viewing the same week's data
+;;    - in chronometrist-statistics, this only makes sense in week mode
 
 ;; TODO - convert all functions which take dates as arguments to use
 ;; the (YEAR MONTH DAY) format
@@ -130,11 +132,12 @@ to a date in the form (YEAR MONTH DAY)."
 (defun chronometrist-statistics-entries-internal (table)
   "Helper function for `chronometrist-statistics-entries'."
   (mapcar (lambda (project)
-            (->> table
-                 (chronometrist-statistics-count-active-days project)
-                 (format "% 10s")
-                 (vector project)
-                 (list project)))
+            (--> table
+                 (chronometrist-statistics-count-active-days project it)
+                 (if (zerop it) "-" it)
+                 (format "% 10s" it)
+                 (vector project it)
+                 (list project it)))
           timeclock-project-list))
 
 (defun chronometrist-statistics-entries ()
