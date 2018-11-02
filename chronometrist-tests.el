@@ -331,8 +331,9 @@ across midnight + when not clocked out."
   (should (equal (chronometrist-format-time '[10 10 10])
                  "10:10:10")))
 
-;; (ert-deftest chronometrist-report-iodd-tests ()
-;;   (should (equal (chronometrist-report-increment-or-decrement-date '(0 0 0 28 2 2020) '+))))
+(ert-deftest chronometrist-report-iodd-tests ()
+  (should (equal (chronometrist-report-increment-or-decrement-date '(2020 2 28) '+)
+                 '(2020 2 29))))
 
 (provide 'chronometrist-tests)
 

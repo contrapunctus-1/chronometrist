@@ -54,6 +54,17 @@ Each date is a list containing calendrical information (see (info \"(elisp)Time 
   (cdr
    (assoc-string day-of-week chronometrist-report-weekday-number-alist)))
 
+(defun chronometrist-inc-or-dec-date-internal (seconds minutes hours day month year operator count)
+  "Helper function for `chronometrist-report-increment-or-decrement-date'."
+  (-->
+   (encode-time seconds minutes hours day month year)
+   (funcall (cond ((equal operator '+) 'time-add)
+                  ((equal operator '-) 'time-subtract)
+                  (t (error "Unknown operator %s" operator)))
+            it
+            (list 0 (* 86400 count)))
+   (decode-time it)))
+
 (defun chronometrist-report-increment-or-decrement-date (date operator &optional count)
   "Return DATE incremented or decremented by COUNT days (1 if not
 supplied).
@@ -63,20 +74,19 @@ DATE must be calendrical information (see (info \"(elisp)Time Conversion\"))
 OPERATOR must be either '+ or '-
 
 COUNT must be a positive integer."
-  (let ((seconds (elt date 0))
-        (minutes (elt date 1))
-        (hours   (elt date 2))
-        (day     (elt date 3))
-        (month   (elt date 4))
-        (year    (elt date 5))
-        (count   (if count count 1)))
-    (-->
-     (encode-time seconds minutes hours day month year)
-     (funcall (cond ((equal operator '+) 'time-add)
-                    ((equal operator '-) 'time-subtract)
-                    (t (error "Unknown operator %s" operator)))
-              it (list 0 (* 86400 count)))
-     (decode-time it))))
+  (let ((count (if count count 1)))
+    (case (length date)
+      (3 (cl-destructuring-bind (year month day)
+             date
+           (-> (chronometrist-inc-or-dec-date-internal 0 0 0
+                                           day month year
+                                           operator count)
+               (chronometrist-calendrical->date))))
+      (t (cl-destructuring-bind (s m h day month year _ _ _)
+             date
+           (chronometrist-inc-or-dec-date-internal s m h
+                                       day month year
+                                       operator count))))))
 
 (defun chronometrist-report-previous-week-start (date)
   "Return the date for the last start-of-week from DATE (using
@@ -87,9 +97,7 @@ the day of DATE is the same as the
 DATE must be calendrical information (see (info \"(elisp)Time Conversion\")).
 
 Any time data provided is reset to midnight (00:00:00)."
-  (let* ((date       (->> date
-                          (-drop 3)
-                          (append '(0 0 0))))
+  (let* ((date       (->> date (-drop 3) (append '(0 0 0))))
          (day        (elt date 6)) ;; 0-6, where 0 = Sunday
          (week-start (chronometrist-report-day-of-week->number chronometrist-report-week-start-day))
          (gap        (cond ((> day week-start) (- day week-start))
