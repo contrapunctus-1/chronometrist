@@ -32,13 +32,14 @@
 ;; 4. month and year ranges
 ;; 5. totals for each column
 
-;; unused function
+;; TODO - convert all functions which take dates as arguments to use
+;; the (YEAR MONTH DAY) format
+
 (defun chronometrist-date->time (date)
   "Converts DATE to a time value (see (info \"(elisp)Time of Day\")).
 DATE must be a list in the form (YEAR MONTH DAY)."
   (->> date (reverse) (apply #'encode-time 0 0 0)))
 
-;; unused function
 (defun chronometrist-date-less-p (date1 date2)
   "Like `time-less-p' but for dates. Returns ‘t’ if date1 is less
 than date2. Both must be lists in the form (YEAR MONTH DAY)."
@@ -143,17 +144,16 @@ to a date in the form (YEAR MONTH DAY)."
   ;; be changed by the view-changing functions.
   (case (plist-get chronometrist-statistics--ui-state :mode)
     ('week
-     (let* ((start       (plist-get chronometrist-statistics--ui-state :start))
-            (end         (plist-get chronometrist-statistics--ui-state :end))
-            (table       (chronometrist-events-subset start end)))
-       (setq chronometrist-statistics--ui-state `(:mode week :start ,start :end ,end))
+     (let* ((start (plist-get chronometrist-statistics--ui-state :start))
+            (end   (plist-get chronometrist-statistics--ui-state :end))
+            (table (chronometrist-events-subset start end)))
        (chronometrist-statistics-entries-internal table)))
     (t ;; `chronometrist-statistics--ui-state' is nil, show current week's data
-     (let* ((start-long  (chronometrist-report-previous-week-start (decode-time)))
-            (end-long    (chronometrist-date-op start-long '+ 7))
-            (start       (chronometrist-calendrical->date start-long))
-            (end         (chronometrist-calendrical->date end-long))
-            (table       (chronometrist-events-subset start end)))
+     (let* ((start-long (chronometrist-report-previous-week-start (decode-time)))
+            (end-long   (chronometrist-date-op start-long '+ 7))
+            (start      (chronometrist-calendrical->date start-long))
+            (end        (chronometrist-calendrical->date end-long))
+            (table      (chronometrist-events-subset start end)))
        (setq chronometrist-statistics--ui-state `(:mode week :start ,start :end ,end))
        (chronometrist-statistics-entries-internal table)))))
 
@@ -173,6 +173,21 @@ to a date in the form (YEAR MONTH DAY)."
           " - "
           (if description description "")))
 
+(defun chronometrist-statistics-print-non-tabular ()
+  "Print the non-tabular part of the buffer in `chronometrist-statistics'."
+  (let ((w "\n    ")
+        (inhibit-read-only t))
+    (goto-char (point-max))
+    (insert w "Showing ")
+    (insert-text-button (case (plist-get chronometrist-statistics--ui-state :mode)
+                          ('week "week"))
+                        ;; 'action #'chronometrist-report-previous-week ;; TODO - make interactive function to accept new mode from user
+                        'follow-link t)
+    (insert
+     (format " %s to %s"
+             (plist-get chronometrist-statistics--ui-state :start)
+             (plist-get chronometrist-statistics--ui-state :end)))))
+
 (defun chronometrist-statistics-refresh ()
   (with-current-buffer chronometrist-statistics-buffer-name
     (let* ((w  (get-buffer-window chronometrist-statistics-buffer-name t))
@@ -181,7 +196,7 @@ to a date in the form (YEAR MONTH DAY)."
       (timeclock-reread-log)
       (tabulated-list-print t nil)
       (chronometrist-statistics-print-non-tabular)
-      (chronometrist-statistics-maybe-start-timer)
+      ;; (chronometrist-statistics-maybe-start-timer)
       (if (equal w (frame-selected-window))
           (goto-char (or chronometrist-statistics--point p))
         (set-window-point w wp)))))
@@ -230,21 +245,23 @@ If PRESERVE-STATE is nil (the default when not supplied), display
 data from the current week. Otherwise, display data from the week
 specified by `chronometrist-statistics--ui-state'."
   (interactive)
-  (let ((buffer (get-buffer-create chronometrist-statistics-buffer-name))
-        (today  (chronometrist-calendrical->date (decode-time))))
+  (let* ((buffer (get-buffer-create chronometrist-statistics-buffer-name))
+         (today  (decode-time))
+         (week-start (chronometrist-calendrical->date
+                      (chronometrist-report-previous-week-start today)))
+         (week-end   (chronometrist-date-op week-start #'+ 6)))
     (with-current-buffer buffer
       (cond ((get-buffer-window chronometrist-statistics-buffer-name)
              (kill-buffer buffer))
             (t ;; (delete-other-windows)
              (when (not preserve-state)
-               (setq chronometrist-statistics--ui-state `(:mode 'week
-                                  :start ,today
-                                  :end ,(chronometrist-date-op today #'+ 7))))
+               (setq chronometrist-statistics--ui-state `(:mode week
+                                        :start ,week-start
+                                        :end ,week-end)))
              (chronometrist-common-create-timeclock-file)
              (chronometrist-statistics-mode)
              (switch-to-buffer buffer)
-             ;; (chronometrist-statistics-refresh)
-             (tabulated-list-print))))))
+             (chronometrist-statistics-refresh))))))
 
 (defun chronometrist-statistics-previous-range (arg)
   "View the statistics in the previous time range."
@@ -253,12 +270,11 @@ specified by `chronometrist-statistics--ui-state'."
                     (abs arg)
                   1))
          (start (plist-get chronometrist-statistics--ui-state :start))
-         (end   (plist-get chronometrist-statistics--ui-state :end))
-         (today (chronometrist-calendrical->date (decode-time))))
+         (end   (plist-get chronometrist-statistics--ui-state :end)))
     (case (plist-get chronometrist-statistics--ui-state :mode)
       ('week
        (let* ((new-start (chronometrist-date-op start #'- (* 7 arg)))
-              (new-end   (chronometrist-date-op new-start #'+ 7)))
+              (new-end   (chronometrist-date-op new-start #'+ (* 6 arg))))
          (plist-put chronometrist-statistics--ui-state :start new-start)
          (plist-put chronometrist-statistics--ui-state :end new-end))))
     (setq chronometrist-statistics--point (point))
@@ -272,12 +288,11 @@ specified by `chronometrist-statistics--ui-state'."
                     (abs arg)
                   1))
          (start (plist-get chronometrist-statistics--ui-state :start))
-         (end   (plist-get chronometrist-statistics--ui-state :end))
-         (today (chronometrist-calendrical->date (decode-time))))
+         (end   (plist-get chronometrist-statistics--ui-state :end)))
     (case (plist-get chronometrist-statistics--ui-state :mode)
       ('week
        (let* ((new-start (chronometrist-date-op start #'+ (* 7 arg)))
-              (new-end   (chronometrist-date-op new-start #'+ 7)))
+              (new-end   (chronometrist-date-op new-start #'+ (* 6 arg))))
          (plist-put chronometrist-statistics--ui-state :start new-start)
          (plist-put chronometrist-statistics--ui-state :end new-end))))
     (setq chronometrist-statistics--point (point))
