@@ -143,7 +143,7 @@ to a date in the form (YEAR MONTH DAY)."
        (chronometrist-statistics-entries-internal table)))
     (t ;; `chronometrist-statistics--ui-state' is nil, show current week's data
      (let* ((start-long  (chronometrist-report-previous-week-start (decode-time)))
-            (end-long    (chronometrist-report-increment-or-decrement-date start-long '+ 7))
+            (end-long    (chronometrist-date-op start-long '+ 7))
             (start       (chronometrist-calendrical->date start-long))
             (end         (chronometrist-calendrical->date end-long))
             (table       (chronometrist-events-subset start end)))
@@ -238,7 +238,7 @@ by `chronometrist-statistics--ui-state'."
              (when (not preserve-state)
                (setq chronometrist-statistics--ui-state `(:mode 'week
                                   :start ,today
-                                  :end ,(chronometrist-report-increment-or-decrement-date today #'+ 7))))
+                                  :end ,(chronometrist-date-op today #'+ 7))))
              (chronometrist-common-create-timeclock-file)
              (chronometrist-statistics-mode)
              (switch-to-buffer buffer)
@@ -256,8 +256,8 @@ by `chronometrist-statistics--ui-state'."
          (today (chronometrist-calendrical->date (decode-time))))
     (case (plist-get chronometrist-statistics--ui-state :mode)
       ('week
-       (let* ((new-start (chronometrist-report-increment-or-decrement-date start #'- (* 7 arg)))
-              (new-end   (chronometrist-report-increment-or-decrement-date new-start #'+ 7)))
+       (let* ((new-start (chronometrist-date-op start #'- (* 7 arg)))
+              (new-end   (chronometrist-date-op new-start #'+ 7)))
          (plist-put chronometrist-statistics--ui-state :start new-start)
          (plist-put chronometrist-statistics--ui-state :end new-end))))
     (setq chronometrist-statistics--point (point))
@@ -275,8 +275,8 @@ by `chronometrist-statistics--ui-state'."
          (today (chronometrist-calendrical->date (decode-time))))
     (case (plist-get chronometrist-statistics--ui-state :mode)
       ('week
-       (let* ((new-start (chronometrist-report-increment-or-decrement-date start #'+ (* 7 arg)))
-              (new-end   (chronometrist-report-increment-or-decrement-date new-start #'+ 7)))
+       (let* ((new-start (chronometrist-date-op start #'+ (* 7 arg)))
+              (new-end   (chronometrist-date-op new-start #'+ 7)))
          (plist-put chronometrist-statistics--ui-state :start new-start)
          (plist-put chronometrist-statistics--ui-state :end new-end))))
     (setq chronometrist-statistics--point (point))

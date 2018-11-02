@@ -12,7 +12,7 @@
   - [ ] chronometrist-toggle-project (&optional arg)
   - [ ] chronometrist (&optional arg)
   - [ ] chronometrist-report-day-of-week->number (day-of-week)
-  - [ ] chronometrist-report-increment-or-decrement-date (date operator &optional count)
+  - [ ] chronometrist-date-op (date operator &optional count)
   - [X] chronometrist-report-previous-week-start (date)
   - [ ] chronometrist-report-date ()
   - [ ] chronometrist-report-date->dates-in-week (first-date-in-week)

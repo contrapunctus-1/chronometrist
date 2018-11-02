@@ -50,6 +50,6 @@ seconds -> [hours minutes seconds]
 ## Time operations
 ### chronometrist-report-day-of-week->number
 String -> Integer
-### chronometrist-report-increment-or-decrement-date
+### chronometrist-date-op
 (Int Int Int Int Int Int) Symbol Int? -> (Int Int Int Int Int Int Int?)
 (seconds minutes hours day month year) operator count? -> (seconds minutes hours day month year dow dst utcoff)

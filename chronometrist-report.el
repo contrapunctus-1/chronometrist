@@ -54,40 +54,6 @@ Each date is a list containing calendrical information (see (info \"(elisp)Time 
   (cdr
    (assoc-string day-of-week chronometrist-report-weekday-number-alist)))
 
-(defun chronometrist-inc-or-dec-date-internal (seconds minutes hours day month year operator count)
-  "Helper function for `chronometrist-report-increment-or-decrement-date'."
-  (-->
-   (encode-time seconds minutes hours day month year)
-   (funcall (cond ((equal operator '+) 'time-add)
-                  ((equal operator '-) 'time-subtract)
-                  (t (error "Unknown operator %s" operator)))
-            it
-            (list 0 (* 86400 count)))
-   (decode-time it)))
-
-(defun chronometrist-report-increment-or-decrement-date (date operator &optional count)
-  "Return DATE incremented or decremented by COUNT days (1 if not
-supplied).
-
-DATE must be calendrical information (see (info \"(elisp)Time Conversion\"))
-
-OPERATOR must be either '+ or '-
-
-COUNT must be a positive integer."
-  (let ((count (if count count 1)))
-    (case (length date)
-      (3 (cl-destructuring-bind (year month day)
-             date
-           (-> (chronometrist-inc-or-dec-date-internal 0 0 0
-                                           day month year
-                                           operator count)
-               (chronometrist-calendrical->date))))
-      (t (cl-destructuring-bind (s m h day month year _ _ _)
-             date
-           (chronometrist-inc-or-dec-date-internal s m h
-                                       day month year
-                                       operator count))))))
-
 (defun chronometrist-report-previous-week-start (date)
   "Return the date for the last start-of-week from DATE (using
 start-of-week defined in `chronometrist-report-week-start-day'). If
@@ -103,7 +69,7 @@ Any time data provided is reset to midnight (00:00:00)."
          (gap        (cond ((> day week-start) (- day week-start))
                            ((< day week-start) (+ day (- 7 week-start))))))
     (if gap
-        (chronometrist-report-increment-or-decrement-date date '- gap)
+        (chronometrist-date-op date '- gap)
       date)))
 
 (defun chronometrist-report-date ()
@@ -328,9 +294,9 @@ current week. Otherwise, display data from the week specified by
                1)))
     (if chronometrist-report--ui-date
         (setq chronometrist-report--ui-date
-              (chronometrist-report-increment-or-decrement-date chronometrist-report--ui-date '- (* 7 arg)))
+              (chronometrist-date-op chronometrist-report--ui-date '- (* 7 arg)))
       (setq chronometrist-report--ui-date
-            (chronometrist-report-increment-or-decrement-date (decode-time) '- (* 7 arg))))
+            (chronometrist-date-op (decode-time) '- (* 7 arg))))
     (setq chronometrist-report--point (point))
     (kill-buffer)
     (chronometrist-report t)))
@@ -343,9 +309,9 @@ current week. Otherwise, display data from the week specified by
                1)))
     (if chronometrist-report--ui-date
         (setq chronometrist-report--ui-date
-              (chronometrist-report-increment-or-decrement-date chronometrist-report--ui-date '+ (* 7 arg)))
+              (chronometrist-date-op chronometrist-report--ui-date '+ (* 7 arg)))
       (setq chronometrist-report--ui-date
-            (chronometrist-report-increment-or-decrement-date (decode-time) '+ (* 7 arg))))
+            (chronometrist-date-op (decode-time) '+ (* 7 arg))))
     (setq chronometrist-report--point (point))
     (kill-buffer)
     (chronometrist-report t)))
