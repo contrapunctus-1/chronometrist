@@ -28,7 +28,7 @@
 ;; TODO -
 ;; 1. show dash instead of zero
 ;; 2. buttons
-;; 3. display date ranges
+;; 3. display date ranges in a nicer way
 ;; 4. month and year ranges
 ;; 5. totals for each column
 

@@ -379,38 +379,43 @@ reason if clocking out."
   "Displays a list of the user's timeclock.el projects and the
 time spent on each today, based on their timelog file
 `timeclock-file'. The user can hit RET to start/stop projects.
-This is the 'listing command' for chronometrist-mode."
+This is the 'listing command' for chronometrist-mode.
+
+With numeric argument 1, run `chronometrist-report'.
+With numeric argument 2, run `chronometrist-statistics'."
   (interactive "P")
   (let ((buffer (get-buffer-create chronometrist-buffer-name))
         (w      (get-buffer-window chronometrist-buffer-name t)))
     (cond
-     (arg (chronometrist-report))
-     (w   (with-current-buffer buffer
-            (setq chronometrist--point (point))
-            (kill-buffer chronometrist-buffer-name)))
-     (t   (with-current-buffer buffer
-            (cond ((or (not (file-exists-p timeclock-file))
-                       (chronometrist-common-file-empty-p timeclock-file))
-                   ;; first run
-                   (chronometrist-common-create-timeclock-file)
-                   (let ((inhibit-read-only t))
-                     (chronometrist-common-clear-buffer buffer)
-                     (insert "Welcome to Chronometrist! Hit RET to ")
-                     (insert-text-button "start a new project."
-                                         'action #'chronometrist-add-new-project-button
-                                         'follow-link t)
-                     (chronometrist-mode)
-                     (switch-to-buffer buffer)))
-                  (t (chronometrist-mode)
-                     (when chronometrist-hide-cursor
-                       (make-local-variable 'cursor-type)
-                       (setq cursor-type nil)
-                       (hl-line-mode))
-                     (switch-to-buffer buffer)
-                     (chronometrist-refresh)
-                     (if chronometrist--point
-                         (goto-char chronometrist--point)
-                       (chronometrist-goto-last-project)))))))))
+     (arg (case arg
+            (1 (chronometrist-report))
+            (2 (chronometrist-statistics))))
+     (w (with-current-buffer buffer
+          (setq chronometrist--point (point))
+          (kill-buffer chronometrist-buffer-name)))
+     (t (with-current-buffer buffer
+          (cond ((or (not (file-exists-p timeclock-file))
+                     (chronometrist-common-file-empty-p timeclock-file))
+                 ;; first run
+                 (chronometrist-common-create-timeclock-file)
+                 (let ((inhibit-read-only t))
+                   (chronometrist-common-clear-buffer buffer)
+                   (insert "Welcome to Chronometrist! Hit RET to ")
+                   (insert-text-button "start a new project."
+                                       'action #'chronometrist-add-new-project-button
+                                       'follow-link t)
+                   (chronometrist-mode)
+                   (switch-to-buffer buffer)))
+                (t (chronometrist-mode)
+                   (when chronometrist-hide-cursor
+                     (make-local-variable 'cursor-type)
+                     (setq cursor-type nil)
+                     (hl-line-mode))
+                   (switch-to-buffer buffer)
+                   (chronometrist-refresh)
+                   (if chronometrist--point
+                       (goto-char chronometrist--point)
+                     (chronometrist-goto-last-project)))))))))
 
 (provide 'chronometrist)
 
