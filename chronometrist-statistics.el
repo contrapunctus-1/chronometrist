@@ -28,13 +28,17 @@
 
 ;; TODO -
 ;; 1. [x] show dash instead of zero
-;; 2. percent for active days
+;; 2. [x] percent for active days
 ;; 3. buttons
 ;; 4. [x] display date ranges in a nicer way
 ;; 5. month and year ranges
 ;; 6. totals for each column
 ;; 7. (maybe) jump between chronometrist-report and chronometrist-statistics for viewing the same week's data
 ;;    - in chronometrist-statistics, this only makes sense in week mode
+;; 8. a 'counter' - if I have ten weeks of data and I'm on the latest,
+;;    show 10/10; update this as we scroll
+;;    - don't scroll past the end, as currently happens
+;;    - also applicable to chronometrist-report
 
 ;; TODO - convert all functions which take dates as arguments to use
 ;; the (YEAR MONTH DAY) format
@@ -117,18 +121,12 @@ which span midnights. (see `chronometrist-events-clean')"
                (let ((events-in-day (chronometrist-project-events-in-day project key)))
                  (when events-in-day
                    (setq days (1+ days))
-                   ;; (->> (chronometrist-project-events-in-day project key)
-                   ;;      (chronometrist-events->time-list)
-                   ;;      (chronometrist-time-list->sum-of-intervals)
-                   ;;      (list)
-                   ;;      (append per-day-time-list)
-                   ;;      (setq per-day-time-list))
-                   (setq per-day-time-list
-                         (append per-day-time-list
-                                 (list
-                                  (chronometrist-time-list->sum-of-intervals
-                                   (chronometrist-events->time-list
-                                    events-in-day))))))))
+                   (->> events-in-day
+                        (chronometrist-events->time-list)
+                        (chronometrist-time-list->sum-of-intervals)
+                        (list)
+                        (append per-day-time-list)
+                        (setq per-day-time-list)))))
              table)
     (if per-day-time-list
         (--> per-day-time-list
@@ -190,16 +188,24 @@ to a date in the form (YEAR MONTH DAY)."
 (defun chronometrist-statistics-entries-internal (table)
   "Helper function for `chronometrist-statistics-entries'."
   (mapcar (lambda (project)
-            (let* ((active-days  (chronometrist-statistics-count-active-days project table))
-                   (active-days  (if (zerop active-days) "-" active-days))
-                   (average-time (->> (chronometrist-statistics-count-average-time-spent project table)
-                                      (chronometrist-seconds-to-hms)
-                                      (chronometrist-format-time))))
-              (->> (list project
-                         (format "% 5s" active-days)
-                         (format "% 5s" average-time))
-                   (vconcat)
-                   (list project))))
+            (let* ((active-days    (chronometrist-statistics-count-active-days project table))
+                   (active-percent (case (plist-get chronometrist-statistics--ui-state :mode)
+                                     ('week (* 100 (/ active-days 7.0)))))
+                   (active-percent (if (zerop active-days)
+                                       (format "% 6s" "-")
+                                     (format "%05.2f%%" active-percent)))
+                   (active-days    (format "% 5s" (if (zerop active-days)
+                                                      "-"
+                                                    active-days)))
+                   (average-time   (->> (chronometrist-statistics-count-average-time-spent project table)
+                                        (chronometrist-seconds-to-hms)
+                                        (chronometrist-format-time)
+                                        (format "% 5s")))
+                   (content        (vector project
+                                           active-days
+                                           active-percent
+                                           average-time)))
+              (list project content)))
           timeclock-project-list))
 
 (defun chronometrist-statistics-entries ()
@@ -286,9 +292,10 @@ to a date in the form (YEAR MONTH DAY)."
   (timeclock-reread-log)
   (make-local-variable 'tabulated-list-format)
   (setq tabulated-list-format
-        [("Project"     25 t)
-         ("Active days" 12 t)
-         ("Average time" 10 t)
+        [("Project"      25 t)
+         ("Active days"  12 t)
+         ("Activity %"   10 t)
+         ("Average time" 12 t)
          ;; ("Current streak"           10 t)
          ;; ("Last streak"              10 t)
          ;; ("Longest streak"           10 t)
