@@ -5,7 +5,7 @@
 ;; for each activity -
 ;; [x] days active - int (float percent)
 ;;     - get days in range - count days on which worked on activity
-;; [ ] average time - HH:MM:SS
+;; [x] average time - HH:MM:SS
 ;;     - get days in range - get time spent per day for activity in range - get the length and the total -> (/ (+ durations) length)
 ;; [ ] current streak - [int years, int months,] int days
 ;;     - get days in range - calculate all streaks - see if last streak is on current day
@@ -194,8 +194,9 @@ to a date in the form (YEAR MONTH DAY)."
                    (average-time (->> (chronometrist-statistics-count-average-time-spent project table)
                                       (chronometrist-seconds-to-hms)
                                       (chronometrist-format-time))))
-              (->> (list project active-days average-time)
-                   (--map (format "% 5s" it))
+              (->> (list project
+                         (format "% 5s" active-days)
+                         (format "% 5s" average-time))
                    (vconcat)
                    (list project))))
           timeclock-project-list))
