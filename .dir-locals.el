@@ -4,4 +4,5 @@
 ((emacs-lisp-mode
   (nameless-aliases
    ("c" . "chronometrist")
-   ("cr" . "chronometrist-report"))))
+   ("cr" . "chronometrist-report")
+   ("cs" . "chronometrist-statistics"))))
