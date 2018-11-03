@@ -192,11 +192,12 @@ to a date in the form (YEAR MONTH DAY)."
                    (active-percent (case (plist-get chronometrist-statistics--ui-state :mode)
                                      ('week (* 100 (/ active-days 7.0)))))
                    (active-percent (if (zerop active-days)
-                                       (format "% 6s" "-")
-                                     (format "%05.2f%%" active-percent)))
-                   (active-days    (format "% 5s" (if (zerop active-days)
-                                                      "-"
-                                                    active-days)))
+                                       (format "    % 6s" "-")
+                                     (format "    %05.2f%%" active-percent)))
+                   (active-days    (format "% 5s"
+                                           (if (zerop active-days)
+                                               "-"
+                                             active-days)))
                    (average-time   (->> (chronometrist-statistics-count-average-time-spent project table)
                                         (chronometrist-seconds-to-hms)
                                         (chronometrist-format-time)
@@ -260,7 +261,7 @@ to a date in the form (YEAR MONTH DAY)."
                         'follow-link t)
     (insert ", from")
     (insert
-     (format " %s to %s"
+     (format " %s to %s\n"
              (chronometrist-statistics-format-date (plist-get chronometrist-statistics--ui-state :start))
              (chronometrist-statistics-format-date (plist-get chronometrist-statistics--ui-state :end))))))
 
@@ -294,7 +295,7 @@ to a date in the form (YEAR MONTH DAY)."
   (setq tabulated-list-format
         [("Project"      25 t)
          ("Active days"  12 t)
-         ("Activity %"   10 t)
+         ("%% of days active"   17 t)
          ("Average time" 12 t)
          ;; ("Current streak"           10 t)
          ;; ("Last streak"              10 t)
