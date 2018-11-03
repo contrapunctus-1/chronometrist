@@ -39,7 +39,7 @@ Running `M-x chronometrist` when the Chronometrist buffer is visible will kill i
 `chronometrist` keeps itself updated via an idle timer - no need to frequently press `g` to update.
 
 ### chronometrist-report
-Run `M-x chronometrist-report` (or `chronometrist` with a prefix argument, or press `r` in the `chronometrist` buffer) to see a weekly report.
+Run `M-x chronometrist-report` (or `chronometrist` with a prefix argument of 1, or press `r` in the `chronometrist` buffer) to see a weekly report.
 
 Press `b` to look at past weeks, and `f` for future weeks.
 
@@ -48,6 +48,15 @@ Press `l` to view your `timeclock-file`, `~/.emacs.d/timelog` by default.
 Just like `chronometrist`, `chronometrist-report` will also toggle the visibilty of the buffer.
 
 `chronometrist-report` keeps itself updated via an idle timer - no pressing `g` to update.
+
+### chronometrist-statistics
+Run `M-x chronometrist-statistics` (or `chronometrist` with a prefix argument of 2) to view statistics.
+
+Press `b` to look at past time ranges, and `f` for future ones.
+
+Press `l` to view your `timeclock-file`, `~/.emacs.d/timelog` by default.
+
+Just like `chronometrist`, `chronometrist-statistics` will also toggle the visibilty of the buffer.
 
 ## Customization
 See the Customize groups `chronometrist` and `chronometrist-report` for variables intended to be user-customizable.
