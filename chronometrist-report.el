@@ -227,6 +227,15 @@ FORMAT-STRING."
     (define-key map (kbd "l") #'chronometrist-open-timeclock-file)
     (define-key map (kbd "b") #'chronometrist-report-previous-week)
     (define-key map (kbd "f") #'chronometrist-report-next-week)
+    ;; Works when number of projects < screen length; after that, you
+    ;; probably expect mousewheel to scroll up/down, and
+    ;; alt-mousewheel or something for next/previous week. For now,
+    ;; I'm assuming most people won't have all that many tasks - I've
+    ;; been using it for ~2 months and have 18 projects, which are
+    ;; still just half the screen on my 15" laptop. Let's see what
+    ;; people say.
+    (define-key map [mouse-4] #'chronometrist-report-next-week)
+    (define-key map [mouse-5] #'chronometrist-report-previous-week)
     map)
   "Keymap used by `chronometrist-report-mode'.")
 
