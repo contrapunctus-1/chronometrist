@@ -1,6 +1,7 @@
 (require 'chronometrist-common)
 (require 'chronometrist-custom)
 (require 'chronometrist-report)
+(require 'chronometrist-statistics)
 
 ;; TODO - make it clear that reasons are optional! Redefine
 ;; `timeclock-ask-for-reason'?
