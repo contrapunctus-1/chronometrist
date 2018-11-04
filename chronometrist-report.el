@@ -15,7 +15,7 @@
 ;; ## TIMER ##
 
 (defun chronometrist-report-timer ()
-  (when (get-buffer-window chronometrist-report-buffer-name t)
+  (when (get-buffer chronometrist-report-buffer-name)
     (with-current-buffer chronometrist-report-buffer-name
       (chronometrist-report-refresh))))
 
@@ -208,17 +208,14 @@ FORMAT-STRING."
                         'follow-link t)))
 
 (defun chronometrist-report-refresh ()
-  (with-current-buffer chronometrist-report-buffer-name
-    (let* ((w  (get-buffer-window chronometrist-report-buffer-name t))
-           (wp (window-point w))
-           (p  (point)))
+  (let* ((w (get-buffer-window chronometrist-report-buffer-name t))
+         (p (point)))
+    (with-current-buffer chronometrist-report-buffer-name
       (timeclock-reread-log)
       (tabulated-list-print t nil)
       (chronometrist-report-print-non-tabular)
       (chronometrist-report-maybe-start-timer)
-      (if (equal w (frame-selected-window))
-          (goto-char (or chronometrist-report--point p))
-        (set-window-point w wp)))))
+      (set-window-point w p))))
 
 ;; ## MAJOR MODE ##
 

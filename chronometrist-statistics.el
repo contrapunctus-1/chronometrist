@@ -138,7 +138,7 @@ which span midnights. (see `chronometrist-events-clean')"
 ;; ## TIMER ##
 
 (defun chronometrist-statistics-timer ()
-  (when (get-buffer-window chronometrist-statistics-buffer-name t)
+  (when (get-buffer chronometrist-statistics-buffer-name)
     (with-current-buffer chronometrist-statistics-buffer-name
       (chronometrist-statistics-refresh))))
 
@@ -266,17 +266,14 @@ to a date in the form (YEAR MONTH DAY)."
              (chronometrist-statistics-format-date (plist-get chronometrist-statistics--ui-state :end))))))
 
 (defun chronometrist-statistics-refresh ()
-  (with-current-buffer chronometrist-statistics-buffer-name
-    (let* ((w  (get-buffer-window chronometrist-statistics-buffer-name t))
-           (wp (window-point w))
-           (p  (point)))
+  (let* ((w (get-buffer-window chronometrist-statistics-buffer-name t))
+         (p (point)))
+    (with-current-buffer chronometrist-report-buffer-name
       (timeclock-reread-log)
       (tabulated-list-print t nil)
       (chronometrist-statistics-print-non-tabular)
-      ;; (chronometrist-statistics-maybe-start-timer)
-      (if (equal w (frame-selected-window))
-          (goto-char (or chronometrist-statistics--point p))
-        (set-window-point w wp)))))
+      (chronometrist-statistics-maybe-start-timer)
+      (set-window-point w p))))
 
 ;; ## MAJOR MODE ##
 
