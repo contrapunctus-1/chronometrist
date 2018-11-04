@@ -81,10 +81,10 @@ since the UNIX epoch (see (info \"(elisp)Time of Day\"))."
 T1 and T2 must be lists in the form (YEAR MONTH DAY HOURS MINUTES
 SECONDS), as returned by `timestamp->list'. T2 must be
 chronologically more recent than T1."
-  (let* ((day-1          (elt t1 2))
-         (day-2          (elt t2 2))
-         (month-1        (elt t1 1))
-         (month-2        (elt t2 1)))
+  (let* ((day-1   (elt t1 2))
+         (day-2   (elt t2 2))
+         (month-1 (elt t1 1))
+         (month-2 (elt t2 1)))
     ;; not Absolutely Perfect™, but should do for most situations
     (or (= day-2   (1+ day-1))
         (= month-2 (1+ month-1)))))
@@ -101,12 +101,11 @@ PROJECT a string."
   (re-search-forward target-date nil t)
   (beginning-of-line)
   ;; Is it a clock-out event?
-  (and (looking-at-p "^o ")
-       ;; We have a midnight-spanning range. Is it a range for PROJECT?
-       (progn
-         (forward-line -1)
-         (beginning-of-line)
-         (looking-at-p (concat "i " chronometrist-date-re " " chronometrist-time-re-file " " project)))))
+  (when (looking-at-p "^o ")
+    ;; We have a midnight-spanning range. Is it a range for PROJECT?
+    (forward-line -1)
+    (beginning-of-line)
+    (looking-at-p (concat "i " chronometrist-date-re " " chronometrist-time-re-file " " project))))
 
 (defun chronometrist-get-end-time (target-date)
   "Return the date and time of the next clock-out event after
@@ -124,15 +123,15 @@ TARGET-DATE must be a date in the form \"YYYY/MM/DD\"
 
 Point must be on a clock-in event having the same date as
 TARGET-DATE."
-  (let* ((date-time        (if (progn
-                                 (forward-line)
-                                 (beginning-of-line)
-                                 (looking-at-p "^o "))
-                               (progn
-                                 (re-search-forward "o ")
-                                 (buffer-substring-no-properties (point)
-                                                                 (+ 10 1 8 (point))))
-                             (format-time-string "%Y/%m/%d %T")))
+  (let* ((date-time (if (progn
+                          (forward-line)
+                          (beginning-of-line)
+                          (looking-at-p "^o "))
+                        (progn
+                          (re-search-forward "o ")
+                          (buffer-substring-no-properties (point)
+                                                          (+ 10 1 8 (point))))
+                      (format-time-string "%Y/%m/%d %T")))
          (date-time-list   (chronometrist-timestamp->list date-time))
          (target-date-list (chronometrist-timestamp->list target-date)))
     (if (chronometrist-time-interval-span-midnight? target-date-list date-time-list)
@@ -164,13 +163,13 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
       (error (concat "Unknown project: " project))
     (with-current-buffer (find-file-noselect timeclock-file)
       (save-excursion
-        (let* ((target-date   (if date
-                                  (format "%04d/%02d/%02d"
-                                          (elt date 5)
-                                          (elt date 4)
-                                          (elt date 3))
-                                (format-time-string "%Y/%m/%d")))
-               (search-re     (concat target-date " " chronometrist-time-re-file " " project))
+        (let* ((target-date (if date
+                                (format "%04d/%02d/%02d"
+                                        (elt date 5)
+                                        (elt date 4)
+                                        (elt date 3))
+                              (format-time-string "%Y/%m/%d")))
+               (search-re   (concat target-date " " chronometrist-time-re-file " " project))
                (interval-list nil)
                (first-event-midnight (chronometrist-first-event-spans-midnight? target-date
                                                                    project)))
@@ -179,16 +178,16 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
                      (re-search-forward chronometrist-time-re-file nil t 2)
                    (re-search-forward (concat "i " search-re) nil t))
             (re-search-backward target-date nil t)
-            (let* ((start-time   (if first-event-midnight
-                                     (concat target-date " 00:00:00")
-                                   (buffer-substring-no-properties
-                                    (point)
-                                    (+ 10 1 8 (point)))))
-                   (end-time     (if first-event-midnight
-                                     (buffer-substring-no-properties
-                                      (point)
-                                      (+ 10 1 8 (point)))
-                                   (chronometrist-get-end-time target-date)))
+            (let* ((start-time (if first-event-midnight
+                                   (concat target-date " 00:00:00")
+                                 (buffer-substring-no-properties
+                                  (point)
+                                  (+ 10 1 8 (point)))))
+                   (end-time (if first-event-midnight
+                                 (buffer-substring-no-properties
+                                  (point)
+                                  (+ 10 1 8 (point)))
+                               (chronometrist-get-end-time target-date)))
                    (start-time-s (chronometrist-timestamp->seconds start-time))
                    (end-time-s   (chronometrist-timestamp->seconds end-time))
                    (interval     (elt (time-subtract end-time-s
@@ -213,9 +212,9 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
   "Format and display TIME as a string, where TIME is a vector or
 a list of the form [HOURS MINUTES SECONDS] or (HOURS MINUTES
 SECONDS)."
-  (let ((h     (elt time 0))
-        (m     (elt time 1))
-        (s     (elt time 2))
+  (let ((h (elt time 0))
+        (m (elt time 1))
+        (s (elt time 2))
         (blank "   "))
     (if (and (zerop h) (zerop m) (zerop s))
         "       -"
