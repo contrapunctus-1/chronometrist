@@ -14,6 +14,7 @@ Largely modelled after the Android application, [A Time Tracker](https://github.
 * Limitations
   1. No support (yet) for adding a task without clocking into it.
   2. Will probably never support concurrent tasks. (timeclock.el limitation)
+  3. Does not support all timeclock.el features (please make an issue or a PR)
 
 ## Installation
 You can get `chronometrist` from https://framagit.org/contrapunctus/chronometrist/
@@ -116,8 +117,12 @@ As an example from the author's own init -
     - Alternatively - each task can have tags. The tags will be used to decide the super-tasks a task belongs to, and stored in a new file in the user's .emacs.d
 
 ### chronometrist-report
-1. Highlight column of current day
-2. Add support for other locale weeks/weekday names
+1. Show week counter and max weeks; don't scroll past first/last weeks
+2. Highlight column of current day
+3. Add support for other locale weeks/weekday names
+
+### chronometrist-statistics
+1. Show range counter and max ranges; don't scroll past first/last time ranges
 
 ### Miscellaneous
 1. README - add images
