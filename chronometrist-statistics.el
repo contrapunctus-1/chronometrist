@@ -268,8 +268,10 @@ to a date in the form (YEAR MONTH DAY)."
 (defun chronometrist-statistics-refresh ()
   (let* ((w (get-buffer-window chronometrist-statistics-buffer-name t))
          (p (point)))
-    (with-current-buffer chronometrist-report-buffer-name
+    (with-current-buffer chronometrist-statistics-buffer-name
       (timeclock-reread-log)
+      (chronometrist-events-populate)
+      (chronometrist-events-clean)
       (tabulated-list-print t nil)
       (chronometrist-statistics-print-non-tabular)
       (chronometrist-statistics-maybe-start-timer)
