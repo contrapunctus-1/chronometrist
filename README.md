@@ -105,6 +105,14 @@ As an example from the author's own init -
     - when they haven't clocked in, every X minutes (e.g. 30)
     - that they are clocked in, every X minutes (e.g. 30)
     - of course, modeline support might help too.
+    - a user-supplied alist of regular expressions/globs matching a file path and projects could be used to offer that the corresponding project be started for them. e.g. given this alist -
+      ```
+      (("Composition" "my-compositions")
+       ("*.el*" . "Programming")
+       ("*.scm" . "Programming"))
+      ```
+      ...when I open any file in `~/my-music/my-compositions/`, I'd be offered to start the "Composition" task. When I open an Emacs Lisp or Scheme file, I'd be asked if I want to start the "Programming" task. (with a variable to not ask and just switch, informing the user when that happens.)
+      - Could also add comments based on the path/extension.
 8. Use `make-thread` in v26 or the emacs-async library for `chronometrist-entries`/`chronometrist-report-entries`
 9. Some way to update buffers every second without making Emacs unusable. (impossible?)
 10. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
