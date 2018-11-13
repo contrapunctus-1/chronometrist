@@ -83,10 +83,6 @@ As an example from the author's own init -
 ```
 
 ## Roadmap
-* New commands for statistics
-  - activity-specific - average time spent in $time_period, average days worked on in $time_period, current/longest streaks, ...
-  - general - most productive $time_period, GitHub-style work heatmap calendar, ...
-  - press 1 for weekly stats, 2 for monthly, 3 for yearly
 * Update when the timeclock-file changes using a filesystem watcher
 * [inflatable raptor](https://github.com/MichaelMure/git-bug/#planned-features)
 
@@ -123,6 +119,9 @@ As an example from the author's own init -
 
 ### chronometrist-statistics
 1. Show range counter and max ranges; don't scroll past first/last time ranges
+2. activity-specific - average time spent in $time_period, average days worked on in $time_period, current/longest streaks, ...
+3. general - most productive $time_period, GitHub-style work heatmap calendar, ...
+4. press 1 for weekly stats, 2 for monthly, 3 for yearly
 
 ### Miscellaneous
 1. README - add images
