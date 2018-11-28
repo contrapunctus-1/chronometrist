@@ -16,8 +16,7 @@
 
 (defun chronometrist-report-timer ()
   (when (get-buffer chronometrist-report-buffer-name)
-    (with-current-buffer chronometrist-report-buffer-name
-      (chronometrist-report-refresh))))
+    (chronometrist-report-refresh)))
 
 (defun chronometrist-report-maybe-start-timer ()
   (unless chronometrist-report--timer-object

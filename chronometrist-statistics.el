@@ -139,8 +139,7 @@ which span midnights. (see `chronometrist-events-clean')"
 
 (defun chronometrist-statistics-timer ()
   (when (get-buffer chronometrist-statistics-buffer-name)
-    (with-current-buffer chronometrist-statistics-buffer-name
-      (chronometrist-statistics-refresh))))
+    (chronometrist-statistics-refresh)))
 
 (defun chronometrist-statistics-maybe-start-timer ()
   (unless chronometrist-statistics--timer-object

@@ -69,8 +69,7 @@
 ;; ## TIMER ##
 (defun chronometrist-timer ()
   (when (get-buffer chronometrist-buffer-name)
-    (with-current-buffer chronometrist-buffer-name
-      (chronometrist-refresh))))
+    (chronometrist-refresh)))
 
 (defun chronometrist-stop-timer ()
   (interactive)
