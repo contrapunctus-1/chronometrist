@@ -103,17 +103,26 @@ As an example from the author's own init -
 6. **Modeline support** - show currently active project + time spent on it so far in the mode-line (see timeclock-mode-line-display)
    - Maybe make modeline slowly change color the longer you do something?
 7. **Reminder notifications** - a common issue with time trackers is that people forget to clock in/out. A potential solution can be to have Emacs remind people (ideally via desktop notifications?) -
-    - when they haven't clocked in, every X minutes (e.g. 30)
-    - that they are clocked in, every X minutes (e.g. 30)
-    - of course, modeline support might help too.
-    - a user-supplied alist of regular expressions/globs matching a file path and projects could be used to offer that the corresponding project be started for them. e.g. given this alist -
-      ```
-      (("Composition" "my-compositions")
-       ("*.el*" . "Programming")
-       ("*.scm" . "Programming"))
-      ```
-      ...when I open any file in `~/my-music/my-compositions/`, I'd be offered to start the "Composition" task. When I open an Emacs Lisp or Scheme file, I'd be asked if I want to start the "Programming" task. (with a variable to not ask and just switch, informing the user when that happens.)
-      - Could also add comments based on the path/extension.
+   * when they haven't clocked in, every X minutes (e.g. 30)
+   * that they are clocked in, every X minutes (e.g. 30)
+   * of course, modeline support might help too.
+   * a user-supplied alist of regular expressions/globs matching a file path and projects could be used to offer that the corresponding project be started for them. e.g. given this alist -
+     ```
+     (("*my-compositions*" . "Composition")
+      ("*.el*" . "Programming")
+      ("*.scm" . "Programming"))
+     ```
+     ...when I open any file in `~/my-music/my-compositions/`, I'd be offered to start the "Composition" task. When I open an Emacs Lisp or Scheme file, I'd be asked if I want to start the "Programming" task. (with a variable to not ask and just switch, informing the user when that happens.)
+     + Could also add comments based on the path/extension.
+     + Instead of a path, could also be the name of a major mode.
+     + See `buffer-list-update-hook` and `before-change-functions`
+     + an alternative form could look like this -
+       ```
+       ((PROJECT :pattern ... :mode ... :computerp) ...)
+       ```
+       - :pattern - glob pattern to match paths
+       - :mode - regular expression to match buffer modes
+       - :computerp or :emacsp - t if this project (activity) is something you do on a computer/in Emacs (or perhaps, more specifically, the same computer/Emacs instance as the one you run Chronometrist on.). Somewhat implied by the previous arguments. If this is t, Chronometrist will note if the computer has received no events for some time, and clock out of the project. If it's an integer, clock out after that many seconds of computer inactivity.
 8. Use `make-thread` in v26 or the emacs-async library for `chronometrist-entries`/`chronometrist-report-entries`
 9. Some way to update buffers every second without making Emacs unusable. (impossible?)
 10. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
