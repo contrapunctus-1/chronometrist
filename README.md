@@ -93,6 +93,7 @@ As an example from the author's own init -
    - Most conservative option - it will only operate on the project at point, and will only kill for a clocked-in project.
    - Somewhat less conservative option - it will operate on the currently clocked-in project, no matter where point is.
    - It _should_ ask for confirmation.
+   - Alternatively, or as a complement - an **undo command**, which will undo your last action (clock in or clock out).
 3. **Custom day start/end time** - option to use a specific time to define when a day starts/ends. e.g. 08:00 will mean a day starts and ends at 08:00 instead of the usual 24:00/00:00. Helpful for late sleepers.
 4. **Fix suggested reasons** - when using `ido` (via `ido-ubiquitous`), the default reason suggested is the last one used, which I personally find silly.
    - Make default blank?
@@ -136,6 +137,7 @@ As an example from the author's own init -
 2. [-] Document API somewhere (list of functions, their argument lists, and outputs)
 3. Use Cask?
 4. [-] Create test timelog file and UI behaviour tests
+5. Use for chronometrist-report-weekday-number-alist whatever variables like initial-frame-alist use to get that fancy Custom UI for alists.
 
 ## Contributions and contact
 Feedback and MRs very welcome. 🙂
