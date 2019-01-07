@@ -13,7 +13,7 @@ Largely modelled after the Android application, [A Time Tracker](https://github.
 
 * Limitations
   1. No support (yet) for adding a task without clocking into it.
-  2. Will probably never support concurrent tasks. (timeclock.el limitation)
+  2. No support for concurrent tasks. (timeclock.el limitation)
   3. Does not support all timeclock.el features (please make an issue or a PR)
 
 ## Installation
