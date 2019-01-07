@@ -258,6 +258,13 @@ integer."
       (chronometrist-maybe-start-timer)
       (set-window-point w p))))
 
+(defun chronometrist-ask-for-reason ()
+  "Replacement for `timeclock-ask-for-reason' (see
+`timeclock-get-reason-function') which uses the minibuffer
+instead of `completing-read'."
+  (read-from-minibuffer "Reason for clocking out: " nil nil nil
+                        'timeclock-reason-list))
+
 ;; ## HOOKS ##
 
 (defvar chronometrist-project-start-hook nil

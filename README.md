@@ -69,6 +69,12 @@ If you find that you usually _don't_ want to enter a reason, you can switch the 
 (define-key chronometrist-mode-map (kbd "RET")   #'chronometrist-toggle-project-no-reason)
 ```
 
+By default, timeclock (and thus Chronometrist) will use`completing-read` to ask for a clock-out reason, which doesn't allow you to type spaces too easily. To work around that, the following will make the prompt use `read-from-minibuffer` instead -
+
+```elisp
+(setq timeclock-get-reason-function #'chronometrist-ask-for-reason)
+```
+
 ### Hooks
 See `chronometrist-project-start-hook` and `chronometrist-project-stop-hook`. Note that these are 'abnormal' hooks, i.e. the functions they contain must accept arguments. In this case, each function must accept exactly one argument, which is the project which is being started or stopped.
 
