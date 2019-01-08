@@ -75,6 +75,8 @@ By default, timeclock (and thus Chronometrist) will use`completing-read` to ask 
 (setq timeclock-get-reason-function #'chronometrist-ask-for-reason)
 ```
 
+`chronometrist-ask-for-reason` will also use project-specific reason history, instead of all reasons.
+
 ### Hooks
 See `chronometrist-project-start-hook` and `chronometrist-project-stop-hook`. Note that these are 'abnormal' hooks, i.e. the functions they contain must accept arguments. In this case, each function must accept exactly one argument, which is the project which is being started or stopped.
 
@@ -101,10 +103,7 @@ As an example from the author's own init -
    - It _should_ ask for confirmation.
    - Alternatively, or as a complement - an **undo command**, which will undo your last action (clock in or clock out).
 3. **Custom day start/end time** - option to use a specific time to define when a day starts/ends. e.g. 08:00 will mean a day starts and ends at 08:00 instead of the usual 24:00/00:00. Helpful for late sleepers.
-4. **Fix suggested reasons** - when using `ido` (via `ido-ubiquitous`), the default reason suggested is the last one used, which I personally find silly.
-   - Make default blank?
-   - Possibly make suggestions activity-sensitive e.g. when stopping activity A, don't suggest past reasons used for activity B, C, etc. Add a variable to customize this, because it might not be the behaviour everyone wants.
-   - Suggest reasons by frequency? So your most used reason for the task is the default suggestion. If you usually _don't_ provide a reason for the task, the default is nil.
+4. Suggest reasons by frequency? So your most-used reason for the task is the default suggestion. If you usually _don't_ provide a reason for the task, the default is nil.
 5. **Better shortcuts** - shortcuts derived from the first alphabet of each project might be nicer.
 6. **Modeline support** - show currently active project + time spent on it so far in the mode-line (see timeclock-mode-line-display)
    - Maybe make modeline slowly change color the longer you do something?

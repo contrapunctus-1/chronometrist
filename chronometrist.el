@@ -274,12 +274,41 @@ integer."
       (chronometrist-maybe-start-timer)
       (set-window-point w p))))
 
+;; FIXME - has some duplicate logic with `chronometrist-project-events-in-day'
+(defun chronometrist-reason-list (project)
+  "Filters `timeclock-reason-list' to only return reasons for PROJECT."
+  (let (save-next results)
+    (maphash (lambda (date events)
+               (seq-do (lambda (event)
+                         (cond ((and (equal "i"     (chronometrist-vfirst event))
+                                     (equal project (chronometrist-vlast event)))
+                                (setq save-next t))
+                               (save-next
+                                (->> (chronometrist-vlast event)
+                                     (list)
+                                     (append results)
+                                     (setq results))
+                                (setq save-next nil))
+                               (t nil)))
+                       events))
+             chronometrist-events)
+    (->> results
+         (seq-uniq)
+         (seq-remove (lambda (elt)
+                       (equal elt "")))
+         (reverse))))
+
 (defun chronometrist-ask-for-reason ()
-  "Replacement for `timeclock-ask-for-reason' (see
-`timeclock-get-reason-function') which uses the minibuffer
-instead of `completing-read'."
-  (read-from-minibuffer "Reason for clocking out: " nil nil nil
-                        'timeclock-reason-list))
+  "Replacement for `timeclock-ask-for-reason' which uses
+`read-from-minibuffer' instead of `completing-read'. (see
+`timeclock-get-reason-function')
+
+Additionally, it uses `chronometrist-reason-list' to only suggest
+reasons used for the relevant project, instead of all reasons as
+in `timeclock-reason-list'."
+  (let ((reason-history (chronometrist-reason-list timeclock-last-project)))
+    (read-from-minibuffer "Reason for clocking out: " nil nil nil
+                          'reason-history)))
 
 ;; ## HOOKS ##
 
