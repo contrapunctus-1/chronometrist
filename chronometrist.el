@@ -137,6 +137,8 @@ SECONDS]. SECONDS must be a positive integer."
   "Create entries to be displayed in the buffer created by
 `chronometrist'."
   (timeclock-reread-log)
+  (chronometrist-events-populate)
+  (chronometrist-events-clean)
   (->> timeclock-project-list
        (-sort #'string-lessp)
        (--map-indexed
