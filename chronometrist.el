@@ -251,7 +251,8 @@ information (see (info \"(elisp)Time Conversion\"))."
       (chronometrist-print-keybind 'chronometrist-open-timeclock-file)
       (insert-text-button "open log file"
                           'action #'chronometrist-open-timeclock-file
-                          'follow-link t))))
+                          'follow-link t)
+      (insert "\n"))))
 
 (defun chronometrist-goto-nth-project (n)
   "Move point to the beginning of the line containing the Nth
