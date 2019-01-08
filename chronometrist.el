@@ -16,6 +16,18 @@
 ;; today until now), immediately set time to 0 instead of waiting for
 ;; the first timer refresh
 
+;; TODO - some way to ask for the reason just before starting a project
+
+;; Even when clocking out, the reason is asked _before_ clocking out,
+;; which adds time to the project.
+
+;; modifiers to toggling -
+;; Nth task
+;; reason (ask on start/ask on end/don't ask on end)
+;; run/don't run hooks (maybe there should be a function to toggle this)
+
+;; TODO - timeclock already _has_ hooks! :| Why do we re-implement them?
+
 ;; BUGS
 
 ;; 1. Start a project before midnight -> after midnight, chronometrist
@@ -30,6 +42,9 @@
 ;; 4. Create (and start) a _new_ project -> kill buffer -> run
 ;;    chronometrist -> cursor is not at the new project
 ;;    - can't reproduce it?
+;;
+;; 5. Start a project -> kill buffer -> run chronometrist -> cursor is
+;;    at (point-max) instead of at project
 
 ;; Style issues
 ;; 1. Uses Scheme-style ? and x->y naming conventions instead of
@@ -316,7 +331,7 @@ project.")
 
 ;; ## BUTTONS ##
 
-;; Duplication between this function and `chronometrist-toggle-project's logic
+;; FIXME - there is duplication between this function and `chronometrist-toggle-project's logic
 (defun chronometrist-toggle-project-button (button)
   (let ((current  (chronometrist-current-project))
         (at-point (chronometrist-project-at-point)))
