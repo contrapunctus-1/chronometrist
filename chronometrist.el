@@ -295,10 +295,12 @@ integer."
                        events))
              chronometrist-events)
     (->> results
+         ;; the order of reverse and seq-uniq is important, so that
+         ;; the most recent reasons come first in the history
+         (reverse)
          (seq-uniq)
          (seq-remove (lambda (elt)
-                       (equal elt "")))
-         (reverse))))
+                       (equal elt ""))))))
 
 (defun chronometrist-ask-for-reason ()
   "Replacement for `timeclock-ask-for-reason' which uses
