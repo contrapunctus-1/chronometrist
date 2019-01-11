@@ -311,7 +311,7 @@ Additionally, it uses `chronometrist-reason-list' to only suggest
 reasons used for the relevant project, instead of all reasons as
 in `timeclock-reason-list'."
   (let ((reason-history (chronometrist-reason-list timeclock-last-project)))
-    (read-from-minibuffer "Reason for clocking out: " nil nil nil
+    (read-from-minibuffer "Reason for clocking out (optional): " nil nil nil
                           'reason-history)))
 
 ;; ## HOOKS ##
