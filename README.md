@@ -60,7 +60,7 @@ Press `l` to view your `timeclock-file`, `~/.emacs.d/timelog` by default.
 Just like `chronometrist`, `chronometrist-statistics` will also toggle the visibilty of the buffer.
 
 ## Customization
-See the Customize groups `chronometrist` and `chronometrist-report` for variables intended to be user-customizable.
+See the Customize groups `chronometrist` and `chronometrist-report` for variables intended to be user-customizable. Also see the Customize group `timeclock`.
 
 If you find that you usually _don't_ want to enter a reason, you can switch the default bindings -
 
