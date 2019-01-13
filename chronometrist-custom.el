@@ -13,7 +13,7 @@
 This is not guaranteed to be accurate - see (info \"(elisp)Timers\").")
 
 (defcustom chronometrist-assist nil
-  "Whether to assist you with time tracking. Possible values -
+  "Whether Chronometrist should assist you in tracking time. Possible values -
 nil - disable assistance
 suggest - offer to clock in/out based on your definitions in `chronometrist-projects-list'
 auto - clock in/out automatically based on your definitions in `chronometrist-projects-list'")

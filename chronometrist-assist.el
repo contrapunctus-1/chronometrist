@@ -27,6 +27,23 @@ there was no match."
             chronometrist-project-list)
     nil))
 
+(defun chronometrist-assist (start end)
+  "Assist the user in time tracking, by either clocking in
+automatically or suggesting doing so (see Custom variable
+`chronometrist-assist').
+
+This function is added to `before-change-functions'."
+  (if chronometrist-project-list
+      (let ((project (chronometrist-assist-match-project)))
+        (when project
+          (case chronometrist-assist
+            ('auto
+             (timeclock-in nil project nil))
+            ('suggest
+             (when (yes-or-no-p (concat "Clock into \"" project "\"?"))
+               (timeclock-in nil project nil))))))
+    (message "To use chronometrist-assist, please define some projects in `chronometrist-project-list'.")))
+
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist-assist"
 ;; End:
