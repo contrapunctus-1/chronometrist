@@ -81,6 +81,8 @@
 
 (defvar chronometrist--point nil)
 
+(add-hook 'first-change-hook 'chronometrist-assist)
+
 ;; ## TIMER ##
 (defun chronometrist-timer ()
   (when (get-buffer chronometrist-buffer-name)

@@ -19,7 +19,7 @@ there was no match."
                             (when (string-match-p elt (symbol-name major-mode))
                               (throw 'got-project project)))
                           modes))
-                (when paths
+                (when (and (buffer-file-name) paths)
                   (mapcar (lambda (elt)
                             (when (string-match-p elt (buffer-file-name))
                               (throw 'got-project project)))
@@ -27,12 +27,12 @@ there was no match."
             chronometrist-project-list)
     nil))
 
-(defun chronometrist-assist (start end)
+(defun chronometrist-assist ()
   "Assist the user in time tracking, by either clocking in
 automatically or suggesting doing so (see Custom variable
 `chronometrist-assist').
 
-This function is added to `before-change-functions'."
+This function is added to `first-change-hook'."
   (if chronometrist-project-list
       (let ((project (chronometrist-assist-match-project)))
         (when project
