@@ -3,9 +3,6 @@
 (require 'chronometrist-report)
 (require 'chronometrist-statistics)
 
-;; TODO - make it clear that reasons are optional! Redefine
-;; `timeclock-ask-for-reason'?
-
 ;; TODO - don't suggest nil when asking for first project on first run
 
 ;; TODO - use variables instead of hardcoded numbers to determine spacing
@@ -16,8 +13,11 @@
 ;; today until now), immediately set time to 0 instead of waiting for
 ;; the first timer refresh
 
-;; TODO - some way to ask for the reason just before starting a project
+;; TODO - Mouse commands should work only on buttons.
 
+;; TODO - mouse-3 should clock-out without asking for reason.
+
+;; TODO - some way to ask for the reason just before starting a project
 ;; Even when clocking out, the reason is asked _before_ clocking out,
 ;; which adds time to the project.
 
