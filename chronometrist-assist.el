@@ -13,17 +13,19 @@ there was no match."
               (let* ((project (car entry))
                      (plist (cdr entry))
                      (modes (chronometrist-assist-atom->list (plist-get plist :mode)))
-                     (paths (chronometrist-assist-atom->list (plist-get plist :path))))
-                (when modes
-                  (mapcar (lambda (elt)
-                            (when (string-match-p elt (symbol-name major-mode))
-                              (throw 'got-project project)))
-                          modes))
-                (when (and (buffer-file-name) paths)
-                  (mapcar (lambda (elt)
-                            (when (string-match-p elt (buffer-file-name))
-                              (throw 'got-project project)))
-                          paths))))
+                     (paths (chronometrist-assist-atom->list (plist-get plist :path)))
+                     (mode-matches (when modes
+                                     (mapcar (lambda (elt)
+                                               (string-match-p elt (symbol-name major-mode)))
+                                             modes)))
+                     (path-matches (when (and (buffer-file-name) paths)
+                                     (mapcar (lambda (elt)
+                                               (string-match-p elt (buffer-file-name)))
+                                             paths))))
+                (when (seq-every-p #'identity
+                                   (append mode-matches
+                                           path-matches))
+                  (throw 'got-project project))))
             chronometrist-project-list)
     nil))
 
