@@ -2,6 +2,7 @@
 (require 'chronometrist-custom)
 (require 'chronometrist-report)
 (require 'chronometrist-statistics)
+(require 'chronometrist-assist)
 
 ;; TODO - don't suggest nil when asking for first project on first run
 

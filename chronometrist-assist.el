@@ -45,6 +45,8 @@ This function is added to `first-change-hook'."
                (timeclock-in nil project nil))))))
     (message "To use chronometrist-assist, please define some projects in `chronometrist-project-list'.")))
 
+(provide 'chronometrist-assist)
+
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist-assist"
 ;; End:
