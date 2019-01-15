@@ -35,7 +35,8 @@ automatically or suggesting doing so (see Custom variable
 This function is added to `first-change-hook'."
   (if chronometrist-project-list
       (let ((project (chronometrist-assist-match-project)))
-        (when project
+        (when (and project
+                   (not (chronometrist-current-project)))
           (case chronometrist-assist
             ('auto
              (timeclock-in nil project nil))
