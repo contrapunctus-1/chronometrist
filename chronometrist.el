@@ -269,7 +269,7 @@ integer."
     (beginning-of-line)
     (chronometrist-project-at-point)))
 
-(defun chronometrist-refresh ()
+(defun chronometrist-refresh (&optional ignore-auto noconfirm)
   (let* ((w (get-buffer-window chronometrist-buffer-name t))
          (p (window-point w)))
     (with-current-buffer chronometrist-buffer-name
@@ -364,7 +364,8 @@ project.")
   (setq tabulated-list-entries 'chronometrist-entries)
   (make-local-variable 'tabulated-list-sort-key)
   (setq tabulated-list-sort-key '("Project" . nil))
-  (tabulated-list-init-header))
+  (tabulated-list-init-header)
+  (setq revert-buffer-function #'chronometrist-refresh))
 
 ;; ## BUTTONS ##
 
