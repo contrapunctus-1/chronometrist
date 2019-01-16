@@ -1,3 +1,5 @@
+(require 'seq)
+
 (defun chronometrist-assist-atom->list (arg)
   (when arg
     (if (consp arg)
@@ -14,17 +16,23 @@ there was no match."
                      (plist (cdr entry))
                      (modes (chronometrist-assist-atom->list (plist-get plist :mode)))
                      (paths (chronometrist-assist-atom->list (plist-get plist :path)))
+                     (mode-name (symbol-name major-mode))
                      (mode-matches (when modes
-                                     (mapcar (lambda (elt)
-                                               (string-match-p elt (symbol-name major-mode)))
-                                             modes)))
+                                     (->> modes
+                                          (--map (string-match-p it mode-name))
+                                          (seq-some #'identity)
+                                          (chronometrist-assist-atom->list))))
                      (path-matches (when (and (buffer-file-name) paths)
-                                     (mapcar (lambda (elt)
-                                               (string-match-p elt (buffer-file-name)))
-                                             paths))))
+                                     (->> paths
+                                          (--map (string-match-p it (buffer-file-name)))
+                                          (seq-some #'identity)
+                                          (chronometrist-assist-atom->list)))))
                 (when (seq-every-p #'identity
                                    (append mode-matches
                                            path-matches))
+                  ;; (message "Matched rule %s%s%s" entry
+                  ;;          " for buffer " (buffer-name)
+                  ;;          " with mode " mode-name)
                   (throw 'got-project project))))
             chronometrist-project-list)
     nil))
@@ -43,7 +51,8 @@ This function is added to `first-change-hook'."
             ('auto
              (timeclock-in nil project nil))
             ('suggest
-             (when (yes-or-no-p (concat "Clock into \"" project "\"?"))
+             (when (yes-or-no-p (concat "Clock into \"" project "\"?"
+                                        " (" (buffer-name) ")"))
                (timeclock-in nil project nil))))))
     (message "To use chronometrist-assist, please define some projects in `chronometrist-project-list'.")))
 

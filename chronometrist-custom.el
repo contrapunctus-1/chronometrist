@@ -18,7 +18,7 @@ nil - disable assistance
 suggest - offer to clock in/out based on your definitions in `chronometrist-projects-list'
 auto - clock in/out automatically based on your definitions in `chronometrist-projects-list'")
 
-(defcustom chronometrist-projects-list nil
+(defcustom chronometrist-project-list nil
   "List for specifying Chronometrist projects and their properties.
 
 Each element must be in the form (\"PROJECT\" :PATH ... :MODE ... :REASON ...)
