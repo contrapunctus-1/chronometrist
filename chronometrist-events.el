@@ -61,7 +61,7 @@ if the table was modified, else nil."
                    (--> (vconcat (vector i-event) value)
                         (puthash key it chronometrist-events))
                    (setq modified t)))
-               (setq prev-date key))    ; this assumes that the first event of the first date doesn't
+               (setq prev-date key)) ; this assumes that the first event of the first date doesn't
                                         ; have an "o" code (which a correct file shouldn't)
              chronometrist-events)
     modified))
@@ -82,21 +82,21 @@ This function always returns nil."
       (goto-char (point-min))
       (let ((events))
         (while (not (= (point) (point-max)))
-          (let* ((event-string       (buffer-substring-no-properties (point-at-bol)
-                                                                     (point-at-eol)))
-                 (info-re            (concat ". " chronometrist-date-re " " chronometrist-time-re-file))
+          (let* ((event-string (buffer-substring-no-properties (point-at-bol)
+                                                               (point-at-eol)))
+                 (info-re (concat ". " chronometrist-date-re " " chronometrist-time-re-file))
                  (project-or-comment (->> event-string
                                           (replace-regexp-in-string (concat info-re " ?") "")
                                           (vector)))
-                 (the-rest           (--> (concat "\\(" info-re "\\)" ".*")
-                                          (replace-regexp-in-string it "\\1" event-string)
-                                          (split-string it "[ /:]")
-                                          (append (list (car it))
-                                                  (mapcar #'string-to-number (-slice it 1 7)))))
-                 (key                (-slice the-rest 1 4))
-                 (old-value          (gethash key chronometrist-events))
-                 (new-value          (vector (vconcat the-rest ;; vconcat converts lists to vectors
-                                                      project-or-comment))))
+                 (the-rest (--> (concat "\\(" info-re "\\)" ".*")
+                                (replace-regexp-in-string it "\\1" event-string)
+                                (split-string it "[ /:]")
+                                (append (list (car it))
+                                        (mapcar #'string-to-number (-slice it 1 7)))))
+                 (key (-slice the-rest 1 4))
+                 (old-value (gethash key chronometrist-events))
+                 (new-value (vector (vconcat the-rest ;; vconcat converts lists to vectors
+                                             project-or-comment))))
             (if old-value
                 (puthash key (vconcat old-value new-value) chronometrist-events)
               (puthash key new-value chronometrist-events)))
