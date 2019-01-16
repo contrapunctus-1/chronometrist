@@ -43,18 +43,19 @@ automatically or suggesting doing so (see Custom variable
 `chronometrist-assist').
 
 This function is added to `first-change-hook'."
-  (if chronometrist-project-list
-      (let ((project (chronometrist-assist-match-project)))
-        (when (and project
-                   (not (chronometrist-current-project)))
-          (case chronometrist-assist
-            ('auto
-             (timeclock-in nil project nil))
-            ('suggest
-             (when (yes-or-no-p (concat "Clock into \"" project "\"?"
-                                        " (" (buffer-name) ")"))
-               (timeclock-in nil project nil))))))
-    (message "To use chronometrist-assist, please define some projects in `chronometrist-project-list'.")))
+  (when chronometrist-assist
+    (if chronometrist-project-list
+        (let ((project (chronometrist-assist-match-project)))
+          (when (and project
+                     (not (chronometrist-current-project)))
+            (case chronometrist-assist
+              ('auto
+               (timeclock-in nil project nil))
+              ('suggest
+               (when (yes-or-no-p (concat "Clock into \"" project "\"?"
+                                          " (" (buffer-name) ")"))
+                 (timeclock-in nil project nil))))))
+      (message "To use chronometrist-assist, please define some projects in `chronometrist-project-list'."))))
 
 (provide 'chronometrist-assist)
 
