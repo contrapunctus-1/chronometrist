@@ -100,12 +100,15 @@ which span midnights. (see `chronometrist-events-clean')"
          events))
 
 (defun chronometrist-time-list->sum-of-intervals (time-values)
-  "Takes a list of time values (see (info \"(elisp)Time of Day\")),
-treats them as alternating start/end times, finds the intervals
-between them, and adds the intervals to return a single time value."
-  (->> (-partition 2 time-values)
-       (--map (time-subtract (cadr it) (car it)))
-       (-reduce #'time-add)))
+  "Take a list of time values (see (info \"(elisp)Time of Day\")),
+treat them as alternating start/end times, and find the intervals
+between them, and add the intervals to return a single time
+value. If TIME-VALUES is nil, return '(0 0)."
+  (if time-values
+      (->> (-partition 2 time-values)
+           (--map (time-subtract (cadr it) (car it)))
+           (-reduce #'time-add))
+    '(0 0)))
 
 (defun chronometrist-statistics-count-average-time-spent (project &optional table)
   "Return the average time the user has spent on PROJECT based on

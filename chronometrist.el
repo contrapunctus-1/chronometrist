@@ -31,20 +31,16 @@
 
 ;; BUGS
 
-;; 1. Start a project before midnight -> after midnight, chronometrist
-;;    will display it as active, but the time spent will be '-' (zero)
-;;    _until you clock out._ Probably a `chronometrist-project-time-one-day' bug.
+;; 1. timer function makes line highlight vanish
 
-;; 2. timer function makes line highlight vanish
-
-;; 3. (goto-char (point-max)) -> RET -> the time spent on the last
+;; 2. (goto-char (point-max)) -> RET -> the time spent on the last
 ;;    project in the list will be the first new project suggestion.
 
-;; 4. Create (and start) a _new_ project -> kill buffer -> run
+;; 3. Create (and start) a _new_ project -> kill buffer -> run
 ;;    chronometrist -> cursor is not at the new project
 ;;    - can't reproduce it?
 ;;
-;; 5. Start a project -> kill buffer -> run chronometrist -> cursor is
+;; 4. Start a project -> kill buffer -> run chronometrist -> cursor is
 ;;    at (point-max) instead of at project
 
 ;; Style issues
@@ -273,6 +269,8 @@ integer."
   (let* ((w (get-buffer-window chronometrist-buffer-name t))
          (p (window-point w)))
     (with-current-buffer chronometrist-buffer-name
+      (chronometrist-events-populate)
+      (chronometrist-events-clean)
       (timeclock-reread-log)
       (tabulated-list-print t nil)
       (chronometrist-print-non-tabular)

@@ -138,19 +138,6 @@ TARGET-DATE."
         (concat target-date " 24:00:00")
       date-time)))
 
-;; The multiple calls to re-search-forward/backward to get point at
-;; the right spot are just ugly :\ (See if you can use match data
-;; instead)
-;;
-;; Could be refactored - one function to get ranges for an activity,
-;; one to convert them to time values (AKA UNIX epoch time), one to
-;; subtract them (get an interval from two timestamps), and one to
-;; output the time vector from chronometrist-seconds-to-hms in the desired format
-;;
-;; Better idea - get all events for target-date as a list of strings,
-;; one per line. Operate on that. Will probably make for much nicer
-;; code.
-
 (defun chronometrist-project-time-one-day (project &optional date)
   "Read `timeclock-file' and return total time spent on PROJECT
 today or (if supplied) on DATE.
@@ -159,47 +146,16 @@ DATE must be a list containing calendrical information (see (info
 \"(elisp)Time Conversion\")).
 
 The return value is a vector in the form [HOURS MINUTES SECONDS]"
-  (if (not (member project timeclock-project-list))
-      (error (concat "Unknown project: " project))
-    (with-current-buffer (find-file-noselect timeclock-file)
-      (save-excursion
-        (let* ((target-date (if date
-                                (format "%04d/%02d/%02d"
-                                        (elt date 5)
-                                        (elt date 4)
-                                        (elt date 3))
-                              (format-time-string "%Y/%m/%d")))
-               (search-re   (concat target-date " " chronometrist-time-re-file " " project))
-               (interval-list nil)
-               (first-event-midnight (chronometrist-first-event-spans-midnight? target-date
-                                                                   project)))
-          ;; (goto-char (point-min))
-          (while (if first-event-midnight
-                     (re-search-forward chronometrist-time-re-file nil t 2)
-                   (re-search-forward (concat "i " search-re) nil t))
-            (re-search-backward target-date nil t)
-            (let* ((start-time (if first-event-midnight
-                                   (concat target-date " 00:00:00")
-                                 (buffer-substring-no-properties
-                                  (point)
-                                  (+ 10 1 8 (point)))))
-                   (end-time (if first-event-midnight
-                                 (buffer-substring-no-properties
-                                  (point)
-                                  (+ 10 1 8 (point)))
-                               (chronometrist-get-end-time target-date)))
-                   (start-time-s (chronometrist-timestamp->seconds start-time))
-                   (end-time-s   (chronometrist-timestamp->seconds end-time))
-                   (interval     (elt (time-subtract end-time-s
-                                                     start-time-s)
-                                      1)))
-              (setq interval-list
-                    (append interval-list (list interval))
-                    ;; quick hack
-                    first-event-midnight nil)))
-          (->> interval-list
-               (-reduce #'+)
-               (chronometrist-seconds-to-hms)))))))
+  (let* ((target-date (case (length date)
+                        (3 date)
+                        (t (cl-destructuring-bind (_ _ _ day month year _ _ _)
+                               (if date date (decode-time))
+                             (list year month day))))))
+    (->> (chronometrist-project-events-in-day project target-date)
+         (chronometrist-events->time-list)
+         (chronometrist-time-list->sum-of-intervals)
+         (cadr)
+         (chronometrist-seconds-to-hms))))
 
 ;; tests -
 ;; (mapcar #'chronometrist-format-time
