@@ -36,9 +36,10 @@ if the table was modified, else nil."
         (let* ((new-date   `(,year ,month ,day))
                (temp-event `[["o" ,year ,month ,day ,h ,m ,s]])
                (new-date-events (gethash new-date chronometrist-events)))
-          (if new-date-events
-              (vconcat new-date-events temp-event)
-            (puthash new-date temp-event chronometrist-events))))))
+          (puthash new-date
+                   (vconcat new-date-events
+                            temp-event)
+                   chronometrist-events)))))
   ;; for each key-value, see if the first event has an "o" code
   (let (prev-date modified)
     (maphash (lambda (key value)
