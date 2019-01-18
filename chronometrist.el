@@ -363,7 +363,8 @@ project.")
   (make-local-variable 'tabulated-list-sort-key)
   (setq tabulated-list-sort-key '("Project" . nil))
   (tabulated-list-init-header)
-  (setq revert-buffer-function #'chronometrist-refresh))
+  (setq revert-buffer-function #'chronometrist-refresh
+        timeclock-get-reason-function #'chronometrist-ask-for-reason))
 
 ;; ## BUTTONS ##
 
