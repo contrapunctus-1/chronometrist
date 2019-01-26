@@ -101,7 +101,7 @@ which span midnights. (see `chronometrist-events-clean')"
 
 (defun chronometrist-time-list->sum-of-intervals (time-values)
   "Take a list of time values (see (info \"(elisp)Time of Day\")),
-treat them as alternating start/end times, and find the intervals
+treat them as alternating start/end times, find the intervals
 between them, and add the intervals to return a single time
 value. If TIME-VALUES is nil, return '(0 0)."
   (if time-values

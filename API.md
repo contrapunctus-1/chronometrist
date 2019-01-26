@@ -91,7 +91,18 @@ String -> Integer
 ### chronometrist-date-op
 (seconds minutes hours day month year) operator count? -> decode-time
 
+# chronometrist-statistics
+## Time operations
+### chronometrist-calendrical->date
+decode-time -> date-list
+### chronometrist-events->time-list
+[event*] -> (encode-time*)
+### chronometrist-time-list->sum-of-intervals
+(encode-time*) -> encode-time
+
 # chronometrist-events
 ## Hash table querying
 ### chronometrist-events-subset
 date-list date-list -> #(hash-table (date-list [event-vector*]))
+### chronometrist-project-events-in-day
+"Project" date-list -> (event*)
