@@ -36,7 +36,7 @@ timestamp-list -> encode-time
 ### chronometrist-timestamp->seconds
 timeclock-timestamp -> encode-time
 ### chronometrist-format-time
-date-vector | date-list -> "h:m:s"
+time-vector | time-list -> "h:m:s"
 ### chronometrist-date-op-internal
 s m h DD MM YYYY operator count -> decode-time
 ### chronometrist-date-op
@@ -62,7 +62,6 @@ String -> Boolean
 
 ## Time operations
 ### chronometrist-seconds-to-hms
-Integer -> [Integer Integer Integer]
 seconds -> time-vector
 ### chronometrist-time-add
 time-vector time-vector -> time-vector
@@ -90,9 +89,9 @@ time-vector time-vector -> time-vector
 ### chronometrist-report-day-of-week->number
 String -> Integer
 ### chronometrist-date-op
-(seconds minutes hours day month year) operator count? -> (seconds minutes hours day month year dow dst utcoff)
+(seconds minutes hours day month year) operator count? -> decode-time
 
 # chronometrist-events
 ## Hash table querying
 ### chronometrist-events-subset
-date-list date-list -> (date-list [event-vector*])
+date-list date-list -> #(hash-table (date-list [event-vector*]))
