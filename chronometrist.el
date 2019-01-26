@@ -278,6 +278,7 @@ integer."
       (set-window-point w p))))
 
 ;; FIXME - has some duplicate logic with `chronometrist-project-events-in-day'
+;; BUG - sometimes returns garbage values?
 (defun chronometrist-reason-list (project)
   "Filters `timeclock-reason-list' to only return reasons for PROJECT."
   (let (save-next results)

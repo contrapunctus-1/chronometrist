@@ -1,6 +1,9 @@
 **WARNING - NOT STABLE YET**
 
-# Currently-used time formats legend
+(?) - function has dubious utility/is candidate for cleanup
+DEPRECATED - function is deprecated and should be removed in the future
+
+# Legend of currently-used time formats
 1. timeclock-timestamp - "year/month/day hours:minutes:seconds"
 2. timeclock-date - "year/month/day"
 3. decode-time - (seconds minutes hours day month year dow dst utcoff)
@@ -9,6 +12,7 @@
 6. date-vector - [year month day]
 7. time-vector - [hours minutes seconds]
 8. encode-time - (sec-high sec-low microsec picosec)
+9. seconds - seconds as an integer
 
 # chronometrist-common
 ## Commands
@@ -19,15 +23,15 @@
 String -> List?
 ### chronometrist-buffer-visible?
 Buffer | String -> Boolean
-### chronometrist-time-interval-span-midnight?
+### chronometrist-time-interval-span-midnight? (DEPRECATED)
 timestamp-list timestamp-list -> Boolean
-### chronometrist-first-event-spans-midnight?
+### chronometrist-first-event-spans-midnight? (DEPRECATED)
 timeclock-date "project" -> Boolean
 
 ## Time operations
 ### chronometrist-timestamp->list
 timeclock-timestamp -> timestamp-list
-### chronometrist-timestamp-list->seconds
+### chronometrist-timestamp-list->seconds (?)
 timestamp-list -> encode-time
 ### chronometrist-timestamp->seconds
 timeclock-timestamp -> encode-time
@@ -37,9 +41,11 @@ date-vector | date-list -> "h:m:s"
 s m h DD MM YYYY operator count -> decode-time
 ### chronometrist-date-op
 decode-time | date-list operator &optional count ->
+### chronometrist-time->seconds
+time-vector -> seconds
 
 ## Timelog data (file-based)
-### chronometrist-get-end-time
+### chronometrist-get-end-time (DEPRECATED)
 timeclock-date -> timeclock-timestamp
 ### chronometrist-common-create-timeclock-file
 ### chronometrist-common-file-empty-p
@@ -57,7 +63,7 @@ String -> Boolean
 ## Time operations
 ### chronometrist-seconds-to-hms
 Integer -> [Integer Integer Integer]
-seconds -> [hours minutes seconds]
+seconds -> time-vector
 ### chronometrist-time-add
 time-vector time-vector -> time-vector
 
@@ -85,3 +91,8 @@ time-vector time-vector -> time-vector
 String -> Integer
 ### chronometrist-date-op
 (seconds minutes hours day month year) operator count? -> (seconds minutes hours day month year dow dst utcoff)
+
+# chronometrist-events
+## Hash table querying
+### chronometrist-events-subset
+date-list date-list -> (date-list [event-vector*])
