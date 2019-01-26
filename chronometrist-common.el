@@ -70,7 +70,7 @@ MONTH DAY HOURS MINUTES SECONDS), as returned by
        (apply #'encode-time)))
 
 (defun chronometrist-timestamp->seconds (date-time-string)
-  "Convert a string timestamp in the form \"HH:MM:SS\" to seconds
+  "Convert a string timestamp in the form \"YYYY/MM/SS HH:MM:SS\" to seconds
 since the UNIX epoch (see (info \"(elisp)Time of Day\"))."
   (chronometrist-timestamp-list->seconds
    (chronometrist-timestamp->list date-time-string)))
