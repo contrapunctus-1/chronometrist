@@ -5,4 +5,5 @@
   (nameless-aliases
    ("c" . "chronometrist")
    ("cr" . "chronometrist-report")
-   ("cs" . "chronometrist-statistics"))))
+   ("cs" . "chronometrist-statistics")
+   ("cd" . "chronometrist-diary"))))
