@@ -206,7 +206,7 @@ FORMAT-STRING."
                         'action #'chronometrist-open-timeclock-file
                         'follow-link t)))
 
-(defun chronometrist-report-refresh ()
+(defun chronometrist-report-refresh (&optional ignore-auto noconfirm)
   (let* ((w (get-buffer-window chronometrist-report-buffer-name t))
          (p (point)))
     (with-current-buffer chronometrist-report-buffer-name
@@ -253,7 +253,8 @@ FORMAT-STRING."
   (make-local-variable 'tabulated-list-sort-key)
   (setq tabulated-list-sort-key '("Project" . nil))
   (tabulated-list-init-header)
-  (chronometrist-report-maybe-start-timer))
+  (chronometrist-report-maybe-start-timer)
+  (setq revert-buffer-function #'chronometrist-report-refresh))
 
 ;; ## COMMANDS ##
 

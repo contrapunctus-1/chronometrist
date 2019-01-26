@@ -267,7 +267,7 @@ to a date in the form (YEAR MONTH DAY)."
              (chronometrist-statistics-format-date (plist-get chronometrist-statistics--ui-state :start))
              (chronometrist-statistics-format-date (plist-get chronometrist-statistics--ui-state :end))))))
 
-(defun chronometrist-statistics-refresh ()
+(defun chronometrist-statistics-refresh (&optional ignore-auto noconfirm)
   (let* ((w (get-buffer-window chronometrist-statistics-buffer-name t))
          (p (point)))
     (with-current-buffer chronometrist-statistics-buffer-name
@@ -308,7 +308,7 @@ to a date in the form (YEAR MONTH DAY)."
   (setq tabulated-list-sort-key '("Project" . nil))
   (tabulated-list-init-header)
   ;; (chronometrist-statistics-maybe-start-timer)
-  )
+  (setq revert-buffer-function #'chronometrist-statistics-refresh))
 
 ;; ## COMMANDS ##
 
