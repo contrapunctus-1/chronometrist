@@ -1,3 +1,14 @@
+;; TODO - add forward/backward, current date display (and don't scroll
+;; past the actual data)
+
+;; TODO - when the reason is "-", add that interval to the next reason?
+
+;; TODO - permit switching between
+;; - relaxed time periods ("X hours, Y minutes", "80 minutes",
+;;   "(almost|slightly over) 1 hour")
+;; - strict time periods (using `chronometrist-seconds-to-hms')
+;; - period start/end ("HH:MM to HH:MM")
+
 (defvar chronometrist-diary-buffer-name "*Chronometrist-Diary*")
 
 (defun chronometrist-intervals-on (date)
@@ -44,7 +55,7 @@ format returned by `encode-time'."
     (chronometrist-common-clear-buffer chronometrist-diary-buffer-name)
     (seq-mapn #'insert intervals projects-reasons)))
 
-(define-derived-mode chronometrist-diary-view-mode special-mode "Chronometrist Diary"
+(define-derived-mode chronometrist-diary-view-mode special-mode "Chronometrist-Diary"
   "A mode to view your activity today like a diary."
   (setq revert-buffer-function #'chronometrist-diary-refresh))
 

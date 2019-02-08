@@ -94,6 +94,7 @@
   "If `chronometrist--timer-object' is non-nil, add
 `chronometrist-timer' to the list of active timers and return t,
 else do nothing and return nil."
+  (interactive)
   (unless chronometrist--timer-object
     (setq chronometrist--timer-object
           (run-at-time t chronometrist-update-interval #'chronometrist-timer))
