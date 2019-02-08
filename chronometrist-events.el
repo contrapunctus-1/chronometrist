@@ -34,7 +34,7 @@ if the table was modified, else nil."
       (cl-destructuring-bind (s m h day month year _ _ _)
           (decode-time)
         (let* ((new-date   `(,year ,month ,day))
-               (temp-event `[["o" ,year ,month ,day ,h ,m ,s]])
+               (temp-event `[["o" ,year ,month ,day ,h ,m ,s ""]])
                (new-date-events (gethash new-date chronometrist-events)))
           (puthash new-date
                    (vconcat new-date-events
