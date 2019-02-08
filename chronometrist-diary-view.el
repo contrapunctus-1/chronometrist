@@ -12,7 +12,11 @@
 ;; Add variable to store format functions as list (first one is
 ;; default), command to cycle between them
 
-(defvar chronometrist-diary-buffer-name "*Chronometrist-Diary*")
+(defvar chronometrist-diary-buffer-name "*Chronometrist-Diary*"
+  "Name for the buffer created by `chronometrist-diary'.")
+
+(defvar chronometrist-diary--current-date nil
+  "Stores the date for the buffer.")
 
 (defun chronometrist-intervals-on (date)
   "Return a list of all time intervals on DATE, where DATE is a
@@ -55,6 +59,7 @@ format returned by `encode-time'."
                          (mapcar #'chronometrist-format-time)))
          (projects-reasons (chronometrist-diary-projects-reasons-on date))
          (inhibit-read-only t))
+    (setq chronometrist-diary--current-date date)
     (chronometrist-common-clear-buffer chronometrist-diary-buffer-name)
     (seq-mapn #'insert intervals projects-reasons)))
 
@@ -67,7 +72,7 @@ format returned by `encode-time'."
   (switch-to-buffer
    (get-buffer-create chronometrist-diary-buffer-name))
   (chronometrist-diary-view-mode)
-  (chronometrist-diary-refresh))
+  (chronometrist-diary-refresh nil nil date))
 
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist-diary"
