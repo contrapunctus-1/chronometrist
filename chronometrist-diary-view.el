@@ -1,13 +1,16 @@
 ;; TODO - add forward/backward, current date display (and don't scroll
 ;; past the actual data)
 
-;; TODO - when the reason is "-", add that interval to the next reason?
+;; TODO - when the reason is "-", add that interval to the next reason
 
-;; TODO - permit switching between
-;; - relaxed time periods ("X hours, Y minutes", "80 minutes",
-;;   "(almost|slightly over) 1 hour")
+;; TODO - permit switching between time formats
+;; - hours and minutes - "X hours, Y minutes"
+;; - minutes only - "80 minutes"
+;; - relaxed - "(almost|slightly over) 1 hour"
 ;; - strict time periods (using `chronometrist-seconds-to-hms')
 ;; - period start/end ("HH:MM to HH:MM")
+;; Add variable to store format functions as list (first one is
+;; default), command to cycle between them
 
 (defvar chronometrist-diary-buffer-name "*Chronometrist-Diary*")
 
