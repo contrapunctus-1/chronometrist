@@ -29,20 +29,6 @@
 
 ;; TODO - timeclock already _has_ hooks! :| Why do we re-implement them?
 
-;; BUGS
-
-;; 1. timer function makes line highlight vanish
-
-;; 2. (goto-char (point-max)) -> RET -> the time spent on the last
-;;    project in the list will be the first new project suggestion.
-
-;; 3. Create (and start) a _new_ project -> kill buffer -> run
-;;    chronometrist -> cursor is not at the new project
-;;    - can't reproduce it?
-;;
-;; 4. Start a project -> kill buffer -> run chronometrist -> cursor is
-;;    at (point-max) instead of at project
-
 ;; Style issues
 ;; 1. Uses Scheme-style ? and x->y naming conventions instead of
 ;;    Elisp/CL-style "-p" and "x-to-y"
@@ -279,7 +265,6 @@ integer."
       (set-window-point w p))))
 
 ;; FIXME - has some duplicate logic with `chronometrist-project-events-in-day'
-;; BUG - sometimes returns garbage values?
 (defun chronometrist-reason-list (project)
   "Filters `timeclock-reason-list' to only return reasons for PROJECT."
   (let (save-next results)
