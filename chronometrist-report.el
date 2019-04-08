@@ -15,8 +15,11 @@
 ;; ## TIMER ##
 
 (defun chronometrist-report-timer ()
-  (when (get-buffer chronometrist-report-buffer-name)
-    (chronometrist-report-refresh)))
+  "Refresh the Chronometrist Report buffer if it is visible and
+the user is clocked in to a project."
+  (and (get-buffer-window chronometrist-report-buffer-name)
+       (timeclock-currently-in-p)
+       (chronometrist-report-refresh)))
 
 (defun chronometrist-report-maybe-start-timer ()
   (unless chronometrist-report--timer-object

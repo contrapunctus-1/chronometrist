@@ -29,6 +29,9 @@
 
 ;; TODO - timeclock already _has_ hooks! :| Why do we re-implement them?
 
+;; TODO - optimization. `chronometrist-refresh' is expensive in CPU, and `chronometrist-timer'
+;; runs it every 3 seconds by default. :\
+
 ;; Style issues
 ;; 1. Uses Scheme-style ? and x->y naming conventions instead of
 ;;    Elisp/CL-style "-p" and "x-to-y"
@@ -68,8 +71,11 @@
 
 ;; ## TIMER ##
 (defun chronometrist-timer ()
-  (when (get-buffer chronometrist-buffer-name)
-    (chronometrist-refresh)))
+  "Refresh the Chronometrist buffer if it is visible and the user
+is clocked in to a project."
+  (and (get-buffer-window chronometrist-buffer-name)
+       (timeclock-currently-in-p)
+       (chronometrist-refresh)))
 
 (defun chronometrist-stop-timer ()
   (interactive)
@@ -253,16 +259,22 @@ integer."
     (chronometrist-project-at-point)))
 
 (defun chronometrist-refresh (&optional ignore-auto noconfirm)
+  "The optional arguments IGNORE-AUTO and NOCONFIRM are ignored,
+and are present solely for the sake of using this function as a
+value of `revert-buffer-function'."
   (let* ((w (get-buffer-window chronometrist-buffer-name t))
          (p (window-point w)))
     (with-current-buffer chronometrist-buffer-name
-      (chronometrist-events-populate)
-      (chronometrist-events-clean)
-      (timeclock-reread-log)
       (tabulated-list-print t nil)
       (chronometrist-print-non-tabular)
       (chronometrist-maybe-start-timer)
       (set-window-point w p))))
+
+(defun chronometrist-refresh-file (fs-event)
+  (chronometrist-events-populate)
+  (chronometrist-events-clean)
+  (timeclock-reread-log)
+  (chronometrist-refresh))
 
 ;; FIXME - has some duplicate logic with `chronometrist-project-events-in-day'
 (defun chronometrist-reason-list (project)
@@ -461,7 +473,8 @@ With numeric argument 2, run `chronometrist-statistics'."
                    (chronometrist-refresh)
                    (if chronometrist--point
                        (goto-char chronometrist--point)
-                     (chronometrist-goto-last-project)))))))))
+                     (chronometrist-goto-last-project))))
+          (file-notify-add-watch timeclock-file '(change) #'chronometrist-refresh-file))))))
 
 (provide 'chronometrist)
 
