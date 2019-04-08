@@ -4,11 +4,6 @@
 (defcustom chronometrist-report-buffer-name "*Chronometrist-Report*"
   "The name of the buffer created by `chronometrist-report'.")
 
-(defcustom chronometrist-report-update-interval 5
-  "How often the `chronometrist-report' buffer should be updated, in seconds.
-
-This is not guaranteed to be accurate - see (info \"(elisp)Timers\").")
-
 (defcustom chronometrist-report-week-start-day "Sunday"
   "The day used for start of week by `chronometrist-report'.")
 

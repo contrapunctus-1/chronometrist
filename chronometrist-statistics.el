@@ -1,4 +1,5 @@
 (require 'chronometrist-common)
+(require 'chronometrist-timer)
 (require 'chronometrist-events)
 (require 'chronometrist-statistics-custom)
 
@@ -138,27 +139,6 @@ which span midnights. (see `chronometrist-events-clean')"
              (/ it days))
       0)))
 
-;; ## TIMER ##
-
-(defun chronometrist-statistics-timer ()
-  (when (get-buffer chronometrist-statistics-buffer-name)
-    (chronometrist-statistics-refresh)))
-
-(defun chronometrist-statistics-maybe-start-timer ()
-  (unless chronometrist-statistics--timer-object
-    (setq chronometrist-statistics--timer-object
-          (run-at-time t chronometrist-statistics-update-interval #'chronometrist-statistics-timer))
-    t))
-
-(defvar chronometrist-statistics--timer-object nil)
-
-(defun chronometrist-change-update-interval (arg)
-  (interactive "NEnter new interval (in seconds): ")
-  (cancel-timer chronometrist-statistics--timer-object)
-  (setq chronometrist-statistics-update-interval arg
-        chronometrist-statistics--timer-object nil)
-  (chronometrist-statistics-maybe-start-timer))
-
 ;; ## VARIABLES ##
 
 (defvar chronometrist-statistics--ui-state nil
@@ -271,12 +251,9 @@ to a date in the form (YEAR MONTH DAY)."
   (let* ((w (get-buffer-window chronometrist-statistics-buffer-name t))
          (p (point)))
     (with-current-buffer chronometrist-statistics-buffer-name
-      (timeclock-reread-log)
-      (chronometrist-events-populate)
-      (chronometrist-events-clean)
       (tabulated-list-print t nil)
       (chronometrist-statistics-print-non-tabular)
-      (chronometrist-statistics-maybe-start-timer)
+      (chronometrist-maybe-start-timer)
       (set-window-point w p))))
 
 ;; ## MAJOR MODE ##
@@ -307,8 +284,9 @@ to a date in the form (YEAR MONTH DAY)."
   (make-local-variable 'tabulated-list-sort-key)
   (setq tabulated-list-sort-key '("Project" . nil))
   (tabulated-list-init-header)
-  ;; (chronometrist-statistics-maybe-start-timer)
-  (setq revert-buffer-function #'chronometrist-statistics-refresh))
+  ;; (chronometrist-maybe-start-timer)
+  (setq revert-buffer-function #'chronometrist-statistics-refresh)
+  (file-notify-add-watch timeclock-file '(change) #'chronometrist-refresh-file))
 
 ;; ## COMMANDS ##
 

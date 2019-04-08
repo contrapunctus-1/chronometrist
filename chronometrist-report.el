@@ -1,8 +1,6 @@
 (require 'chronometrist-common)
+(require 'chronometrist-timer)
 (require 'chronometrist-report-custom)
-
-;; TODO - timers in chronometrist-report and chronometrist can
-;; probably be merged into one function
 
 ;; TODO - improve first-run (no file, or no data in file) behaviour
 
@@ -11,30 +9,6 @@
 ;; names to aid i10n
 
 ;; TODO - use variables instead of hardcoded numbers to determine spacing
-
-;; ## TIMER ##
-
-(defun chronometrist-report-timer ()
-  "Refresh the Chronometrist Report buffer if it is visible and
-the user is clocked in to a project."
-  (and (get-buffer-window chronometrist-report-buffer-name)
-       (timeclock-currently-in-p)
-       (chronometrist-report-refresh)))
-
-(defun chronometrist-report-maybe-start-timer ()
-  (unless chronometrist-report--timer-object
-    (setq chronometrist-report--timer-object
-          (run-at-time t chronometrist-report-update-interval #'chronometrist-report-timer))
-    t))
-
-(defvar chronometrist-report--timer-object nil)
-
-(defun chronometrist-change-update-interval (arg)
-  (interactive "NEnter new interval (in seconds): ")
-  (cancel-timer chronometrist-report--timer-object)
-  (setq chronometrist-report--update-interval arg
-        chronometrist-report--timer-object nil)
-  (chronometrist-report-maybe-start-timer))
 
 ;; ## VARIABLES ##
 
@@ -213,10 +187,9 @@ FORMAT-STRING."
   (let* ((w (get-buffer-window chronometrist-report-buffer-name t))
          (p (point)))
     (with-current-buffer chronometrist-report-buffer-name
-      (timeclock-reread-log)
       (tabulated-list-print t nil)
       (chronometrist-report-print-non-tabular)
-      (chronometrist-report-maybe-start-timer)
+      (chronometrist-maybe-start-timer)
       (set-window-point w p))))
 
 ;; ## MAJOR MODE ##
@@ -256,8 +229,9 @@ FORMAT-STRING."
   (make-local-variable 'tabulated-list-sort-key)
   (setq tabulated-list-sort-key '("Project" . nil))
   (tabulated-list-init-header)
-  (chronometrist-report-maybe-start-timer)
-  (setq revert-buffer-function #'chronometrist-report-refresh))
+  (chronometrist-maybe-start-timer)
+  (setq revert-buffer-function #'chronometrist-report-refresh)
+  (file-notify-add-watch timeclock-file '(change) #'chronometrist-refresh-file))
 
 ;; ## COMMANDS ##
 

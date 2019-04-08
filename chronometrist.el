@@ -1,4 +1,5 @@
 (require 'chronometrist-common)
+(require 'chronometrist-timer)
 (require 'chronometrist-custom)
 (require 'chronometrist-report)
 (require 'chronometrist-statistics)
@@ -68,36 +69,6 @@
 (defvar chronometrist--point nil)
 
 (add-hook 'first-change-hook 'chronometrist-assist)
-
-;; ## TIMER ##
-(defun chronometrist-timer ()
-  "Refresh the Chronometrist buffer if it is visible and the user
-is clocked in to a project."
-  (and (get-buffer-window chronometrist-buffer-name)
-       (timeclock-currently-in-p)
-       (chronometrist-refresh)))
-
-(defun chronometrist-stop-timer ()
-  (interactive)
-  (cancel-timer chronometrist--timer-object)
-  (setq chronometrist--timer-object nil))
-
-(defun chronometrist-maybe-start-timer ()
-  "If `chronometrist--timer-object' is non-nil, add
-`chronometrist-timer' to the list of active timers and return t,
-else do nothing and return nil."
-  (interactive)
-  (unless chronometrist--timer-object
-    (setq chronometrist--timer-object
-          (run-at-time t chronometrist-update-interval #'chronometrist-timer))
-    t))
-
-(defun chronometrist-change-update-interval (arg)
-  (interactive "NEnter new interval (in seconds): ")
-  (cancel-timer chronometrist--timer-object)
-  (setq chronometrist-update-interval arg
-        chronometrist--timer-object nil)
-  (chronometrist-maybe-start-timer))
 
 ;; ## FUNCTIONS ##
 (defun chronometrist-current-project ()
