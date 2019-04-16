@@ -1,3 +1,5 @@
+(require 'subr-x)
+
 (defvar chronometrist-events (make-hash-table :test #'equal))
 
 (defun chronometrist-vfirst (vector)
