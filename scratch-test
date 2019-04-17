@@ -1,0 +1,28 @@
+#!/bin/bash
+
+if [[ $# == 0 ]] || [[ ! -d "$1" ]] || [[ ! -f "./chronometrist.el" ]]; then
+    printf "Usage: scratch-test DASH-PATH [TIMECLOCK-FILE]\n"
+    printf "Please run this script from the chronometrist directory.\n"
+else
+    dashdir="$1"
+    if [[ $# == 2 ]]; then
+        if [[ -f "$2" ]]; then
+            emacs -q -L "$(pwd)" \
+                  -L "$dashdir" \
+                  --eval "(progn
+                            (require 'chronometrist)
+                            (setq timeclock-file \"$2\")
+                            (chronometrist))";
+        else
+            printf "Invalid timeclock file - $2"
+        fi
+    else
+        mv -v ~/.emacs.d/timelog ~/.emacs.d/timelog.old &&
+            emacs -q -L "$(pwd)" \
+                  -L "$dashdir" \
+                  --eval "(progn
+                            (require 'chronometrist)
+                            (chronometrist))" ;
+        mv -v ~/.emacs.d/timelog.old ~/.emacs.d/timelog
+    fi
+fi
