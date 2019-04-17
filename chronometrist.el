@@ -1,3 +1,4 @@
+(require 'filenotify)
 (require 'chronometrist-common)
 (require 'chronometrist-timer)
 (require 'chronometrist-custom)
