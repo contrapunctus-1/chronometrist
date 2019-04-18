@@ -144,7 +144,7 @@ As an example from the author's own init -
 6. [inflatable raptor](https://github.com/MichaelMure/git-bug/#planned-features)
 
 ## Contributions and contact
-Feedback and MRs very welcome. 🙂
+Feedback and MRs very welcome. 🙂 [hacking.md](hacking.md) contains an introduction to the codebase.
 
 Contact the creator and other Emacs users in the Emacs room on the Jabber network - [xmpp:emacs@salas.suchat.org?join](xmpp:emacs@salas.suchat.org?join) ([web chat](https://inverse.chat/#converse/room?jid=emacs@salas.suchat.org))
 

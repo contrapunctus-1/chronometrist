@@ -1,17 +1,24 @@
 # Project overview
-The files [chronometrist.el](chronometrist.el) and [chronometrist-report.el](chronometrist-report.el) contain definitions specific to the commands of the same name, most notably the major mode definitions, commands, and timers.
+Chronometrist has three components, and each has a file containing major mode definitions and user-facing commands.
+- [chronometrist.el](chronometrist.el)
+- [chronometrist-report.el](chronometrist-report.el)
+- [chronometrist-statistics.el](chronometrist-statistics.el)
 
-Both use (info "(elisp)Tabulated List Mode"). Each of them also contains a "-print-non-tabular" function, which prints the non-tabular parts of the buffer.
+All three of these use (info "(elisp)Tabulated List Mode"). Each of them also contains a "-print-non-tabular" function, which prints the non-tabular parts of the buffer.
 
-[chronometrist-common.el](chronometrist-common.el) contains definitions used by both chronometrist.el and chronometrist-report.el.
+Each of them has a corresponding `-custom` file, which contain the Customize group and custom variable definitions for user-facing variables -
+- [chronometrist-custom.el](chronometrist-custom.el)
+- [chronometrist-report-custom.el](chronometrist-report-custom.el)
+- [chronometrist-statistics-custom.el](chronometrist-statistics-custom.el)
 
-The files [chronometrist-custom.el](chronometrist-custom.el) and [chronometrist-report-custom.el](chronometrist-report-custom.el) contain the Customize group and custom variable definitions for user-facing variables.
+[chronometrist-common.el](chronometrist-common.el) contains definitions common to all components.
 
+All three components use timers to keep their buffers updated. [chronometrist-timer.el](chronometrist-timer.el) contains all timer-related code. Note - sometimes, when hacking, timers may cause subtle bugs which are very hard to debug. Restarting Emacs can fix them, so try that as a first sanity check.
+
+# Browsing the code
 I recommend using
 * [nameless-mode](https://github.com/Malabarba/Nameless) for easier reading of Emacs Lisp code, and
 * [visual-fill-column-mode](https://github.com/joostkremers/visual-fill-column) for easier reading of the Markdown files (without actually "filling" i.e. inserting newlines, so the same file is equally readable on any viewer/editor which supports line-wrapping).
-
-Both [chronometrist.el](chronometrist.el) and [chronometrist-report.el](chronometrist-report.el) use timers to keep themselves updated. Sometimes, when hacking, the timers may cause subtle bugs which are very hard to debug. Restarting Emacs can fix them, so try that as a first sanity check.
 
 # Point restore behaviour
 After hacking, always test for and ensure the following -
