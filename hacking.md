@@ -22,7 +22,7 @@ I recommend using
 
 # Point restore behaviour
 After hacking, always test for and ensure the following -
-1. Toggling the buffer via chronometrist/chronometrist-should preserve point
+1. Toggling the buffer via `chronometrist`/`chronometrist-report`/`chronometrist-statistics` should preserve point
    - TODO - actually, this should be implemented in a kill-buffer-hook, so it works whenever the buffer is killed, not just when we call the command.
 2. The timer function should preserve point when the buffer is current
 3. The timer function should preserve point when the buffer is not current, but is visible in another window
