@@ -83,9 +83,6 @@ As an example from the author's own init -
 ```
 
 ## Roadmap
-* Update when the timeclock-file changes using a filesystem watcher
-* [inflatable raptor](https://github.com/MichaelMure/git-bug/#planned-features)
-
 ### chronometrist
 1. Make clocked-in project row bold, either in addition to the star, or replacing it.
    - Another activity-indication enhancement - show the current time interval being recorded instead of the star.
@@ -144,6 +141,7 @@ As an example from the author's own init -
 3. Use Cask?
 4. [-] Create test timelog file and UI behaviour tests
 5. Use for chronometrist-report-weekday-number-alist whatever variables like initial-frame-alist use to get that fancy Custom UI for alists.
+6. [inflatable raptor](https://github.com/MichaelMure/git-bug/#planned-features)
 
 ## Contributions and contact
 Feedback and MRs very welcome. 🙂
