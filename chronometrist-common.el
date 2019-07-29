@@ -98,24 +98,6 @@ chronologically more recent than T1."
     (or (= day-2   (1+ day-1))
         (= month-2 (1+ month-1)))))
 
-(defun chronometrist-first-event-spans-midnight? (target-date project)
-  "Return t if the first event of PROJECT on TARGET-DATE in
-`timeclock-file' spans midnight (i.e. its clock-in time was
-before midnight), else nil.
-
-TARGET-DATE must be a date in the form \"YYYY/MM/DD\", and
-PROJECT a string."
-  ;; Go to the first event for TARGET-DATE, ignoring the project
-  (goto-char (point-min))
-  (re-search-forward target-date nil t)
-  (beginning-of-line)
-  ;; Is it a clock-out event?
-  (when (looking-at-p "^o ")
-    ;; We have a midnight-spanning range. Is it a range for PROJECT?
-    (forward-line -1)
-    (beginning-of-line)
-    (looking-at-p (concat "i " chronometrist-date-re " " chronometrist-time-re-file " " project))))
-
 (defun chronometrist-get-end-time (target-date)
   "Return the date and time of the next clock-out event after
 point in the file `timeclock-file'.
