@@ -1,3 +1,8 @@
+;;; chronometrist.el --- A time tracker for Emacs with a nice interface, built timeclock.el
+
+;;; Commentary:
+;;
+
 (require 'filenotify)
 (require 'chronometrist-common)
 (require 'chronometrist-timer)
@@ -65,6 +70,8 @@
 ;; 3. Can't have multiple tables in a buffer
 
 ;; ## VARIABLES ##
+;;; Code:
+
 (defvar chronometrist--timer-object nil)
 
 (defvar chronometrist--point nil)
@@ -73,8 +80,7 @@
 
 ;; ## FUNCTIONS ##
 (defun chronometrist-current-project ()
-  "Return the name of the currently clocked-in project, or nil if
- the user is not clocked in."
+  "Return the name of the currently clocked-in project, or nil if the user is not clocked in."
   (if (not (timeclock-currently-in-p))
       nil
     (with-current-buffer (find-file-noselect timeclock-file)
@@ -89,8 +95,8 @@
   (equal (chronometrist-current-project) project))
 
 (defun chronometrist-seconds-to-hms (seconds)
-  "Convert SECONDS to a vector in the form [HOURS MINUTES
-SECONDS]. SECONDS must be a positive integer."
+  "Convert SECONDS to a vector in the form [HOURS MINUTES SECONDS].
+SECONDS must be a positive integer."
   (setq seconds (truncate seconds))
   (let* ((s (% seconds 60))
          (m (% (/ seconds 60) 60))
@@ -448,8 +454,10 @@ With numeric argument 2, run `chronometrist-statistics'."
                      (chronometrist-goto-last-project))))
           (file-notify-add-watch timeclock-file '(change) #'chronometrist-refresh-file))))))
 
-(provide 'chronometrist)
-
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"
 ;; End:
+
+(provide 'chronometrist)
+
+;;; chronometrist.el ends here

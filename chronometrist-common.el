@@ -1,8 +1,15 @@
+;;; chronometrist-common.el --- Common definitions for Chronometrist
+
+;;; Commentary:
+;;
+
 (require 'timeclock)
 (require 'dash)
 (require 'cl-lib)
 
 ;; ## VARIABLES ##
+;;; Code:
+
 (defvar chronometrist-empty-time-string "-")
 (defvar chronometrist-date-re "[0-9]\\{4\\}/[0-9]\\{2\\}/[0-9]\\{2\\}")
 (defvar chronometrist-time-re-ui
@@ -12,23 +19,22 @@
                   (optional (repeat 1 2 digit) ":"))
           (repeat 1 2 digit))
      ,chronometrist-empty-time-string))
-  "Regular expression to represent a timestamp in
-`chronometrist'. This is distinct from
-`chronometrist-time-re-file' (which see) -
+  "Regular expression to represent a timestamp in `chronometrist'.
+This is distinct from `chronometrist-time-re-file' (which see) -
 `chronometrist-time-re-ui' is meant for the user interface, and
 must correspond to the output from `chronometrist-format-time'.")
 (defvar chronometrist-time-re-file "[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}"
-  "Regular expression to represent a timestamp in the file
-`timeclock-file'. This is distinct from
-`chronometrist-time-re-ui' (which see).")
+  "Regular expression to represent a timestamp in the file `timeclock-file'.
+This is distinct from `chronometrist-time-re-ui' (which see).")
 
 (defun chronometrist-buffer-exists? (buffer-name)
+  "Return non-nil if BUFFER-NAME exists."
   (--> (buffer-list)
        (mapcar #'buffer-name it)
        (member buffer-name it)))
 
 (defun chronometrist-buffer-visible? (buffer-or-buffer-name)
-  "Returns t if BUFFER-OR-BUFFER-NAME is visible to user."
+  "Return t if BUFFER-OR-BUFFER-NAME is visible to user."
   ;; It'd be simpler to use only the windows of the current frame (-->
   ;; (selected-frame) (window-list it) ...) - but it wouldn't be
   ;; robust, because it is possible that a frame partially covers
@@ -55,23 +61,26 @@ must correspond to the output from `chronometrist-format-time'.")
     (if result t nil)))
 
 (defun chronometrist-timestamp->list (date-time-string)
-  "Convert a string timestamp to a list of integers."
+  "Convert string timestamp DATE-TIME-STRING to a list of integers."
   (--> date-time-string
        (split-string it "[-/ :]")
        (mapcar #'string-to-number it)))
 
 (defun chronometrist-timestamp-list->seconds (date-time-list)
-  "Convert DATE-TIME (which must be a list in the form (YEAR
-MONTH DAY HOURS MINUTES SECONDS), as returned by
-`timestamp->list') to seconds since the UNIX epoch
-(see (info \"(elisp)Time of Day\"))."
+  "Convert DATE-TIME-LIST to seconds since the UNIX epoch.
+DATE-TIME-LIST must be a list in the form (YEAR MONTH DAY HOURS
+MINUTES SECONDS), as returned by `timestamp->list'.
+
+See (info \"(elisp)Time of Day\")."
   (->> date-time-list
        (reverse)
        (apply #'encode-time)))
 
 (defun chronometrist-timestamp->seconds (date-time-string)
-  "Convert a string timestamp in the form \"YYYY/MM/SS HH:MM:SS\" to seconds
-since the UNIX epoch (see (info \"(elisp)Time of Day\"))."
+  "Convert DATE-TIME-STRING to seconds since the UNIX epoch.
+DATE-TIME-STRING must be a string in the form \"YYYY/MM/SS HH:MM:SS\".
+
+See (info \"(elisp)Time of Day\")."
   (chronometrist-timestamp-list->seconds
    (chronometrist-timestamp->list date-time-string)))
 
@@ -253,8 +262,10 @@ COUNT must be a positive integer."
        (* m 60)
        s)))
 
-(provide 'chronometrist-common)
-
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"
 ;; End:
+
+(provide 'chronometrist-common)
+
+;;; chronometrist-common.el ends here
