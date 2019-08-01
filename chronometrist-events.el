@@ -26,6 +26,8 @@ this must be called after `chronometrist-populate'. Returns t
 if the table was modified, else nil."
   (let* ((latest-date (-> chronometrist-events
                           (hash-table-keys)
+                          (sort #'chronometrist-date-less-p)
+                          (last)
                           (car)))
          (latest-date-events (gethash latest-date chronometrist-events)))
     ;; If the most recent event isn't an "o" event, add one with the current time
