@@ -192,6 +192,15 @@ FORMAT-STRING."
       (chronometrist-maybe-start-timer)
       (set-window-point w p))))
 
+;; REVIEW - merge this into `chronometrist-refresh-file', while moving the -refresh call to the call site?
+(defun chronometrist-report-refresh-file (fs-event)
+  "Re-populate and clean `chronometrist-events', and refresh the `chronometrist-report' buffer.
+Argument FS-EVENT is ignored."
+  (chronometrist-events-populate)
+  (chronometrist-events-clean)
+  (timeclock-reread-log)
+  (chronometrist-report-refresh))
+
 ;; ## MAJOR MODE ##
 
 (defvar chronometrist-report-mode-map
@@ -261,7 +270,7 @@ current week. Otherwise, display data from the week specified by
                (chronometrist-common-create-timeclock-file)
                (chronometrist-report-mode)
                (switch-to-buffer buffer)
-               (chronometrist-report-refresh)
+               (chronometrist-report-refresh-file nil)
                (goto-char (or chronometrist-report--point 1)))))))
 
 (defun chronometrist-report-previous-week (arg)
