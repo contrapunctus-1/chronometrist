@@ -1,0 +1,2 @@
+1. Merge *-format-keybinds into a single function
+2. Move time operations into a chronometrist-time file
