@@ -1,3 +1,8 @@
+;;; chronometrist-statistics.el --- View statistics from timeclock.el data
+
+;;; Commentary:
+;;
+
 (require 'chronometrist-common)
 (require 'chronometrist-timer)
 (require 'chronometrist-events)
@@ -44,20 +49,21 @@
 ;; TODO - convert all functions which take dates as arguments to use
 ;; the (YEAR MONTH DAY) format
 
+;;; Code:
+
 (defun chronometrist-date->time (date)
-  "Converts DATE to a time value (see (info \"(elisp)Time of Day\")).
+  "Convert DATE to a time value (see (info \"(elisp)Time of Day\")).
 DATE must be a list in the form (YEAR MONTH DAY)."
   (->> date (reverse) (apply #'encode-time 0 0 0)))
 
 (defun chronometrist-date-less-p (date1 date2)
-  "Like `time-less-p' but for dates. Returns ‘t’ if date1 is less
-than date2. Both must be lists in the form (YEAR MONTH DAY)."
+  "Like `time-less-p' but for dates. Return t if DATE1 is less than DATE2.
+Both must be lists in the form (YEAR MONTH DAY)."
   (time-less-p (chronometrist-date->time date1) (chronometrist-date->time date2)))
 
 (defun chronometrist-statistics-count-active-days (project &optional table)
-  "Return the number of days the user spent a non-zero amount of
-time on PROJECT, based on their `timeclock-file'. TABLE must be a
-hash table - if not supplied, `chronometrist-events' is used.
+  "Return the number of days the user spent any time on PROJECT.
+TABLE must be a hash table - if not supplied, `chronometrist-events' is used.
 
 This will not return correct results if TABLE contains records
 which span midnights. (see `chronometrist-events-clean')"
@@ -95,16 +101,27 @@ which span midnights. (see `chronometrist-events-clean')"
     results))
 
 (defun chronometrist-events->time-list (events)
+  "Convert EVENTS to a list of time values.
+
+EVENTS must be a list of vectors in the form [\"CODE\" YEAR MONTH
+DATE HOUR MINUTES SECONDS \"PROJECT-NAME-OR-COMMENT\"] (see
+`chronometrist-events' and `chronometrist-events-populate')
+
+For time value format, see (info \"(elisp)Time of Day\")."
   (--map (pcase it
            (`[,_ ,year ,month ,day ,h ,m ,s ,_]
             (encode-time s m h day month year)))
          events))
 
 (defun chronometrist-time-list->sum-of-intervals (time-values)
-  "Take a list of time values (see (info \"(elisp)Time of Day\")),
-treat them as alternating start/end times, find the intervals
-between them, and add the intervals to return a single time
-value. If TIME-VALUES is nil, return '(0 0)."
+  "From a list of start/end timestamps TIME-VALUES, get the total time interval.
+
+TIME-VALUES are a list of time values (see (info \"(elisp)Time of
+Day\")), assumed to be alternating start/end times. This function
+obtains the intervals between them, and adds the intervals to
+return a single time value.
+
+If TIME-VALUES is nil, return '(0 0)."
   (if time-values
       (->> (-partition 2 time-values)
            (--map (time-subtract (cadr it) (car it)))
@@ -112,9 +129,10 @@ value. If TIME-VALUES is nil, return '(0 0)."
     '(0 0)))
 
 (defun chronometrist-statistics-count-average-time-spent (project &optional table)
-  "Return the average time the user has spent on PROJECT based on
-their `timeclock-file'. TABLE must be a hash table - if not
-supplied, `chronometrist-events' is used.
+  "Return the average time the user has spent on PROJECT from TABLE.
+
+TABLE must be a hash table - if not supplied,
+`chronometrist-events' is used.
 
 This will not return correct results if TABLE contains records
 which span midnights. (see `chronometrist-events-clean')"
@@ -142,13 +160,13 @@ which span midnights. (see `chronometrist-events-clean')"
 ;; ## VARIABLES ##
 
 (defvar chronometrist-statistics--ui-state nil
-  "The display state for `chronometrist-statistics'. Must be a
-plist in the form (:mode :start :end).
+  "Stores the display state for `chronometrist-statistics'.
 
-:MODE is either 'week, 'month, 'year, 'full, or 'custom.
+This must be a plist in the form (:MODE :START :END).
 
-'week, 'month, and 'year mean display statistics
-weekly/monthly/yearly respectively.
+:MODE is either 'week, 'month, 'year, 'full, or 'custom. 'week,
+'month, and 'year mean display statistics weekly/monthly/yearly
+respectively.
 
 'full means display statistics from the beginning to the end of
 the `timeclock-file'.
@@ -163,12 +181,18 @@ displayed. They must be dates in the form (YEAR MONTH DAY).")
 ;; ## FUNCTIONS ##
 
 (defun chronometrist-calendrical->date (date)
-  "Convert calendrical information (see (info \"(elisp)Time of Day\"))
-to a date in the form (YEAR MONTH DAY)."
+  "Convert calendrical information DATE to a date in the form (YEAR MONTH DAY).
+
+For input format, see (info \"(elisp)Time of Day\")."
   (-> date (-slice 3 6) (reverse)))
 
 (defun chronometrist-statistics-entries-internal (table)
-  "Helper function for `chronometrist-statistics-entries'."
+  "Helper function for `chronometrist-statistics-entries'.
+
+It simply operates on the entire hash table TABLE (see
+`chronometrist-events' for table format), so ensure that TABLE is
+reduced to the desired range using
+`chronometrist-events-subset'."
   (mapcar (lambda (project)
             (let* ((active-days    (chronometrist-statistics-count-active-days project table))
                    (active-percent (case (plist-get chronometrist-statistics--ui-state :mode)
@@ -192,8 +216,7 @@ to a date in the form (YEAR MONTH DAY)."
           timeclock-project-list))
 
 (defun chronometrist-statistics-entries ()
-  "Creates entries to be displayed in the buffer created by
-`chronometrist-statistics', as specified by `tabulated-list-entries'."
+  "Create entries to be displayed in the buffer created by `chronometrist-statistics'."
   ;; We assume that all fields in `chronometrist-statistics--ui-state' are set, so they must
   ;; be changed by the view-changing functions.
   (case (plist-get chronometrist-statistics--ui-state :mode)
@@ -212,6 +235,8 @@ to a date in the form (YEAR MONTH DAY)."
        (chronometrist-statistics-entries-internal table)))))
 
 (defun chronometrist-statistics-format-keybinds (command &optional firstonly)
+  "Return the keybindings for COMMAND as a string.
+If FIRSTONLY is non-nil, return only the first keybinding found."
   (if firstonly
       (key-description
        (where-is-internal command chronometrist-statistics-mode-map firstonly))
@@ -222,12 +247,16 @@ to a date in the form (YEAR MONTH DAY)."
            (apply #'concat))))
 
 (defun chronometrist-statistics-print-keybind (command &optional description firstonly)
+  "Insert the keybindings for COMMAND.
+If DESCRIPTION is non-nil, insert that too.
+If FIRSTONLY is non-nil, return only the first keybinding found."
   (insert "\n    "
           (chronometrist-statistics-format-keybinds command firstonly)
           " - "
           (if description description "")))
 
 (defun chronometrist-statistics-format-date (date)
+  "Return DATE (YEAR MONTH DAY) as a string in the form \"YYYY-MM-DD\"."
   (-let [(year month day) date]
     (format "%04d-%02d-%02d" year month day)))
 
@@ -248,6 +277,11 @@ to a date in the form (YEAR MONTH DAY)."
              (chronometrist-statistics-format-date (plist-get chronometrist-statistics--ui-state :end))))))
 
 (defun chronometrist-statistics-refresh (&optional ignore-auto noconfirm)
+  "Refresh the `chronometrist-statistics' buffer, without re-reading `timeclock-file'.
+
+The optional arguments IGNORE-AUTO and NOCONFIRM are ignored, and
+are present solely for the sake of using this function as a value
+of `revert-buffer-function'."
   (let* ((w (get-buffer-window chronometrist-statistics-buffer-name t))
          (p (point)))
     (with-current-buffer chronometrist-statistics-buffer-name
@@ -291,9 +325,8 @@ to a date in the form (YEAR MONTH DAY)."
 ;; ## COMMANDS ##
 
 (defun chronometrist-statistics (&optional preserve-state)
-  "Display statistics of the user's timeclock.el projects, based
-on their timelog file in `timeclock-file'. This is the 'listing
-command' for chronometrist-statistics-mode.
+  "Display statistics based on data from the user's `timeclock-file'.
+This is the 'listing command' for `chronometrist-statistics-mode'.
 
 If a buffer called `chronometrist-statistics-buffer-name' already
 exists and is visible, kill the buffer.
@@ -321,7 +354,9 @@ specified by `chronometrist-statistics--ui-state'."
              (chronometrist-statistics-refresh))))))
 
 (defun chronometrist-statistics-previous-range (arg)
-  "View the statistics in the previous time range."
+  "View the statistics in the previous time range.
+
+If ARG is a numeric argument, go back that many times."
   (interactive "P")
   (let* ((arg   (if (and arg (numberp arg))
                     (abs arg)
@@ -339,7 +374,9 @@ specified by `chronometrist-statistics--ui-state'."
     (chronometrist-statistics t)))
 
 (defun chronometrist-statistics-next-range (arg)
-  "View the statistics in the next time range."
+  "View the statistics in the next time range.
+
+If ARG is a numeric argument, go forward that many times."
   (interactive "P")
   (let* ((arg   (if (and arg (numberp arg))
                     (abs arg)
@@ -356,8 +393,10 @@ specified by `chronometrist-statistics--ui-state'."
     (kill-buffer)
     (chronometrist-statistics t)))
 
-(provide 'chronometrist-statistics)
-
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist-statistics"
 ;; End:
+
+(provide 'chronometrist-statistics)
+
+;;; chronometrist-statistics.el ends here
