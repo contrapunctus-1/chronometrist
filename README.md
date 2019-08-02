@@ -82,7 +82,9 @@ As an example from the author's own init -
 (add-hook 'chronometrist-project-start-hook 'my-start-guitar)
 ```
 
-## Roadmap
+## Roadmap/Ideas
+* Show details for time spent on a project when clicking on a non-zero "time spent" field (in both Chronometrist and Chronometrist-Report buffers).
+
 ### chronometrist
 1. Make clocked-in project row bold, either in addition to the star, or replacing it.
    - Another activity-indication enhancement - show the current time interval being recorded instead of the star.
@@ -120,18 +122,20 @@ As an example from the author's own init -
 8. Use `make-thread` in v26 or the emacs-async library for `chronometrist-entries`/`chronometrist-report-entries`
 9. Some way to update buffers every second without making Emacs unusable. (impossible?)
 10. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
-11. Commands to rename a project, delete a project (erasing all records)
+11. Commands to rename a project, delete a project (erasing all records), and hide a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
 12. Tree of tasks (i.e. sub-tasks etc)
     - Alternatively - each task can have tags. The tags will be used to decide the super-tasks a task belongs to, and stored in a new file in the user's .emacs.d
+13. Set goal time for one or more tasks.
 
-### chronometrist-report
+### Chronometrist-report
 1. Show week counter and max weeks; don't scroll past first/last weeks
 2. Highlight column of current day
 3. Add support for other locale weeks/weekday names
+4. Show only certain projects
 
 ### chronometrist-statistics
 1. Show range counter and max ranges; don't scroll past first/last time ranges
-2. activity-specific - average time spent in $TIMEPERIOD, average days worked on in $TIMEPERIOD, current/longest streaks, ...
+2. activity-specific - average time spent in $TIMEPERIOD, average days worked on in $TIMEPERIOD, current/longest streaks, % of total time in $TIMEPERIOD, % of active time in $TIMEPERIOD, ...
 3. general - most productive $TIMEPERIOD, GitHub-style work heatmap calendar, ...
 4. press 1 for weekly stats, 2 for monthly, 3 for yearly
 
