@@ -1,4 +1,11 @@
+;;; chronometrist-events.el --- Event management and querying code for Chronometrist
+
+;;; Commentary:
+;;
+
 (require 'subr-x)
+
+;;; Code:
 
 (defvar chronometrist-events (make-hash-table :test #'equal))
 
@@ -10,8 +17,8 @@
   "Return the last element of VECTOR."
   (elt vector (1- (length vector))))
 
-;; test function
 (defun chronometrist-list-midnight-spanning-events ()
+  "Test function to check for events which span midnights."
   (let ((dates))
     (maphash (lambda (key value)
                (when (-> value (chronometrist-vfirst) (chronometrist-vfirst) (equal "o"))
@@ -20,10 +27,12 @@
     dates))
 
 (defun chronometrist-events-clean ()
-  "Clean `chronometrist-events' by splitting intervals which span
-midnights into two. For event data to be processed accurately,
-this must be called after `chronometrist-populate'. Returns t
-if the table was modified, else nil."
+  "Clean `chronometrist-events' so that events can be processed accurately.
+
+This function splits midnight-spanning intervals into two. It
+must be called after `chronometrist-populate'.
+
+It returns t if the table was modified, else nil."
   (let* ((latest-date (-> chronometrist-events
                           (hash-table-keys)
                           (sort #'chronometrist-date-less-p)
@@ -74,11 +83,15 @@ if the table was modified, else nil."
 ;; TODO - Maybe strip dates from values, since they're part of the key
 ;; anyway. Consider using a state machine.
 (defun chronometrist-events-populate ()
-  "Clears hash table `chronometrist-events' and populates it
-using data from `timeclock-file', with each key being a date in
-the form (YEAR MONTH DAY). Values are vectors containing events,
-where each event is a vector in the form \[CODE YEAR MONTH DAY
-HOURS MINUTES SECONDS \"PROJECT-NAME-OR-COMMENT\"].
+  "Clear hash table `chronometrist-events' and populate it.
+
+The data is acquired from `timeclock-file'.
+
+Each key is a date in the form (YEAR MONTH DAY).
+
+Values are vectors containing events, where each event is a
+vector in the form \[\"CODE\" YEAR MONTH DAY HOURS MINUTES
+SECONDS \"PROJECT-NAME-OR-COMMENT\"\].
 
 This function always returns nil."
   (clrhash chronometrist-events)
@@ -109,9 +122,12 @@ This function always returns nil."
         nil))))
 
 (defun chronometrist-events-subset (start-date end-date)
-  "Return a subset of `chronometrist-events', containing values
-between START-DATE and END-DATE (both inclusive). START-DATE and
-END-DATE must be dates in the form '(YEAR MONTH DAY)."
+  "Return a subset of `chronometrist-events'.
+
+The subset will contain values between START-DATE and
+END-DATE (both inclusive).
+
+START-DATE and END-DATE must be dates in the form '(YEAR MONTH DAY)."
   (let ((subset (make-hash-table :test #'equal)))
     (maphash (lambda (key value)
                (when (and (not (chronometrist-date-less-p key start-date))
@@ -125,3 +141,7 @@ END-DATE must be dates in the form '(YEAR MONTH DAY)."
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist-events"
 ;; End:
+
+(provide 'chronometrist-events)
+
+;;; chronometrist-events.el ends here
