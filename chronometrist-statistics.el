@@ -324,6 +324,7 @@ of `revert-buffer-function'."
 
 ;; ## COMMANDS ##
 
+;;;###autoload
 (defun chronometrist-statistics (&optional preserve-state)
   "Display statistics based on data from the user's `timeclock-file'.
 This is the 'listing command' for `chronometrist-statistics-mode'.

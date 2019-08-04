@@ -1,8 +1,5 @@
 ;;; chronometrist.el --- A time tracker for Emacs with a nice interface, built timeclock.el
 
-;;; Commentary:
-;;
-
 (require 'filenotify)
 (require 'chronometrist-common)
 (require 'chronometrist-timer)
@@ -11,6 +8,8 @@
 (require 'chronometrist-statistics)
 (require 'chronometrist-assist)
 
+;;; Commentary:
+;;
 
 ;; modifiers to toggling -
 ;; Nth task
@@ -351,6 +350,7 @@ project.")
 ;; ## COMMANDS ##
 
 ;; TODO - if clocked in and point not on a project, just clock out
+;; PROFILE
 (defun chronometrist-toggle-project (&optional prefix no-prompt)
   "In a `chronometrist' buffer, start or stop the project at
 point. If there is no project at point, do nothing.
@@ -389,6 +389,7 @@ reason if clocking out."
   (interactive)
   (chronometrist-add-new-project-button nil))
 
+;;;###autoload
 (defun chronometrist (&optional arg)
   "Displays a list of the user's timeclock.el projects and the
 time spent on each today, based on their timelog file

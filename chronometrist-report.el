@@ -120,6 +120,8 @@ FORMAT-STRING."
        (apply #'format format-string)))
 
 (defun chronometrist-report-format-keybinds (command &optional firstonly)
+  "Return the keybindings for COMMAND as a string.
+If FIRSTONLY is non-nil, return only the first keybinding found."
   (if firstonly
       (key-description
        (where-is-internal command chronometrist-report-mode-map firstonly))
@@ -244,6 +246,7 @@ Argument FS-EVENT is ignored."
 
 ;; ## COMMANDS ##
 
+;;;###autoload
 (defun chronometrist-report (&optional keep-date)
   "Display a weekly report of the user's timeclock.el projects
 and the time spent on them each day, based on their timelog file
