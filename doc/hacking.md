@@ -1,4 +1,5 @@
-# Project overview
+# Hacking
+## Project overview
 Chronometrist has three components, and each has a file containing major mode definitions and user-facing commands.
 - [chronometrist.el](chronometrist.el)
 - [chronometrist-report.el](chronometrist-report.el)
@@ -15,12 +16,12 @@ Each of them has a corresponding `-custom` file, which contain the Customize gro
 
 All three components use timers to keep their buffers updated. [chronometrist-timer.el](chronometrist-timer.el) contains all timer-related code. Note - sometimes, when hacking, timers may cause subtle bugs which are very hard to debug. Restarting Emacs can fix them, so try that as a first sanity check.
 
-# Browsing the code
+## Browsing the code
 I recommend using
 * [nameless-mode](https://github.com/Malabarba/Nameless) for easier reading of Emacs Lisp code, and
 * [visual-fill-column-mode](https://github.com/joostkremers/visual-fill-column) for easier reading of the Markdown files (without actually "filling" i.e. inserting newlines, so the same file is equally readable on any viewer/editor which supports line-wrapping).
 
-# Point restore behaviour
+## Point restore behaviour
 After hacking, always test for and ensure the following -
 1. Toggling the buffer via `chronometrist`/`chronometrist-report`/`chronometrist-statistics` should preserve point
    - TODO - actually, this should be implemented in a kill-buffer-hook, so it works whenever the buffer is killed, not just when we call the command.
@@ -28,7 +29,7 @@ After hacking, always test for and ensure the following -
 3. The timer function should preserve point when the buffer is not current, but is visible in another window
 4. The next/previous week keys and buttons should preserve point.
 
-# chronometrist-report date range logic
+## chronometrist-report date range logic
 A quick description -
 1. We get the current date in calendrical form using `(decode-time)`.
 2. The variable `chronometrist-report-week-start-day` stores the day we consider the week to start with. The default is "Sunday".
