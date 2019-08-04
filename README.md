@@ -145,7 +145,8 @@ As an example from the author's own init -
 3. Use Cask?
 4. [-] Create test timelog file and UI behaviour tests
 5. Use for chronometrist-report-weekday-number-alist whatever variables like initial-frame-alist use to get that fancy Custom UI for alists.
-6. [inflatable raptor](https://github.com/MichaelMure/git-bug/#planned-features)
+6. Multi-timelog-file support?
+7. [inflatable raptor](https://github.com/MichaelMure/git-bug/#planned-features)
 
 ## Contributions and contact
 Feedback and MRs very welcome. 🙂 [hacking.md](hacking.md) contains an introduction to the codebase.
