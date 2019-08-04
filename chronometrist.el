@@ -11,33 +11,11 @@
 (require 'chronometrist-statistics)
 (require 'chronometrist-assist)
 
-;; TODO - don't suggest nil when asking for first project on first run
-
-;; TODO - use variables instead of hardcoded numbers to determine spacing
-
-;; TODO - remove repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
-
-;; TODO - when starting a project with time of "-" (i.e. not worked on
-;; today until now), immediately set time to 0 instead of waiting for
-;; the first timer refresh
-
-;; TODO - Mouse commands should work only on buttons.
-
-;; TODO - mouse-3 should clock-out without asking for reason.
-
-;; TODO - some way to ask for the reason just before starting a project
-;; Even when clocking out, the reason is asked _before_ clocking out,
-;; which adds time to the project.
 
 ;; modifiers to toggling -
 ;; Nth task
 ;; reason (ask on start/ask on end/don't ask on end)
 ;; run/don't run hooks (maybe there should be a function to toggle this)
-
-;; TODO - timeclock already _has_ hooks! :| Why do we re-implement them?
-
-;; TODO - optimization. `chronometrist-refresh' is expensive in CPU, and `chronometrist-timer'
-;; runs it every 3 seconds by default. :\
 
 ;; Style issues
 ;; 1. Uses Scheme-style ? and x->y naming conventions instead of
