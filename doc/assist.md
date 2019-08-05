@@ -24,7 +24,7 @@ Asked for non-user-edited files
 
 `("Programming" :path "\.emacs\.d" :mode ("emacs-lisp" "markdown" "org"))` matches all sorts of program-generated buffers and screws up your init and quit /o\
 
-Why on earth does the Chronometrist buffer itself get matched???
+Why on earth does the Chronometrist buffer itself get matched? It's not even associated with any file!
 
 ## Keywords
 `:REASON`

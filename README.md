@@ -123,8 +123,8 @@ As an example from the author's own init -
 9. Some way to update buffers every second without making Emacs unusable. (impossible?)
 10. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
 11. Commands to rename a project, delete a project (erasing all records), and hide a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
-12. Tree of tasks (i.e. sub-tasks etc)
-    - Alternatively - each task can have tags.
+12. Tree of tasks (i.e. sub-tasks etc) - choosing a child task implies the parent tasks too.
+    - Alternatively - each task can have multiple tags. See [doc/tags.md](doc/tags.md)
 13. Set goal time for one or more tasks.
 
 ### Chronometrist-report
