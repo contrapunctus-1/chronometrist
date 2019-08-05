@@ -6,7 +6,6 @@
 (require 'chronometrist-custom)
 (require 'chronometrist-report)
 (require 'chronometrist-statistics)
-(require 'chronometrist-assist)
 
 ;;; Commentary:
 ;;
@@ -52,8 +51,6 @@
 (defvar chronometrist--timer-object nil)
 
 (defvar chronometrist--point nil)
-
-(add-hook 'first-change-hook 'chronometrist-assist)
 
 ;; ## FUNCTIONS ##
 (defun chronometrist-current-project ()

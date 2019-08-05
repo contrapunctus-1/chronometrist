@@ -1,4 +1,6 @@
 # Chronometrist-Assist
+This is highly experimental and not in a usable stage, and thus lives in the `assist` branch.
+
 ## basic outline
 1. user defines `chronometrist-patterns-list` in the form
 `'(("PROJECT" :PATH ... :MODE ... :REASON ... :HIDE ...) *)`
