@@ -124,7 +124,7 @@ As an example from the author's own init -
 10. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
 11. Commands to rename a project, delete a project (erasing all records), and hide a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
 12. Tree of tasks (i.e. sub-tasks etc)
-    - Alternatively - each task can have tags. The tags will be used to decide the super-tasks a task belongs to, and stored in a new file in the user's .emacs.d
+    - Alternatively - each task can have tags.
 13. Set goal time for one or more tasks.
 
 ### Chronometrist-report
@@ -142,14 +142,13 @@ As an example from the author's own init -
 ### Miscellaneous
 1. README - add images
 2. [-] Document API somewhere (list of functions, their argument lists, and outputs)
-3. Use Cask?
-4. [-] Create test timelog file and UI behaviour tests
-5. Use for chronometrist-report-weekday-number-alist whatever variables like initial-frame-alist use to get that fancy Custom UI for alists.
-6. Multi-timelog-file support?
-7. [inflatable raptor](https://github.com/MichaelMure/git-bug/#planned-features)
+3. [-] Create test timelog file and UI behaviour tests
+4. Use for chronometrist-report-weekday-number-alist whatever variables like initial-frame-alist use to get that fancy Custom UI for alists.
+5. Multi-timelog-file support?
+6. [inflatable raptor](https://github.com/MichaelMure/git-bug/#planned-features)
 
 ## Contributions and contact
-Feedback and MRs very welcome. 🙂 [hacking.md](hacking.md) contains an introduction to the codebase.
+Feedback and MRs very welcome. 🙂 [doc/hacking.md](doc/hacking.md) contains an introduction to the codebase.
 
 Contact the creator and other Emacs users in the Emacs room on the Jabber network - [xmpp:emacs@salas.suchat.org?join](xmpp:emacs@salas.suchat.org?join) ([web chat](https://inverse.chat/#converse/room?jid=emacs@salas.suchat.org))
 
@@ -167,4 +166,4 @@ jwiegley for timeclock.el
 
 blandest for helping me with the name
 
-fiete for testing
+fiete for testing and bug reports
