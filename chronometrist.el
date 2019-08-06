@@ -78,11 +78,13 @@ SECONDS must be a positive integer."
     (vector h m s)))
 
 (defun chronometrist-entries ()
-  "Create entries to be displayed in the buffer created by
-`chronometrist'."
-  (timeclock-reread-log)
-  (chronometrist-events-populate)
-  (chronometrist-events-clean)
+  "Create entries to be displayed in the buffer created by `chronometrist', in the format specified by `tabulated-list-entries'."
+  ;; HACK - these should not be here. `chronometrist-entries' is called by both
+  ;; `chronometrist-refresh' and `chronometrist-refresh-file', and only the latter should
+  ;; refresh from a file.
+  ;; (timeclock-reread-log)
+  ;; (chronometrist-events-populate)
+  ;; (chronometrist-events-clean)
   (->> timeclock-project-list
        (-sort #'string-lessp)
        (--map-indexed
@@ -211,9 +213,11 @@ integer."
     (chronometrist-project-at-point)))
 
 (defun chronometrist-refresh (&optional ignore-auto noconfirm)
-  "The optional arguments IGNORE-AUTO and NOCONFIRM are ignored,
-and are present solely for the sake of using this function as a
-value of `revert-buffer-function'."
+  "Refresh the `chronometrist' buffer, without re-reading `timeclock-file'.
+
+The optional arguments IGNORE-AUTO and NOCONFIRM are ignored, and
+are present solely for the sake of using this function as a value
+of `revert-buffer-function'."
   (let* ((w (get-buffer-window chronometrist-buffer-name t))
          (p (window-point w)))
     (with-current-buffer chronometrist-buffer-name
@@ -223,6 +227,8 @@ value of `revert-buffer-function'."
       (set-window-point w p))))
 
 (defun chronometrist-refresh-file (fs-event)
+  "Re-read `timeclock-file' and refresh the `chronometrist' buffer.
+Argument FS-EVENT is ignored."
   (chronometrist-events-populate)
   (chronometrist-events-clean)
   (timeclock-reread-log)
