@@ -6,6 +6,7 @@
 (require 'timeclock)
 (require 'dash)
 (require 'cl-lib)
+(require 'chronometrist-time)
 
 ;; ## VARIABLES ##
 ;;; Code:
@@ -130,23 +131,32 @@ TARGET-DATE."
       date-time)))
 
 (defun chronometrist-project-time-one-day (project &optional date)
-  "Read `timeclock-file' and return total time spent on PROJECT
-today or (if supplied) on DATE.
+  "Return total time spent on PROJECT today or (if supplied) on DATE.
+
+The data is obtained from `timeclock-file', via `chronometrist-events'.
 
 DATE must be a list containing calendrical information (see (info
 \"(elisp)Time Conversion\")).
 
 The return value is a vector in the form [HOURS MINUTES SECONDS]"
-  (let* ((target-date (case (length date)
-                        (3 date)
-                        (t (cl-destructuring-bind (_ _ _ day month year _ _ _)
-                               (if date date (decode-time))
-                             (list year month day))))))
-    (->> (chronometrist-project-events-in-day project target-date)
-         (chronometrist-events->time-list)
-         (chronometrist-time-list->sum-of-intervals)
-         (cadr)
-         (chronometrist-seconds-to-hms))))
+  (let* ((target-date    (chronometrist-date date))
+         (project-events (chronometrist-project-events-in-day project target-date))
+         (last-event     (car (last project-events)))
+         (last-code      (chronometrist-vfirst last-event)))
+    (if project-events
+        (->> (if (equal last-code "o")
+                 project-events
+               (append project-events
+                       (cl-destructuring-bind (s m h day month year _ _ _)
+                           (decode-time)
+                         (let* ((new-date   `(,year ,month ,day))
+                                (temp-event `["o" ,year ,month ,day ,h ,m ,s ""]))
+                           (list temp-event)))))
+             (chronometrist-events->time-list)
+             (chronometrist-time-list->sum-of-intervals)
+             (cadr)
+             (chronometrist-seconds-to-hms))
+      [0 0 0])))
 
 ;; tests -
 ;; (mapcar #'chronometrist-format-time

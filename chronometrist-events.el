@@ -33,26 +33,6 @@ This function splits midnight-spanning intervals into two. It
 must be called after `chronometrist-populate'.
 
 It returns t if the table was modified, else nil."
-  (let* ((latest-date (-> chronometrist-events
-                          (hash-table-keys)
-                          (sort #'chronometrist-date-less-p)
-                          (last)
-                          (car)))
-         (latest-date-events (gethash latest-date chronometrist-events)))
-    ;; If the most recent event isn't an "o" event, add one with the current time
-    (when (equal "i"
-                 (-> latest-date-events
-                     (chronometrist-vlast)
-                     (chronometrist-vfirst)))
-      (cl-destructuring-bind (s m h day month year _ _ _)
-          (decode-time)
-        (let* ((new-date   `(,year ,month ,day))
-               (temp-event `[["o" ,year ,month ,day ,h ,m ,s ""]])
-               (new-date-events (gethash new-date chronometrist-events)))
-          (puthash new-date
-                   (vconcat new-date-events
-                            temp-event)
-                   chronometrist-events)))))
   ;; for each key-value, see if the first event has an "o" code
   (let (prev-date modified)
     (maphash (lambda (key value)
@@ -82,6 +62,9 @@ It returns t if the table was modified, else nil."
 
 ;; TODO - Maybe strip dates from values, since they're part of the key
 ;; anyway. Consider using a state machine.
+
+;; OPTIMIZE - It should not be necessary to call this unless the file
+;; has changed. Any other refresh situations should not require this.
 (defun chronometrist-events-populate ()
   "Clear hash table `chronometrist-events' and populate it.
 

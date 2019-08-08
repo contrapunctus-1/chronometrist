@@ -447,7 +447,9 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
                      (setq cursor-type nil)
                      (hl-line-mode))
                    (switch-to-buffer buffer)
-                   (chronometrist-refresh)
+                   (if (hash-table-keys chronometrist-events)
+                       (chronometrist-refresh)
+                     (chronometrist-refresh-file nil))
                    (if chronometrist--point
                        (goto-char chronometrist--point)
                      (chronometrist-goto-last-project))))

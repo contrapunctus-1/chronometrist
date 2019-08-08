@@ -1,5 +1,14 @@
+;;; chronometrist-timer.el --- Timer-related functions for Chronometrist
+
+;;; Commentary:
+;;
+
+;;; Code:
+
 (defun chronometrist-timer ()
-  "Refresh Chronometrist buffers if they are visible and the user
+  "Refresh Chronometrist and related buffers.
+
+Buffers will be refreshed only if they are visible and the user
 is clocked in to a project."
   (when (timeclock-currently-in-p) ;; This line is currently resulting
     ;; in no refresh at midnight. When `chronometrist-entries' is optimized to
@@ -17,14 +26,14 @@ is clocked in to a project."
   (cancel-timer chronometrist--timer-object)
   (setq chronometrist--timer-object nil))
 
-(defun chronometrist-maybe-start-timer ()
-  "If `chronometrist--timer-object' is non-nil, add
-`chronometrist-timer' to the list of active timers and return t,
-else do nothing and return nil."
-  (interactive)
+(defun chronometrist-maybe-start-timer (&optional interactive-test)
+  "Start `chronometrist-timer' if `chronometrist--timer-object' is non-nil."
+  (interactive "p")
   (unless chronometrist--timer-object
     (setq chronometrist--timer-object
           (run-at-time t chronometrist-update-interval #'chronometrist-timer))
+    (when arg
+      (message "Timer started."))
     t))
 
 (defun chronometrist-change-update-interval (arg)
@@ -34,4 +43,12 @@ else do nothing and return nil."
         chronometrist--timer-object nil)
   (chronometrist-maybe-start-timer))
 
+;; Local Variables:
+;; nameless-current-name: "chronometrist"
+;; End:
+
 (provide 'chronometrist-timer)
+
+(provide 'chronometrist-timer)
+
+;;; chronometrist-timer.el ends here
