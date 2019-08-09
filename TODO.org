@@ -1,17 +1,23 @@
 1. [-] Move time operations into a chronometrist-time file
 2. -report - highlight the current day
 
-Chronometrist
-1. don't suggest nil when asking for first project on first run
-2. use variables instead of hardcoded numbers to determine spacing
-3. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
-4. when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
-5. Mouse commands should work only on buttons.
-6. Button actions should accept prefix arguments and behave exactly like their keyboard counterparts.
-7. mouse-3 should clock-out without asking for reason.
-8. Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked _before_ clocking out,which adds time to the project.
-9. Timeclock already _has_ hooks! :| Why do we re-implement them?
-   - I don't know of a way to know the project being clocked into using timeclock hooks.
-10. Optimization. `chronometrist-refresh' is expensive in CPU, and `chronometrist-timer' runs it every 3 seconds by default. :\
-11. Use buttercup instead of ert
-12. See if it is possible to store buttons in a variable, so *-print-non-tabular functions can be made shorter and less imperative. (see `make-text-button`)
+* Chronometrist
+  1. don't suggest nil when asking for first project on first run
+  2. use variables instead of hardcoded numbers to determine spacing
+  3. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
+  4. when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
+  5. Mouse commands should work only on buttons.
+  6. Button actions should accept prefix arguments and behave exactly like their keyboard counterparts.
+  7. mouse-3 should clock-out without asking for reason.
+  8. Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked _before_ clocking out,which adds time to the project.
+  9. Timeclock already _has_ hooks! :| Why do we re-implement them?
+     - I don't know of a way to know the project being clocked into using timeclock hooks.
+  10. Optimization. ~chronometrist-refresh~ is expensive in CPU, and ~chronometrist-timer~ runs it every 3 seconds by default. :\
+
+      Ideas -
+      * Support multiple files, so we read and process lesser data when one of them changes.
+      * Make file writing async
+      * Don't refresh from file when clocking in.
+      * Only write to the file when Emacs is idle or being killed, and store data in memory (in the events hash table) in the meantime
+  11. Use buttercup instead of ert
+  12. See if it is possible to store buttons in a variable, so *-print-non-tabular functions can be made shorter and less imperative. (see ~make-text-button~)
