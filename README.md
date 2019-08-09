@@ -87,6 +87,22 @@ As an example from the author's own init -
 (add-hook 'chronometrist-project-start-functions 'my-start-guitar)
 ```
 
+Another one, prompting the user if they have uncommitted changes in a git repository (assuming they use [Magit](https://magit.vc/)) -
+
+```elisp
+(autoload 'magit-anything-modified-p "magit")
+
+(defun my-commit-prompt (project)
+  (if (progn
+        (magit-anything-modified-p)
+        (yes-or-no-p "You have uncommitted changes. Really clock out? "))
+      t
+    (magit-status)
+    nil))
+
+(add-hook 'chronometrist-before-project-stop-functions 'my-commit-prompt)
+```
+
 ## Roadmap/Ideas
 * Show details for time spent on a project when clicking on a non-zero "time spent" field (in both Chronometrist and Chronometrist-Report buffers).
 
