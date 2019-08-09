@@ -270,14 +270,6 @@ in `timeclock-reason-list'."
     (read-from-minibuffer "Reason for clocking out (optional): " nil nil nil
                           'reason-history)))
 
-(defun chronometrist-run-functions-and-clock-out (project ask)
-  "Run hooks and clock out of PROJECT.
-ASK is used like in `timeclock-out'."
-  (when (run-hook-with-args-until-failure 'chronometrist-before-project-stop-functions
-                                          project)
-    (timeclock-out nil nil ask)
-    (chronometrist-run-after-project-stop-functions project)))
-
 ;; ## HOOKS ##
 
 (defvar chronometrist-project-start-functions nil
@@ -313,6 +305,14 @@ is the clocked-out project.")
   "Call each function in `chronometrist-after-project-stop-functions' with PROJECT."
   (run-hook-with-args 'chronometrist-after-project-stop-functions
                       project))
+
+(defun chronometrist-run-functions-and-clock-out (project ask)
+  "Run hooks and clock out of PROJECT.
+ASK is used like in `timeclock-out'."
+  (when (run-hook-with-args-until-failure 'chronometrist-before-project-stop-functions
+                                          project)
+    (timeclock-out nil nil ask)
+    (chronometrist-run-after-project-stop-functions project)))
 
 ;; ## MAJOR-MODE ##
 (defvar chronometrist-mode-map
