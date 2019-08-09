@@ -11,4 +11,6 @@ Chronometrist
 7. mouse-3 should clock-out without asking for reason.
 8. Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked _before_ clocking out,which adds time to the project.
 9. Timeclock already _has_ hooks! :| Why do we re-implement them?
+   - I don't know of a way to know the project being clocked into using timeclock hooks.
 10. Optimization. `chronometrist-refresh' is expensive in CPU, and `chronometrist-timer' runs it every 3 seconds by default. :\
+11. Use buttercup instead of ert
