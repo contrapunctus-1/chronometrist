@@ -270,6 +270,14 @@ in `timeclock-reason-list'."
     (read-from-minibuffer "Reason for clocking out (optional): " nil nil nil
                           'reason-history)))
 
+(defun chronometrist-run-functions-and-clock-out (project ask)
+  "Run hooks and clock out of PROJECT.
+ASK is used like in `timeclock-out'."
+  (when (-all-p #'identity
+                (chronometrist-run-before-project-stop-functions project))
+    (timeclock-out nil nil ask)
+    (chronometrist-run-project-end-functions project)))
+
 ;; ## HOOKS ##
 
 (defvar chronometrist-project-start-functions nil
@@ -283,13 +291,16 @@ The commands `chronometrist-toggle-project-button',
 `chronometrist-add-new-project', and
 `chronometrist-toggle-project-no-reason' will run this hook.")
 
-(defvar chronometrist-after-project-stop-functions nil
-  "Functions to run after a project is clocked out.
-Each function in this hook must accept a single argument, which
-is the clocked-out project.")
-
 (defvar chronometrist-before-project-stop-functions nil
   "Functions to run before a project is clocked out.
+Each function in this hook must accept a single argument, which
+is the clocked-out project.
+
+The project will be stopped only if all functions in this list
+return a non-nil value.")
+
+(defvar chronometrist-after-project-stop-functions nil
+  "Functions to run after a project is clocked out.
 Each function in this hook must accept a single argument, which
 is the clocked-out project.")
 
@@ -298,14 +309,14 @@ is the clocked-out project.")
   (run-hook-with-args 'chronometrist-project-start-functions
                       project))
 
+(defun chronometrist-run-before-project-stop-functions (project)
+  "Call each function in `chronometrist-before-project-stop-functions' with PROJECT."
+  (run-hook-with-args 'chronometrist-before-project-stop-functions
+                      project))
+
 (defun chronometrist-run-after-project-stop-functions (project)
   "Call each function in `chronometrist-after-project-stop-functions' with PROJECT."
   (run-hook-with-args 'chronometrist-after-project-stop-functions
-                      project))
-
-(defun chronometrist-run-before-project-stop-functions (project)
-  "Call each function in `chronometrist-before-project-stop-functions' with PROJECT."
-  (run-hook-with-args 'chronometrist-project-before-stop-functions
                       project))
 
 ;; ## MAJOR-MODE ##
@@ -348,9 +359,7 @@ is the clocked-out project.")
     ;; clocked in + point on some other project = clock out, clock in to project
     ;; clocked out = clock in
     (when current
-      (chronometrist-run-project-before-stop-functions current)
-      (timeclock-out nil nil t)
-      (chronometrist-run-project-end-functions current))
+      (chronometrist-run-functions-and-clock-out current t))
     (unless (equal at-point current)
       (chronometrist-run-project-start-functions at-point)
       (timeclock-in nil at-point nil))
@@ -360,9 +369,7 @@ is the clocked-out project.")
   "Button action to add a new project."
   (let ((current (chronometrist-current-project)))
     (when current
-      (chronometrist-run-project-before-stop-functions current)
-      (timeclock-out nil nil t)
-      (chronometrist-run-project-end-functions current))
+      (chronometrist-run-functions-and-clock-out current t))
     (let ((p (read-from-minibuffer "New project name: " nil nil nil nil nil t)))
       (chronometrist-run-project-start-functions p)
       (timeclock-in nil p nil))
@@ -396,9 +403,7 @@ If NO-PROMPT is non-nil, don't ask for a reason."
            ;; clocked in + target is some other project = clock out, clock in to project
            ;; clocked out = clock in
            (when current
-             (chronometrist-run-project-before-stop-functions current)
-             (timeclock-out nil nil ask)
-             (chronometrist-run-project-end-functions current))
+             (chronometrist-run-functions-and-clock-out current ask))
            (unless (equal target current)
              (chronometrist-run-project-start-functions target)
              (timeclock-in nil target nil))))
