@@ -70,7 +70,12 @@ If you find that you usually _don't_ want to enter a reason, you can switch the 
 ```
 
 ### Hooks
-See `chronometrist-project-start-hook` and `chronometrist-project-stop-hook`. Note that these are 'abnormal' hooks, i.e. the functions they contain must accept arguments. In this case, each function must accept exactly one argument, which is the project which is being started or stopped.
+Chronometrist currently has three hooks -
+1. `chronometrist-project-start-functions`
+2. `chronometrist-before-project-stop-functions`
+3. `chronometrist-after-project-stop-functions`
+
+As their names suggest, these are 'abnormal' hooks, i.e. the functions they contain must accept arguments. In this case, each function must accept exactly one argument, which is the project which is being started or stopped.
 
 As an example from the author's own init -
 
@@ -79,7 +84,7 @@ As an example from the author's own init -
   (when (equal project "Guitar")
     (find-file-other-window "~/repertoire.org")))
 
-(add-hook 'chronometrist-project-start-hook 'my-start-guitar)
+(add-hook 'chronometrist-project-start-functions 'my-start-guitar)
 ```
 
 ## Roadmap/Ideas
