@@ -273,10 +273,10 @@ in `timeclock-reason-list'."
 (defun chronometrist-run-functions-and-clock-out (project ask)
   "Run hooks and clock out of PROJECT.
 ASK is used like in `timeclock-out'."
-  (when (-all-p #'identity
-                (chronometrist-run-before-project-stop-functions project))
+  (when (run-hook-with-args-until-failure 'chronometrist-before-project-stop-functions
+                                          project)
     (timeclock-out nil nil ask)
-    (chronometrist-run-project-end-functions project)))
+    (chronometrist-run-after-project-stop-functions project)))
 
 ;; ## HOOKS ##
 
@@ -307,11 +307,6 @@ is the clocked-out project.")
 (defun chronometrist-run-project-start-functions (project)
   "Call each function in `chronometrist-project-start-functions' with PROJECT."
   (run-hook-with-args 'chronometrist-project-start-functions
-                      project))
-
-(defun chronometrist-run-before-project-stop-functions (project)
-  "Call each function in `chronometrist-before-project-stop-functions' with PROJECT."
-  (run-hook-with-args 'chronometrist-before-project-stop-functions
                       project))
 
 (defun chronometrist-run-after-project-stop-functions (project)
