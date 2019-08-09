@@ -92,9 +92,8 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
 ```elisp
 (autoload 'magit-anything-modified-p "magit")
 
-(defun my-commit-prompt (project)
-  (if (progn
-        (magit-anything-modified-p)
+(defun contrapunctus-commit-prompt (project)
+  (if (when (magit-anything-modified-p)
         (yes-or-no-p "You have uncommitted changes. Really clock out? "))
       t
     (magit-status)
