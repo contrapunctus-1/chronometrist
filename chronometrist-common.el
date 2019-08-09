@@ -254,6 +254,18 @@ COUNT must be a positive integer."
        (* m 60)
        s)))
 
+(defun chronometrist-format-keybinds (command map &optional firstonly)
+  "Return the keybindings for COMMAND in MAP as a string.
+If FIRSTONLY is non-nil, return only the first keybinding found."
+  (if firstonly
+      (key-description
+       (where-is-internal command map firstonly))
+    (->> (where-is-internal command map)
+         (mapcar #'key-description)
+         (-take 2)
+         (-interpose ", ")
+         (apply #'concat))))
+
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"
 ;; End:

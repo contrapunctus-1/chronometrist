@@ -1,6 +1,5 @@
-1. Merge *-format-keybinds into a single function
-2. Move time operations into a chronometrist-time file
-3. -report - highlight the current day
+1. [-] Move time operations into a chronometrist-time file
+2. -report - highlight the current day
 
 Chronometrist
 1. don't suggest nil when asking for first project on first run

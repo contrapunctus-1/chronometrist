@@ -234,24 +234,14 @@ reduced to the desired range using
        (setq chronometrist-statistics--ui-state `(:mode week :start ,start :end ,end))
        (chronometrist-statistics-entries-internal table)))))
 
-(defun chronometrist-statistics-format-keybinds (command &optional firstonly)
-  "Return the keybindings for COMMAND as a string.
-If FIRSTONLY is non-nil, return only the first keybinding found."
-  (if firstonly
-      (key-description
-       (where-is-internal command chronometrist-statistics-mode-map firstonly))
-      (->> (where-is-internal command chronometrist-statistics-mode-map)
-           (mapcar #'key-description)
-           (-take 2)
-           (-interpose ", ")
-           (apply #'concat))))
-
 (defun chronometrist-statistics-print-keybind (command &optional description firstonly)
   "Insert the keybindings for COMMAND.
 If DESCRIPTION is non-nil, insert that too.
 If FIRSTONLY is non-nil, return only the first keybinding found."
   (insert "\n    "
-          (chronometrist-statistics-format-keybinds command firstonly)
+          (chronometrist-format-keybinds command
+                             chronometrist-statistics-mode-map
+                             firstonly)
           " - "
           (if description description "")))
 

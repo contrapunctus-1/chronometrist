@@ -140,18 +140,6 @@ information (see (info \"(elisp)Time Conversion\"))."
        (--map (chronometrist-project-time-one-day it date))
        (-reduce #'chronometrist-time-add)))
 
-(defun chronometrist-format-keybinds (command &optional firstonly)
-  "Return the keybindings for COMMAND as a string.
-If FIRSTONLY is non-nil, return only the first keybinding found."
-  (if firstonly
-      (key-description
-       (where-is-internal command chronometrist-mode-map firstonly))
-      (->> (where-is-internal command chronometrist-mode-map)
-           (mapcar #'key-description)
-           (-take 2)
-           (-interpose ", ")
-           (apply #'concat))))
-
 (defun chronometrist-print-keybind (command &optional description firstonly)
   "Insert the keybindings for COMMAND.
 If DESCRIPTION is non-nil, insert that too.
@@ -159,7 +147,9 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
   (insert
    "\n"
    (format "% 18s - %s"
-           (chronometrist-format-keybinds command firstonly)
+           (chronometrist-format-keybinds command
+                             chronometrist-mode-map
+                             firstonly)
            (if description description ""))))
 
 (defun chronometrist-print-non-tabular ()
@@ -167,8 +157,11 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
   (with-current-buffer chronometrist-buffer-name
     (let ((inhibit-read-only t)
           (w "\n    ")
-          (keybind-start-new (chronometrist-format-keybinds 'chronometrist-add-new-project))
-          (keybind-toggle    (chronometrist-format-keybinds 'chronometrist-toggle-project t)))
+          (keybind-start-new (chronometrist-format-keybinds 'chronometrist-add-new-project
+                                               chronometrist-mode-map))
+          (keybind-toggle    (chronometrist-format-keybinds 'chronometrist-toggle-project
+                                               chronometrist-mode-map
+                                               t)))
       (goto-char (point-max))
       (-->
        (chronometrist-total-time-one-day)

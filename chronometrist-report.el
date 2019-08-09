@@ -114,18 +114,6 @@ FORMAT-STRING."
        (reverse)
        (apply #'format format-string)))
 
-(defun chronometrist-report-format-keybinds (command &optional firstonly)
-  "Return the keybindings for COMMAND as a string.
-If FIRSTONLY is non-nil, return only the first keybinding found."
-  (if firstonly
-      (key-description
-       (where-is-internal command chronometrist-report-mode-map firstonly))
-      (->> (where-is-internal command chronometrist-report-mode-map)
-           (mapcar #'key-description)
-           (-take 2)
-           (-interpose ", ")
-           (apply #'concat))))
-
 (defun chronometrist-report-print-keybind (command &optional description firstonly)
   (insert "\n    "
           (chronometrist-report-format-keybinds command firstonly)
@@ -137,8 +125,12 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
   "Print the non-tabular part of the buffer in `chronometrist-report'."
   (let ((inhibit-read-only t)
         (w            "\n    ")
-        (key-previous (chronometrist-format-keybinds #'chronometrist-report-previous-week t))
-        (key-next     (chronometrist-format-keybinds #'chronometrist-report-next-week t)))
+        (key-previous (chronometrist-format-keybinds #'chronometrist-report-previous-week
+                                         chronometrist-report-mode-map
+                                         t))
+        (key-next     (chronometrist-format-keybinds #'chronometrist-report-next-week
+                                         chronometrist-report-mode-map
+                                         t)))
     (goto-char (point-min))
     (insert "                         ")
     (--map (insert (chronometrist-report-format-date "%04d-%02d-%02d " it))
