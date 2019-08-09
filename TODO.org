@@ -14,3 +14,4 @@ Chronometrist
    - I don't know of a way to know the project being clocked into using timeclock hooks.
 10. Optimization. `chronometrist-refresh' is expensive in CPU, and `chronometrist-timer' runs it every 3 seconds by default. :\
 11. Use buttercup instead of ert
+12. See if it is possible to store buttons in a variable, so *-print-non-tabular functions can be made shorter and less imperative. (see `make-text-button`)
