@@ -20,7 +20,23 @@ nil, in which case today's date is returned."
            (if date date (decode-time))
          (list year month day)))))
 
-(defun chronometrist-time ())
+(defun chronometrist-time (&optional time))
+
+(defun chronometrist-day-of-week->number (day-of-week)
+  "Return an integer (0-6) representing DAY-OF-WEEK.
+
+DAY-OF-WEEK should be a string, e.g. \"Sunday\" - see
+`chronometrist-report-weekday-number-alist'."
+  (cdr
+   (assoc-string day-of-week chronometrist-report-weekday-number-alist)))
+
+(defun chronometrist-number->day-of-week (number)
+  "Return the day of the week (as a string), corresponding to NUMBER.
+
+NUMBER should be an integer (0-6) - see
+`chronometrist-report-weekday-number-alist'."
+  (car
+   (rassoc number chronometrist-report-weekday-number-alist)))
 
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"

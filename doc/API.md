@@ -86,7 +86,7 @@ time-vector time-vector -> time-vector
 
 # chronometrist-report
 ## Time operations
-### chronometrist-report-day-of-week->number
+### chronometrist-day-of-week->number
 String -> Integer
 ### chronometrist-date-op
 (seconds minutes hours day month year) operator count? -> decode-time

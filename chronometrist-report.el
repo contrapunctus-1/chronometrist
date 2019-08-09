@@ -26,14 +26,9 @@ Each date is a list containing calendrical information (see (info \"(elisp)Time 
 
 ;; ## FUNCTIONS ##
 
-(defun chronometrist-report-day-of-week->number (day-of-week)
-  (cdr
-   (assoc-string day-of-week chronometrist-report-weekday-number-alist)))
-
 (defun chronometrist-report-previous-week-start (date)
-  "Return the date for the last start-of-week from DATE (using
-start-of-week defined in `chronometrist-report-week-start-day'). If
-the day of DATE is the same as the
+  "Return the date of the previous `chronometrist-report-week-start-day' from DATE.
+If the day of DATE is the same as the
 `chronometrist-report-week-start-day', return DATE.
 
 DATE must be calendrical information (see (info \"(elisp)Time Conversion\")).
@@ -41,7 +36,7 @@ DATE must be calendrical information (see (info \"(elisp)Time Conversion\")).
 Any time data provided is reset to midnight (00:00:00)."
   (let* ((date       (->> date (-drop 3) (append '(0 0 0))))
          (day        (elt date 6)) ;; 0-6, where 0 = Sunday
-         (week-start (chronometrist-report-day-of-week->number chronometrist-report-week-start-day))
+         (week-start (chronometrist-day-of-week->number chronometrist-report-week-start-day))
          (gap        (cond ((> day week-start) (- day week-start))
                            ((< day week-start) (+ day (- 7 week-start))))))
     (if gap

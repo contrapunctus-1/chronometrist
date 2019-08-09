@@ -11,7 +11,7 @@
   - [ ] chronometrist-print-non-tabular ()
   - [ ] chronometrist-toggle-project (&optional arg)
   - [ ] chronometrist (&optional arg)
-  - [ ] chronometrist-report-day-of-week->number (day-of-week)
+  - [ ] chronometrist-day-of-week->number (day-of-week)
   - [ ] chronometrist-date-op (date operator &optional count)
   - [X] chronometrist-report-previous-week-start (date)
   - [ ] chronometrist-report-date ()
