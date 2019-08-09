@@ -1,4 +1,4 @@
-;;; chronometrist-statistics.el --- View statistics from timeclock.el data
+;;; chronometrist-statistics.el --- View statistics from timeclock.el data -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;;

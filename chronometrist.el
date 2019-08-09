@@ -1,4 +1,4 @@
-;;; chronometrist.el --- A time tracker for Emacs with a nice interface, built timeclock.el
+;;; chronometrist.el --- A time tracker for Emacs with a nice interface, built timeclock.el -*- lexical-binding: t; -*-
 
 (require 'filenotify)
 (require 'chronometrist-common)

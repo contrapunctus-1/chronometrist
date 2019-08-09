@@ -1,4 +1,4 @@
-;;; chronometrist-timer.el --- Timer-related functions for Chronometrist
+;;; chronometrist-timer.el --- Timer-related functions for Chronometrist -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;;

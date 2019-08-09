@@ -1,4 +1,4 @@
-;;; chronometrist-time.el --- Time and date functions for Chronometrist
+;;; chronometrist-time.el --- Time and date functions for Chronometrist -*- lexical-binding: t; -*-
 
 (require 'dash)
 

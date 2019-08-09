@@ -1,3 +1,5 @@
+;;  -*- lexical-binding: t; -*-
+
 (defgroup chronometrist-statistics nil
   "Statistics buffer for the `chronometrist' time tracker.")
 

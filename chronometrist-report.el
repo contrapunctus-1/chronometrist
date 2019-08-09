@@ -1,3 +1,5 @@
+;;  -*- lexical-binding: t; -*-
+
 (require 'chronometrist-common)
 (require 'chronometrist-timer)
 (require 'chronometrist-report-custom)
