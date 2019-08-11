@@ -12,6 +12,7 @@
   8. Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked _before_ clocking out,which adds time to the project.
   9. Timeclock already _has_ hooks! :| Why do we re-implement them?
      - I don't know of a way to know the project being clocked into using timeclock hooks.
+     - With v0.2.0 Chronometrist also has a before-project-stop-functions, which runs before the project is stopped, and can control whether the project actually is stopped.
   10. Optimization. ~chronometrist-refresh~ is expensive in CPU, and ~chronometrist-timer~ runs it every 3 seconds by default. :\
 
       Ideas -
