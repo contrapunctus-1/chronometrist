@@ -118,7 +118,7 @@ FORMAT-STRING."
 
 (defun chronometrist-report-print-keybind (command &optional description firstonly)
   (insert "\n    "
-          (chronometrist-report-format-keybinds command firstonly)
+          (chronometrist-format-keybinds command firstonly)
           " - "
           (if description description "")))
 
