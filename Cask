@@ -3,7 +3,7 @@
 
 (package
  "Chronometrist"
- "0.2.0"
+ "0.2.1"
  "A time tracker for Emacs with a nice interface, built using timeclock.el")
 
 (depends-on "dash" "2.16.0")
