@@ -1,3 +1,5 @@
+;;  -*- lexical-binding: t; -*-
+
 (defgroup chronometrist nil
   "A time tracker with a nice UI.")
 

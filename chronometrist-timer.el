@@ -1,4 +1,4 @@
-;;; chronometrist-timer.el --- Timer-related functions for Chronometrist
+;;; chronometrist-timer.el --- Timer-related functions for Chronometrist -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;;
@@ -10,10 +10,10 @@
 
 Buffers will be refreshed only if they are visible and the user
 is clocked in to a project."
-  (when (timeclock-currently-in-p) ;; This line is currently resulting
-    ;; in no refresh at midnight. When `chronometrist-entries' is optimized to
-    ;; consume less CPU and avoid unnecessary parsing, remove this
-    ;; condition.
+  (when (timeclock-currently-in-p) ;; FIXME - This line is currently
+    ;; resulting in no refresh at midnight. When `chronometrist-entries' is
+    ;; optimized to consume less CPU and avoid unnecessary parsing,
+    ;; remove this condition.
     (when (get-buffer-window chronometrist-buffer-name)
       (chronometrist-refresh))
     (when (get-buffer-window chronometrist-report-buffer-name)

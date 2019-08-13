@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t; -*-
+
 ;; TODO - add forward/backward, current date display (and don't scroll
 ;; past the actual data)
 

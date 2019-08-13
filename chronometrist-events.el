@@ -1,4 +1,4 @@
-;;; chronometrist-events.el --- Event management and querying code for Chronometrist
+;;; chronometrist-events.el --- Event management and querying code for Chronometrist -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;;

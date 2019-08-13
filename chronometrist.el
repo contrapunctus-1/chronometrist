@@ -1,4 +1,4 @@
-;;; chronometrist.el --- A time tracker for Emacs with a nice interface, built timeclock.el
+;;; chronometrist.el --- A time tracker for Emacs with a nice interface, built timeclock.el -*- lexical-binding: t; -*-
 
 (require 'filenotify)
 (require 'chronometrist-common)
@@ -49,7 +49,7 @@
 ;;; Code:
 
 (defvar chronometrist--timer-object nil)
-
+(defvar chronometrist--project-history nil)
 (defvar chronometrist--point nil)
 
 ;; ## FUNCTIONS ##
@@ -266,9 +266,9 @@ Uses `read-from-minibuffer' instead of `completing-read'. \(see
 Additionally, it uses `chronometrist-reason-list' to only suggest
 reasons used for the relevant project, instead of all reasons as
 in `timeclock-reason-list'."
-  (let ((reason-history (chronometrist-reason-list timeclock-last-project)))
-    (read-from-minibuffer "Reason for clocking out (optional): " nil nil nil
-                          'reason-history)))
+  (setq chronometrist--project-history (chronometrist-reason-list timeclock-last-project))
+  (read-from-minibuffer "Reason for clocking out (optional): " nil nil nil
+                        'chronometrist--project-history))
 
 ;; ## HOOKS ##
 

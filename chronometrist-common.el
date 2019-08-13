@@ -1,4 +1,4 @@
-;;; chronometrist-common.el --- Common definitions for Chronometrist
+;;; chronometrist-common.el --- Common definitions for Chronometrist -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;;

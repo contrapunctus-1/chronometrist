@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t; -*-
+
 (defgroup chronometrist-report nil
   "Weekly report for the `chronometrist' time tracker.")
 
