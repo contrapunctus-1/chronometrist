@@ -36,6 +36,12 @@ is clocked in to a project."
       (message "Timer started."))
     t))
 
+(defun chronometrist-force-restart-timer ()
+  (interactive)
+  (cancel-timer chronometrist--timer-object)
+  (setq chronometrist--timer-object nil)
+  (run-at-time t chronometrist-update-interval #'chronometrist-timer))
+
 (defun chronometrist-change-update-interval (arg)
   (interactive "NEnter new interval (in seconds): ")
   (cancel-timer chronometrist--timer-object)
@@ -46,8 +52,6 @@ is clocked in to a project."
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"
 ;; End:
-
-(provide 'chronometrist-timer)
 
 (provide 'chronometrist-timer)
 
