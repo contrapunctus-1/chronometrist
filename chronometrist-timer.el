@@ -32,7 +32,7 @@ is clocked in to a project."
   (unless chronometrist--timer-object
     (setq chronometrist--timer-object
           (run-at-time t chronometrist-update-interval #'chronometrist-timer))
-    (when arg
+    (when interactive-test
       (message "Timer started."))
     t))
 
