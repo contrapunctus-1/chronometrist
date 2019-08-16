@@ -37,7 +37,17 @@ COMMENT ...
 (Sounds an awful lot like SQL, doesn't it? 😓)
 
 ## TODO
-* and/or/not
+SQL-like syntax -
+```
+GET <return value specifier> WHERE <specifier expression> ...
+
+<specifier expression> ::= :KEY <value>
+                         | <logical operator>
+
+<logical operator> ::= (and <specifier expression>)
+                     | (or  <specifier expression>)
+                     | (not <specifier expression>)
+```
 
 ## Arbitrary key values (custom storage format)
 If we end up creating a custom s-exp based format which allows for arbitrary key values apart from the ones listed above (see [doc/tags.md](doc/tags.md)), we'd probably need to go the macro route.
@@ -58,5 +68,8 @@ Additionally, you have overhead from acquiring dates from the plists to add to t
 
 With dates kept only in values, keys can be obtained with minimal work and values can be exactly what was read in from the file.
 
-## Nic Ferrier's [emacs-db](https://github.com/nicferrier/emacs-db) and [emacs-kv](https://github.com/nicferrier/emacs-kv)
+## Existing art
+### Nic Ferrier's [emacs-db](https://github.com/nicferrier/emacs-db) and [emacs-kv](https://github.com/nicferrier/emacs-kv)
 I tried out -db. I wanted to store plist values, but it seems to support only alists. Also, it stores them as a the printed representation of a hash table...which is probably faster than `read`ing individual s-exps and assembling that into one, but probably not nice to edit by hand (which is one of our major requirements).
+
+There are some SQL interfaces for Emacs, too. It might be possible to implement this as a backend for them instead. It can be done later, I suppose.
