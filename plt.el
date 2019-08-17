@@ -1,21 +1,34 @@
-(chronometrist-query table)
-(maphash (lambda (key value)
-           (when (->> arg-list
-                      (mapcar (lambda (arg)
-                                (let ((value <get value from pair>))
-                                  (alist-get arg key-predicate-alist)
-                                  <see if value passes the predicate>)))
-                      (-all-p #'identity))
-             (cond return
-                   ((symbolp return)
-                    )
-                   (())
-                   (t value))))
-         hash-table)
+(defvar plt-key-comparisons-alist nil)
+
+(defmacro plt-query )
+
+;; Leave defined comparison functions/pattern matching out for the
+;; moment - just use `equal' and focus on the basics first.
+(cl-defun plt-query-function (table &key get specifiers)
+  (let ((keyword-list (seq-filter #'keywordp specifiers))
+        (return))
+    (maphash (lambda (key value)
+               (when (->> keyword-list
+                          (mapcar (lambda (keyword)
+                                    ;; (alist-get arg key-predicate-alist)
+                                    ;; <see if value passes the predicate>
+                                    (equal (plist-get value keyword)
+                                           (plist-get specifiers keyword))))
+                          (-all-p #'identity))
+                 ;; just return the value for now, implement GET later
+                 ;; (cond return
+                 ;;       ((symbolp return)
+                 ;;        )
+                 ;;       (())
+                 ;;       (t value))
+                 (setq return (append return value))))
+             table)
+    return))
 
 (defvar test-table (make-hash-table))
 
-(defun chronometrist-events-populate-plists ()
+;; test function
+(defun plt-populate-table ()
   "Read data from `timeclock-file' to `test-table', storing events as plists."
   (clrhash test-table)
   (with-current-buffer (find-file-noselect timeclock-file)
