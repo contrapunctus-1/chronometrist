@@ -3,11 +3,11 @@ Thoughts for a new file format
 ## Certain
 * s-exp based - easier parsing
 * support for tags
+* start and end entries combined into a single event entry. Necessary for querying e.g. "get an entry where comment is X and project is Y"
 
 ## Unertain
 * Latest entry first? Easier human editing
 * Support for concurrent activities? I like the discipline imposed by one-activity-at-a-time, but some may like the option.
-* Event-pair based? (i.e. combine start and end entries into one, so each entry is a complete entity by itself.)
 * Time format? A compromise between human and machine readable? (easiest to parse?)
   `:start (2019 4 1 22 10 00)`
   or ISO format as a string?

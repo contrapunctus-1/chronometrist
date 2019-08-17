@@ -1,6 +1,10 @@
 (defvar plt-key-comparisons-alist nil)
 
-(defmacro plt-query )
+(defmacro plt-query (&rest body)
+  "Query a hash table of plists using an SQL-like language.
+
+GET <return value specifier> WHERE <plist specifier expression> ..."
+  )
 
 ;; Leave defined comparison functions/pattern matching out for the
 ;; moment - just use `equal' and focus on the basics first.
@@ -15,15 +19,17 @@
                                     (equal (plist-get value keyword)
                                            (plist-get specifiers keyword))))
                           (-all-p #'identity))
-                 ;; just return the value for now, implement GET later
-                 ;; (cond return
-                 ;;       ((symbolp return)
-                 ;;        )
-                 ;;       (())
-                 ;;       (t value))
-                 (setq return (append return value))))
+                 (nconc return
+                        (cond ((keywordp get)
+                               (list
+                                (plist-get value get)))
+                              ;; (listp nil) => t, so we use consp
+                              ((consp get)
+                               (--map (plist-get value it)
+                                      get))
+                              (t value)))))
              table)
-    return))
+    (seq-remove #'null return)))
 
 (defvar test-table (make-hash-table))
 
