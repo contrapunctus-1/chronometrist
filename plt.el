@@ -49,8 +49,9 @@
                                           (mapcar #'string-to-number it)))
                  (project-or-comment (replace-regexp-in-string
                                       (rx (and (or "i" "o") " "
-                                               (= 4 digit) "/" (= 2 digit) "/" (= 2 digit) " "
-                                               (= 2 digit) ":" (= 2 digit) ":" (= 2 digit) " "))
+                                               (and (= 4 digit) "/" (= 2 digit) "/" (= 2 digit) " ")
+                                               (and (= 2 digit) ":" (= 2 digit) ":" (= 2 digit))
+                                               (opt " ")))
                                       ""
                                       event-string)))
             (incf key-counter)
