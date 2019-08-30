@@ -379,8 +379,8 @@ ASK is used like in `timeclock-out'."
 
 If there is no project at point, do nothing.
 
-With numeric prefix argument PREFIX, toggle the Nth project. If there
-is no corresponding project, do nothing.
+With numeric prefix argument PREFIX, toggle the Nth project. If
+there is no corresponding project, do nothing.
 
 If NO-PROMPT is non-nil, don't ask for a reason."
   (interactive "P")
