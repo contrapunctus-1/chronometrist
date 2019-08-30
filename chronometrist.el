@@ -410,7 +410,7 @@ If NO-PROMPT is non-nil, don't ask for a reason."
 With numeric prefix argument PREFIX, toggle the Nth project. If there
 is no corresponding project, do nothing."
   (interactive "P")
-  (funcall-interactively #'chronometrist-toggle-project prefix t))
+  (chronometrist-toggle-project prefix t))
 
 (defun chronometrist-add-new-project ()
   "Add a new project."
