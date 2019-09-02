@@ -16,6 +16,7 @@
       * Make file writing async
       * Don't refresh from file when clocking in.
       * Only write to the file when Emacs is idle or being killed, and store data in memory (in the events hash table) in the meantime
+      * What if commands both write to the file /and/ add to the hash table, so we don't have to re-read the file and re-populate the table for commands? The expensive reading+parsing could be avoided for commands, and only take place for the user changing the file.
 ** Code
    1. use variables instead of hardcoded numbers to determine spacing
    2. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
