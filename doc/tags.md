@@ -28,6 +28,7 @@
 ## Backend
 1. Timeclock-compatible CSV. May grow timeclock-project-list to large lengths, since timeclock will see every unique combination of tags as a new project.
 2. A new s-exp based format (see [new-format.md](new-format.md))
+3. Add an s-expression containing tags and other structured in the comment part of timeclock. Hacky, and the s-exp must be limited to one line (i.e. cannot be pretty printed), since the timeclock format is line-based.
 
 ## UI
 1. Something to suggest tags which are commonly used with a given tag. Probably store it as a hash table or such, with tags as keys and `((tag . score) ...)` as values, sorted in descending order of scores.
