@@ -379,8 +379,8 @@ ASK is used like in `timeclock-out'."
 
 If there is no project at point, do nothing.
 
-With numeric prefix argument PREFIX, toggle the Nth project. If there
-is no corresponding project, do nothing.
+With numeric prefix argument PREFIX, toggle the Nth project. If
+there is no corresponding project, do nothing.
 
 If NO-PROMPT is non-nil, don't ask for a reason."
   (interactive "P")
@@ -410,7 +410,7 @@ If NO-PROMPT is non-nil, don't ask for a reason."
 With numeric prefix argument PREFIX, toggle the Nth project. If there
 is no corresponding project, do nothing."
   (interactive "P")
-  (funcall-interactively #'chronometrist-toggle-project prefix t))
+  (chronometrist-toggle-project prefix t))
 
 (defun chronometrist-add-new-project ()
   "Add a new project."
