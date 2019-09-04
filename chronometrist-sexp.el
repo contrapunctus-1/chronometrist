@@ -6,15 +6,13 @@
 
 (defvar chronometrist-current-backend 'timeclock)
 
-(defvar chronometrist-backends-list
-  '((:backend      timeclock
-     :in-function  timeclock-in
-     :out-function timeclock-out
-     :file         timeclock-file)
-    (:backend      sexp
-     :in-function  chronometrist-in-sexp
-     :out-function chronometrist-out-sexp
-     :file         chronometrist-file)))
+(defvar chronometrist-backends-alist
+  '((timeclock . (:in-function  timeclock-in
+                  :out-function timeclock-out
+                  :file         timeclock-file))
+    (sexp . (:in-function  chronometrist-in-sexp
+             :out-function chronometrist-out-sexp
+             :file         chronometrist-file))))
 
 ;;;; compatibility with timeclock.el
 (defvar chronometrist-in-function 'timeclock-in
@@ -38,14 +36,20 @@ It should accept the same arguments as `timeclock-out'.")
 
 `chronometrist-in-function' contains the actual function to be called."
   (interactive "P")
-  (funcall-interactively chronometrist-in-function arg project find-project))
+  (funcall-interactively (-> chronometrist-current-backend
+                             (alist-get chronometrist-backends-alist)
+                             (plist-get :in-function))
+                         arg project find-project))
 
 (defun chronometrist-out (&optional arg reason find-reason)
   "Stop tracking time.
 
 `chronometrist-out-function' contains the actual function to be called."
   (interactive "P")
-  (funcall-interactively chronometrist-out-function arg reason find-reason))
+  (funcall-interactively  (-> chronometrist-current-backend
+                             (alist-get chronometrist-backends-alist)
+                             (plist-get :out-function))
+                          arg reason find-reason))
 
 ;; Ugh. We have to use this so the argument list for timeclock-in/out
 ;; and chronometrist-in-plist/out-plist remain the same :\
