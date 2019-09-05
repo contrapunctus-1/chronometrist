@@ -68,7 +68,7 @@ It returns t if the table was modified, else nil."
 (defun chronometrist-events-populate ()
   "Clear hash table `chronometrist-events' and populate it.
 
-The data is acquired from `timeclock-file'.
+The data is acquired from `chronometrist-file'.
 
 Each key is a date in the form (YEAR MONTH DAY).
 
@@ -78,29 +78,14 @@ SECONDS \"PROJECT-NAME-OR-COMMENT\"\].
 
 This function always returns nil."
   (clrhash chronometrist-events)
-  (with-current-buffer (find-file-noselect timeclock-file)
+  (with-current-buffer (find-file-noselect chronometrist-file)
     (save-excursion
       (goto-char (point-min))
-      (while (not (= (point) (point-max)))
-        (let* ((event-string (buffer-substring-no-properties (point-at-bol)
-                                                             (point-at-eol)))
-               (info-re (concat ". " chronometrist-date-re " " chronometrist-time-re-file))
-               (project-or-comment (->> event-string
-                                        (replace-regexp-in-string (concat info-re " ?") "")
-                                        (vector)))
-               (the-rest (--> (concat "\\(" info-re "\\)" ".*")
-                              (replace-regexp-in-string it "\\1" event-string)
-                              (split-string it "[ /:]")
-                              (append (list (car it))
-                                      (mapcar #'string-to-number (-slice it 1 7)))))
-               (key (-slice the-rest 1 4))
-               (old-value (gethash key chronometrist-events))
-               (new-value (vector (vconcat the-rest ;; vconcat converts lists to vectors
-                                           project-or-comment))))
-          (if old-value
-              (puthash key (vconcat old-value new-value) chronometrist-events)
-            (puthash key new-value chronometrist-events)))
-        (forward-line))
+      (let ((expression)
+            (index 0))
+        (while (setq expression (ignore-errors (read (current-buffer))))
+          (setq index (1+ index))
+          (puthash index expression chronometrist-events)))
       nil)))
 
 (defun chronometrist-events-subset (start-date end-date)
