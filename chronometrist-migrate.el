@@ -21,7 +21,10 @@
                  (date-time          (--> event-list
                                           (seq-drop it 1)
                                           (seq-take it 6)
-                                          (mapcar #'string-to-number it)))
+                                          (mapcar #'string-to-number it)
+                                          (reverse it)
+                                          (apply #'encode-time it)
+                                          (format-time-string "%FT%T%z" it)))
                  (project-or-comment (replace-regexp-in-string
                                       (rx (and (or "i" "o") " "
                                                (and (= 4 digit) "/" (= 2 digit) "/" (= 2 digit) " ")
