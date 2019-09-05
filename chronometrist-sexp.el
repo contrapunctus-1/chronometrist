@@ -69,6 +69,7 @@ this time interval that should be recorded."
         (tags   (plist-get plist :tags)))
     (with-current-buffer buffer
       (goto-char (point-max))
+      (when (not (bolp)) (insert "\n"))
       (insert "\n")
       (plist-pp (append `(:task ,task) (when tags `(:tags ,tags))
                         (chronometrist-plist-remove plist :tags)
