@@ -1,5 +1,12 @@
+;;; chronometrist-sexp.el --- S-expression backend for Chronometrist
+
+;;; Commentary:
+;;
+
 (require 'dash)
 (require 'seq)
+
+;;; Code:
 
 (defvar chronometrist-file "~/.emacs.d/chronometrist.sexp"
   "Default path and name of chronometrist database.")
@@ -34,7 +41,9 @@ It should accept the same arguments as `timeclock-out'.")
 (defun chronometrist-in (&optional arg project find-project)
   "Start tracking time for a task.
 
-`chronometrist-in-function' contains the actual function to be called."
+ARG, PROJECT, and FIND-PROJECT are used as in `timeclock-in'.
+
+The actual function to be called is determined by `chronometrist-in-function'."
   (interactive "P")
   (funcall-interactively (-> chronometrist-current-backend
                              (alist-get chronometrist-backends-alist)
@@ -44,7 +53,9 @@ It should accept the same arguments as `timeclock-out'.")
 (defun chronometrist-out (&optional arg reason find-reason)
   "Stop tracking time.
 
-`chronometrist-out-function' contains the actual function to be called."
+ARG, REASON, and FIND-REASON are used as in `timeclock-out'.
+
+The actual function to be called is determined by `chronometrist-out-function'."
   (interactive "P")
   (funcall-interactively  (-> chronometrist-current-backend
                              (alist-get chronometrist-backends-alist)
@@ -66,8 +77,10 @@ It should accept the same arguments as `timeclock-out'.")
           keys)
     plist))
 
-(defun chronometrist-in-sexp (&optional prefix project find-project)
-  "Add new time interval as an s-expression to `chronometrist-file'."
+(defun chronometrist-in-sexp (&optional arg project find-project)
+  "Add new time interval as an s-expression to `chronometrist-file'.
+
+ARG, PROJECT, and FIND-PROJECT are used as in `timeclock-in'."
   (let ((buffer (find-file-noselect chronometrist-file))
         (tags   (plist-get plist :tags)))
     (with-current-buffer buffer
@@ -85,3 +98,5 @@ It should accept the same arguments as `timeclock-out'.")
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"
 ;; End:
+
+;;; chronometrist-sexp.el ends here
