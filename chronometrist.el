@@ -384,7 +384,7 @@ there is no corresponding project, do nothing.
 
 If NO-PROMPT is non-nil, don't ask for a reason."
   (interactive "P")
-  (let* ((empty-file (chronometrist-common-file-empty-p timeclock-file))
+  (let* ((empty-file (chronometrist-common-file-empty-p chronometrist-file))
          (nth        (when prefix (chronometrist-goto-nth-project prefix)))
          (at-point   (chronometrist-project-at-point))
          (target     (or nth at-point))
@@ -437,10 +437,10 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
           (setq chronometrist--point (point))
           (kill-buffer chronometrist-buffer-name)))
      (t (with-current-buffer buffer
-          (cond ((or (not (file-exists-p timeclock-file))
-                     (chronometrist-common-file-empty-p timeclock-file))
+          (cond ((or (not (file-exists-p chronometrist-file))
+                     (chronometrist-common-file-empty-p chronometrist-file))
                  ;; first run
-                 (chronometrist-common-create-timeclock-file)
+                 (chronometrist-common-create-chronometrist-file)
                  (let ((inhibit-read-only t))
                    (chronometrist-common-clear-buffer buffer)
                    (insert "Welcome to Chronometrist! Hit RET to ")
@@ -461,7 +461,7 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
                    (if chronometrist--point
                        (goto-char chronometrist--point)
                      (chronometrist-goto-last-project))))
-          (file-notify-add-watch timeclock-file '(change) #'chronometrist-refresh-file))))))
+          (file-notify-add-watch chronometrist-file '(change) #'chronometrist-refresh-file))))))
 
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"

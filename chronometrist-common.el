@@ -133,7 +133,7 @@ TARGET-DATE."
 (defun chronometrist-project-time-one-day (project &optional date)
   "Return total time spent on PROJECT today or (if supplied) on DATE.
 
-The data is obtained from `timeclock-file', via `chronometrist-events'.
+The data is obtained from `chronometrist-file', via `chronometrist-events'.
 
 DATE must be a list containing calendrical information (see (info
 \"(elisp)Time Conversion\")).
@@ -191,18 +191,19 @@ SECONDS)."
                  (format "%02d" s))))
         (concat h m s)))))
 
-(defun chronometrist-open-timeclock-file (&optional button)
+(defun chronometrist-open-chronometrist-file (&optional button)
   (interactive)
-  (find-file-other-window timeclock-file)
+  (find-file-other-window chronometrist-file)
   (goto-char (point-max)))
 
-(defun chronometrist-common-create-timeclock-file ()
-  "Create `timeclock-file' if it doesn't already exist."
-  (unless (file-exists-p timeclock-file)
-    (with-current-buffer (find-file-noselect timeclock-file)
-      (write-file timeclock-file))))
+(defun chronometrist-common-create-chronometrist-file ()
+  "Create `chronometrist-file' if it doesn't already exist."
+  (unless (file-exists-p chronometrist-file)
+    (with-current-buffer (find-file-noselect chronometrist-file)
+      (write-file chronometrist-file))))
 
 (defun chronometrist-common-file-empty-p (file)
+  "Return ‘t’ if FILE is empty."
   (let ((size (elt (file-attributes file) 7)))
     (if (zerop size) t nil)))
 
@@ -267,7 +268,7 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
          (apply #'concat))))
 
 ;; Local Variables:
-;; nameless-current-name: "chronometrist"
+;; nameless-current-name: "chronometrist-common"
 ;; End:
 
 (provide 'chronometrist-common)
