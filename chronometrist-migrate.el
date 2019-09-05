@@ -33,7 +33,7 @@
               ("i"
                (incf key-counter)
                (puthash key-counter
-                        `(:project ,project-or-comment :start ,date-time)
+                        `(:name ,project-or-comment :start ,date-time)
                         chronometrist-migrate-table))
               ("o"
                (--> (gethash key-counter chronometrist-migrate-table)

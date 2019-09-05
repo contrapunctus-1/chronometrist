@@ -1,5 +1,7 @@
 ;;; chronometrist-sexp.el --- S-expression backend for Chronometrist
 
+(require 'chronometrist-migrate)
+
 ;;; Commentary:
 ;;
 
