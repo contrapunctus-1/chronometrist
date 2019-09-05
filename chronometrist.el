@@ -76,9 +76,9 @@ SECONDS must be a positive integer."
 
 (defun chronometrist-entries ()
   "Create entries to be displayed in the buffer created by `chronometrist', in the format specified by `tabulated-list-entries'."
-  ;; HACK - these should not be here. `chronometrist-entries' is called by both
-  ;; `chronometrist-refresh' and `chronometrist-refresh-file', and only the latter should
-  ;; refresh from a file.
+  ;; HACK - these calls are commented out, because `chronometrist-entries' is
+  ;; called by both `chronometrist-refresh' and `chronometrist-refresh-file', and only the
+  ;; latter should refresh from a file.
   ;; (timeclock-reread-log)
   ;; (chronometrist-events-populate)
   ;; (chronometrist-events-clean)

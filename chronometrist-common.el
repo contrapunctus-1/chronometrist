@@ -203,7 +203,7 @@ SECONDS)."
       (write-file chronometrist-file))))
 
 (defun chronometrist-common-file-empty-p (file)
-  "Return ‘t’ if FILE is empty."
+  "Return t if FILE is empty."
   (let ((size (elt (file-attributes file) 7)))
     (if (zerop size) t nil)))
 

@@ -80,6 +80,7 @@ this time interval that should be recorded."
       (save-buffer))))
 
 (defun chronometrist-delete-list (&optional arg)
+  "Delete ARG lists after point."
   (let ((point-1 (point)))
     (forward-sexp (or arg 1))
     (delete-region point-1 (point))))
