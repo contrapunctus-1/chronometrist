@@ -53,20 +53,17 @@
 (defvar chronometrist--point nil)
 
 ;; ## FUNCTIONS ##
-(defun chronometrist-current-project ()
-  "Return the name of the currently clocked-in project, or nil if the user is not clocked in."
-  (if (not (timeclock-currently-in-p))
-      nil
-    (with-current-buffer (find-file-noselect timeclock-file)
-      (save-excursion
-        (goto-char (point-max))
-        (forward-line -1)
-        (re-search-forward (concat chronometrist-time-re-file " ") nil t)
-        (buffer-substring-no-properties (point) (point-at-eol))))))
+(defun chronometrist-current-task ()
+  "Return the name of the currently clocked-in task, or nil if not clocked in."
+  (let ((last-event (gethash (hash-table-count chronometrist-events)
+                             chronometrist-events)))
+    (if (plist-member last-event :stop)
+        nil
+      (plist-get last-event :name))))
 
 (defun chronometrist-project-active? (project)
   "Return t if PROJECT is currently clocked in, else nil."
-  (equal (chronometrist-current-project) project))
+  (equal (chronometrist-current-task) project))
 
 (defun chronometrist-seconds-to-hms (seconds)
   "Convert SECONDS to a vector in the form [HOURS MINUTES SECONDS].
@@ -348,7 +345,7 @@ ASK is used like in `timeclock-out'."
 ;; FIXME - there is duplication between this function and `chronometrist-toggle-project's logic
 (defun chronometrist-toggle-project-button (button)
   "Button action to toggle a project."
-  (let ((current  (chronometrist-current-project))
+  (let ((current  (chronometrist-current-task))
         (at-point (chronometrist-project-at-point)))
     ;; clocked in + point on current    = clock out
     ;; clocked in + point on some other project = clock out, clock in to project
@@ -362,7 +359,7 @@ ASK is used like in `timeclock-out'."
 
 (defun chronometrist-add-new-project-button (button)
   "Button action to add a new project."
-  (let ((current (chronometrist-current-project)))
+  (let ((current (chronometrist-current-task)))
     (when current
       (chronometrist-run-functions-and-clock-out current t))
     (let ((p (read-from-minibuffer "New project name: " nil nil nil nil nil t)))
@@ -388,7 +385,7 @@ If NO-PROMPT is non-nil, don't ask for a reason."
          (nth        (when prefix (chronometrist-goto-nth-project prefix)))
          (at-point   (chronometrist-project-at-point))
          (target     (or nth at-point))
-         (current    (chronometrist-current-project))
+         (current    (chronometrist-current-task))
          (ask        (not no-prompt)))
     (cond (empty-file (chronometrist-add-new-project)) ;; do not run hooks - chronometrist-add-new-project will do it
           ;; What should we do if the user provides an invalid argument? Currently - nothing.
