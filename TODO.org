@@ -2,13 +2,15 @@
 2. -report - highlight the current day
 
 * Chronometrist
+** Features
+   1. Create chronometrist-unused-projects-list + chronometrist-projects-list.
 ** UX
    1. don't suggest nil when asking for first project on first run
    2. when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
    3. Mouse commands should work only on buttons.
    4. Button actions should accept prefix arguments and behave exactly like their keyboard counterparts.
    5. mouse-3 should clock-out without asking for reason.
-   6. Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked _before_ clocking out,which adds time to the project.
+   6. Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked _before_ clocking out, which adds time to the project.
    7. Optimization. ~chronometrist-refresh~ is expensive in CPU, and ~chronometrist-timer~ runs it every 3 seconds by default. :\
 
       Ideas -
