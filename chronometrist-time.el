@@ -38,6 +38,35 @@ NUMBER should be an integer (0-6) - see
   (car
    (rassoc number chronometrist-report-weekday-number-alist)))
 
+(defun chronometrist-unix-time->iso8601 (unix-time)
+  "Return UNIX-TIME as an ISO-8601 format time string.
+
+UNIX-TIME must be a time value (see `current-time') accepted by
+`format-time-string'."
+  (format-time-string "%FT%T%z" unix-time))
+
+;; Note - this assumes that an event never crosses >1 day. This seems
+;; sufficient for all conceivable cases.
+(defun chronometrist-events-midnight-spanning-p (start-time stop-time)
+  "Return non-nil if START-TIME and STOP-TIME cross a midnight.
+
+Return value is a list in the form
+\((:start START-TIME
+  :stop <day-start time on initial day>)
+ (:start <day start time on second day>
+  :stop STOP-TIME))"
+  ;; FIXME - time zones are ignored; may cause issues with
+  ;; time-zone-spanning events
+  (let* ((first-day-start (chronometrist-day-start start-time))
+         (next-day-start  (time-add first-day-start
+                                    '(0 . 86400)))
+         (stop-time-unix  (parse-iso8601-time-string stop-time)))
+    (when (time-less-p next-day-start stop-time-unix)
+      (list `(:start ,start-time
+              :stop  ,(chronometrist-unix-time->iso8601 first-day-start))
+            `(:start ,(chronometrist-unix-time->iso8601 next-day-start)
+              :stop  ,stop-time)))))
+
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"
 ;; End:

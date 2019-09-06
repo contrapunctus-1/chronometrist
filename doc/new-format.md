@@ -48,3 +48,14 @@ Implementation of the new format has begun.
   Of course, :production and :individual may not necessarily make sense outside the context of these particular tags. Therefore, this will require supporting arbitary plist keys.
   * Which, in turn, will complicate the UI.
   * Also, presented to the user, the keys will become "fields"...which won't be able to have spaces in them, unless we want to have keywords with escaped spaces :\
+
+## Midnight-spanning events
+Not sure how to deal with these. Previously, we checked if the first event for a day had an "o" code. Some possibilities -
+1. Split them at the file level
+   * Advantage - operation is performed only once for each such event (no repeated work) + benefits of both simplified data-consuming code and reduced post-parsing load.
+2. Split them at the hash-table-level (i.e. rewrite chronometrist-events-clean)
+   * Advantage - simplifies data-consuming code.
+3. Split them at the data-consumer level (e.g. before calculating time for one day or getting events for one day)
+   * Advantage - should reduce repetitive post-parsing load.
+
+They are an issue not only in calculating time spent in $TIME_RANGE, but also acquiring the events for a day.
