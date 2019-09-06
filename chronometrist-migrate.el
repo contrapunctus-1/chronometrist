@@ -57,9 +57,9 @@
                                   "~/.emacs.d/"
                                   timeclock-file
                                   t)
-                 ,(read-file-name "Output file (default: ~/.emacs.d/timelog.sexp): "
+                 ,(read-file-name "Output file (default: ~/.emacs.d/chronometrist.sexp): "
                                   "~/.emacs.d/"
-                                  "~/.emacs.d/timelog.sexp")))
+                                  "~/.emacs.d/chronometrist.sexp")))
   (let ((output (find-file-noselect out-file)))
     (with-current-buffer output
       (chronometrist-common-clear-buffer output)
