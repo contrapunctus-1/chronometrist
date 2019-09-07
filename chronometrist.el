@@ -61,9 +61,9 @@
         nil
       (plist-get last-event :name))))
 
-(defun chronometrist-project-active? (project)
-  "Return t if PROJECT is currently clocked in, else nil."
-  (equal (chronometrist-current-task) project))
+(defun chronometrist-task-active? (task)
+  "Return t if TASK is currently clocked in, else nil."
+  (equal (chronometrist-current-task) task))
 
 (defun chronometrist-seconds-to-hms (seconds)
   "Convert SECONDS to a vector in the form [HOURS MINUTES SECONDS].
@@ -92,7 +92,7 @@ SECONDS must be a positive integer."
                             'follow-link t)
                       (-> (chronometrist-project-time-one-day it)
                           (chronometrist-format-time))
-                      (if (chronometrist-project-active? it)
+                      (if (chronometrist-task-active? it)
                           "*" ""))))))
 
 (defun chronometrist-project-at-point ()
@@ -223,8 +223,8 @@ of `revert-buffer-function'."
 (defun chronometrist-refresh-file (fs-event)
   "Re-read `timeclock-file' and refresh the `chronometrist' buffer.
 Argument FS-EVENT is ignored."
+  (chronometrist-file-clean)
   (chronometrist-events-populate)
-  (chronometrist-events-clean)
   (timeclock-reread-log)
   (chronometrist-refresh))
 
@@ -293,23 +293,22 @@ return a non-nil value.")
 Each function in this hook must accept a single argument, which
 is the clocked-out project.")
 
-(defun chronometrist-run-project-start-functions (project)
+(defun chronometrist-run-project-start-functions (task)
   "Call each function in `chronometrist-project-start-functions' with PROJECT."
   (run-hook-with-args 'chronometrist-project-start-functions
-                      project))
+                      task))
 
-(defun chronometrist-run-after-project-stop-functions (project)
+(defun chronometrist-run-after-project-stop-functions (task)
   "Call each function in `chronometrist-after-project-stop-functions' with PROJECT."
   (run-hook-with-args 'chronometrist-after-project-stop-functions
-                      project))
+                      task))
 
-(defun chronometrist-run-functions-and-clock-out (project ask)
-  "Run hooks and clock out of PROJECT.
-ASK is used like in `timeclock-out'."
+(defun chronometrist-run-functions-and-clock-out (task)
+  "Run hooks and clock out of TASK."
   (when (run-hook-with-args-until-failure 'chronometrist-before-project-stop-functions
-                                          project)
-    (timeclock-out nil nil ask)
-    (chronometrist-run-after-project-stop-functions project)))
+                                          task)
+    (chronometrist-out)
+    (chronometrist-run-after-project-stop-functions task)))
 
 ;; ## MAJOR-MODE ##
 (defvar chronometrist-mode-map
@@ -351,7 +350,7 @@ ASK is used like in `timeclock-out'."
     ;; clocked in + point on some other project = clock out, clock in to project
     ;; clocked out = clock in
     (when current
-      (chronometrist-run-functions-and-clock-out current t))
+      (chronometrist-run-functions-and-clock-out current))
     (unless (equal at-point current)
       (chronometrist-run-project-start-functions at-point)
       (timeclock-in nil at-point nil))
@@ -361,7 +360,7 @@ ASK is used like in `timeclock-out'."
   "Button action to add a new project."
   (let ((current (chronometrist-current-task)))
     (when current
-      (chronometrist-run-functions-and-clock-out current t))
+      (chronometrist-run-functions-and-clock-out current))
     (let ((p (read-from-minibuffer "New project name: " nil nil nil nil nil t)))
       (chronometrist-run-project-start-functions p)
       (timeclock-in nil p nil))
@@ -395,10 +394,10 @@ If NO-PROMPT is non-nil, don't ask for a reason."
            ;; clocked in + target is some other project = clock out, clock in to project
            ;; clocked out = clock in
            (when current
-             (chronometrist-run-functions-and-clock-out current ask))
+             (chronometrist-run-functions-and-clock-out current))
            (unless (equal target current)
              (chronometrist-run-project-start-functions target)
-             (timeclock-in nil target nil))))
+             (chronometrist-in target))))
     (chronometrist-refresh)))
 
 (defun chronometrist-toggle-project-no-reason (&optional prefix)

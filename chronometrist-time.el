@@ -38,11 +38,11 @@ NUMBER should be an integer (0-6) - see
   (car
    (rassoc number chronometrist-report-weekday-number-alist)))
 
-(defun chronometrist-unix-time->iso8601 (unix-time)
-  "Return UNIX-TIME as an ISO-8601 format time string.
+(defun chronometrist-current-time-iso8601 (&optional unix-time)
+  "Return current moment as an ISO-8601 format time string.
 
-UNIX-TIME must be a time value (see `current-time') accepted by
-`format-time-string'."
+Optional argument UNIX-TIME should be a time value (see
+`current-time') accepted by `format-time-string'."
   (format-time-string "%FT%T%z" unix-time))
 
 ;; Note - this assumes that an event never crosses >1 day. This seems
@@ -63,8 +63,8 @@ Return value is a list in the form
          (stop-time-unix  (parse-iso8601-time-string stop-time)))
     (when (time-less-p next-day-start stop-time-unix)
       (list `(:start ,start-time
-              :stop  ,(chronometrist-unix-time->iso8601 first-day-start))
-            `(:start ,(chronometrist-unix-time->iso8601 next-day-start)
+              :stop  ,(chronometrist-current-time-iso8601 first-day-start))
+            `(:start ,(chronometrist-current-time-iso8601 next-day-start)
               :stop  ,stop-time)))))
 
 ;; Local Variables:

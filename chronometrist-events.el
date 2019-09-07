@@ -57,31 +57,32 @@ It returns t if the table was modified, else nil."
   (let ((buffer (find-file-noselect chronometrist-file))
         modified
         expr)
-    (with-current-buffer (find-file-noselect chronometrist-file)
+    (with-current-buffer buffer
       (save-excursion
         (goto-char (point-min))
         (while (setq expr (ignore-errors (read (current-buffer))))
-          (let ((split-time (chronometrist-events-midnight-spanning-p (plist-get expr :start)
-                                                  (plist-get expr :stop))))
-            (when split-time
-              (let ((first-start  (plist-get (first  split-time) :start))
-                    (first-stop   (plist-get (first  split-time) :stop))
-                    (second-start (plist-get (second split-time) :start))
-                    (second-stop  (plist-get (second split-time) :stop)))
-                (backward-list 1)
-                (chronometrist-delete-list)
-                (-> expr
-                    (plist-put :start first-start)
-                    (plist-put :stop  first-stop)
-                    (plist-pp buffer))
-                (when (looking-at-p "\n\n")
-                  (delete-char 2))
-                (-> expr
-                    (plist-put :start second-start)
-                    (plist-put :stop  second-stop)
-                    (plist-pp buffer))
-                (setq modified t))))))
-      (save-buffer))
+          (when (plist-get expr :stop)
+            (let ((split-time (chronometrist-events-midnight-spanning-p (plist-get expr :start)
+                                                    (plist-get expr :stop))))
+              (when split-time
+                (let ((first-start  (plist-get (first  split-time) :start))
+                      (first-stop   (plist-get (first  split-time) :stop))
+                      (second-start (plist-get (second split-time) :start))
+                      (second-stop  (plist-get (second split-time) :stop)))
+                  (backward-list 1)
+                  (chronometrist-delete-list)
+                  (-> expr
+                      (plist-put :start first-start)
+                      (plist-put :stop  first-stop)
+                      (plist-pp buffer))
+                  (when (looking-at-p "\n\n")
+                    (delete-char 2))
+                  (-> expr
+                      (plist-put :start second-start)
+                      (plist-put :stop  second-stop)
+                      (plist-pp buffer))
+                  (setq modified t))))))
+        (save-buffer)))
     modified))
 
 ;; TODO - Maybe strip dates from values, since they're part of the key
