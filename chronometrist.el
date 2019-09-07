@@ -223,7 +223,7 @@ of `revert-buffer-function'."
 (defun chronometrist-refresh-file (fs-event)
   "Re-read `chronometrist-file' and refresh the `chronometrist' buffer.
 Argument FS-EVENT is ignored."
-  (chronometrist-file-clean)
+  ;; (chronometrist-file-clean)
   (chronometrist-events-populate)
   (chronometrist-refresh))
 

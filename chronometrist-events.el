@@ -85,6 +85,29 @@ It returns t if the table was modified, else nil."
         (save-buffer)))
     modified))
 
+(defun chronometrist-events-maybe-split (event)
+  "Split EVENT if it spans midnight.
+
+Return a list of two events if EVENT was split, else nil."
+  (when (plist-get event :stop)
+    (let ((split-time (chronometrist-events-midnight-spanning-p (plist-get event :start)
+                                            (plist-get event :stop))))
+      (when split-time
+        (let ((first-start  (plist-get (first  split-time) :start))
+              (first-stop   (plist-get (first  split-time) :stop))
+              (second-start (plist-get (second split-time) :start))
+              (second-stop  (plist-get (second split-time) :stop))
+              ;; plist-put modifies lists in-place. The resulting bugs
+              ;; left me puzzled for a while.
+              (event-1      (copy-list event))
+              (event-2      (copy-list event)))
+          (list (-> event-1
+                    (plist-put :start first-start)
+                    (plist-put :stop  first-stop))
+                (-> event-2
+                    (plist-put :start second-start)
+                    (plist-put :stop  second-stop))))))))
+
 ;; TODO - Maybe strip dates from values, since they're part of the key
 ;; anyway. Consider using a state machine.
 
@@ -101,17 +124,27 @@ Values are vectors containing events, where each event is a
 vector in the form \[\"CODE\" YEAR MONTH DAY HOURS MINUTES
 SECONDS \"PROJECT-NAME-OR-COMMENT\"\].
 
-This function always returns nil."
+Return final number of events in the hash table, or nil if there
+are none."
   (clrhash chronometrist-events)
   (with-current-buffer (find-file-noselect chronometrist-file)
     (save-excursion
       (goto-char (point-min))
-      (let ((expression)
-            (index 0))
-        (while (setq expression (ignore-errors (read (current-buffer))))
-          (setq index (1+ index))
-          (puthash index expression chronometrist-events)))
-      nil)))
+      (let ((index 0) expr split-expr-leftover)
+        (while (setq expr (ignore-errors (read (current-buffer))))
+          ;; find and split midnight-spanning events during deserialization itself
+          (let ((split-expr (chronometrist-events-maybe-split expr)))
+            (incf index)
+            (cond (split-expr-leftover
+                   (puthash index split-expr-leftover chronometrist-events)
+                   (setq split-expr-leftover nil))
+                  (split-expr
+                   (let* ((expr-1 (first  split-expr))
+                          (expr-2 (second split-expr)))
+                     (puthash index expr-1 chronometrist-events)
+                     (setq split-expr-leftover expr-2)))
+                  (t (puthash index expr chronometrist-events)))))
+        (unless (zerop index) index)))))
 
 ;; to be replaced by plist-query
 (defun chronometrist-events-subset (start-date end-date)
