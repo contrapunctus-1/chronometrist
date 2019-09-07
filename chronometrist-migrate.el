@@ -68,9 +68,9 @@ See `timeclock-log-data' for a description."
                                   "~/.emacs.d/"
                                   "~/.emacs.d/chronometrist.sexp")))
   (when (if (file-exists-p out-file)
-            (when (yes-or-no-p (concat "Output file "
-                                       out-file
-                                       " already exists - overwrite? ")))
+            (yes-or-no-p (concat "Output file "
+                                 out-file
+                                 " already exists - overwrite? "))
           t)
     (let ((output (find-file-noselect out-file)))
       (with-current-buffer output
