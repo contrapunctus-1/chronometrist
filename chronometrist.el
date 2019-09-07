@@ -213,13 +213,13 @@ The optional arguments IGNORE-AUTO and NOCONFIRM are ignored, and
 are present solely for the sake of using this function as a value
 of `revert-buffer-function'."
   (let* ((w (get-buffer-window chronometrist-buffer-name t))
-         (p (window-point w)))
+         (task (window-point w)))
     (when w
       (with-current-buffer chronometrist-buffer-name
         (tabulated-list-print t nil)
         (chronometrist-print-non-tabular)
         (chronometrist-maybe-start-timer)
-        (set-window-point w p)))))
+        (set-window-point w task)))))
 
 (defun chronometrist-refresh-file (fs-event)
   "Re-read `chronometrist-file' and refresh the `chronometrist' buffer.
@@ -353,7 +353,7 @@ is the clocked-out project.")
       (chronometrist-run-functions-and-clock-out current))
     (unless (equal at-point current)
       (chronometrist-run-project-start-functions at-point)
-      (timeclock-in nil at-point nil))
+      (chronometrist-in at-point))
     (chronometrist-refresh)))
 
 (defun chronometrist-add-new-project-button (button)
@@ -361,9 +361,9 @@ is the clocked-out project.")
   (let ((current (chronometrist-current-task)))
     (when current
       (chronometrist-run-functions-and-clock-out current))
-    (let ((p (read-from-minibuffer "New project name: " nil nil nil nil nil t)))
-      (chronometrist-run-project-start-functions p)
-      (timeclock-in nil p nil))
+    (let ((task (read-from-minibuffer "New task name: " nil nil nil nil nil t)))
+      (chronometrist-run-project-start-functions task)
+      (chronometrist-in task))
     (chronometrist-refresh)))
 
 ;; ## COMMANDS ##
@@ -457,7 +457,9 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
                    (if chronometrist--point
                        (goto-char chronometrist--point)
                      (chronometrist-goto-last-project))))
-          (file-notify-add-watch chronometrist-file '(change) #'chronometrist-refresh-file))))))
+          (file-notify-add-watch chronometrist-file
+                                 '(change)
+                                 #'chronometrist-refresh-file))))))
 
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"
