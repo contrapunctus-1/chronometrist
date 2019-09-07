@@ -146,6 +146,15 @@ are none."
                   (t (puthash index expr chronometrist-events)))))
         (unless (zerop index) index)))))
 
+(defun chronometrist-tasks-from-table ()
+  "Return a list of task names from `chronometrist-events'."
+  (let (acc)
+    (maphash (lambda (key val)
+               (setq acc (append acc `(,(plist-get val :name)))))
+             chronometrist-events)
+    (remove-duplicates (sort acc #'string-lessp)
+                       :test #'equal)))
+
 ;; to be replaced by plist-query
 (defun chronometrist-events-subset (start-date end-date)
   "Return a subset of `chronometrist-events'.

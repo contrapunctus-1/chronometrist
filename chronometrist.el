@@ -6,6 +6,7 @@
 (require 'chronometrist-custom)
 (require 'chronometrist-report)
 (require 'chronometrist-statistics)
+(require 'chronometrist-sexp)
 
 ;;; Commentary:
 ;;
@@ -51,6 +52,7 @@
 (defvar chronometrist--timer-object nil)
 (defvar chronometrist--project-history nil)
 (defvar chronometrist--point nil)
+(defvar chronometrist--task-list nil)
 
 ;; ## FUNCTIONS ##
 (defun chronometrist-current-task ()
@@ -82,7 +84,7 @@ SECONDS must be a positive integer."
   ;; (timeclock-reread-log)
   ;; (chronometrist-events-populate)
   ;; (chronometrist-events-clean)
-  (->> timeclock-project-list
+  (->> chronometrist--task-list
        (-sort #'string-lessp)
        (--map-indexed
         (list it
@@ -133,7 +135,7 @@ Return value is a vector in the form [HOURS MINUTES SECONDS].
 
 DATE must be calendrical information calendrical
 information (see (info \"(elisp)Time Conversion\"))."
-  (->> timeclock-project-list
+  (->> chronometrist--task-list
        (--map (chronometrist-project-time-one-day it date))
        (-reduce #'chronometrist-time-add)))
 
@@ -226,6 +228,7 @@ of `revert-buffer-function'."
 Argument FS-EVENT is ignored."
   ;; (chronometrist-file-clean)
   (chronometrist-events-populate)
+  (setq chronometrist--task-list (chronometrist-tasks-from-table))
   (chronometrist-refresh))
 
 ;; HACK - has some duplicate logic with `chronometrist-project-events-in-day'
