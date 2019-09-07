@@ -59,3 +59,8 @@ Not sure how to deal with these. Previously, we checked if the first event for a
    * Advantage - should reduce repetitive post-parsing load.
 
 They are an issue not only in calculating time spent in $TIME_RANGE, but also acquiring the events for a day.
+
+If we deal with it by changing the file, what happens when the user changes their day-start-time? The split-up events are now split wrongly, and the second event may get split _again._
+* Maybe we should add another function to check if, for two events A and B, the :stop of A is the same as the :start of B, and that all their other tags are identical. Then we can re-split them according to the new day-start-time.
+* Add a :split marker to split events? It can denote that the next event was originally a part of this one.
+* Re-check and update the file when the day-start-time changes?
