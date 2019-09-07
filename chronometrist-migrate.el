@@ -52,22 +52,29 @@
       nil)))
 
 (defun chronometrist-migrate-timelog-file->sexp-file (&optional in-file out-file)
-  (interactive `(,(read-file-name (concat "timeclock file (default: "
-                                          timeclock-file "): ")
-                                  "~/.emacs.d/"
-                                  timeclock-file
-                                  t)
+  "Migrate your existing `timeclock-file' to the Chronometrist file format."
+  (interactive `(,(if (featurep 'timeclock)
+                      (read-file-name (concat "timeclock file (default: "
+                                              timeclock-file "): ")
+                                      "~/.emacs.d/" timeclock-file t)
+                    (read-file-name (concat "timeclock file: ")
+                                    "~/.emacs.d/" nil t))
                  ,(read-file-name "Output file (default: ~/.emacs.d/chronometrist.sexp): "
                                   "~/.emacs.d/"
                                   "~/.emacs.d/chronometrist.sexp")))
-  (let ((output (find-file-noselect out-file)))
-    (with-current-buffer output
-      (chronometrist-common-clear-buffer output)
-      (chronometrist-migrate-populate in-file)
-      (maphash (lambda (key value)
-                 (plist-pp value output))
-               chronometrist-migrate-table)
-      (save-buffer))))
+  (when (if (file-exists-p out-file)
+            (when (yes-or-no-p (concat "Output file "
+                                       out-file
+                                       " already exists - overwrite? ")))
+          t)
+    (let ((output (find-file-noselect out-file)))
+      (with-current-buffer output
+        (chronometrist-common-clear-buffer output)
+        (chronometrist-migrate-populate in-file)
+        (maphash (lambda (key value)
+                   (plist-pp value output))
+                 chronometrist-migrate-table)
+        (save-buffer)))))
 
 (provide 'chronometrist-migrate)
 
