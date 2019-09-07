@@ -16,7 +16,7 @@ DEPRECATED - function is deprecated and should be removed in the future
 
 # chronometrist-common
 ## Commands
-### chronometrist-open-timeclock-file
+### chronometrist-open-file
 
 ## Predicates
 ### chronometrist-buffer-exists?

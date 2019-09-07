@@ -169,9 +169,9 @@ FORMAT-STRING."
     (insert-text-button "next week"
                         'action #'chronometrist-report-next-week
                         'follow-link t)
-    (chronometrist-report-print-keybind 'chronometrist-open-timeclock-file)
+    (chronometrist-report-print-keybind 'chronometrist-open-file)
     (insert-text-button "open log file"
-                        'action #'chronometrist-open-timeclock-file
+                        'action #'chronometrist-open-file
                         'follow-link t)))
 
 (defun chronometrist-report-refresh (&optional ignore-auto noconfirm)
@@ -196,7 +196,7 @@ Argument FS-EVENT is ignored."
 
 (defvar chronometrist-report-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "l") #'chronometrist-open-timeclock-file)
+    (define-key map (kbd "l") #'chronometrist-open-file)
     (define-key map (kbd "b") #'chronometrist-report-previous-week)
     (define-key map (kbd "f") #'chronometrist-report-next-week)
     ;; Works when number of projects < screen length; after that, you

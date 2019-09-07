@@ -191,7 +191,7 @@ SECONDS)."
                  (format "%02d" s))))
         (concat h m s)))))
 
-(defun chronometrist-open-chronometrist-file (&optional button)
+(defun chronometrist-open-file (&optional button)
   (interactive)
   (find-file-other-window chronometrist-file)
   (goto-char (point-max)))
