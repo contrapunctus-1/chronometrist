@@ -60,7 +60,7 @@ this time interval that should be recorded."
       (unless (bobp) (insert "\n"))
       (backward-list 1)
       (--> (read buffer)
-           (plist-put it :stop (chronometrist-current-time-iso8601))
+           (plist-put it :stop (chronometrist-format-time-iso8601))
            (progn
              (backward-list 1)
              (chronometrist-delete-list)

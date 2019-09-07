@@ -29,7 +29,7 @@ See `timeclock-log-data' for a description."
                                           (mapcar #'string-to-number it)
                                           (reverse it)
                                           (apply #'encode-time it)
-                                          (format-time-string "%FT%T%z" it)))
+                                          (chronometrist-format-time-iso8601)))
                  (project-or-comment (replace-regexp-in-string
                                       (rx (and (or "i" "o") " "
                                                (and (= 4 digit) "/" (= 2 digit) "/" (= 2 digit) " ")
