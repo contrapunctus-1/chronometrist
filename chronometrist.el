@@ -207,7 +207,7 @@ project. N must be a positive integer."
     (chronometrist-project-at-point)))
 
 (defun chronometrist-refresh (&optional ignore-auto noconfirm)
-  "Refresh the `chronometrist' buffer, without re-reading `timeclock-file'.
+  "Refresh the `chronometrist' buffer, without re-reading `chronometrist-file'.
 
 The optional arguments IGNORE-AUTO and NOCONFIRM are ignored, and
 are present solely for the sake of using this function as a value
@@ -221,11 +221,10 @@ of `revert-buffer-function'."
       (set-window-point w p))))
 
 (defun chronometrist-refresh-file (fs-event)
-  "Re-read `timeclock-file' and refresh the `chronometrist' buffer.
+  "Re-read `chronometrist-file' and refresh the `chronometrist' buffer.
 Argument FS-EVENT is ignored."
   (chronometrist-file-clean)
   (chronometrist-events-populate)
-  (timeclock-reread-log)
   (chronometrist-refresh))
 
 ;; HACK - has some duplicate logic with `chronometrist-project-events-in-day'
