@@ -7,8 +7,13 @@
 
 (defvar chronometrist-migrate-table (make-hash-table))
 
+;; TODO - support other timeclock codes (currently only "i" and "o"
+;; are supported.)
 (defun chronometrist-migrate-populate (in-file)
-  "Read data from `timeclock-file' to `chronometrist-migrate-table', storing events as plists."
+  "Read data from IN-FILE to `chronometrist-migrate-table', storing events as plists.
+
+IN-FILE should be a file in the format supported by timeclock.el.
+See `timeclock-log-data' for a description."
   (clrhash chronometrist-migrate-table)
   (with-current-buffer (find-file-noselect in-file)
     (save-excursion
