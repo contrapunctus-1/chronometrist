@@ -214,11 +214,12 @@ are present solely for the sake of using this function as a value
 of `revert-buffer-function'."
   (let* ((w (get-buffer-window chronometrist-buffer-name t))
          (p (window-point w)))
-    (with-current-buffer chronometrist-buffer-name
-      (tabulated-list-print t nil)
-      (chronometrist-print-non-tabular)
-      (chronometrist-maybe-start-timer)
-      (set-window-point w p))))
+    (when w
+      (with-current-buffer chronometrist-buffer-name
+        (tabulated-list-print t nil)
+        (chronometrist-print-non-tabular)
+        (chronometrist-maybe-start-timer)
+        (set-window-point w p)))))
 
 (defun chronometrist-refresh-file (fs-event)
   "Re-read `chronometrist-file' and refresh the `chronometrist' buffer.
