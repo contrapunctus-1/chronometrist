@@ -8,15 +8,18 @@
    3. Mouse commands should work only on buttons.
    4. Button actions should accept prefix arguments and behave exactly like their keyboard counterparts.
    5. mouse-3 should clock-out without asking for reason.
-   6. Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked _before_ clocking out,which adds time to the project.
-   7. Optimization. ~chronometrist-refresh~ is expensive in CPU, and ~chronometrist-timer~ runs it every 3 seconds by default. :\
+   6. Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked /before/ clocking out, which adds time to the project.
+*** Optimization
+    ~chronometrist-refresh~ is expensive in CPU, and ~chronometrist-timer~ runs it every 3 seconds by default. :\
 
-      Ideas -
-      * Support multiple files, so we read and process lesser data when one of them changes.
-      * Make file writing async
-      * Don't refresh from file when clocking in.
-      * Only write to the file when Emacs is idle or being killed, and store data in memory (in the events hash table) in the meantime
-      * What if commands both write to the file /and/ add to the hash table, so we don't have to re-read the file and re-populate the table for commands? The expensive reading+parsing could be avoided for commands, and only take place for the user changing the file.
+    (Note - actually, the most significant slowdown occurs when the file is changed /and/ the buffer is visible. When the file changes and the buffer isn't visible, it's relatively tolerable.)
+
+**** Ideas
+     * Support multiple files, so we read and process lesser data when one of them changes.
+     * Make file writing async
+     * Don't refresh from file when clocking in.
+     * Only write to the file when Emacs is idle or being killed, and store data in memory (in the events hash table) in the meantime
+     * What if commands both write to the file /and/ add to the hash table, so we don't have to re-read the file and re-populate the table for commands? The expensive reading+parsing could be avoided for commands, and only take place for the user changing the file.
 ** Code
    1. use variables instead of hardcoded numbers to determine spacing
    2. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
