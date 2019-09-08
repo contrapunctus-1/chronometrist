@@ -57,8 +57,10 @@
 ;; ## FUNCTIONS ##
 (defun chronometrist-current-task ()
   "Return the name of the currently clocked-in task, or nil if not clocked in."
-  (let ((last-event (gethash (hash-table-count chronometrist-events)
-                             chronometrist-events)))
+  (let ((last-event (-> (chronometrist-date)
+                        (gethash chronometrist-events)
+                        (last)
+                        (car))))
     (if (plist-member last-event :stop)
         nil
       (plist-get last-event :name))))

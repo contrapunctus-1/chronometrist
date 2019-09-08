@@ -130,28 +130,39 @@ are none."
   (with-current-buffer (find-file-noselect chronometrist-file)
     (save-excursion
       (goto-char (point-min))
-      (let ((index 0) expr pending-expr)
+      (let ((index 0)
+            expr
+            pending-expr)
         (while (or pending-expr
                    (setq expr (ignore-errors (read (current-buffer)))))
           ;; find and split midnight-spanning events during deserialization itself
-          (let ((split-expr (chronometrist-events-maybe-split expr)))
+          (let* ((split-expr (chronometrist-events-maybe-split expr))
+                 (new-value  (cond (pending-expr
+                                    (prog1 pending-expr
+                                      (setq pending-expr nil)))
+                                   (split-expr
+                                    (setq pending-expr (second split-expr))
+                                    (first split-expr))
+                                   (t expr)))
+                 (new-value-date (->> (plist-get new-value :start)
+                                      (s-left 10)))
+                 (existing-value (gethash new-value-date chronometrist-events)))
             (incf index)
-            (cond (pending-expr
-                   (puthash index pending-expr chronometrist-events)
-                   (setq pending-expr nil))
-                  (split-expr
-                   (let* ((expr-1 (first  split-expr))
-                          (expr-2 (second split-expr)))
-                     (puthash index expr-1 chronometrist-events)
-                     (setq pending-expr expr-2)))
-                  (t (puthash index expr chronometrist-events)))))
+            (puthash new-value-date
+                     (if existing-value
+                         (append existing-value
+                                 (list new-value))
+                       (list new-value))
+                     chronometrist-events)))
         (unless (zerop index) index)))))
 
 (defun chronometrist-tasks-from-table ()
   "Return a list of task names from `chronometrist-events'."
   (let (acc)
-    (maphash (lambda (key val)
-               (setq acc (append acc `(,(plist-get val :name)))))
+    (maphash (lambda (key value)
+               (mapc (lambda (event)
+                       (setq acc (append acc `(,(plist-get event :name)))))
+                     value))
              chronometrist-events)
     (remove-duplicates (sort acc #'string-lessp)
                        :test #'equal)))

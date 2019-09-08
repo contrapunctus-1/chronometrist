@@ -1,24 +1,16 @@
 ;;; chronometrist-time.el --- Time and date functions for Chronometrist -*- lexical-binding: t; -*-
 
 (require 'dash)
+(require 's)
 
 ;;; Commentary:
 ;;
 
 ;;; Code:
 
-(defun chronometrist-date (&optional date)
-  "Return DATE or today in the form (YEAR MONTH DAY).
-
-DATE can be
-calendrical information returned by `decode-time'
-\(YEAR MONTH DAY), in which case the same is returned, or
-nil, in which case today's date is returned."
-  (case (length date)
-    (3 date)
-    (t (cl-destructuring-bind (_ _ _ day month year _ _ _)
-           (if date date (decode-time))
-         (list year month day)))))
+(defun chronometrist-date (&optional time)
+  "Return date for TIME or today, in the form \"YYYY-MM-DD\"."
+  (s-left 10 (chronometrist-format-time-iso8601 time)))
 
 (defun chronometrist-time (&optional time))
 

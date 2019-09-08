@@ -83,7 +83,7 @@ which span midnights. (see `chronometrist-events-clean')"
       (time-less-p t1 t2)))
 
 (defun chronometrist-task-events-in-day (task date)
-  "Get events for TASK on DATE. DATE must be in the form (YEAR MONTH DAY).
+  "Get events for TASK on DATE. DATE must be in the form \"YYYY-MM-DD\".
 
 Returns a list of events, where each event is a property list in
 the form (:name \"NAME\" :start START :stop STOP ...), where
@@ -91,22 +91,11 @@ START and STOP are ISO-8601 time strings.
 
 This will not return correct results if TABLE contains records
 which span midnights. (see `chronometrist-events-clean')"
-  ;; TODO - support custom day-start-time
-  (let ((date (apply #'encode-time 0 0 0 (reverse date)))
-        acc)
-    (maphash (lambda (key val)
-               (let* ((start (-> (plist-get val :start)
-                                 (parse-iso8601-time-string)))
-                      (stop-unix (plist-get val :stop))
-                      (stop      (when stop-unix
-                                   (parse-iso8601-time-string stop-unix))))
-                 (when (and (equal task (plist-get val :name))
-                            (chronometrist-time-less-or-equal-p date start)
-                            (chronometrist-time-less-or-equal-p stop
-                                                    (time-add date '(0 86400 0 0))))
-                   (setq acc (append acc `(,val))))))
-             chronometrist-events)
-    acc))
+  (->> (gethash date chronometrist-events)
+       (mapcar (lambda (event)
+                 (when (equal task (plist-get event :name))
+                   event)))
+       (seq-filter #'identity)))
 
 (defun chronometrist-events->time-list (events)
   "Convert EVENTS to a list of time values.

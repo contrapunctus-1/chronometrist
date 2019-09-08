@@ -135,12 +135,11 @@ TARGET-DATE."
 
 The data is obtained from `chronometrist-file', via `chronometrist-events'.
 
-DATE must be a list containing calendrical information (see (info
-\"(elisp)Time Conversion\")).
+DATE must be in the form \"YYYY-MM-DD\".
 
 The return value is a vector in the form [HOURS MINUTES SECONDS]"
-  (let* ((target-date    (chronometrist-date date))
-         (task-events    (chronometrist-task-events-in-day task target-date))
+  (let* ((date           (if date date (chronometrist-date)))
+         (task-events    (chronometrist-task-events-in-day task date))
          (last-event     (copy-list (car (last task-events))))
          (reversed-events-tail (-> task-events
                                    (reverse)

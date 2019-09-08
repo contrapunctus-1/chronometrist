@@ -65,3 +65,6 @@ If we deal with it by changing the file, what happens when the user changes thei
 * Maybe we should add another function to check if, for two events A and B, the :stop of A is the same as the :start of B, and that all their other tags are identical. Then we can re-split them according to the new day-start-time.
 * Add a :split marker to split events? It can denote that the next event was originally a part of this one.
 * Re-check and update the file when the day-start-time changes?
+
+## Optimization
+* The older hash table schema - specifically, having dates as keys - was very useful. To get the events of a date, we'd just provide a date and get the values via gethash. Now we have to do a maphash over the entire hash table.
