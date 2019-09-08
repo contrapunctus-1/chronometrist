@@ -10,7 +10,7 @@
 
 Buffers will be refreshed only if they are visible and the user
 is clocked in to a project."
-  (when (timeclock-currently-in-p) ;; FIXME - This line is currently
+  (when (chronometrist-current-task) ;; FIXME - This line is currently
     ;; resulting in no refresh at midnight. When `chronometrist-entries' is
     ;; optimized to consume less CPU and avoid unnecessary parsing,
     ;; remove this condition.
@@ -38,9 +38,10 @@ is clocked in to a project."
 
 (defun chronometrist-force-restart-timer ()
   (interactive)
-  (cancel-timer chronometrist--timer-object)
-  (setq chronometrist--timer-object nil)
-  (run-at-time t chronometrist-update-interval #'chronometrist-timer))
+  (when chronometrist--timer-object
+    (cancel-timer chronometrist--timer-object))
+  (setq chronometrist--timer-object
+        (run-at-time t chronometrist-update-interval #'chronometrist-timer)))
 
 (defun chronometrist-change-update-interval (arg)
   (interactive "NEnter new interval (in seconds): ")
