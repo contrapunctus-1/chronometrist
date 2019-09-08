@@ -78,27 +78,35 @@ which span midnights. (see `chronometrist-events-clean')"
              table)
     count))
 
-(defun chronometrist-project-events-in-day (project date)
-  "Get events for PROJECT on DATE. DATE must be in the form (YEAR MONTH DAY).
+(defun chronometrist-time-less-or-equal-p (t1 t2)
+  (or (equal t1 t2)
+      (time-less-p t1 t2)))
 
-Returns a list of events, where each event is a vector in the
-form [CODE YEAR MONTH DAY HOURS MINUTES SECONDS PROJECT-OR-COMMENT].
+(defun chronometrist-task-events-in-day (task date)
+  "Get events for TASK on DATE. DATE must be in the form (YEAR MONTH DAY).
+
+Returns a list of events, where each event is a property list in
+the form (:name \"NAME\" :start START :stop STOP ...), where
+START and STOP are ISO-8601 time strings.
 
 This will not return correct results if TABLE contains records
 which span midnights. (see `chronometrist-events-clean')"
-  (let ((save-next)
-        (results))
-    (seq-do (lambda (event)
-              (cond ((and (equal "i" (chronometrist-vfirst event))
-                          (equal project (chronometrist-vlast event)))
-                     (->> event (list) (append results) (setq results))
-                     (setq save-next t))
-                    (save-next
-                     (->> event (list) (append results) (setq results))
-                     (setq save-next nil))
-                    (t nil)))
-            (gethash date chronometrist-events))
-    results))
+  ;; TODO - support custom day-start-time
+  (let ((date (apply #'encode-time 0 0 0 (reverse date)))
+        acc)
+    (maphash (lambda (key val)
+               (let* ((start (-> (plist-get val :start)
+                                 (parse-iso8601-time-string)))
+                      (stop-unix (plist-get val :stop))
+                      (stop      (when stop-unix
+                                   (parse-iso8601-time-string stop-unix))))
+                 (when (and (equal task (plist-get val :name))
+                            (chronometrist-time-less-or-equal-p date start)
+                            (chronometrist-time-less-or-equal-p stop
+                                                    (time-add date '(0 86400 0 0))))
+                   (setq acc (append acc `(,val))))))
+             chronometrist-events)
+    acc))
 
 (defun chronometrist-events->time-list (events)
   "Convert EVENTS to a list of time values.
@@ -108,10 +116,20 @@ DATE HOUR MINUTES SECONDS \"PROJECT-NAME-OR-COMMENT\"] (see
 `chronometrist-events' and `chronometrist-events-populate')
 
 For time value format, see (info \"(elisp)Time of Day\")."
-  (--map (pcase it
-           (`[,_ ,year ,month ,day ,h ,m ,s ,_]
-            (encode-time s m h day month year)))
-         events))
+  (let ((index 0)
+        (length (length events))
+        result save)
+    (while (not (= index length))
+      (let* ((elt   (elt events index))
+             (start (parse-iso8601-time-string (plist-get elt :start)))
+             (stop  (parse-iso8601-time-string (plist-get elt :stop))))
+        (if save
+            (progn (incf index)
+                   (setq result (append result (list stop))
+                         save nil))
+          (setq save stop
+                result (append result (list start))))))
+    result))
 
 (defun chronometrist-time-list->sum-of-intervals (time-values)
   "From a list of start/end timestamps TIME-VALUES, get the total time interval.
@@ -140,7 +158,7 @@ which span midnights. (see `chronometrist-events-clean')"
         (days  0)
         (per-day-time-list))
     (maphash (lambda (key value)
-               (let ((events-in-day (chronometrist-project-events-in-day project key)))
+               (let ((events-in-day (chronometrist-task-events-in-day project key)))
                  (when events-in-day
                    (setq days (1+ days))
                    (->> events-in-day
@@ -339,7 +357,7 @@ specified by `chronometrist-statistics--ui-state'."
                (setq chronometrist-statistics--ui-state `(:mode week
                                   :start ,week-start
                                   :end ,week-end)))
-             (chronometrist-common-create-timeclock-file)
+             (chronometrist-common-create-chronometrist-file)
              (chronometrist-statistics-mode)
              (switch-to-buffer buffer)
              (chronometrist-statistics-refresh))))))

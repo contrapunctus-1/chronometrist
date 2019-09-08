@@ -4,7 +4,7 @@
 (require 'chronometrist)
 (require 'chronometrist-report)
 
-;; TODO - add tests for chronometrist-project-time-one-day with custom day start
+;; TODO - add tests for chronometrist-task-time-one-day with custom day start
 ;; times.
 
 ;; #### CHRONOMETRIST-REPORT ####
@@ -224,35 +224,35 @@
 ;; #### CHRONOMETRIST-COMMON ####
 
 (ert-deftest chronometrist-ptod-tests ()
-  "Tests for `chronometrist-project-time-one-day'."
+  "Tests for `chronometrist-task-time-one-day'."
   (let ((timeclock-file "test.timelog"))
     (timeclock-reread-log)
     ;; basic 1 hour test
-    (should (equal (chronometrist-project-time-one-day "Programming" '(0 0 0 1 1 2018))
+    (should (equal (chronometrist-task-time-one-day "Programming" '(0 0 0 1 1 2018))
                    [1 0 0]))
-    (should (equal (chronometrist-project-time-one-day "Swimming"    '(0 0 0 1 1 2018))
+    (should (equal (chronometrist-task-time-one-day "Swimming"    '(0 0 0 1 1 2018))
                    [1 0 0]))
-    (should (equal (chronometrist-project-time-one-day "Cooking"     '(0 0 0 1 1 2018))
+    (should (equal (chronometrist-task-time-one-day "Cooking"     '(0 0 0 1 1 2018))
                    [1 0 0]))
-    (should (equal (chronometrist-project-time-one-day "Guitar"      '(0 0 0 1 1 2018))
+    (should (equal (chronometrist-task-time-one-day "Guitar"      '(0 0 0 1 1 2018))
                    [1 0 0]))
-    (should (equal (chronometrist-project-time-one-day "Cycling"     '(0 0 0 1 1 2018))
+    (should (equal (chronometrist-task-time-one-day "Cycling"     '(0 0 0 1 1 2018))
                    [1 0 0]))
     ;; across midnight
-    (should (equal (chronometrist-project-time-one-day "Programming" '(0 0 0 2 1 2018))
+    (should (equal (chronometrist-task-time-one-day "Programming" '(0 0 0 2 1 2018))
                    [1 0 0]))
-    (should (equal (chronometrist-project-time-one-day "Programming" '(0 0 0 3 1 2018))
+    (should (equal (chronometrist-task-time-one-day "Programming" '(0 0 0 3 1 2018))
                    [1 0 0]))))
 
 (ert-deftest chronometrist-ptod-midnight-clocked-in ()
-  "Tests for `chronometrist-project-time-one-day' behaviour
+  "Tests for `chronometrist-task-time-one-day' behaviour
 across midnight + when not clocked out."
   :expected-result :failed
   (let ((timeclock-file "test2.timelog"))
     (timeclock-reread-log)
-    (should (equal (chronometrist-project-time-one-day "Test" '(0 0 0 1 1 2018))
+    (should (equal (chronometrist-task-time-one-day "Test" '(0 0 0 1 1 2018))
                    [1 0 0]))
-    (should (equal (chronometrist-project-time-one-day "Test" '(0 0 0 2 1 2018))
+    (should (equal (chronometrist-task-time-one-day "Test" '(0 0 0 2 1 2018))
                    [24 0 0]))))
 
 ;; #### CHRONOMETRIST ####

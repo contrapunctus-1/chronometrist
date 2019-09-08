@@ -130,7 +130,7 @@ TARGET-DATE."
         (concat target-date " 24:00:00")
       date-time)))
 
-(defun chronometrist-project-time-one-day (project &optional date)
+(defun chronometrist-task-time-one-day (task &optional date)
   "Return total time spent on PROJECT today or (if supplied) on DATE.
 
 The data is obtained from `chronometrist-file', via `chronometrist-events'.
@@ -140,18 +140,19 @@ DATE must be a list containing calendrical information (see (info
 
 The return value is a vector in the form [HOURS MINUTES SECONDS]"
   (let* ((target-date    (chronometrist-date date))
-         (project-events (chronometrist-project-events-in-day project target-date))
-         (last-event     (car (last project-events)))
-         (last-code      (chronometrist-vfirst last-event)))
-    (if project-events
-        (->> (if (equal last-code "o")
-                 project-events
-               (append project-events
-                       (cl-destructuring-bind (s m h day month year _ _ _)
-                           (decode-time)
-                         (let* ((new-date   `(,year ,month ,day))
-                                (temp-event `["o" ,year ,month ,day ,h ,m ,s ""]))
-                           (list temp-event)))))
+         (task-events    (chronometrist-task-events-in-day task target-date))
+         (last-event     (copy-list (car (last task-events))))
+         (reversed-events-tail (-> task-events
+                                   (reverse)
+                                   (cdr))))
+    (if task-events
+        (->> (if (plist-member last-event :stop)
+                 task-events
+               ;; when task is active
+               (-> (plist-put last-event :stop (chronometrist-format-time-iso8601))
+                   (list)
+                   (append reversed-events-tail)
+                   (reverse)))
              (chronometrist-events->time-list)
              (chronometrist-time-list->sum-of-intervals)
              (cadr)

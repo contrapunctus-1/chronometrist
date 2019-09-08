@@ -92,7 +92,7 @@ SECONDS must be a positive integer."
                       (list it
                             'action 'chronometrist-toggle-project-button
                             'follow-link t)
-                      (-> (chronometrist-project-time-one-day it)
+                      (-> (chronometrist-task-time-one-day it)
                           (chronometrist-format-time))
                       (if (chronometrist-task-active? it)
                           "*" ""))))))
@@ -136,7 +136,7 @@ Return value is a vector in the form [HOURS MINUTES SECONDS].
 DATE must be calendrical information calendrical
 information (see (info \"(elisp)Time Conversion\"))."
   (->> chronometrist--task-list
-       (--map (chronometrist-project-time-one-day it date))
+       (--map (chronometrist-task-time-one-day it date))
        (-reduce #'chronometrist-time-add)))
 
 (defun chronometrist-print-keybind (command &optional description firstonly)
@@ -217,6 +217,7 @@ of `revert-buffer-function'."
   (let* ((w (get-buffer-window chronometrist-buffer-name t))
          (task (window-point w)))
     (when w
+      (setq chronometrist--task-list (chronometrist-tasks-from-table))
       (with-current-buffer chronometrist-buffer-name
         (tabulated-list-print t nil)
         (chronometrist-print-non-tabular)
@@ -228,10 +229,9 @@ of `revert-buffer-function'."
 Argument FS-EVENT is ignored."
   ;; (chronometrist-file-clean)
   (chronometrist-events-populate)
-  (setq chronometrist--task-list (chronometrist-tasks-from-table))
   (chronometrist-refresh))
 
-;; HACK - has some duplicate logic with `chronometrist-project-events-in-day'
+;; HACK - has some duplicate logic with `chronometrist-task-events-in-day'
 (defun chronometrist-reason-list (project)
   "Filters `timeclock-reason-list' to only return reasons for PROJECT."
   (let (save-next results)

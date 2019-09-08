@@ -130,19 +130,20 @@ are none."
   (with-current-buffer (find-file-noselect chronometrist-file)
     (save-excursion
       (goto-char (point-min))
-      (let ((index 0) expr split-expr-leftover)
-        (while (setq expr (ignore-errors (read (current-buffer))))
+      (let ((index 0) expr pending-expr)
+        (while (or pending-expr
+                   (setq expr (ignore-errors (read (current-buffer)))))
           ;; find and split midnight-spanning events during deserialization itself
           (let ((split-expr (chronometrist-events-maybe-split expr)))
             (incf index)
-            (cond (split-expr-leftover
-                   (puthash index split-expr-leftover chronometrist-events)
-                   (setq split-expr-leftover nil))
+            (cond (pending-expr
+                   (puthash index pending-expr chronometrist-events)
+                   (setq pending-expr nil))
                   (split-expr
                    (let* ((expr-1 (first  split-expr))
                           (expr-2 (second split-expr)))
                      (puthash index expr-1 chronometrist-events)
-                     (setq split-expr-leftover expr-2)))
+                     (setq pending-expr expr-2)))
                   (t (puthash index expr chronometrist-events)))))
         (unless (zerop index) index)))))
 

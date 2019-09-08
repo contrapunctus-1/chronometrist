@@ -94,7 +94,7 @@ The first date is the first occurrence of
     (setq chronometrist-report--ui-week-dates week-dates)
     (mapcar (lambda (project)
               (let ((project-daily-time-list
-                     (--map (chronometrist-project-time-one-day project it) week-dates)))
+                     (--map (chronometrist-task-time-one-day project it) week-dates)))
                 (list project
                       (vconcat
                        (vector project)
@@ -259,7 +259,7 @@ current week. Otherwise, display data from the week specified by
             (t (delete-other-windows)
                (when (not keep-date)
                  (setq chronometrist-report--ui-date nil))
-               (chronometrist-common-create-timeclock-file)
+               (chronometrist-common-create-chronometrist-file)
                (chronometrist-report-mode)
                (switch-to-buffer buffer)
                (chronometrist-report-refresh-file nil)
