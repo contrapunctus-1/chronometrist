@@ -7,6 +7,7 @@
 (require 'chronometrist-report)
 (require 'chronometrist-statistics)
 (require 'chronometrist-sexp)
+(require 'chronometrist-queries)
 
 ;;; Commentary:
 ;;
@@ -69,15 +70,6 @@
   "Return t if TASK is currently clocked in, else nil."
   (equal (chronometrist-current-task) task))
 
-(defun chronometrist-seconds-to-hms (seconds)
-  "Convert SECONDS to a vector in the form [HOURS MINUTES SECONDS].
-SECONDS must be a positive integer."
-  (setq seconds (truncate seconds))
-  (let* ((s (% seconds 60))
-         (m (% (/ seconds 60) 60))
-         (h (/ seconds 3600)))
-    (vector h m s)))
-
 (defun chronometrist-entries ()
   "Create entries to be displayed in the buffer created by `chronometrist', in the format specified by `tabulated-list-entries'."
   ;; HACK - these calls are commented out, because `chronometrist-entries' is
@@ -117,29 +109,6 @@ SECONDS must be a positive integer."
   (goto-char (point-min))
   (re-search-forward timeclock-last-project nil t)
   (beginning-of-line))
-
-(defun chronometrist-time-add (a b)
-  "Add two vectors A and B in the form [HOURS MINUTES SECONDS] and return a vector in the same form."
-  (let ((h1 (elt a 0))
-        (m1 (elt a 1))
-        (s1 (elt a 2))
-        (h2 (elt b 0))
-        (m2 (elt b 1))
-        (s2 (elt b 2)))
-    (chronometrist-seconds-to-hms (+ (* h1 3600) (* h2 3600)
-                        (* m1 60) (* m2 60)
-                        s1 s2))))
-
-(defun chronometrist-total-time-one-day (&optional date)
-  "Return the total active time on DATE (if non-nil) or today.
-
-Return value is a vector in the form [HOURS MINUTES SECONDS].
-
-DATE must be calendrical information calendrical
-information (see (info \"(elisp)Time Conversion\"))."
-  (->> chronometrist--task-list
-       (--map (chronometrist-task-time-one-day it date))
-       (-reduce #'chronometrist-time-add)))
 
 (defun chronometrist-print-keybind (command &optional description firstonly)
   "Insert the keybindings for COMMAND.

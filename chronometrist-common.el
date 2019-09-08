@@ -61,44 +61,6 @@ This is distinct from `chronometrist-time-re-ui' (which see).")
                  (car it))))
     (if result t nil)))
 
-(defun chronometrist-timestamp->list (date-time-string)
-  "Convert string timestamp DATE-TIME-STRING to a list of integers."
-  (--> date-time-string
-       (split-string it "[-/ :]")
-       (mapcar #'string-to-number it)))
-
-(defun chronometrist-timestamp-list->seconds (date-time-list)
-  "Convert DATE-TIME-LIST to seconds since the UNIX epoch.
-DATE-TIME-LIST must be a list in the form (YEAR MONTH DAY HOURS
-MINUTES SECONDS), as returned by `timestamp->list'.
-
-See (info \"(elisp)Time of Day\")."
-  (->> date-time-list
-       (reverse)
-       (apply #'encode-time)))
-
-(defun chronometrist-timestamp->seconds (date-time-string)
-  "Convert DATE-TIME-STRING to seconds since the UNIX epoch.
-DATE-TIME-STRING must be a string in the form \"YYYY/MM/SS HH:MM:SS\".
-
-See (info \"(elisp)Time of Day\")."
-  (chronometrist-timestamp-list->seconds
-   (chronometrist-timestamp->list date-time-string)))
-
-(defun chronometrist-time-interval-span-midnight? (t1 t2)
-  "Return t if time range T1 to T2 extends across midnight.
-
-T1 and T2 must be lists in the form (YEAR MONTH DAY HOURS MINUTES
-SECONDS), as returned by `timestamp->list'. T2 must be
-chronologically more recent than T1."
-  (let* ((day-1   (elt t1 2))
-         (day-2   (elt t2 2))
-         (month-1 (elt t1 1))
-         (month-2 (elt t2 1)))
-    ;; not Absolutely Perfect™, but should do for most situations
-    (or (= day-2   (1+ day-1))
-        (= month-2 (1+ month-1)))))
-
 (defun chronometrist-get-end-time (target-date)
   "Return the date and time of the next clock-out event after
 point in the file `timeclock-file'.
@@ -129,34 +91,6 @@ TARGET-DATE."
     (if (chronometrist-time-interval-span-midnight? target-date-list date-time-list)
         (concat target-date " 24:00:00")
       date-time)))
-
-(defun chronometrist-task-time-one-day (task &optional date)
-  "Return total time spent on PROJECT today or (if supplied) on DATE.
-
-The data is obtained from `chronometrist-file', via `chronometrist-events'.
-
-DATE must be in the form \"YYYY-MM-DD\".
-
-The return value is a vector in the form [HOURS MINUTES SECONDS]"
-  (let* ((date           (if date date (chronometrist-date)))
-         (task-events    (chronometrist-task-events-in-day task date))
-         (last-event     (copy-list (car (last task-events))))
-         (reversed-events-tail (-> task-events
-                                   (reverse)
-                                   (cdr))))
-    (if task-events
-        (->> (if (plist-member last-event :stop)
-                 task-events
-               ;; when task is active
-               (-> (plist-put last-event :stop (chronometrist-format-time-iso8601))
-                   (list)
-                   (append reversed-events-tail)
-                   (reverse)))
-             (chronometrist-events->time-list)
-             (chronometrist-time-list->sum-of-intervals)
-             (cadr)
-             (chronometrist-seconds-to-hms))
-      [0 0 0])))
 
 ;; tests -
 ;; (mapcar #'chronometrist-format-time
@@ -247,13 +181,6 @@ COUNT must be a positive integer."
            (chronometrist-date-op-internal s m h
                               day month year
                               operator count))))))
-
-(defun chronometrist-time->seconds (time)
-  "TIME must be a vector in the form [HOURS MINUTES SECONDS]."
-  (-let [[h m s] time]
-    (+ (* h 60 60)
-       (* m 60)
-       s)))
 
 (defun chronometrist-format-keybinds (command map &optional firstonly)
   "Return the keybindings for COMMAND in MAP as a string.

@@ -4,6 +4,7 @@
 ;;
 
 (require 'chronometrist-common)
+(require 'chronometrist-time)
 (require 'chronometrist-timer)
 (require 'chronometrist-events)
 (require 'chronometrist-statistics-custom)
@@ -51,16 +52,6 @@
 
 ;;; Code:
 
-(defun chronometrist-date->time (date)
-  "Convert DATE to a time value (see (info \"(elisp)Time of Day\")).
-DATE must be a list in the form (YEAR MONTH DAY)."
-  (->> date (reverse) (apply #'encode-time 0 0 0)))
-
-(defun chronometrist-date-less-p (date1 date2)
-  "Like `time-less-p' but for dates. Return t if DATE1 is less than DATE2.
-Both must be lists in the form (YEAR MONTH DAY)."
-  (time-less-p (chronometrist-date->time date1) (chronometrist-date->time date2)))
-
 (defun chronometrist-statistics-count-active-days (project &optional table)
   "Return the number of days the user spent any time on PROJECT.
 TABLE must be a hash table - if not supplied, `chronometrist-events' is used.
@@ -77,10 +68,6 @@ which span midnights. (see `chronometrist-events-clean')"
                  (setq count (1+ count))))
              table)
     count))
-
-(defun chronometrist-time-less-or-equal-p (t1 t2)
-  (or (equal t1 t2)
-      (time-less-p t1 t2)))
 
 (defun chronometrist-task-events-in-day (task date)
   "Get events for TASK on DATE. DATE must be in the form \"YYYY-MM-DD\".
@@ -186,12 +173,6 @@ displayed. They must be dates in the form (YEAR MONTH DAY).")
 (defvar chronometrist-statistics--point nil)
 
 ;; ## FUNCTIONS ##
-
-(defun chronometrist-calendrical->date (date)
-  "Convert calendrical information DATE to a date in the form (YEAR MONTH DAY).
-
-For input format, see (info \"(elisp)Time of Day\")."
-  (-> date (-slice 3 6) (reverse)))
 
 (defun chronometrist-statistics-entries-internal (table)
   "Helper function for `chronometrist-statistics-entries'.
