@@ -81,28 +81,27 @@ This function always returns nil."
   (with-current-buffer (find-file-noselect timeclock-file)
     (save-excursion
       (goto-char (point-min))
-      (let ((events))
-        (while (not (= (point) (point-max)))
-          (let* ((event-string (buffer-substring-no-properties (point-at-bol)
-                                                               (point-at-eol)))
-                 (info-re (concat ". " chronometrist-date-re " " chronometrist-time-re-file))
-                 (project-or-comment (->> event-string
-                                          (replace-regexp-in-string (concat info-re " ?") "")
-                                          (vector)))
-                 (the-rest (--> (concat "\\(" info-re "\\)" ".*")
-                                (replace-regexp-in-string it "\\1" event-string)
-                                (split-string it "[ /:]")
-                                (append (list (car it))
-                                        (mapcar #'string-to-number (-slice it 1 7)))))
-                 (key (-slice the-rest 1 4))
-                 (old-value (gethash key chronometrist-events))
-                 (new-value (vector (vconcat the-rest ;; vconcat converts lists to vectors
-                                             project-or-comment))))
-            (if old-value
-                (puthash key (vconcat old-value new-value) chronometrist-events)
-              (puthash key new-value chronometrist-events)))
-          (forward-line))
-        nil))))
+      (while (not (= (point) (point-max)))
+        (let* ((event-string (buffer-substring-no-properties (point-at-bol)
+                                                             (point-at-eol)))
+               (info-re (concat ". " chronometrist-date-re " " chronometrist-time-re-file))
+               (project-or-comment (->> event-string
+                                        (replace-regexp-in-string (concat info-re " ?") "")
+                                        (vector)))
+               (the-rest (--> (concat "\\(" info-re "\\)" ".*")
+                              (replace-regexp-in-string it "\\1" event-string)
+                              (split-string it "[ /:]")
+                              (append (list (car it))
+                                      (mapcar #'string-to-number (-slice it 1 7)))))
+               (key (-slice the-rest 1 4))
+               (old-value (gethash key chronometrist-events))
+               (new-value (vector (vconcat the-rest ;; vconcat converts lists to vectors
+                                           project-or-comment))))
+          (if old-value
+              (puthash key (vconcat old-value new-value) chronometrist-events)
+            (puthash key new-value chronometrist-events)))
+        (forward-line))
+      nil)))
 
 (defun chronometrist-events-subset (start-date end-date)
   "Return a subset of `chronometrist-events'.

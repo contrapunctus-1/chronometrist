@@ -51,6 +51,7 @@
 (defvar chronometrist--timer-object nil)
 (defvar chronometrist--project-history nil)
 (defvar chronometrist--point nil)
+(defvar chronometrist--fs-watcher nil)
 
 ;; ## FUNCTIONS ##
 (defun chronometrist-current-project ()
@@ -379,8 +380,8 @@ ASK is used like in `timeclock-out'."
 
 If there is no project at point, do nothing.
 
-With numeric prefix argument PREFIX, toggle the Nth project. If there
-is no corresponding project, do nothing.
+With numeric prefix argument PREFIX, toggle the Nth project. If
+there is no corresponding project, do nothing.
 
 If NO-PROMPT is non-nil, don't ask for a reason."
   (interactive "P")
@@ -410,7 +411,7 @@ If NO-PROMPT is non-nil, don't ask for a reason."
 With numeric prefix argument PREFIX, toggle the Nth project. If there
 is no corresponding project, do nothing."
   (interactive "P")
-  (funcall-interactively #'chronometrist-toggle-project prefix t))
+  (chronometrist-toggle-project prefix t))
 
 (defun chronometrist-add-new-project ()
   "Add a new project."
@@ -461,7 +462,11 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
                    (if chronometrist--point
                        (goto-char chronometrist--point)
                      (chronometrist-goto-last-project))))
-          (file-notify-add-watch timeclock-file '(change) #'chronometrist-refresh-file))))))
+          (unless chronometrist--fs-watcher
+            (setq chronometrist--fs-watcher
+                  (file-notify-add-watch chronometrist-file
+                                         '(change)
+                                         #'chronometrist-refresh-file))))))))
 
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"
