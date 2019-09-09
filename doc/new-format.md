@@ -55,7 +55,6 @@ Not sure how to deal with these. Previously, we checked if the first event for a
    * Advantage - operation is performed only once for each such event (no repeated work) + benefits of both simplified data-consuming code and reduced post-parsing load.
 2. Split them at the hash-table-level (i.e. rewrite chronometrist-events-clean)
    * Advantage - simplifies data-consuming code.
-   * Now that the keys are indices, doing it here ties it to the function doing the deserialization. Alternatively, you have to update all the indices.
 3. Split them at the data-consumer level (e.g. before calculating time for one day or getting events for one day)
    * Advantage - should reduce repetitive post-parsing load.
 
@@ -66,5 +65,3 @@ If we deal with it by changing the file, what happens when the user changes thei
 * Add a :split marker to split events? It can denote that the next event was originally a part of this one.
 * Re-check and update the file when the day-start-time changes?
 
-## Optimization
-* The older hash table schema - specifically, having dates as keys - was very useful. To get the events of a date, we'd just provide a date and get the values via gethash. Now we have to do a maphash over the entire hash table.
