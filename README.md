@@ -14,6 +14,8 @@ Largely modelled after the Android application, [A Time Tracker](https://github.
   1. No support (yet) for adding a task without clocking into it.
   2. No support for concurrent tasks.
 
+**WARNING: with the next version (v0.3), chronometrist will no longer use timeclock as a dependency and will use its own s-expression-based backend. A command to migrate the timeclock-file will be provided.**
+
 ## Installation
 You can get `chronometrist` from https://framagit.org/contrapunctus/chronometrist/
 

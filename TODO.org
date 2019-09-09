@@ -2,6 +2,8 @@
 2. -report - highlight the current day
 
 * Chronometrist
+** Features
+   1. Create chronometrist-unused-projects-list + chronometrist-projects-list.
 ** UX
    1. don't suggest nil when asking for first project on first run
    2. when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
