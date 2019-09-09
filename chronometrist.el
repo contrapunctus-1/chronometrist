@@ -51,6 +51,7 @@
 (defvar chronometrist--timer-object nil)
 (defvar chronometrist--project-history nil)
 (defvar chronometrist--point nil)
+(defvar chronometrist--fs-watcher nil)
 
 ;; ## FUNCTIONS ##
 (defun chronometrist-current-project ()
@@ -461,7 +462,11 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
                    (if chronometrist--point
                        (goto-char chronometrist--point)
                      (chronometrist-goto-last-project))))
-          (file-notify-add-watch timeclock-file '(change) #'chronometrist-refresh-file))))))
+          (unless chronometrist--fs-watcher
+            (setq chronometrist--fs-watcher
+                  (file-notify-add-watch chronometrist-file
+                                         '(change)
+                                         #'chronometrist-refresh-file))))))))
 
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"
