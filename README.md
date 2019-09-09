@@ -1,5 +1,5 @@
 # chronometrist
-A time tracker with a nice interface, using Emacs' timeclock.el
+A time tracker in Emacs with a nice interface
 
 Largely modelled after the Android application, [A Time Tracker](https://github.com/netmackan/ATimeTracker)
 
@@ -9,12 +9,10 @@ Largely modelled after the Android application, [A Time Tracker](https://github.
   3. Support for both mouse and keyboard
   4. Human errors in tracking are easily fixed by editing a plain text file
   5. Hooks to let you perform arbitrary actions when starting/stopping tasks
-  6. Built using timeclock.el in stock Emacs
 
 * Limitations
   1. No support (yet) for adding a task without clocking into it.
-  2. No support for concurrent tasks. (timeclock.el limitation)
-  3. Does not support all timeclock.el features (please make an issue or a PR)
+  2. No support for concurrent tasks.
 
 ## Installation
 You can get `chronometrist` from https://framagit.org/contrapunctus/chronometrist/
@@ -33,7 +31,7 @@ Whenever you call `chronometrist`, the cursor will helpfully be placed on the la
 
 Alternatively, hit `<numeric prefix> RET` anywhere in the buffer to toggle the corresponding project, e.g. `C-1 RET` will toggle the project with index 1.
 
-Press `l` to view your `timeclock-file` (`~/.emacs.d/timelog` by default). Press `r` to see a weekly report (see `chronometrist-report`)
+Press `l` to view your `chronometrist-file` (`~/.emacs.d/chronometrist.sexp` by default). Press `r` to see a weekly report (see `chronometrist-report`)
 
 Running `M-x chronometrist` when the Chronometrist buffer is visible will kill it, so the key you bind it to can function as a toggle.
 
@@ -44,7 +42,7 @@ Run `M-x chronometrist-report` (or `chronometrist` with a prefix argument of 1, 
 
 Press `b` to look at past weeks, and `f` for future weeks.
 
-Press `l` to view your `timeclock-file`, `~/.emacs.d/timelog` by default.
+Press `l` to view your `chronometrist-file`, `~/.emacs.d/chronometrist.sexp` by default.
 
 Just like `chronometrist`, `chronometrist-report` will also toggle the visibilty of the buffer.
 
@@ -55,12 +53,12 @@ Run `M-x chronometrist-statistics` (or `chronometrist` with a prefix argument of
 
 Press `b` to look at past time ranges, and `f` for future ones.
 
-Press `l` to view your `timeclock-file`, `~/.emacs.d/timelog` by default.
+Press `l` to view your `chronometrist-file`, `~/.emacs.d/chronometrist.sexp` by default.
 
 Just like `chronometrist`, `chronometrist-statistics` will also toggle the visibilty of the buffer.
 
 ## Customization
-See the Customize groups `chronometrist` and `chronometrist-report` for variables intended to be user-customizable. Also see the Customize group `timeclock`.
+See the Customize groups `chronometrist` and `chronometrist-report` for variables intended to be user-customizable.
 
 If you find that you usually _don't_ want to enter a reason, you can switch the default bindings -
 
@@ -182,7 +180,7 @@ Chronometrist is released under your choice of [Unlicense](https://unlicense.org
 ## Thanks
 wasamasa and #emacs for all their help and support
 
-jwiegley for timeclock.el
+jwiegley for timeclock.el, which we used as a backend in earlier versions
 
 blandest for helping me with the name
 
