@@ -71,5 +71,24 @@ UI ideas
 1. Pre-define keys for task names in a plist. Prompt for each key when clocking in/out for that particular task. (Adding new ones is extra work. Probably acceptable?)
 2. \<bpalmer\> ask the user to type 'key=value', one per line, in a buffer. parse the buffer after the user submits with C-c C-c
    * smart behaviour/quick entry of common key-values - pre-insert the N most commonly used ones
-   * twist - query user with completing-read in infinite loop - after each accepted input, add - when they quit, they land in the buffer (now containing all their accepted input), where they can C-c C-c to accept or C-c C-k to cancel. Something like this -
-     `(while t (insert (completing-read "Key (C-g to quit): " nil) "\n"))`
+   * twist - query user with completing-read in infinite loop - after each accepted input, add - when they quit, they land in the buffer (now containing all their accepted input), where they can `C-c C-c` to accept or `C-c C-k` to cancel. Something like this -
+     ```
+     (while t
+       (insert (completing-read "Key (C-g to quit): " nil) "=")
+       (insert (completing-read "Value (C-g to quit): " nil) "\n"))
+     ```
+
+What does this make the UX flow?
+1. `RET` - user clocks in/out
+2. prompt for tags - `RET`/enter values and `RET`
+3. buffer opens, prompt for key values - `C-c C-c`/edit key values and `C-c C-c`
+
+That's `RET RET C-c C-c` to simply clock in/out with no bells and whistles. Maybe we can make `C-u RET` do that for short.
+
+## Populating history data
+When?
+* The naive, but foolproof way - when the file changes -_-
+* The first time we read the file. Then save it for the session, or persistently. Should work for 90% (?) of use cases (i.e. where changes happen near the end of the file).
+* Re-read the file on an idle timer?
+* Ignore history from file entirely. Only record history of interactive use. (File will provide commonly-used combinations, but not in the order the user uses them.)
+  * Maybe we can start with this, and later add history-from-file as a fallback, after the interactive information is exhausted.
