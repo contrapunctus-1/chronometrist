@@ -37,12 +37,14 @@ UX flow
 1. User sees list of their tasks (names or first tags, depending on tagging system design)
 2. They select a task to start
 3. When they stop with a universal arg, ask them if they want to add any tags. If we have tag-usage history, suggest adding those tags first.
-   * maybe use ~~magit-popup~~ Transient to help compose an entry instead?
+   * maybe use Transient to help compose an entry instead?
    * tag input must suggest earlier used tags, but must also support adding new ones.
 
 Add new field - name of field - data -
 
-~~magit-popup~~ Transient
+1. transient.el/hydra.el
+2. Just prompt for tags unconditionally. User can hit RET without entering anything to proceed without tags.
+3. Prefix args - C-u for tags, C-u C-u for tags and key-values. (universal-argument doesn't work nicely for my configuration, in which it is re-mapped to C-z and consequently gets buggy).
 
 # Tag UI
 Should enable user to

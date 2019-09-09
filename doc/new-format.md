@@ -64,4 +64,12 @@ If we deal with it by changing the file, what happens when the user changes thei
 * Maybe we should add another function to check if, for two events A and B, the :stop of A is the same as the :start of B, and that all their other tags are identical. Then we can re-split them according to the new day-start-time.
 * Add a :split marker to split events? It can denote that the next event was originally a part of this one.
 * Re-check and update the file when the day-start-time changes?
+  * Possible with `add-variable-watcher` or `:custom-set` in Customize (thanks bpalmer)
 
+# Arbitrary key values
+UI ideas
+1. Pre-define keys for task names in a plist. Prompt for each key when clocking in/out for that particular task. (Adding new ones is extra work. Probably acceptable?)
+2. \<bpalmer\> ask the user to type 'key=value', one per line, in a buffer. parse the buffer after the user submits with C-c C-c
+   * smart behaviour/quick entry of common key-values - pre-insert the N most commonly used ones
+   * twist - query user with completing-read in infinite loop - after each accepted input, add - when they quit, they land in the buffer (now containing all their accepted input), where they can C-c C-c to accept or C-c C-k to cancel. Something like this -
+     `(while t (insert (completing-read "Key (C-g to quit): " nil) "\n"))`
