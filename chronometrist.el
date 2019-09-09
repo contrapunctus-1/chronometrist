@@ -344,22 +344,19 @@ is the clocked-out project.")
 
 ;; TODO - if clocked in and point not on a project, just clock out
 ;; PROFILE
-(defun chronometrist-toggle-project (&optional prefix no-prompt)
+(defun chronometrist-toggle-project (&optional prefix tags)
   "Start or stop the project at point.
 
 If there is no project at point, do nothing.
 
 With numeric prefix argument PREFIX, toggle the Nth project. If
-there is no corresponding project, do nothing.
-
-If NO-PROMPT is non-nil, don't ask for a reason."
+there is no corresponding project, do nothing."
   (interactive "P")
   (let* ((empty-file (chronometrist-common-file-empty-p chronometrist-file))
          (nth        (when prefix (chronometrist-goto-nth-project prefix)))
          (at-point   (chronometrist-project-at-point))
          (target     (or nth at-point))
-         (current    (chronometrist-current-task))
-         (ask        (not no-prompt)))
+         (current    (chronometrist-current-task)))
     (cond (empty-file (chronometrist-add-new-project)) ;; do not run hooks - chronometrist-add-new-project will do it
           ;; What should we do if the user provides an invalid argument? Currently - nothing.
           ((and prefix (not nth)))

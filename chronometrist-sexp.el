@@ -29,20 +29,32 @@
     (forward-sexp (or arg 1))
     (delete-region point-1 (point))))
 
-(defun chronometrist-in (task &optional plist)
+(defun chronometrist-in (task &optional tags plist)
+  (interactive `(,(completing-read "Task name: "
+                                   (chronometrist-tasks-from-table)
+                                   nil 'confirm nil
+                                   ;; TODO - implement history
+                                   nil)
+                 ,(completing-read-multiple "Tags (optional): "
+                                            ;; FIXME - use tags, not tasks
+                                            (chronometrist-tasks-from-table)
+                                            nil 'confirm nil 'history)))
   "Add new time interval as an s-expression to `chronometrist-file'.
 
 TASK is the name of the task, a string.
 
 PLIST is a property list containing any other information about
 this time interval that should be recorded."
-  (let ((buffer (find-file-noselect chronometrist-file))
-        (tags   (plist-get plist :tags)))
+  (let ((buffer (find-file-noselect chronometrist-file)))
     (with-current-buffer buffer
       (goto-char (point-max))
       (when (not (bobp)) (insert "\n"))
       (when (not (bolp)) (insert "\n"))
-      (plist-pp (append `(:name ,task) (when tags `(:tags ,tags))
+      (plist-pp (append `(:name ,task)
+                        (when tags
+                          `(:tags ,(--map (unless (string-match-p "[[:space:]]" it)
+                                            (make-symbol it))
+                                          tags)))
                         (chronometrist-plist-remove plist :tags)
                         `(:start ,(format-time-string "%FT%T%z")))
                 buffer)
@@ -54,6 +66,7 @@ this time interval that should be recorded."
 
 PLIST is a property list containing any other information about
 this time interval that should be recorded."
+  (interactive)
   (let ((buffer (find-file-noselect chronometrist-file)))
     (with-current-buffer buffer
       (goto-char (point-max))
