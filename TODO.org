@@ -11,6 +11,7 @@
    4. Button actions should accept prefix arguments and behave exactly like their keyboard counterparts.
    5. mouse-3 should clock-out without asking for reason.
    6. Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked /before/ clocking out, which adds time to the project.
+   7. Allow calling chronometrist-in/out from anywhere-within-Emacs (a la timeclock) as well as from the chronometrist buffer.
 *** Optimization
     ~chronometrist-refresh~ is expensive in CPU, and ~chronometrist-timer~ runs it every 3 seconds by default. :\
 

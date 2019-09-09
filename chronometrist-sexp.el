@@ -29,6 +29,12 @@
     (forward-sexp (or arg 1))
     (delete-region point-1 (point))))
 
+(defun chronometrist-maybe-string-to-symbol (list)
+  "For each string in LIST, if it has no spaces, convert it to a symbol."
+  (--map (unless (string-match-p "[[:space:]]" it)
+           (make-symbol it))
+         list))
+
 (defun chronometrist-in (task &optional tags plist)
   (interactive `(,(completing-read "Task name: "
                                    (chronometrist-tasks-from-table)
@@ -52,21 +58,22 @@ this time interval that should be recorded."
       (when (not (bolp)) (insert "\n"))
       (plist-pp (append `(:name ,task)
                         (when tags
-                          `(:tags ,(--map (unless (string-match-p "[[:space:]]" it)
-                                            (make-symbol it))
-                                          tags)))
+                          `(:tags ,(chronometrist-maybe-string-to-symbol tags)))
                         (chronometrist-plist-remove plist :tags)
                         `(:start ,(format-time-string "%FT%T%z")))
                 buffer)
       (save-buffer))))
 
 ;; TODO - implement PLIST arg
-(defun chronometrist-out (&optional plist)
+(defun chronometrist-out (&optional tags plist)
   "Record current moment as stop time to last s-exp in `chronometrist-file'.
 
 PLIST is a property list containing any other information about
 this time interval that should be recorded."
-  (interactive)
+  (interactive `(,(completing-read-multiple "Tags (optional): "
+                                            ;; FIXME - use tags, not tasks
+                                            (chronometrist-tasks-from-table)
+                                            nil 'confirm nil 'history)))
   (let ((buffer (find-file-noselect chronometrist-file)))
     (with-current-buffer buffer
       (goto-char (point-max))
@@ -74,6 +81,9 @@ this time interval that should be recorded."
       (backward-list 1)
       (--> (read buffer)
            (plist-put it :stop (chronometrist-format-time-iso8601))
+           (when tags (append (-take 2 it)
+                              `(:tags ,(chronometrist-maybe-string-to-symbol tags))
+                              (-drop 2 it)))
            (progn
              (backward-list 1)
              (chronometrist-delete-list)

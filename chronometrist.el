@@ -278,11 +278,11 @@ is the clocked-out project.")
   (run-hook-with-args 'chronometrist-after-project-stop-functions
                       task))
 
-(defun chronometrist-run-functions-and-clock-out (task)
+(defun chronometrist-run-functions-and-clock-out (task tags)
   "Run hooks and clock out of TASK."
   (when (run-hook-with-args-until-failure 'chronometrist-before-project-stop-functions
                                           task)
-    (chronometrist-out)
+    (chronometrist-out tags)
     (chronometrist-run-after-project-stop-functions task)))
 
 ;; ## MAJOR-MODE ##
@@ -352,7 +352,11 @@ If there is no project at point, do nothing.
 
 With numeric prefix argument PREFIX, toggle the Nth project. If
 there is no corresponding project, do nothing."
-  (interactive "P")
+  (interactive `(,current-prefix-arg
+                 ,(completing-read-multiple "Tags (optional): "
+                                            ;; FIXME - use tags, not tasks
+                                            (chronometrist-tasks-from-table)
+                                            nil 'confirm nil 'history)))
   (let* ((empty-file (chronometrist-common-file-empty-p chronometrist-file))
          (nth        (when prefix (chronometrist-goto-nth-project prefix)))
          (at-point   (chronometrist-project-at-point))
@@ -366,7 +370,7 @@ there is no corresponding project, do nothing."
            ;; clocked in + target is some other project = clock out, clock in to project
            ;; clocked out = clock in
            (when current
-             (chronometrist-run-functions-and-clock-out current))
+             (chronometrist-run-functions-and-clock-out current tags))
            (unless (equal target current)
              (chronometrist-run-project-start-functions target)
              (chronometrist-in target))))
