@@ -67,6 +67,19 @@ this time interval that should be recorded."
              (plist-pp it buffer)))
       (save-buffer))))
 
+(defun chronometrist-reindent-file ()
+  (interactive)
+  (let ((buffer (find-file-noselect chronometrist-file))
+        expr)
+    (with-current-buffer buffer
+      (goto-char (point-min))
+      (while (setq expr (ignore-errors (read buffer)))
+        (backward-list)
+        (chronometrist-delete-list)
+        (when (looking-at-p "\n\n") (delete-char 2))
+        (plist-pp expr buffer))
+      (save-buffer))))
+
 (provide 'chronometrist-sexp)
 
 ;; Local Variables:
