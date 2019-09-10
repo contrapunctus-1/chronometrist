@@ -81,9 +81,11 @@ this time interval that should be recorded."
       (backward-list 1)
       (--> (read buffer)
            (plist-put it :stop (chronometrist-format-time-iso8601))
-           (when tags (append (-take 2 it)
-                              `(:tags ,(chronometrist-maybe-string-to-symbol tags))
-                              (-drop 2 it)))
+           (if tags
+               (append (-take 2 it)
+                       `(:tags ,(chronometrist-maybe-string-to-symbol tags))
+                       (-drop 2 it))
+             it)
            (progn
              (backward-list 1)
              (chronometrist-delete-list)
