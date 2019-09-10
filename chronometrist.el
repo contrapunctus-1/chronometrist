@@ -201,6 +201,7 @@ of `revert-buffer-function'."
 Argument FS-EVENT is ignored."
   ;; (chronometrist-file-clean)
   (chronometrist-events-populate)
+  (setq chronometrist--task-list (chronometrist-tasks-from-table))
   (chronometrist-refresh))
 
 ;; HACK - has some duplicate logic with `chronometrist-task-events-in-day'
@@ -354,6 +355,7 @@ With numeric prefix argument PREFIX, toggle the Nth project in
 the buffer. If there is no corresponding project, do nothing."
   (interactive `(,current-prefix-arg
                  ,(completing-read-multiple (concat "Tags for "
+                                                    ;; FIXME - doesn't work correctly with prefix arg
                                                     (or (chronometrist-current-task)
                                                         (chronometrist-project-at-point))
                                                     " (optional): ")
