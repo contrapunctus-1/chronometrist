@@ -94,7 +94,11 @@ The first date is the first occurrence of
     (setq chronometrist-report--ui-week-dates week-dates)
     (mapcar (lambda (project)
               (let ((project-daily-time-list
-                     (--map (chronometrist-task-time-one-day project it) week-dates)))
+                     (--map (chronometrist-task-time-one-day project
+                                                 (->> it
+                                                      (apply #'encode-time)
+                                                      (chronometrist-date)))
+                            week-dates)))
                 (list project
                       (vconcat
                        (vector project)
@@ -188,8 +192,7 @@ FORMAT-STRING."
   "Re-populate and clean `chronometrist-events', and refresh the `chronometrist-report' buffer.
 Argument FS-EVENT is ignored."
   (chronometrist-events-populate)
-  (chronometrist-events-clean)
-  (timeclock-reread-log)
+  ;; (chronometrist-events-clean)
   (chronometrist-report-refresh))
 
 ;; ## MAJOR MODE ##
