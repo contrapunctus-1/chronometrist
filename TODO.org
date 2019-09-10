@@ -4,6 +4,16 @@
 * Chronometrist
 ** Features
    1. Create chronometrist-unused-projects-list + chronometrist-projects-list.
+   2. New commands
+      * *Kill/discard* (bind to 'k') - which will delete the interval currently being recorded.
+        - Most conservative option - it will only operate on the project at point, and will only kill for a clocked-in project.
+        - Somewhat less conservative option - it will operate on the currently clocked-in project, no matter where point is.
+        - It _should_ ask for confirmation.
+        - Alternatively, or as a complement - an *undo command*, which will undo your last action (clock in or clock out).
+      * *Convert* - change the currently clocked-in project to a different task. Tags and key-values may be re-queried. Clock-in hook functions will be run again with the new task as the argument.
+      * *Rename* a project (updating all records)
+      * *Delete* a project (erasing all records)
+      * *Hide* a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
 ** UX
    1. don't suggest nil when asking for first project on first run
    2. when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
@@ -26,9 +36,9 @@
 ** Code
    1. use variables instead of hardcoded numbers to determine spacing
    2. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
-   3. Timeclock already _has_ hooks! :| Why do we re-implement them?
+   3. Use buttercup instead of ert
+   4. See if it is possible to store buttons in a variable, so *-print-non-tabular functions can be made shorter and less imperative. (see ~make-text-button~)
+   5. Merge all event-querying functions so that they always operate on an entire hash table (so no 'day' variants),
+   +6. Timeclock already _has_ hooks! :| Why do we re-implement them?+
       - I don't know of a way to know the project being clocked into using timeclock hooks.
       - With v0.2.0 Chronometrist also has a before-project-stop-functions, which runs before the project is stopped, and can control whether the project actually is stopped.
-   4. Use buttercup instead of ert
-   5. See if it is possible to store buttons in a variable, so *-print-non-tabular functions can be made shorter and less imperative. (see ~make-text-button~)
-   6. Merge all event-querying functions so that they always operate on an entire hash table (so no 'day' variants),

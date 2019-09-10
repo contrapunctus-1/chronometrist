@@ -114,17 +114,12 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
 ### chronometrist
 1. Make clocked-in project row bold, either in addition to the star, or replacing it.
    - Another activity-indication enhancement - show the current time interval being recorded instead of the star.
-2. **'kill'/discard command** (bind to 'k'), which will delete the interval currently being recorded.
-   - Most conservative option - it will only operate on the project at point, and will only kill for a clocked-in project.
-   - Somewhat less conservative option - it will operate on the currently clocked-in project, no matter where point is.
-   - It _should_ ask for confirmation.
-   - Alternatively, or as a complement - an **undo command**, which will undo your last action (clock in or clock out).
-3. **Custom day start/end time** - option to use a specific time to define when a day starts/ends. e.g. 08:00 will mean a day starts and ends at 08:00 instead of the usual 24:00/00:00. Helpful for late sleepers.
-4. Suggest reasons by frequency? So your most-used reason for the task is the default suggestion. If you usually _don't_ provide a reason for the task, the default is nil.
-5. **Better shortcuts** - shortcuts derived from the first alphabet of each project might be nicer.
-6. **Modeline support** - show currently active project + time spent on it so far in the mode-line (see timeclock-mode-line-display)
+2. **Custom day start/end time** - option to use a specific time to define when a day starts/ends. e.g. 08:00 will mean a day starts and ends at 08:00 instead of the usual 24:00/00:00. Helpful for late sleepers.
+3. Suggest reasons by frequency? So your most-used reason for the task is the default suggestion. If you usually _don't_ provide a reason for the task, the default is nil.
+4. **Better shortcuts** - shortcuts derived from the first alphabet of each project might be nicer.
+5. **Modeline support** - show currently active project + time spent on it so far in the mode-line (see timeclock-mode-line-display)
    - Maybe make modeline slowly change color the longer you do something?
-7. **Reminder notifications** - a common issue with time trackers is that people forget to clock in/out. A potential solution can be to have Emacs remind people (ideally via desktop notifications?) -
+6. **Reminder notifications** - a common issue with time trackers is that people forget to clock in/out. A potential solution can be to have Emacs remind people (ideally via desktop notifications?) -
    * when they haven't clocked in, every X minutes (e.g. 30)
    * that they are clocked in, every X minutes (e.g. 30)
    * of course, modeline support might help too.
@@ -145,13 +140,12 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
        - :pattern - glob pattern to match paths
        - :mode - regular expression to match buffer modes
        - :computerp or :emacsp - t if this project (activity) is something you do on a computer/in Emacs (or perhaps, more specifically, the same computer/Emacs instance as the one you run Chronometrist on.). Somewhat implied by the previous arguments. If this is t, Chronometrist will note if the computer has received no events for some time, and clock out of the project. If it's an integer, clock out after that many seconds of computer inactivity.
-8. Use `make-thread` in v26 or the emacs-async library for `chronometrist-entries`/`chronometrist-report-entries`
-9. Some way to update buffers every second without making Emacs unusable. (impossible?)
-10. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
-11. Commands to rename a project, delete a project (erasing all records), and hide a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
-12. Tree of tasks (i.e. sub-tasks etc) - choosing a child task implies the parent tasks too.
+7. Use `make-thread` in v26 or the emacs-async library for `chronometrist-entries`/`chronometrist-report-entries`
+8. Some way to update buffers every second without making Emacs unusable. (impossible?)
+9. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
+10. Tree of tasks (i.e. sub-tasks etc) - choosing a child task implies the parent tasks too.
     - Alternatively - each task can have multiple tags. See [doc/tags.md](doc/tags.md)
-13. Set goal time for one or more tasks.
+11. Set goal time for one or more tasks.
 
 ### Chronometrist-report
 1. Show week counter and max weeks; don't scroll past first/last weeks
