@@ -56,14 +56,13 @@
 ;; ## FUNCTIONS ##
 (defun chronometrist-current-project ()
   "Return the name of the currently clocked-in project, or nil if the user is not clocked in."
-  (if (not (timeclock-currently-in-p))
-      nil
-    (with-current-buffer (find-file-noselect timeclock-file)
-      (save-excursion
-        (goto-char (point-max))
-        (forward-line -1)
-        (re-search-forward (concat chronometrist-time-re-file " ") nil t)
-        (buffer-substring-no-properties (point) (point-at-eol))))))
+  (let* ((last-event (-> (chronometrist-date)
+                         (gethash chronometrist-events)
+                         (chronometrist-vlast)))
+         (last-code (chronometrist-vfirst last-event)))
+    (if (equal last-code "i")
+        (elt last-event 8)
+      nil)))
 
 (defun chronometrist-project-active? (project)
   "Return t if PROJECT is currently clocked in, else nil."
@@ -137,9 +136,11 @@ Return value is a vector in the form [HOURS MINUTES SECONDS].
 
 DATE must be calendrical information calendrical
 information (see (info \"(elisp)Time Conversion\"))."
-  (->> timeclock-project-list
-       (--map (chronometrist-project-time-one-day it date))
-       (-reduce #'chronometrist-time-add)))
+  (if timeclock-project-list
+      (->> timeclock-project-list
+           (--map (chronometrist-project-time-one-day it date))
+           (-reduce #'chronometrist-time-add))
+    [0 0 0]))
 
 (defun chronometrist-print-keybind (command &optional description firstonly)
   "Insert the keybindings for COMMAND.
@@ -464,7 +465,7 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
                      (chronometrist-goto-last-project))))
           (unless chronometrist--fs-watcher
             (setq chronometrist--fs-watcher
-                  (file-notify-add-watch chronometrist-file
+                  (file-notify-add-watch timeclock-file
                                          '(change)
                                          #'chronometrist-refresh-file))))))))
 
