@@ -350,10 +350,13 @@ is the clocked-out project.")
 
 If there is no project at point, do nothing.
 
-With numeric prefix argument PREFIX, toggle the Nth project. If
-there is no corresponding project, do nothing."
+With numeric prefix argument PREFIX, toggle the Nth project in
+the buffer. If there is no corresponding project, do nothing."
   (interactive `(,current-prefix-arg
-                 ,(completing-read-multiple "Tags (optional): "
+                 ,(completing-read-multiple (concat "Tags for "
+                                                    (or (chronometrist-current-task)
+                                                        (chronometrist-project-at-point))
+                                                    " (optional): ")
                                             ;; FIXME - use tags, not tasks
                                             (chronometrist-tasks-from-table)
                                             nil 'confirm nil 'history)))
