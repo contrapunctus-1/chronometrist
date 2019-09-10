@@ -19,7 +19,7 @@ See `timeclock-log-data' for a description."
     (save-excursion
       (goto-char (point-min))
       (let ((key-counter 0))
-        (while (not (= (point) (point-max)))
+        (while (not (eobp))
           (let* ((event-string       (buffer-substring-no-properties (point-at-bol) (point-at-eol)))
                  (event-list         (split-string event-string "[ /:]"))
                  (code               (first event-list))
@@ -29,7 +29,7 @@ See `timeclock-log-data' for a description."
                                           (mapcar #'string-to-number it)
                                           (reverse it)
                                           (apply #'encode-time it)
-                                          (chronometrist-format-time-iso8601)))
+                                          (chronometrist-format-time-iso8601 it)))
                  (project-or-comment (replace-regexp-in-string
                                       (rx (and (or "i" "o") " "
                                                (and (= 4 digit) "/" (= 2 digit) "/" (= 2 digit) " ")
