@@ -107,22 +107,45 @@ this time interval that should be recorded."
       (unless (eobp)
         (insert "\n")))))
 
-(define-derived-mode chronometrist-read-key-values-mode emacs-lisp-mode "Key-Values"
+(defvar chronometrist-kv-buffer-name "*Chronometrist-Key-Values*")
+
+(defvar chronometrist--kv nil)
+
+(defun chronometrist-kv-accept ()
+  (interactive)
+  (with-current-buffer (get-buffer chronometrist-kv-buffer-name)
+    (let (expr)
+      (goto-char (point-min))
+      (setq chronometrist--kv (ignore-errors (read (current-buffer))))
+      (kill-buffer chronometrist-kv-buffer-name))))
+
+(defun chronometrist-kv-reject ()
+  (interactive)
+  (kill-buffer chronometrist-kv-buffer-name))
+
+(defvar chronometrist-kv-read-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c C-c") #'chronometrist-kv-accept)
+    (define-key map (kbd "C-c C-k") #'chronometrist-kv-reject)
+    map)
+  "Keymap used by `chronometrist-mode'.")
+
+(define-derived-mode chronometrist-kv-read-mode emacs-lisp-mode "Key-Values"
   "Mode used by `chronometrist' to read key values from the user."
-  (add-hook 'after-load-functions #'elisp--font-lock-flush-elisp-buffers)
+  ;; (add-hook 'after-load-functions #'elisp--font-lock-flush-elisp-buffers)
   (insert ";; Use C-c C-c to accept, or C-c C-k to cancel\n")
   ;; FIXME - font lock doesn't work in these buffers...
   ;; (font-lock-fontify-buffer)
   )
 
-;; TODO - C-c C-c/C-c C-k bindings
-(defun chronometrist-read-key-values ()
-  (let ((buffer (get-buffer-create "*Chronometrist-Key-Values*")))
+(defun chronometrist-kv-read ()
+  (let ((buffer (get-buffer-create chronometrist-kv-buffer-name)))
+    (setq chronometrist--kv nil)
     (switch-to-buffer buffer)
     (with-current-buffer buffer
       (chronometrist-common-clear-buffer buffer)
-      (emacs-lisp-mode)
-      ;; (chronometrist-read-key-values-mode)
+      ;; (emacs-lisp-mode)
+      (chronometrist-kv-read-mode)
       (unwind-protect
           (progn
             (insert "(")
