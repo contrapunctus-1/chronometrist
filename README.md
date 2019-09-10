@@ -16,6 +16,12 @@ Largely modelled after the Android application, [A Time Tracker](https://github.
 
 **WARNING: with the next version (v0.3), chronometrist will no longer use timeclock as a dependency and will use its own s-expression-based backend. A command to migrate the timeclock-file will be provided.**
 
+## Differences from timeclock
+* Stores data in an s-expression format rather than a line-based one
+* Supports attaching tags and arbitrary key-values to time intervals
+* Has commands to shows useful summaries
+* Has a more useful implementation of hooks (see [Hooks](#Hooks))
+
 ## Installation
 You can get `chronometrist` from https://framagit.org/contrapunctus/chronometrist/
 
