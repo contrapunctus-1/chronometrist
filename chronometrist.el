@@ -346,6 +346,7 @@ is the clocked-out project.")
 
 ;; TODO - if clocked in and point not on a project, just clock out
 ;; PROFILE
+;; TODO - implement `chronometrist-ask-tags-p' and `chronometrist-ask-key-values-p' (don't prompt for them if nil)
 (defun chronometrist-toggle-project (&optional prefix tags)
   "Start or stop the project at point.
 

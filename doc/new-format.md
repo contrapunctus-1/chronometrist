@@ -77,13 +77,15 @@ UI ideas
        (insert (completing-read "Key (C-g to quit): " nil) "=")
        (insert (completing-read "Value (C-g to quit): " nil) "\n"))
      ```
+     * Why not just use that to build an s-expression instead? Add : to keys (if they don't start with it) to make keywords, convert values to strings if they contain spaces and don't start with parens. `read` the buffer to get your plist.
 
 What does this make the UX flow?
 1. `RET` - user clocks in/out
 2. prompt for tags - `RET`/enter values and `RET`
 3. buffer opens, prompt for key values - `C-c C-c`/edit key values and `C-c C-c`
 
-That's `RET RET C-c C-c` to simply clock in/out with no bells and whistles. Maybe we can make `C-u RET` do that for short.
+That's `RET RET C-c C-c` to simply clock in/out, for someone who doesn't need the bells and whistles. Maybe we can make `C-u RET` do that for short.
+* Also, add two variables - `chronometrist-ask-tags-p` and `chronometrist-ask-key-values-p`. Don't prompt for them if these are nil.
 
 ## Populating history data
 When?
