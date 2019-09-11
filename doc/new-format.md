@@ -78,6 +78,12 @@ UI ideas
        (insert (completing-read "Value (C-g to quit): " nil) "\n"))
      ```
      * Why not just use that to build an s-expression instead? Add : to keys (if they don't start with it) to make keywords, convert values to strings if they contain spaces and don't start with parens. `read` the buffer to get your plist.
+       * C-g seems to cease all execution, including the function which called `kv-read` and to which `kv-accept` would return. I have a few options -
+         1. ~~Try something with catch/throw~~
+         2. Try a recursive edit
+         3. Since the Elisp manual advises against #2, see what it recommends as alternatives ("e" and "m" commands in Rmail)
+         4. Define your own key to quit from the completing-read loop. Yes, that causes issues with ido/helm/ivy setups. There will probably have to be special cases written for each of them :\
+         5. Ditch the "loop completing-read" approach, define completion keys in the minor mode and do without confirm-on-new-key.
 
 What does this make the UX flow?
 1. `RET` - user clocks in/out

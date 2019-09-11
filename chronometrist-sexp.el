@@ -35,7 +35,10 @@
            (make-symbol it))
          list))
 
-(defun chronometrist-in (task &optional tags plist)
+(defun chronometrist-in (task &optional tags)
+  "Clock in to TASK; record current time in `chronometrist-file'.
+
+TASK is the name of the task, a string."
   (interactive `(,(completing-read "Task name: "
                                    (chronometrist-tasks-from-table)
                                    nil 'confirm nil
@@ -45,12 +48,6 @@
                                             ;; FIXME - use tags, not tasks
                                             (chronometrist-tasks-from-table)
                                             nil 'confirm nil 'history)))
-  "Add new time interval as an s-expression to `chronometrist-file'.
-
-TASK is the name of the task, a string.
-
-PLIST is a property list containing any other information about
-this time interval that should be recorded."
   (let ((buffer (find-file-noselect chronometrist-file)))
     (with-current-buffer buffer
       (goto-char (point-max))
@@ -59,13 +56,14 @@ this time interval that should be recorded."
       (plist-pp (append `(:name ,task)
                         (when tags
                           `(:tags ,(chronometrist-maybe-string-to-symbol tags)))
-                        (chronometrist-plist-remove plist :tags)
+                        ;; May cause problems if PLIST has any keys in
+                        ;; common with Chronometrist's...
+                        (when plist plist)
                         `(:start ,(format-time-string "%FT%T%z")))
                 buffer)
       (save-buffer))))
 
-;; TODO - implement PLIST arg
-(defun chronometrist-out (&optional tags plist)
+(defun chronometrist-out (&optional tags)
   "Record current moment as stop time to last s-exp in `chronometrist-file'.
 
 PLIST is a property list containing any other information about
@@ -112,12 +110,35 @@ this time interval that should be recorded."
 (defvar chronometrist--kv nil)
 
 (defun chronometrist-kv-accept ()
+  "Accept the property list in `chronometrist-kv-buffer-name', adding it to `chronometrist-file'."
   (interactive)
-  (with-current-buffer (get-buffer chronometrist-kv-buffer-name)
-    (let (expr)
+  (let ((backend-buffer (find-file-noselect chronometrist-file))
+        user-kv-expr
+        last-expr)
+    (with-current-buffer (get-buffer-create chronometrist-kv-buffer-name)
       (goto-char (point-min))
-      (setq chronometrist--kv (ignore-errors (read (current-buffer))))
-      (kill-buffer chronometrist-kv-buffer-name))))
+      (setq user-kv-expr (ignore-errors (read (current-buffer))))
+      (kill-buffer chronometrist-kv-buffer-name))
+    (with-current-buffer backend-buffer
+      (goto-char (point-max))
+      (backward-list)
+      (setq last-expr (ignore-errors (read backend-buffer)))
+      (backward-list)
+      (chronometrist-delete-list)
+      ;; REVIEW - as a side-effect, this removes anything that isn't
+      ;; one of :name, :tags, :start, and :stop...just for the sake of
+      ;; keeping the keys in a specific order.
+      (let ((name  (plist-get last-expr :name))
+            (tags  (plist-get last-expr :tags))
+            (start (plist-get last-expr :start))
+            (stop  (plist-get last-expr :stop)))
+        (plist-pp (append (when name `(:name ,name))
+                          (when tags `(:tags ,tags))
+                          user-kv-expr
+                          (when start `(:start ,start))
+                          (when stop `(:stop ,stop)))
+                  backend-buffer))
+      (save-buffer))))
 
 (defun chronometrist-kv-reject ()
   (interactive)
@@ -132,36 +153,41 @@ this time interval that should be recorded."
 
 (define-derived-mode chronometrist-kv-read-mode emacs-lisp-mode "Key-Values"
   "Mode used by `chronometrist' to read key values from the user."
-  ;; (add-hook 'after-load-functions #'elisp--font-lock-flush-elisp-buffers)
-  (insert ";; Use C-c C-c to accept, or C-c C-k to cancel\n")
-  ;; FIXME - font lock doesn't work in these buffers...
-  ;; (font-lock-fontify-buffer)
-  )
+  (insert ";; Use C-c C-c to accept, or C-c C-k to cancel\n"))
 
 (defun chronometrist-kv-read ()
+  "Read key-values from user."
   (let ((buffer (get-buffer-create chronometrist-kv-buffer-name)))
     (setq chronometrist--kv nil)
     (switch-to-buffer buffer)
     (with-current-buffer buffer
       (chronometrist-common-clear-buffer buffer)
-      ;; (emacs-lisp-mode)
       (chronometrist-kv-read-mode)
-      (unwind-protect
-          (progn
-            (insert "(")
-            (while t
-              (let (key value)
-                ;; can't query these within the let definitions,
-                ;; because that way KEY won't be inserted into the
-                ;; buffer until you enter VALUE
-                (setq key (completing-read "Key (C-g to quit): " nil))
-                (when key   (insert ":" key))
-                (setq value (completing-read "Value (C-g to quit): " nil))
-                (when value (insert " " value "\n")))))
-        (when (bolp)
-          (backward-char 1))
-        (insert ")")
-        (chronometrist-reindent-buffer)))))
+      (insert "(")
+      (catch 'empty-input
+        (let (input key value)
+          (while t
+            ;; FIXME - allow spaces in values; convert to appropriate types
+            ;; TODO - implement history/suggestions
+
+            ;; can't query these within the `let' definitions,
+            ;; because that way KEY won't be inserted into the
+            ;; buffer until you enter VALUE
+            (setq key   (completing-read "Key (leave blank to quit): " nil)
+                  input key)
+            (if (string-empty-p input)
+                (throw 'empty-input nil)
+              (insert ":" key))
+
+            (setq value (read-from-minibuffer "Value (leave blank to quit): ")
+                  input value)
+            (if (string-empty-p input)
+                (throw 'empty-input nil)
+              (insert " " value "\n")))))
+      (when (bolp)
+        (backward-char 1))
+      (insert ")")
+      (chronometrist-reindent-buffer))))
 
 (provide 'chronometrist-sexp)
 

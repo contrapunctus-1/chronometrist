@@ -274,6 +274,7 @@ is the clocked-out project.")
   (run-hook-with-args 'chronometrist-project-start-functions
                       task))
 
+;; FIXME - merge these two
 (defun chronometrist-run-after-project-stop-functions (task)
   "Call each function in `chronometrist-after-project-stop-functions' with PROJECT."
   (run-hook-with-args 'chronometrist-after-project-stop-functions
@@ -347,7 +348,7 @@ is the clocked-out project.")
 ;; TODO - if clocked in and point not on a project, just clock out
 ;; PROFILE
 ;; TODO - implement `chronometrist-ask-tags-p' and `chronometrist-ask-key-values-p' (don't prompt for them if nil)
-(defun chronometrist-toggle-project (&optional prefix tags)
+(defun chronometrist-toggle-project (&optional prefix tags plist)
   "Start or stop the project at point.
 
 If there is no project at point, do nothing.
@@ -379,7 +380,7 @@ the buffer. If there is no corresponding project, do nothing."
              (chronometrist-run-functions-and-clock-out current tags))
            (unless (equal target current)
              (chronometrist-run-project-start-functions target)
-             (chronometrist-in target))))
+             (chronometrist-in target tags))))
     (chronometrist-refresh)))
 
 (defun chronometrist-toggle-project-no-reason (&optional prefix)
