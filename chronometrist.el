@@ -380,7 +380,7 @@ the buffer. If there is no corresponding project, do nothing."
            ;; clocked in + target is some other project = clock out, clock in to project
            ;; clocked out = clock in
            (when current
-             (chronometrist-run-functions-and-clock-out current tags))
+             (chronometrist-run-functions-and-clock-out current))
            (unless (equal target current)
              (chronometrist-run-functions-and-clock-in target))))
     (chronometrist-refresh)))
