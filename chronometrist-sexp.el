@@ -208,7 +208,8 @@ ARGS are ignored."
         (backward-char 1))
       (unless (chronometrist-current-task)
         (insert ")"))
-      (chronometrist-reindent-buffer))))
+      (chronometrist-reindent-buffer)))
+  t)
 
 (provide 'chronometrist-sexp)
 

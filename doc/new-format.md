@@ -67,7 +67,28 @@ If we deal with it by changing the file, what happens when the user changes thei
   * Possible with `add-variable-watcher` or `:custom-set` in Customize (thanks bpalmer)
 
 # Arbitrary key values
-UI ideas
+A new idea - store them in a separate sub-plist. i.e. instead of this -
+
+```
+(:name    "Programming"
+ :tags    ("Emacs Lisp")
+ :project "Chronometrist"
+ :feature "key-values"
+ :start   "2019-09-11T13:42:16+0530"
+ :stop    "2019-09-11T16:09:48+0530")
+```
+do this -
+```
+(:name       "Programming"
+ :tags       ("Emacs Lisp")
+ :user-plist (:project "Chronometrist"
+              :feature "key-values")
+ :start      "2019-09-11T13:42:16+0530"
+ :stop       "2019-09-11T16:09:48+0530")
+```
+That makes sorting the plist into `(:name <user tags> :start :stop)` simpler. Conflicts between user-provided and Chronometrist-default keywords can be avoided without work.
+
+## UI ideas
 1. Pre-define keys for task names in a plist. Prompt for each key when clocking in/out for that particular task. (Adding new ones is extra work. Probably acceptable?)
 2. \<bpalmer\> ask the user to type 'key=value', one per line, in a buffer. parse the buffer after the user submits with C-c C-c
    * smart behaviour/quick entry of common key-values - pre-insert the N most commonly used ones
