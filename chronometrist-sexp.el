@@ -114,7 +114,7 @@ Point is left after the last expression."
 (defun chronometrist-kv-read (&rest args)
   "Read key-values from user.
 
-ARGS are ignored."
+ARGS are ignored. This function always returns t."
   (let ((buffer (get-buffer-create chronometrist-kv-buffer-name)))
     (switch-to-buffer buffer)
     (with-current-buffer buffer

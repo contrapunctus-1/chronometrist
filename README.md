@@ -46,7 +46,7 @@ Running `M-x chronometrist` when the Chronometrist buffer is visible will kill i
 `chronometrist` keeps itself updated via an idle timer - no need to frequently press `g` to update.
 
 #### Attaching key values to time intervals
-Add `chronometrist-kv-read` to `chronometrist-project-start-functions` and/or `chronometrist-before-project-stop-functions`, as you like (see [Hooks](#Hooks)).
+Add `chronometrist-kv-read` to `chronometrist-before-in-functions` and/or `chronometrist-before-out-functions`, as you like (see [Hooks](#Hooks)).
 
 You will now be prompted to enter key-values when you clock in/out. Leave an entry blank to exit the prompt, edit the resulting key-values by hand if required, then press `C-c C-c` to accept the key-values (or `C-c C-k` to cancel).
 
@@ -82,9 +82,10 @@ If you find that you usually _don't_ want to enter a reason, you can switch the 
 
 ### Hooks
 Chronometrist currently has three hooks -
-1. `chronometrist-project-start-functions`
-2. `chronometrist-before-project-stop-functions`
-3. `chronometrist-after-project-stop-functions`
+1. `chronometrist-before-in-functions`
+1. `chronometrist-after-in-functions`
+2. `chronometrist-before-out-functions`
+3. `chronometrist-after-out-functions`
 
 As their names suggest, these are 'abnormal' hooks, i.e. the functions they contain must accept arguments. In this case, each function must accept exactly one argument, which is the project which is being started or stopped.
 
@@ -95,7 +96,7 @@ As an example from the author's own init -
   (when (equal project "Guitar")
     (find-file-other-window "~/repertoire.org")))
 
-(add-hook 'chronometrist-project-start-functions 'my-start-guitar)
+(add-hook 'chronometrist-before-in-functions 'my-start-guitar)
 ```
 
 Another one, prompting the user if they have uncommitted changes in a git repository (assuming they use [Magit](https://magit.vc/)) -
@@ -110,7 +111,7 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
     (magit-status)
     nil))
 
-(add-hook 'chronometrist-before-project-stop-functions 'my-commit-prompt)
+(add-hook 'chronometrist-before-out-functions 'my-commit-prompt)
 ```
 
 ## Roadmap/Ideas
