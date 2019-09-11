@@ -14,6 +14,7 @@
       * *Rename* a project (updating all records)
       * *Delete* a project (erasing all records)
       * *Hide* a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
+   3. Hook enhancement - can we supply the whole plist (including tags and key-values) to the task-start hooks, so users can have even smarter hook functions?
 ** UX
    1. don't suggest nil when asking for first project on first run
    2. when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh

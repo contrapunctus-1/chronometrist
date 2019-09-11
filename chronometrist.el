@@ -274,18 +274,13 @@ is the clocked-out project.")
   (run-hook-with-args 'chronometrist-project-start-functions
                       task))
 
-;; FIXME - merge these two
-(defun chronometrist-run-after-project-stop-functions (task)
-  "Call each function in `chronometrist-after-project-stop-functions' with PROJECT."
-  (run-hook-with-args 'chronometrist-after-project-stop-functions
-                      task))
-
 (defun chronometrist-run-functions-and-clock-out (task tags)
   "Run hooks and clock out of TASK."
   (when (run-hook-with-args-until-failure 'chronometrist-before-project-stop-functions
                                           task)
     (chronometrist-out tags)
-    (chronometrist-run-after-project-stop-functions task)))
+    (run-hook-with-args 'chronometrist-after-project-stop-functions
+                        task)))
 
 ;; ## MAJOR-MODE ##
 (defvar chronometrist-mode-map
