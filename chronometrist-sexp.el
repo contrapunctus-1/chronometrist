@@ -58,7 +58,6 @@ TASK is the name of the task, a string."
                           `(:tags ,(chronometrist-maybe-string-to-symbol tags)))
                         ;; May cause problems if PLIST has any keys in
                         ;; common with Chronometrist's...
-                        (when plist plist)
                         `(:start ,(format-time-string "%FT%T%z")))
                 buffer)
       (save-buffer))))
