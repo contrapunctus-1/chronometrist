@@ -115,16 +115,18 @@ Point is left after the last expression."
   "Read key-values from user.
 
 ARGS are ignored. This function always returns t."
-  (let ((buffer (get-buffer-create chronometrist-kv-buffer-name)))
+  (let ((buffer (get-buffer-create chronometrist-kv-buffer-name))
+        last-sexp)
     (switch-to-buffer buffer)
     (with-current-buffer buffer
       (chronometrist-common-clear-buffer buffer)
       (chronometrist-kv-read-mode)
-      (if (chronometrist-current-task)
+      (if (and
+           (chronometrist-current-task)
+           (setq last-sexp (chronometrist-plist-remove (chronometrist-last-sexp)
+                                          :name :tags :start :stop)))
           (progn
-            (-> (chronometrist-last-sexp)
-                (chronometrist-plist-remove :name :tags :start :stop)
-                (plist-pp buffer))
+            (plist-pp last-sexp buffer)
             (down-list -1)
             (insert "\n "))
         (insert "("))
@@ -150,7 +152,8 @@ ARGS are ignored. This function always returns t."
               (insert " " value "\n")))))
       (when (bolp)
         (backward-char 1))
-      (unless (chronometrist-current-task)
+      (unless (and (chronometrist-current-task)
+                   last-sexp)
         (insert ")"))
       (chronometrist-reindent-buffer)))
   t)
