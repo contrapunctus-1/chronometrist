@@ -45,6 +45,11 @@ Running `M-x chronometrist` when the Chronometrist buffer is visible will kill i
 
 `chronometrist` keeps itself updated via an idle timer - no need to frequently press `g` to update.
 
+#### Attaching key values to time intervals
+Add `chronometrist-kv-read` to `chronometrist-project-start-functions` and/or `chronometrist-before-project-stop-functions`, as you like (see [Hooks](#Hooks)).
+
+You will now be prompted to enter key-values when you clock in/out. Leave an entry blank to exit the prompt, edit the resulting key-values by hand if required, then press `C-c C-c` to accept the key-values (or `C-c C-k` to cancel).
+
 ### chronometrist-report
 Run `M-x chronometrist-report` (or `chronometrist` with a prefix argument of 1, or press `r` in the `chronometrist` buffer) to see a weekly report.
 

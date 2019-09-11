@@ -15,6 +15,8 @@
       * *Delete* a project (erasing all records)
       * *Hide* a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
    3. Hook enhancement - can we supply the whole plist (including tags and key-values) to the task-start hooks, so users can have even smarter hook functions?
+      * That would mean ensuring that -kv-read runs before other hooks.
+      * Actually, it should be trivial to access the last expression in the file, so maybe this is unnecessary.
 ** UX
    1. don't suggest nil when asking for first project on first run
    2. when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh

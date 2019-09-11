@@ -132,11 +132,11 @@ this time interval that should be recorded."
             (tags  (plist-get last-expr :tags))
             (start (plist-get last-expr :start))
             (stop  (plist-get last-expr :stop)))
-        (plist-pp (append (when name `(:name ,name))
-                          (when tags `(:tags ,tags))
+        (plist-pp (append (when name  `(:name  ,name))
+                          (when tags  `(:tags  ,tags))
                           user-kv-expr
                           (when start `(:start ,start))
-                          (when stop `(:stop ,stop)))
+                          (when stop  `(:stop  ,stop)))
                   backend-buffer))
       (save-buffer))))
 
@@ -153,21 +153,40 @@ this time interval that should be recorded."
 
 (define-derived-mode chronometrist-kv-read-mode emacs-lisp-mode "Key-Values"
   "Mode used by `chronometrist' to read key values from the user."
+  ;; TODO - check keybindings at run-time instead of hard-coding them
   (insert ";; Use C-c C-c to accept, or C-c C-k to cancel\n"))
 
-(defun chronometrist-kv-read ()
-  "Read key-values from user."
+(defun chronometrist-last-sexp ()
+  "Return last s-expression from `chronometrist-file'.
+
+Point is left after the last expression."
+  (let ((buffer (find-file-noselect chronometrist-file)))
+    (with-current-buffer buffer
+      (goto-char (point-max))
+      (backward-list)
+      (ignore-errors
+        (read buffer)))))
+
+(defun chronometrist-kv-read (&rest args)
+  "Read key-values from user.
+
+ARGS are ignored."
   (let ((buffer (get-buffer-create chronometrist-kv-buffer-name)))
-    (setq chronometrist--kv nil)
     (switch-to-buffer buffer)
     (with-current-buffer buffer
       (chronometrist-common-clear-buffer buffer)
       (chronometrist-kv-read-mode)
-      (insert "(")
+      (if (chronometrist-current-task)
+          (progn
+            (-> (chronometrist-last-sexp)
+                (chronometrist-plist-remove :name :tags :start :stop)
+                (plist-pp buffer))
+            (down-list -1)
+            (insert "\n "))
+        (insert "("))
       (catch 'empty-input
         (let (input key value)
           (while t
-            ;; FIXME - allow spaces in values; convert to appropriate types
             ;; TODO - implement history/suggestions
 
             ;; can't query these within the `let' definitions,
@@ -177,8 +196,9 @@ this time interval that should be recorded."
                   input key)
             (if (string-empty-p input)
                 (throw 'empty-input nil)
-              (insert ":" key))
+              (insert " :" key))
 
+            ;; TODO - insert as string if it contains spaces and isn't a list
             (setq value (read-from-minibuffer "Value (leave blank to quit): ")
                   input value)
             (if (string-empty-p input)
@@ -186,7 +206,8 @@ this time interval that should be recorded."
               (insert " " value "\n")))))
       (when (bolp)
         (backward-char 1))
-      (insert ")")
+      (unless (chronometrist-current-task)
+        (insert ")"))
       (chronometrist-reindent-buffer))))
 
 (provide 'chronometrist-sexp)
