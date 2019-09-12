@@ -133,12 +133,13 @@ ARGS are ignored. This function always returns t."
       (catch 'empty-input
         (let (input key value)
           (while t
-            ;; TODO - implement history/suggestions
-
             ;; can't query these within the `let' definitions,
             ;; because that way KEY won't be inserted into the
             ;; buffer until you enter VALUE
-            (setq key   (completing-read "Key (leave blank to quit): " nil)
+            (setq key   (completing-read "Key (leave blank to quit): "
+                                         ;; ;; FIXME - we use blank input to quit, but completing-read uses that to select the default suggestion...
+                                         ;; (chronometrist-key-history-for-task (plist-get (chronometrist-last-sexp) :name))
+                                         nil)
                   input key)
             (if (string-empty-p input)
                 (throw 'empty-input nil)

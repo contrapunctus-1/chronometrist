@@ -4,6 +4,7 @@
 (require 'chronometrist-common)
 (require 'chronometrist-timer)
 (require 'chronometrist-custom)
+(require 'chronometrist-history)
 (require 'chronometrist-report)
 (require 'chronometrist-statistics)
 (require 'chronometrist-sexp)
@@ -202,6 +203,7 @@ Argument FS-EVENT is ignored."
   ;; (chronometrist-file-clean)
   (chronometrist-events-populate)
   (setq chronometrist--task-list (chronometrist-tasks-from-table))
+  (chronometrist-key-history-populate)
   (chronometrist-refresh))
 
 ;; HACK - has some duplicate logic with `chronometrist-task-events-in-day'

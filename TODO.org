@@ -19,6 +19,12 @@
    3. Hook enhancement - can we supply the whole plist (including tags and key-values) to the task-start hooks, so users can have even smarter hook functions?
       * That would mean ensuring that -kv-read runs before other hooks.
       * Actually, it should be trivial to access the last expression in the file, so maybe this is unnecessary.
+   4. Key-values
+      * [-] generate history hash table from chronometrist-file.
+      * [ ] if there are no previous key-values and user enters blank first key, cancel prompt and kill the key-value buffer
+      * [ ] create button to add key-values to last entry (whether clocked in or out)
+   5. Tags
+      * [ ] generate history hash table from chronometrist-file
 ** UX
    1. don't suggest nil when asking for first project on first run
    2. when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
