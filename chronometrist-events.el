@@ -124,8 +124,8 @@ Values are vectors containing events, where each event is a
 vector in the form \[\"CODE\" YEAR MONTH DAY HOURS MINUTES
 SECONDS \"PROJECT-NAME-OR-COMMENT\"\].
 
-Return final number of events in the hash table, or nil if there
-are none."
+Return final number of events read from file, or nil if there
+were none."
   (clrhash chronometrist-events)
   (with-current-buffer (find-file-noselect chronometrist-file)
     (save-excursion
@@ -147,7 +147,7 @@ are none."
                  (new-value-date (->> (plist-get new-value :start)
                                       (s-left 10)))
                  (existing-value (gethash new-value-date chronometrist-events)))
-            (incf index)
+            (unless pending-expr (incf index))
             (puthash new-value-date
                      (if existing-value
                          (append existing-value
