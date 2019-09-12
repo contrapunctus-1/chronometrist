@@ -2,6 +2,8 @@
 2. -report - highlight the current day
 
 * Chronometrist
+** Bugs
+   1. Clocking-in/out doesn't result in updated display, sometimes (2019-09-12)
 ** Features
    1. Create chronometrist-unused-projects-list + chronometrist-projects-list.
    2. New commands

@@ -157,31 +157,6 @@ SECONDS)."
             (list 0 (* 86400 count)))
    (decode-time it)))
 
-;; TODO - remove operator argument - use negative/positive integers
-;; instead, and rename it to date-add
-(defun chronometrist-date-op (date operator &optional count)
-  "Return DATE incremented or decremented by COUNT days (1 if not
-supplied).
-
-DATE must be calendrical information (see (info \"(elisp)Time Conversion\"))
-
-OPERATOR must be either '+ or '-
-
-COUNT must be a positive integer."
-  (let ((count (if count count 1)))
-    (case (length date)
-      (3 (cl-destructuring-bind (year month day)
-             date
-           (-> (chronometrist-date-op-internal 0 0 0
-                                  day month year
-                                  operator count)
-               (chronometrist-calendrical->date))))
-      (t (cl-destructuring-bind (s m h day month year _ _ _)
-             date
-           (chronometrist-date-op-internal s m h
-                              day month year
-                              operator count))))))
-
 (defun chronometrist-format-keybinds (command map &optional firstonly)
   "Return the keybindings for COMMAND in MAP as a string.
 If FIRSTONLY is non-nil, return only the first keybinding found."

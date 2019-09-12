@@ -28,22 +28,23 @@ Each date is a list containing calendrical information (see (info \"(elisp)Time 
 
 ;; ## FUNCTIONS ##
 
-(defun chronometrist-report-previous-week-start (date)
-  "Return the date of the previous `chronometrist-report-week-start-day' from DATE.
+(defun chronometrist-report-previous-week-start (date-string)
+  "Return the time value of the previous `chronometrist-report-week-start-day' from DATE-STRING.
+
 If the day of DATE is the same as the
 `chronometrist-report-week-start-day', return DATE.
 
-DATE must be calendrical information (see (info \"(elisp)Time Conversion\")).
-
-Any time data provided is reset to midnight (00:00:00)."
-  (let* ((date       (->> date (-drop 3) (append '(0 0 0))))
-         (day        (elt date 6)) ;; 0-6, where 0 = Sunday
+DATE-STRING must be in the form \"YYYY-MM-DD\"."
+  (let* ((date-time  (chronometrist-iso-date->timestamp date-string))
+         (date-unix  (parse-iso8601-time-string date-time))
+         (date-list  (decode-time date-unix))
+         (day        (elt date-list 6)) ;; 0-6, where 0 = Sunday
          (week-start (chronometrist-day-of-week->number chronometrist-report-week-start-day))
          (gap        (cond ((> day week-start) (- day week-start))
                            ((< day week-start) (+ day (- 7 week-start))))))
     (if gap
-        (chronometrist-date-op date '- gap)
-      date)))
+        (time-subtract date-unix `(0 ,(* gap 86400)))
+      date-unix)))
 
 (defun chronometrist-report-date ()
   "Return the date specified by `chronometrist-report--ui-date'. If
@@ -79,25 +80,20 @@ calendrical information (see (info \"(elisp)Time Conversion\")).
 The first date is the first occurrence of
 `chronometrist-report-week-start-day' before the date specified in
 `chronometrist-report--ui-date' (if non-nil) or the current date."
-  (->> (chronometrist-report-date)
+  (->> (or chronometrist-report--ui-date (chronometrist-date))
        (chronometrist-report-previous-week-start)
-       (-take 6)
-       (apply #'encode-time)
-       (chronometrist-report-date->dates-in-week)
-       (-map #'decode-time)))
+       (chronometrist-report-date->dates-in-week)))
 
 (defun chronometrist-report-entries ()
   "Creates entries to be displayed in the buffer created by
 `chronometrist-report'."
   (let* ((week-dates        (chronometrist-report-date->week-dates)) ;; uses today if chronometrist-report--ui-date is nil
-         (week-dates-string (chronometrist-report-dates-in-week->string week-dates)))
+         (week-dates-string (mapcar #'chronometrist-date week-dates)))
     (setq chronometrist-report--ui-week-dates week-dates)
     (mapcar (lambda (project)
               (let ((project-daily-time-list
                      (--map (chronometrist-task-time-one-day project
-                                                 (->> it
-                                                      (apply #'encode-time)
-                                                      (chronometrist-date)))
+                                                 (chronometrist-date it))
                             week-dates)))
                 (list project
                       (vconcat
@@ -139,12 +135,14 @@ FORMAT-STRING."
                                          t)))
     (goto-char (point-min))
     (insert "                         ")
-    (--map (insert (chronometrist-report-format-date "%04d-%02d-%02d " it))
+    (--map (insert (chronometrist-date it) " ")
            (chronometrist-report-date->week-dates))
     (insert "\n")
     (goto-char (point-max))
     (insert w (format "%- 21s" "Total"))
-    (let ((total-time-daily (mapcar #'chronometrist-total-time-one-day chronometrist-report--ui-week-dates)))
+    (let ((total-time-daily (->> chronometrist-report--ui-week-dates
+                                 (mapcar #'chronometrist-date)
+                                 (mapcar #'chronometrist-active-time-one-day))))
       (->> total-time-daily
            (mapcar #'chronometrist-format-time)
            (--map (format "% 9s  " it))

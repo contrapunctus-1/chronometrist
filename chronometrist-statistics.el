@@ -52,72 +52,39 @@
 
 ;;; Code:
 
-(defun chronometrist-statistics-count-active-days (project &optional table)
-  "Return the number of days the user spent any time on PROJECT.
-TABLE must be a hash table - if not supplied, `chronometrist-events' is used.
-
-This will not return correct results if TABLE contains records
-which span midnights. (see `chronometrist-events-clean')"
-  (let ((count 0)
-        (table (if table table chronometrist-events)))
-    (maphash (lambda (date events)
-               (when (seq-find (lambda (event)
-                                 (and (equal (elt event 0) "i")
-                                      (equal (elt event 7) project)))
-                               events)
-                 (setq count (1+ count))))
-             table)
-    count))
-
-(defun chronometrist-task-events-in-day (task date)
-  "Get events for TASK on DATE. DATE must be in the form \"YYYY-MM-DD\".
-
-Returns a list of events, where each event is a property list in
-the form (:name \"NAME\" :start START :stop STOP ...), where
-START and STOP are ISO-8601 time strings.
-
-This will not return correct results if TABLE contains records
-which span midnights. (see `chronometrist-events-clean')"
-  (->> (gethash date chronometrist-events)
-       (mapcar (lambda (event)
-                 (when (equal task (plist-get event :name))
-                   event)))
-       (seq-filter #'identity)))
-
 (defun chronometrist-events->time-list (events)
   "Convert EVENTS to a list of time values.
 
-EVENTS must be a list of vectors in the form [\"CODE\" YEAR MONTH
-DATE HOUR MINUTES SECONDS \"PROJECT-NAME-OR-COMMENT\"] (see
-`chronometrist-events' and `chronometrist-events-populate')
+EVENTS must be a list of property lists in the form \(:name
+\"task name\" :start <time> :stop <time> ...)
+
+ (see `chronometrist-events' and `chronometrist-events-populate')
 
 For time value format, see (info \"(elisp)Time of Day\")."
   (let ((index 0)
         (length (length events))
-        result save)
+        result)
     (while (not (= index length))
       (let* ((elt   (elt events index))
              (start (parse-iso8601-time-string (plist-get elt :start)))
              (stop  (parse-iso8601-time-string (plist-get elt :stop))))
-        (if save
-            (progn (incf index)
-                   (setq result (append result (list stop))
-                         save nil))
-          (setq save stop
-                result (append result (list start))))))
+        (incf index)
+        (setq result (append result `((,start ,stop))))))
     result))
 
-(defun chronometrist-time-list->sum-of-intervals (time-values)
+(defun chronometrist-time-list->sum-of-intervals (time-value-lists)
   "From a list of start/end timestamps TIME-VALUES, get the total time interval.
 
-TIME-VALUES are a list of time values (see (info \"(elisp)Time of
-Day\")), assumed to be alternating start/end times. This function
-obtains the intervals between them, and adds the intervals to
-return a single time value.
+TIME-VALUE-LISTS is a list in the form
+\((START STOP) ...)
+where START and STOP are time values (see (info \"(elisp)Time of Day\")).
+
+This function obtains the intervals between them, and adds the
+intervals to return a single time value.
 
 If TIME-VALUES is nil, return '(0 0)."
-  (if time-values
-      (->> (-partition 2 time-values)
+  (if time-value-lists
+      (->> time-value-lists
            (--map (time-subtract (cadr it) (car it)))
            (-reduce #'time-add))
     '(0 0)))

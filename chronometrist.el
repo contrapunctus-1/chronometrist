@@ -135,7 +135,7 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
                                                t)))
       (goto-char (point-max))
       (-->
-       (chronometrist-total-time-one-day)
+       (chronometrist-active-time-one-day)
        (chronometrist-format-time it)
        (format "%s%- 26s%s" w "Total" it)
        (insert it))

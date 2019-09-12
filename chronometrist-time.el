@@ -55,7 +55,7 @@ chronologically more recent than T1."
 
 ;; Note - this assumes that an event never crosses >1 day. This seems
 ;; sufficient for all conceivable cases.
-(defun chronometrist-events-midnight-spanning-p (start-time stop-time)
+(defun chronometrist-midnight-spanning-p (start-time stop-time)
   "Return non-nil if START-TIME and STOP-TIME cross a midnight.
 
 Return value is a list in the form
@@ -65,13 +65,20 @@ Return value is a list in the form
   :stop STOP-TIME))"
   ;; FIXME - time zones are ignored; may cause issues with
   ;; time-zone-spanning events
+
+  ;; The time on which the first provided day starts (according to `chronometrist-day-start-time')
   (let* ((first-day-start (chronometrist-day-start start-time))
+         ;; HACK - won't work with custom day-start time
+         ;; (first-day-end   (parse-iso8601-time-string
+         ;;                   (concat (chronometrist-date (parse-iso8601-time-string start-time))
+         ;;                           "24:00:00")))
          (next-day-start  (time-add first-day-start
                                     '(0 . 86400)))
          (stop-time-unix  (parse-iso8601-time-string stop-time)))
+    ;; Does the event stop time exceed the the next day start time?
     (when (time-less-p next-day-start stop-time-unix)
       (list `(:start ,start-time
-                     :stop  ,(chronometrist-format-time-iso8601 first-day-start))
+                     :stop  ,(chronometrist-format-time-iso8601 next-day-start))
             `(:start ,(chronometrist-format-time-iso8601 next-day-start)
                      :stop  ,stop-time)))))
 
@@ -126,6 +133,11 @@ SECONDS must be a positive integer."
     (chronometrist-seconds-to-hms (+ (* h1 3600) (* h2 3600)
                         (* m1 60) (* m2 60)
                         s1 s2))))
+
+(defun chronometrist-iso-date->timestamp (date)
+  "Convert DATE to a complete timestamp by adding a time part (T00:00:00)."
+  ;; potential problem - time zones are ignored
+  (concat date "T00:00:00"))
 
 (defun chronometrist-date->time (date)
   "Convert DATE to a time value (see (info \"(elisp)Time of Day\")).

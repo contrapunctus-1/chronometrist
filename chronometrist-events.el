@@ -35,16 +35,16 @@
 TIMESTAMP must be a time string in the ISO-8601 format.
 
 Return value is a time value (see `current-time')."
-  (let* ((timestamp-date (->> timestamp
-                             (parse-iso8601-time-string)
-                             (decode-time)
-                             (-drop 3)
-                             (-take 3))))
+  (let ((timestamp-date-list (->> timestamp
+                                  (parse-iso8601-time-string)
+                                  (decode-time)
+                                  (-drop 3)
+                                  (-take 3))))
     (--> chronometrist-day-start-time
          (split-string it ":")
          (mapcar #'string-to-number it)
          (reverse it)
-         (append it timestamp-date)
+         (append it timestamp-date-list)
          (apply #'encode-time it))))
 
 (defun chronometrist-file-clean ()
@@ -90,8 +90,8 @@ It returns t if the table was modified, else nil."
 
 Return a list of two events if EVENT was split, else nil."
   (when (plist-get event :stop)
-    (let ((split-time (chronometrist-events-midnight-spanning-p (plist-get event :start)
-                                            (plist-get event :stop))))
+    (let ((split-time (chronometrist-midnight-spanning-p (plist-get event :start)
+                                             (plist-get event :stop))))
       (when split-time
         (let ((first-start  (plist-get (first  split-time) :start))
               (first-stop   (plist-get (first  split-time) :stop))
