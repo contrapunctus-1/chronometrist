@@ -9,7 +9,6 @@
 (require 'seq)
 
 ;;; Code:
-
 (defvar chronometrist-file "~/.emacs.d/chronometrist.sexp"
   "Default path and name of chronometrist database.")
 
@@ -60,6 +59,50 @@ Point is left after the last expression."
       (backward-list)
       (ignore-errors
         (read buffer)))))
+
+;;;; TAGS ;;;;
+(defvar chronometrist-tags-history nil
+  "List of past tag combinations, as a list.
+
+Each element is a list representing a single tag combination.")
+
+(defvar chronometrist-tags-history-combination-strings nil)
+
+(defvar chronometrist-tags-history-individual-strings nil)
+
+(defun chronometrist-tags-history-populate ()
+  (setq chronometrist-tags-history
+        (-> (chronometrist-events-query chronometrist-events :get :tags)
+            (remove-duplicates :test #'equal))
+
+        chronometrist-tags-history-combination-strings
+        (mapcar (lambda (list)
+                  (->> list
+                       (mapcar (lambda (elt)
+                                 (unless (stringp elt)
+                                   (symbol-name elt))))
+                       (-interpose ",")
+                       (apply #'concat)))
+                chronometrist-tags-history)
+
+        chronometrist-tags-history-individual-strings
+        (--> (chronometrist-events-query chronometrist-events :get :tags)
+             (-flatten it)
+             (remove-duplicates it :test #'equal)
+             (mapcar (lambda (elt)
+                       (if (stringp elt)
+                           elt
+                         (symbol-name elt)))
+                     it))))
+
+(defun chronometrist-tags-read ()
+  "Read one or more tags from the user and return them as a list of strings."
+  (completing-read-multiple "Tags (optional): "
+                            chronometrist-tags-history-individual-strings
+                            nil
+                            'confirm
+                            nil
+                            'chronometrist-tags-history-combination-strings))
 
 ;;;; KEY-VALUES ;;;;
 (defvar chronometrist-kv-buffer-name "*Chronometrist-Key-Values*")

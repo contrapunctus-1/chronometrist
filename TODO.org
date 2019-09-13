@@ -28,7 +28,8 @@
       * [ ] insert value as string if it contains spaces and isn't a list
       * [ ] when reading values, add quit keybinding (consistent with output of ~chronometrist-kv-completion-quit-key~) by passing MAP to ~read-from-minibuffer~
    5. Tags
-      * [ ] generate history hash table from chronometrist-file
+      * [-] generate history from chronometrist-file
+        * [ ] narrow it down to the :name
 ** UX
    1. don't suggest nil when asking for first project on first run
    2. when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh

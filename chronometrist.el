@@ -54,7 +54,7 @@
 (defvar chronometrist--timer-object nil)
 (defvar chronometrist--project-history nil)
 (defvar chronometrist--point nil)
-(defvar chronometrist--task-list nil)
+(defvar chronometrist-task-list nil)
 (defvar chronometrist--fs-watcher nil)
 
 ;; ## FUNCTIONS ##
@@ -80,7 +80,7 @@
   ;; (timeclock-reread-log)
   ;; (chronometrist-events-populate)
   ;; (chronometrist-events-clean)
-  (->> chronometrist--task-list
+  (->> chronometrist-task-list
        (-sort #'string-lessp)
        (--map-indexed
         (list it
@@ -190,7 +190,7 @@ of `revert-buffer-function'."
   (let* ((w (get-buffer-window chronometrist-buffer-name t))
          (task (window-point w)))
     (when w
-      (setq chronometrist--task-list (chronometrist-tasks-from-table))
+      (setq chronometrist-task-list (chronometrist-tasks-from-table))
       (with-current-buffer chronometrist-buffer-name
         (tabulated-list-print t nil)
         (chronometrist-print-non-tabular)
@@ -202,7 +202,8 @@ of `revert-buffer-function'."
 Argument FS-EVENT is ignored."
   ;; (chronometrist-file-clean)
   (chronometrist-events-populate)
-  (setq chronometrist--task-list (chronometrist-tasks-from-table))
+  (setq chronometrist-task-list (chronometrist-tasks-from-table))
+  (chronometrist-tags-history-populate)
   (chronometrist-key-history-populate)
   (chronometrist-refresh))
 
