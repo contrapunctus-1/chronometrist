@@ -118,11 +118,12 @@ Point is left after the last expression."
 
 It currently supports ido, ido-ubiquitous, ivy, and helm."
   (substitute-command-keys
-   (cond ((or ido-mode ido-ubiquitous-mode)
+   (cond ((or (bound-and-true-p ido-mode)
+              (bound-and-true-p ido-ubiquitous-mode))
           "\\<ido-completion-map>\\[ido-select-text]")
-         (ivy-mode
+         ((bound-and-true-p ivy-mode)
           "\\<ivy-minibuffer-map>\\[ivy-immediate-done]")
-         (helm-mode
+         ((bound-and-true-p helm-mode)
           "\\<helm-comp-read-map>\\[helm-cr-empty-string]")
          (t "leave blank"))))
 
