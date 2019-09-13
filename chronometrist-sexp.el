@@ -145,13 +145,11 @@ ARGS are ignored. This function always returns t."
             (plist-pp last-sexp buffer)
             (down-list -1)
             (insert "\n "))
-        (insert "("))
+        (insert "()")
+        (down-list -1))
       (catch 'empty-input
         (let (input key value)
           (while t
-            ;; can't query these within the `let' definitions,
-            ;; because that way KEY won't be inserted into the
-            ;; buffer until you enter VALUE
             (setq key (completing-read (concat "Key ("
                                                (chronometrist-kv-completion-quit-key)
                                                " to quit): ")
@@ -162,20 +160,11 @@ ARGS are ignored. This function always returns t."
             (if (string-empty-p input)
                 (throw 'empty-input nil)
               (insert " :" key))
-
-            ;; TODO - insert as string if it contains spaces and isn't a list
-            (setq value (read-from-minibuffer "Value ("
-                                              (chronometrist-kv-completion-quit-key)
-                                              " to quit): ")
+            (setq value (read-from-minibuffer "Value (RET to quit): ")
                   input value)
             (if (string-empty-p input)
                 (throw 'empty-input nil)
               (insert " " value "\n")))))
-      (when (bolp)
-        (backward-char 1))
-      (unless (and (chronometrist-current-task)
-                   last-sexp)
-        (insert ")"))
       (chronometrist-reindent-buffer)))
   t)
 

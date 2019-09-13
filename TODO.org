@@ -22,9 +22,11 @@
    4. Key-values
       * [-] generate history hash table from chronometrist-file.
         * [ ] generate value history hash table from chronometrist-file
-        * [ ] change "press X to quit" in prompt to suggest keys for ido, helm, and ivy
-      * [ ] if there are no previous key-values and user enters blank first key, cancel prompt and kill the key-value buffer
+        * [X] change "press X to quit" in prompt to suggest keys for ido, helm, and ivy
+      * [ ] if there are no previous key-values and user enters blank first key, cancel prompt and call ~chronometrist-kv-reject~
       * [ ] create button to add key-values to last entry (whether clocked in or out)
+      * [ ] insert value as string if it contains spaces and isn't a list
+      * [ ] when reading values, add quit keybinding (consistent with output of ~chronometrist-kv-completion-quit-key~) by passing MAP to ~read-from-minibuffer~
    5. Tags
       * [ ] generate history hash table from chronometrist-file
 ** UX
