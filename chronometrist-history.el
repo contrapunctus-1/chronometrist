@@ -35,17 +35,14 @@ is the number of times KEY-1 was used for the task."
                     (let ((old-key (seq-find (lambda (pair)
                                                (equal (car pair) key))
                                              name-ht-value)))
-                      (if old-key
-                          (puthash name
+                      (puthash name
+                               (if old-key
                                    (append `(,(cons key (incf (cdr old-key))))
                                            (seq-remove (lambda (pair)
                                                          (equal (car pair) key))
                                                        name-ht-value))
-                                   chronometrist-key-history)
-                        (puthash name
-                                 (append `(,(cons key 1))
-                                         name-ht-value)
-                                 chronometrist-key-history))))
+                                 (append `(,(cons key 1)) name-ht-value))
+                               chronometrist-key-history)))
                   keys)))))))
 
 (defun chronometrist-key-history-for-task (task)
