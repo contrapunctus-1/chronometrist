@@ -108,8 +108,8 @@ That makes sorting the plist into `(:name <user tags> :start :stop)` simpler. Co
          * bpalmer suggested an awesome idea to quit on blank input, which is great on many counts (someone who doesn't want to enter key-values can quit quickly, and you don't have to cease the entire function execution to stop). Unfortunately, while this works fine with `completing-read-default`, in ido, hitting RET without input simply accepts the first suggestion. :\
            * Helm and ivy do this, too.
            * Fortunately, the new "split" design of -kv-read/-kv-accept and the idea of placing -kv-read in hooks results in a green flag for the 'quit with C-g' idea. Someone who doesn't want the key-value feature will simply not add it to their hooks, and we can easily C-g with the earlier unwind-protect way, without breaking the key-value reading process.
-             * This is incorrect...C-g will stop a call to (run-hook-with-args ...) too :\
-               * Maybe we should try #4 above
+             * This is incorrect...C-g will stop a call to (run-hook-with-args ...) too :\ Maybe we should try #4 above
+               * Ido can quit without selecting anything using C-j (`ido-select-text`). Ivy can do this with C-M-j (`ivy-immediate-done`). Helm can do this with M-RET/C-RET (`helm-cr-empty-string`).
 
 What does this make the UX flow?
 1. `RET` - user clocks in/out
