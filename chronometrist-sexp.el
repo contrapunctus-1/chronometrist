@@ -109,7 +109,22 @@ Point is left after the last expression."
 (define-derived-mode chronometrist-kv-read-mode emacs-lisp-mode "Key-Values"
   "Mode used by `chronometrist' to read key values from the user."
   ;; TODO - check keybindings at run-time instead of hard-coding them
-  (insert ";; Use C-c C-c to accept, or C-c C-k to cancel\n"))
+  (->> ";; Use \\[chronometrist-kv-accept] to accept, or \\[chronometrist-kv-reject] to cancel\n"
+       (substitute-command-keys)
+       (insert)))
+
+(defun chronometrist-kv-completion-quit-key ()
+  "Return appropriate keybinding (as a string) to quit from `completing-read'.
+
+It currently supports ido, ido-ubiquitous, ivy, and helm."
+  (substitute-command-keys
+   (cond ((or ido-mode ido-ubiquitous-mode)
+          "\\<ido-completion-map>\\[ido-select-text]")
+         (ivy-mode
+          "\\<ivy-minibuffer-map>\\[ivy-immediate-done]")
+         (helm-mode
+          "\\<helm-comp-read-map>\\[helm-cr-empty-string]")
+         (t "leave blank"))))
 
 (defun chronometrist-kv-read (&rest args)
   "Read key-values from user.
@@ -136,17 +151,21 @@ ARGS are ignored. This function always returns t."
             ;; can't query these within the `let' definitions,
             ;; because that way KEY won't be inserted into the
             ;; buffer until you enter VALUE
-            (setq key   (completing-read "Key (leave blank to quit): "
-                                         ;; ;; FIXME - we use blank input to quit, but completing-read uses that to select the default suggestion...
-                                         ;; (chronometrist-key-history-for-task (plist-get (chronometrist-last-sexp) :name))
-                                         nil)
+            (setq key (completing-read (concat "Key ("
+                                               (chronometrist-kv-completion-quit-key)
+                                               " to quit): ")
+                                       (-> (chronometrist-last-sexp)
+                                           (plist-get :name)
+                                           (chronometrist-key-history-for-task)))
                   input key)
             (if (string-empty-p input)
                 (throw 'empty-input nil)
               (insert " :" key))
 
             ;; TODO - insert as string if it contains spaces and isn't a list
-            (setq value (read-from-minibuffer "Value (leave blank to quit): ")
+            (setq value (read-from-minibuffer "Value ("
+                                              (chronometrist-kv-completion-quit-key)
+                                              " to quit): ")
                   input value)
             (if (string-empty-p input)
                 (throw 'empty-input nil)
