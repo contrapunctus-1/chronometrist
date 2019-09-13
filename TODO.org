@@ -21,6 +21,8 @@
       * Actually, it should be trivial to access the last expression in the file, so maybe this is unnecessary.
    4. Key-values
       * [-] generate history hash table from chronometrist-file.
+        * [ ] generate value history hash table from chronometrist-file
+        * [ ] handle ido, helm, ivy in -kv-read
       * [ ] if there are no previous key-values and user enters blank first key, cancel prompt and kill the key-value buffer
       * [ ] create button to add key-values to last entry (whether clocked in or out)
    5. Tags
