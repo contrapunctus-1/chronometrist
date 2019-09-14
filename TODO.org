@@ -30,6 +30,7 @@
    5. Tags
       * [-] generate history from chronometrist-file
         * [ ] narrow it down to the :name
+      * [ ] write tags to last expression
 ** UX
    1. don't suggest nil when asking for first project on first run
    2. when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
@@ -56,6 +57,7 @@
    4. See if it is possible to store buttons in a variable, so *-print-non-tabular functions can be made shorter and less imperative. (see ~make-text-button~)
    5. Merge all event-querying functions so that they always operate on an entire hash table (so no 'day' variants),
    6. [ ] Use ~substitute-command-keys~ instead of ~chronometrist-format-keybinds~
+   7. [ ] See if using iteration constructs (especially ~loop~) can lead to nicer code than nested maps
    +6. Timeclock already _has_ hooks! :| Why do we re-implement them?+
       - I don't know of a way to know the project being clocked into using timeclock hooks.
       - With v0.2.0 Chronometrist also has a before-project-stop-functions, which runs before the project is stopped, and can control whether the project actually is stopped.

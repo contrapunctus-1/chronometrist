@@ -354,22 +354,14 @@ is the name of the project to be clocked out of.")
 ;; TODO - if clocked in and point not on a project, just clock out
 ;; PROFILE
 ;; TODO - implement `chronometrist-ask-tags-p' and `chronometrist-ask-key-values-p' (don't prompt for them if nil)
-(defun chronometrist-toggle-project (&optional prefix tags plist)
+(defun chronometrist-toggle-project (&optional prefix)
   "Start or stop the project at point.
 
 If there is no project at point, do nothing.
 
 With numeric prefix argument PREFIX, toggle the Nth project in
 the buffer. If there is no corresponding project, do nothing."
-  (interactive `(,current-prefix-arg
-                 ,(completing-read-multiple (concat "Tags for "
-                                                    ;; FIXME - doesn't work correctly with prefix arg
-                                                    (or (chronometrist-current-task)
-                                                        (chronometrist-project-at-point))
-                                                    " (optional): ")
-                                            ;; FIXME - use tags, not tasks
-                                            (chronometrist-tasks-from-table)
-                                            nil 'confirm nil 'history)))
+  (interactive "P")
   (let* ((empty-file (chronometrist-common-file-empty-p chronometrist-file))
          (nth        (when prefix (chronometrist-goto-nth-project prefix)))
          (at-point   (chronometrist-project-at-point))

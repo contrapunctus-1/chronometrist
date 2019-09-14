@@ -1,12 +1,12 @@
 ;;; chronometrist-sexp.el --- S-expression backend for Chronometrist
 
 (require 'chronometrist-migrate)
+(require 'chronometrist-events)
+(require 'dash)
+(require 'seq)
 
 ;;; Commentary:
 ;;
-
-(require 'dash)
-(require 'seq)
 
 ;;; Code:
 (defvar chronometrist-file "~/.emacs.d/chronometrist.sexp"
@@ -34,6 +34,12 @@
            (make-symbol it))
          list))
 
+(defun chronometrist-maybe-symbol-to-string (list)
+  "Convert each symbol in LIST to a string."
+  (--map (unless (stringp it)
+           (symbol-name it))
+         list))
+
 (defun chronometrist-reindent-buffer ()
   (interactive)
   (let (expr)
@@ -49,7 +55,7 @@
       (unless (eobp)
         (insert "\n")))))
 
-(defun chronometrist-last-sexp ()
+(defun chronometrist-last-expr ()
   "Return last s-expression from `chronometrist-file'.
 
 Point is left after the last expression."
@@ -60,11 +66,51 @@ Point is left after the last expression."
       (ignore-errors
         (read buffer)))))
 
+(defun chronometrist-append-to-last-expr (tags plist)
+  "Add TAGS and PLIST to last s-expression in `chronometrist-file'.
+
+TAGS should be a list of symbols and/or strings.
+
+PLIST should be a property list. Properties reserved by
+Chronometrist - currently :name, :tags, :start, and :stop - will
+be removed."
+  (let* ((old-expr  (chronometrist-last-expr))
+         (old-name  (plist-get old-expr :name))
+         (old-start (plist-get old-expr :start))
+         (old-stop  (plist-get old-expr :stop))
+         (old-tags  (plist-get old-expr :tags))
+         (old-kvs   (chronometrist-plist-remove old-expr
+                                   :name :tags :start :stop))
+         (plist     (chronometrist-plist-remove plist
+                                   :name :tags :start :stop))
+         (new-tags  (if old-tags
+                        (-> (append old-tags tags)
+                            ;; FIXME - why isn't this removing duplicates as expected?
+                            (remove-duplicates :test #'equal))
+                      tags))
+         (new-kvs   (copy-list old-expr))
+         (new-kvs   (-> (loop for (key val) on plist by #'cddr
+                              do (plist-put new-kvs key val)
+                              return new-kvs)
+                        (chronometrist-plist-remove :name :tags :start :stop)))
+         (buffer     (find-file-noselect chronometrist-file)))
+    (with-current-buffer buffer
+      (goto-char (point-max))
+      (backward-list)
+      (chronometrist-delete-list)
+      (-> (append `(:name ,old-name)
+                  `(:tags ,new-tags)
+                  new-kvs
+                  `(:start ,old-start)
+                  (when old-stop `(:stop  ,old-stop)))
+          (plist-pp buffer))
+      (save-buffer))))
+
 ;;;; TAGS ;;;;
 (defvar chronometrist-tags-history nil
-  "List of past tag combinations, as a list.
+  "List of past tag combinations.
 
-Each element is a list representing a single tag combination.")
+Each combination is a list containing tags as symbol and/or strings.")
 
 (defvar chronometrist-tags-history-combination-strings nil)
 
@@ -95,14 +141,29 @@ Each element is a list representing a single tag combination.")
                          (symbol-name elt)))
                      it))))
 
-(defun chronometrist-tags-read ()
-  "Read one or more tags from the user and return them as a list of strings."
+(defun chronometrist-tags-prompt (&optional initial-input)
+  "Read one or more tags from the user and return them as a list of strings.
+
+INITIAL-INPUT is as used in `completing-read'."
   (completing-read-multiple "Tags (optional): "
                             chronometrist-tags-history-individual-strings
                             nil
                             'confirm
-                            nil
+                            initial-input
                             'chronometrist-tags-history-combination-strings))
+
+(defun chronometrist-tags-add (&rest args)
+  "Read tags from the user and add them to the last s-expr in `chronometrist-file'.
+
+ARGS are ignored. This function always returns t."
+  (chronometrist-append-to-last-expr (->> (plist-get (chronometrist-last-expr) :tags)
+                             (chronometrist-maybe-symbol-to-string)
+                             (-interpose ",")
+                             (apply #'concat)
+                             (chronometrist-tags-prompt)
+                             (chronometrist-maybe-string-to-symbol))
+                        nil)
+  t)
 
 ;;;; KEY-VALUES ;;;;
 (defvar chronometrist-kv-buffer-name "*Chronometrist-Key-Values*")
@@ -113,7 +174,7 @@ Each element is a list representing a single tag combination.")
   (let ((backend-buffer (find-file-noselect chronometrist-file))
         user-kv-expr
         last-expr)
-    (with-current-buffer (get-buffer-create chronometrist-kv-buffer-name)
+    (with-current-buffer (get-buffer chronometrist-kv-buffer-name)
       (goto-char (point-min))
       (setq user-kv-expr (ignore-errors (read (current-buffer))))
       (kill-buffer chronometrist-kv-buffer-name))
@@ -170,8 +231,12 @@ It currently supports ido, ido-ubiquitous, ivy, and helm."
           "\\<helm-comp-read-map>\\[helm-cr-empty-string]")
          (t "leave blank"))))
 
-(defun chronometrist-kv-read (&rest args)
-  "Read key-values from user.
+(defun chronometrist-kv-add (&rest args)
+  "Read key-values from user, adding them to a temporary buffer for review.
+
+In the resulting buffer, users can run `chronometrist-kv-accept'
+to add them to the last s-expression in `chronometrist-file', or
+`chronometrist-kv-reject' to cancel.
 
 ARGS are ignored. This function always returns t."
   (let ((buffer (get-buffer-create chronometrist-kv-buffer-name))
@@ -182,7 +247,7 @@ ARGS are ignored. This function always returns t."
       (chronometrist-kv-read-mode)
       (if (and
            (chronometrist-current-task)
-           (setq last-sexp (chronometrist-plist-remove (chronometrist-last-sexp)
+           (setq last-sexp (chronometrist-plist-remove (chronometrist-last-expr)
                                           :name :tags :start :stop)))
           (progn
             (plist-pp last-sexp buffer)
@@ -196,7 +261,7 @@ ARGS are ignored. This function always returns t."
             (setq key (completing-read (concat "Key ("
                                                (chronometrist-kv-completion-quit-key)
                                                " to quit): ")
-                                       (-> (chronometrist-last-sexp)
+                                       (-> (chronometrist-last-expr)
                                            (plist-get :name)
                                            (chronometrist-key-history-for-task)))
                   input key)
@@ -213,38 +278,27 @@ ARGS are ignored. This function always returns t."
 
 
 ;;;; COMMANDS ;;;;
-(defun chronometrist-in (task &optional tags)
+(defun chronometrist-in (task &optional prefix)
   "Clock in to TASK; record current time in `chronometrist-file'.
 
 TASK is the name of the task, a string."
-  (interactive `(,(completing-read "Task name: "
-                                   (chronometrist-tasks-from-table)
-                                   nil 'confirm nil
-                                   ;; TODO - implement history
-                                   nil)))
+  (interactive "P")
   (let ((buffer (find-file-noselect chronometrist-file)))
     (with-current-buffer buffer
       (goto-char (point-max))
       (when (not (bobp)) (insert "\n"))
       (when (not (bolp)) (insert "\n"))
-      (plist-pp (append `(:name ,task)
-                        (when tags
-                          `(:tags ,(chronometrist-maybe-string-to-symbol tags)))
-                        ;; May cause problems if PLIST has any keys in
-                        ;; common with Chronometrist's...
-                        `(:start ,(format-time-string "%FT%T%z")))
+      (plist-pp `(:name  ,task
+                  :start ,(format-time-string "%FT%T%z"))
                 buffer)
       (save-buffer))))
 
-(defun chronometrist-out (&optional tags)
+(defun chronometrist-out (&optional prefix)
   "Record current moment as stop time to last s-exp in `chronometrist-file'.
 
 PLIST is a property list containing any other information about
 this time interval that should be recorded."
-  (interactive `(,(completing-read-multiple "Tags (optional): "
-                                            ;; FIXME - use tags, not tasks
-                                            (chronometrist-tasks-from-table)
-                                            nil 'confirm nil 'history)))
+  (interactive "P")
   (let ((buffer (find-file-noselect chronometrist-file)))
     (with-current-buffer buffer
       (goto-char (point-max))
@@ -252,11 +306,6 @@ this time interval that should be recorded."
       (backward-list 1)
       (--> (read buffer)
            (plist-put it :stop (chronometrist-format-time-iso8601))
-           (if tags
-               (append (-take 2 it)
-                       `(:tags ,(chronometrist-maybe-string-to-symbol tags))
-                       (-drop 2 it))
-             it)
            (progn
              (backward-list 1)
              (chronometrist-delete-list)
