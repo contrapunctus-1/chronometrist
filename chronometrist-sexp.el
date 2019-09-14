@@ -166,20 +166,36 @@ ARGS are ignored. This function always returns t."
   t)
 
 ;;;; KEY-VALUES ;;;;
-(defvar chronometrist-key-history (make-hash-table))
-(defvar chronometrist-value-history (make-hash-table))
+(defvar chronometrist-key-history   (make-hash-table :test #'equal))
+(defvar chronometrist-value-history (make-hash-table :test #'equal))
 (defvar chronometrist-kv-buffer-name "*Chronometrist-Key-Values*")
+
+(defun chronometrist-ht-history-prep (table)
+  "Prepare history hash tables for use in prompts.
+
+Each value in hash table TABLE must be a list. Each value will be
+reversed and will have duplicate elements removed."
+  (maphash (lambda (key value)
+             (puthash key
+                      (-> (-flatten value)
+                          (reverse)
+                          (remove-duplicates :test #'equal))
+                      table))
+           table))
 
 ;; Since we have discarded sorting-by-frequency, we can now consider
 ;; implementing this by querying `chronometrist-events' instead of reading the file
+;;
+;; Buggy - getting >1 entries for the same
 (defun chronometrist-key-history-populate ()
-  "Clear hash table `chronometrist-key-history' and populate it.
+  "Clear hash table `chronometrist-key-history' and populate it with user-added keys.
 
 The data is acquired from `chronometrist-file'.
 
 Each hash table key is the name of a task. Each hash table value
 is a list containing keywords used with that task, in reverse
-chronological order."
+chronological order. The keywords are stored as strings and their
+leading \":\" is removed."
   (clrhash chronometrist-key-history)
   (--map (puthash it nil chronometrist-key-history)
          ;; ;; Not necessary, if the only placed this is called is `chronometrist-refresh-file'
@@ -204,15 +220,32 @@ chronological order."
                                       (append name-ht-value key-string)
                                     key-string)
                                   chronometrist-key-history))))))
-        (maphash (lambda (key value)
-                   (puthash key
-                            (-> (reverse value)
-                                (remove-duplicates :test #'equal))
-                            chronometrist-key-history))
-                 chronometrist-key-history)))))
+        (chronometrist-ht-history-prep chronometrist-key-history)))))
 
+;; FIXME - seems to be a little buggy. The latest value for e.g. :song
+;; is different from the one that ends up as the last in
+;; `chronometrist-value-history' (before being reversed by `chronometrist-ht-history-prep')
 (defun chronometrist-value-history-populate ()
-  )
+  ;; Note - while keys are Lisp keywords, values may be any Lisp
+  ;; object, including lists
+  (clrhash chronometrist-value-history)
+  (let (user-kvs)
+    (maphash (lambda (date plist-list)
+               (loop for plist in plist-list
+                     do (setq user-kvs (chronometrist-plist-remove plist :name :tags :start :stop))
+                     for (key1 val1) on user-kvs by #'cddr
+                     do (let ((key1-ht (gethash key1 chronometrist-value-history))
+                              (val1    (if (not (stringp val1))
+                                           (list
+                                            (format "%s" val1))
+                                         (list val1))))
+                          (puthash key1
+                                   (if key1-ht
+                                       (append key1-ht val1)
+                                     val1)
+                                   chronometrist-value-history))))
+             chronometrist-events))
+  (chronometrist-ht-history-prep chronometrist-value-history))
 
 ;; TODO - refactor this to use `chronometrist-append-to-last-expr'
 (defun chronometrist-kv-accept ()
@@ -303,19 +336,22 @@ ARGS are ignored. This function always returns t."
         (insert "()")
         (down-list -1))
       (catch 'empty-input
-        (let (input key value)
+        (let (input key value value-history)
           (while t
             (setq key (completing-read (concat "Key ("
                                                (chronometrist-kv-completion-quit-key)
                                                " to quit): ")
                                        (-> (chronometrist-last-expr)
                                            (plist-get :name)
-                                           (chronometrist-key-history-for-task)))
+                                           (gethash chronometrist-key-history)))
                   input key)
             (if (string-empty-p input)
                 (throw 'empty-input nil)
               (insert " :" key))
-            (setq value (read-from-minibuffer "Value (RET to quit): ")
+            (setq value-history (gethash key chronometrist-value-history)
+                  value (read-from-minibuffer "Value (RET to quit): "
+                                              nil nil nil
+                                              'value-history)
                   input value)
             (if (string-empty-p input)
                 (throw 'empty-input nil)

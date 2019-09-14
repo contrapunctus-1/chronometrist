@@ -105,7 +105,7 @@ The first date is the first occurrence of
                             (-reduce #'chronometrist-time-add)
                             (chronometrist-format-time)
                             (vector))))))
-            chronometrist--task-list)))
+            chronometrist-task-list)))
 
 (defun chronometrist-report-format-date (format-string time-date)
   "Extract date from TIME-DATE and format it according to

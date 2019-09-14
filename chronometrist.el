@@ -205,6 +205,7 @@ Argument FS-EVENT is ignored."
   (setq chronometrist-task-list (chronometrist-tasks-from-table))
   (chronometrist-tags-history-populate)
   (chronometrist-key-history-populate)
+  (chronometrist-value-history-populate)
   (chronometrist-refresh))
 
 ;; HACK - has some duplicate logic with `chronometrist-task-events-in-day'

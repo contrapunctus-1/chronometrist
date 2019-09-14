@@ -37,7 +37,7 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
 Return value is a vector in the form [HOURS MINUTES SECONDS].
 
 DATE-STRING must be in the form \"YYYY-MM-DD\"."
-  (->> chronometrist--task-list
+  (->> chronometrist-task-list
        (--map (chronometrist-task-time-one-day it date-string))
        (-reduce #'chronometrist-time-add)))
 

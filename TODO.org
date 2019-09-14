@@ -20,15 +20,16 @@
       * That would mean ensuring that -kv-read runs before other hooks.
       * Actually, it should be trivial to access the last expression in the file, so maybe this is unnecessary.
    4. Key-values
-      * [-] generate history hash table from chronometrist-file.
-        * [ ] generate value history hash table from chronometrist-file
+      * [X] generate history hash table from chronometrist-file.
+        * [X] generate value history hash table from chronometrist-file
         * [X] change "press X to quit" in prompt to suggest keys for ido, helm, and ivy
-      * [ ] if there are no previous key-values and user enters blank first key, cancel prompt and call ~chronometrist-kv-reject~
-      * [ ] create button to add key-values to last entry (whether clocked in or out)
+      * [ ] create variable to allow quick quitting (i.e. reject) from key-value entry, if the user has provided blank input on the first key and there are no existing key-values.
+      * [ ] create text button to add key-values to last entry (whether clocked in or out)
       * [ ] insert value as string if it contains spaces and isn't a list
       * [ ] when reading values, add quit keybinding (consistent with output of ~chronometrist-kv-completion-quit-key~) by passing MAP to ~read-from-minibuffer~
+      * [ ] fix value history problem in prompt ("user-error: Beginning of history; no preceding item"/"user-error: End of history; no default available")
    5. Tags
-      * [-] generate history from chronometrist-file
+      * [ ] generate history from chronometrist-file
         * [ ] narrow it down to the :name
       * [ ] write tags to last expression
 ** UX
