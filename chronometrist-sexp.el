@@ -85,7 +85,7 @@ be removed."
                                    :name :tags :start :stop))
          (new-tags  (if old-tags
                         (-> (append old-tags tags)
-                            ;; FIXME - why isn't this removing duplicates as expected?
+                            ;; BUG - why isn't this removing duplicates as expected?
                             (remove-duplicates :test #'equal))
                       tags))
          (new-kvs   (copy-list old-expr))
@@ -166,8 +166,55 @@ ARGS are ignored. This function always returns t."
   t)
 
 ;;;; KEY-VALUES ;;;;
+(defvar chronometrist-key-history (make-hash-table))
+(defvar chronometrist-value-history (make-hash-table))
 (defvar chronometrist-kv-buffer-name "*Chronometrist-Key-Values*")
 
+;; Since we have discarded sorting-by-frequency, we can now consider
+;; implementing this by querying `chronometrist-events' instead of reading the file
+(defun chronometrist-key-history-populate ()
+  "Clear hash table `chronometrist-key-history' and populate it.
+
+The data is acquired from `chronometrist-file'.
+
+Each hash table key is the name of a task. Each hash table value
+is a list containing keywords used with that task, in reverse
+chronological order."
+  (clrhash chronometrist-key-history)
+  (--map (puthash it nil chronometrist-key-history)
+         ;; ;; Not necessary, if the only placed this is called is `chronometrist-refresh-file'
+         ;; (setq chronometrist--task-list (chronometrist-tasks-from-table))
+         chronometrist-task-list)
+  (with-current-buffer (find-file-noselect chronometrist-file)
+    (save-excursion
+      (goto-char (point-min))
+      (let (expr)
+        (while (setq expr (ignore-errors (read (current-buffer))))
+          (let* ((name          (plist-get expr :name))
+                 (name-ht-value (gethash name chronometrist-key-history))
+                 (keys          (->> (chronometrist-plist-remove expr :name :start :stop :tags)
+                                     (seq-filter #'keywordp))))
+            (loop for key in keys
+                  do (when key
+                       (let ((key-string (->> (symbol-name key)
+                                              (s-chop-prefix ":")
+                                              (list))))
+                         (puthash name
+                                  (if name-ht-value
+                                      (append name-ht-value key-string)
+                                    key-string)
+                                  chronometrist-key-history))))))
+        (maphash (lambda (key value)
+                   (puthash key
+                            (-> (reverse value)
+                                (remove-duplicates :test #'equal))
+                            chronometrist-key-history))
+                 chronometrist-key-history)))))
+
+(defun chronometrist-value-history-populate ()
+  )
+
+;; TODO - refactor this to use `chronometrist-append-to-last-expr'
 (defun chronometrist-kv-accept ()
   "Accept the property list in `chronometrist-kv-buffer-name', adding it to `chronometrist-file'."
   (interactive)
@@ -201,7 +248,8 @@ ARGS are ignored. This function always returns t."
 
 (defun chronometrist-kv-reject ()
   (interactive)
-  (kill-buffer chronometrist-kv-buffer-name))
+  (kill-buffer chronometrist-kv-buffer-name)
+  (chronometrist-refresh))
 
 (defvar chronometrist-kv-read-mode-map
   (let ((map (make-sparse-keymap)))
@@ -212,7 +260,6 @@ ARGS are ignored. This function always returns t."
 
 (define-derived-mode chronometrist-kv-read-mode emacs-lisp-mode "Key-Values"
   "Mode used by `chronometrist' to read key values from the user."
-  ;; TODO - check keybindings at run-time instead of hard-coding them
   (->> ";; Use \\[chronometrist-kv-accept] to accept, or \\[chronometrist-kv-reject] to cancel\n"
        (substitute-command-keys)
        (insert)))
