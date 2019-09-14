@@ -41,16 +41,16 @@
    6. Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked /before/ clocking out, which adds time to the project.
    7. Allow calling chronometrist-in/out from anywhere-within-Emacs (a la timeclock) as well as from the chronometrist buffer.
 *** Optimization
-    ~chronometrist-refresh~ is expensive in CPU, and ~chronometrist-timer~ runs it every 3 seconds by default. :\
+    * ~chronometrist~ takes close to a second to start (as of 2019-09-14; chronometrist.exp is 11,329 lines with 2318 expressions). Can we speed that up?
 
-    (Note - actually, the most significant slowdown occurs when the file is changed /and/ the buffer is visible. When the file changes and the buffer isn't visible, it's relatively tolerable.)
-
-**** Ideas
+**** Ideas to make -refresh-file faster
      * Support multiple files, so we read and process lesser data when one of them changes.
      * Make file writing async
      * Don't refresh from file when clocking in.
      * Only write to the file when Emacs is idle or being killed, and store data in memory (in the events hash table) in the meantime
      * What if commands both write to the file /and/ add to the hash table, so we don't have to re-read the file and re-populate the table for commands? The expensive reading+parsing could be avoided for commands, and only take place for the user changing the file.
+       * jonasw - store length and hash of previous file, see if the new file has the same hash until old-length bytes.
+         * Rather than storing and hashing the full length, we could do it until (before) the last s-expression (or last N s-expressions?). That way, we know if the last expression (or last N expressions) have changed.
 ** Code
    1. use variables instead of hardcoded numbers to determine spacing
    2. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
