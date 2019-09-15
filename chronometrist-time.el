@@ -146,8 +146,13 @@ DATE must be a list in the form (YEAR MONTH DAY)."
 
 (defun chronometrist-date-less-p (date1 date2)
   "Like `time-less-p' but for dates. Return t if DATE1 is less than DATE2.
-Both must be lists in the form (YEAR MONTH DAY)."
-  (time-less-p (chronometrist-date->time date1) (chronometrist-date->time date2)))
+Both must be dates in the ISO-8601 format."
+  (time-less-p (-> date1
+                   (chronometrist-iso-date->timestamp)
+                   (parse-iso8601-time-string))
+               (-> date2
+                   (chronometrist-iso-date->timestamp)
+                   (parse-iso8601-time-string))))
 
 (defun chronometrist-time-less-or-equal-p (t1 t2)
   (or (equal t1 t2)
