@@ -107,62 +107,80 @@ be removed."
       (save-buffer))))
 
 ;;;; TAGS ;;;;
-(defvar chronometrist-tags-history nil
+(defvar chronometrist-tags-history (make-hash-table :test #'equal)
   "List of past tag combinations.
 
 Each combination is a list containing tags as symbol and/or strings.")
 
-(defvar chronometrist-tags-history-combination-strings nil)
+(defun chronometrist-tags-history-combination-strings (task)
+  "Return list of past tag combinations for TASK.
 
-(defvar chronometrist-tags-history-individual-strings nil)
+Each combination is a string, with tags separated by commas."
+  (->> (gethash task chronometrist-tags-history)
+       (mapcar (lambda (list)
+                 (->> list
+                      (mapcar (lambda (elt)
+                                (unless (stringp elt)
+                                  (symbol-name elt))))
+                      (-interpose ",")
+                      (apply #'concat))))))
+
+(defun chronometrist-tags-history-individual-strings (task)
+  "Return list of tags for TASK as individual strings."
+  (--> (gethash task chronometrist-tags-history)
+       (-flatten it)
+       (remove-duplicates it :test #'equal)
+       (loop for elt in it
+             collect (if (stringp elt)
+                         elt
+                       (symbol-name elt)))))
 
 (defun chronometrist-tags-history-populate ()
-  (setq chronometrist-tags-history
-        (-> (chronometrist-events-query chronometrist-events :get :tags)
-            (remove-duplicates :test #'equal))
+  "Add keys and values to `chronometrist-tags-history' by querying `chronometrist-events'."
+  (let ((table chronometrist-tags-history))
+    (clrhash table)
+    (loop for plist in (chronometrist-events-query chronometrist-events :get '(:name :tags))
+          do (let* ((name          (plist-get plist :name))
+                    (tags          (plist-get plist :tags))
+                    (existing-tags (gethash name table)))
+               (when tags
+                 (puthash name
+                          (if existing-tags
+                              (append existing-tags `(,tags))
+                            `(,tags))
+                          table))))
+    (loop for task being the hash-keys of table
+          using (hash-values list)
+          do (puthash task
+                      (remove-duplicates list :test #'equal)
+                      table))))
 
-        chronometrist-tags-history-combination-strings
-        (mapcar (lambda (list)
-                  (->> list
-                       (mapcar (lambda (elt)
-                                 (unless (stringp elt)
-                                   (symbol-name elt))))
-                       (-interpose ",")
-                       (apply #'concat)))
-                chronometrist-tags-history)
-
-        chronometrist-tags-history-individual-strings
-        (--> (chronometrist-events-query chronometrist-events :get :tags)
-             (-flatten it)
-             (remove-duplicates it :test #'equal)
-             (mapcar (lambda (elt)
-                       (if (stringp elt)
-                           elt
-                         (symbol-name elt)))
-                     it))))
-
-(defun chronometrist-tags-prompt (&optional initial-input)
+(defun chronometrist-tags-prompt (&optional task initial-input)
   "Read one or more tags from the user and return them as a list of strings.
 
 INITIAL-INPUT is as used in `completing-read'."
-  (completing-read-multiple "Tags (optional): "
-                            chronometrist-tags-history-individual-strings
-                            nil
-                            'confirm
-                            initial-input
-                            'chronometrist-tags-history-combination-strings))
+  (let ((history (chronometrist-tags-history-combination-strings task)))
+    (completing-read-multiple "Tags (optional): "
+                              (chronometrist-tags-history-individual-strings task)
+                              nil
+                              'confirm
+                              initial-input
+                              'history)))
 
 (defun chronometrist-tags-add (&rest args)
   "Read tags from the user and add them to the last s-expr in `chronometrist-file'.
 
 ARGS are ignored. This function always returns t."
-  (chronometrist-append-to-last-expr (->> (plist-get (chronometrist-last-expr) :tags)
-                             (chronometrist-maybe-symbol-to-string)
-                             (-interpose ",")
-                             (apply #'concat)
-                             (chronometrist-tags-prompt)
-                             (chronometrist-maybe-string-to-symbol))
-                        nil)
+  (let* ((last-expr (chronometrist-last-expr))
+         (last-name (plist-get last-expr :name))
+         (last-tags (plist-get last-expr :tags)))
+    (chronometrist-append-to-last-expr (->> last-tags
+                               (chronometrist-maybe-symbol-to-string)
+                               (-interpose ",")
+                               (apply #'concat)
+                               (chronometrist-tags-prompt last-name)
+                               (chronometrist-maybe-string-to-symbol))
+                          nil))
   t)
 
 ;;;; KEY-VALUES ;;;;
@@ -234,12 +252,14 @@ leading \":\" is removed."
                (loop for plist in plist-list
                      do (setq user-kvs (chronometrist-plist-remove plist :name :tags :start :stop))
                      for (key1 val1) on user-kvs by #'cddr
-                     do (let ((key1-ht (gethash key1 chronometrist-value-history))
-                              (val1    (if (not (stringp val1))
-                                           (list
-                                            (format "%s" val1))
-                                         (list val1))))
-                          (puthash key1
+                     do (let ((key1-string (->> (symbol-name key1)
+                                                (s-chop-prefix ":")))
+                              (key1-ht     (gethash key1 chronometrist-value-history))
+                              (val1        (if (not (stringp val1))
+                                               (list
+                                                (format "%s" val1))
+                                             (list val1))))
+                          (puthash key1-string
                                    (if key1-ht
                                        (append key1-ht val1)
                                      val1)

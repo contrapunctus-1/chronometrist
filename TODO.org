@@ -19,19 +19,24 @@
    3. Hook enhancement - can we supply the whole plist (including tags and key-values) to the task-start hooks, so users can have even smarter hook functions?
       * That would mean ensuring that -kv-read runs before other hooks.
       * Actually, it should be trivial to access the last expression in the file, so maybe this is unnecessary.
-   4. Key-values
-      * [X] generate history hash table from chronometrist-file.
-        * [X] generate value history hash table from chronometrist-file
-        * [X] change "press X to quit" in prompt to suggest keys for ido, helm, and ivy
-      * [ ] create variable to allow quick quitting (i.e. reject) from key-value entry, if the user has provided blank input on the first key and there are no existing key-values.
-      * [ ] create text button to add key-values to last entry (whether clocked in or out)
-      * [ ] insert value as string if it contains spaces and isn't a list
-      * [ ] when reading values, add quit keybinding (consistent with output of ~chronometrist-kv-completion-quit-key~) by passing MAP to ~read-from-minibuffer~
-      * [ ] fix value history problem in prompt ("user-error: Beginning of history; no preceding item"/"user-error: End of history; no default available")
-   5. Tags
-      * [ ] generate history from chronometrist-file
-        * [ ] narrow it down to the :name
-      * [ ] write tags to last expression
+*** 4. Key-values [28%]
+    * [X] generate history hash table from chronometrist-file.
+      * [X] generate value history hash table from chronometrist-file
+      * [X] change "press X to quit" in prompt to suggest keys for ido, helm, and ivy
+    * [ ] create custom variable to allow a quick exit from key-value entry - if the user provides blank input on the first key and there are no existing key-values, quit the prompt loop and run -kv-reject automatically.
+    * [ ] create text button to add key-values to last entry (whether clocked in or out)
+    * [X] insert value as string if it contains spaces and isn't a list
+      * Sometimes you want single-word values to be converted to a string, too. Maybe check for capital letters too?
+    * [ ] when reading values, add quit keybinding (consistent with output of ~chronometrist-kv-completion-quit-key~) by passing MAP to ~read-from-minibuffer~
+    * [ ] fix missing values in history (e.g. check :play)
+    * [ ] remove key-values which have already been added
+    * [ ] create custom variable to auto-insert previously used key-values (for task with the same :name) in the key-value buffer.
+    * [ ] test interaction of -kv-add with next function in hook which modifies window configuration
+      * code which deletes the window and switches to a new buffer interferes with the key-value addition flow
+*** 5. Tags [50%]
+    * [X] generate history from chronometrist-file
+      * [X] narrow it down to the :name
+    * [ ] write tags to last expression
 ** UX
    1. don't suggest nil when asking for first project on first run
    2. when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
@@ -44,13 +49,14 @@
     * ~chronometrist~ takes close to a second to start (as of 2019-09-14; chronometrist.exp is 11,329 lines with 2318 expressions). Can we speed that up?
 
 **** Ideas to make -refresh-file faster
-     * Support multiple files, so we read and process lesser data when one of them changes.
-     * Make file writing async
-     * Don't refresh from file when clocking in.
-     * Only write to the file when Emacs is idle or being killed, and store data in memory (in the events hash table) in the meantime
-     * What if commands both write to the file /and/ add to the hash table, so we don't have to re-read the file and re-populate the table for commands? The expensive reading+parsing could be avoided for commands, and only take place for the user changing the file.
-       * jonasw - store length and hash of previous file, see if the new file has the same hash until old-length bytes.
-         * Rather than storing and hashing the full length, we could do it until (before) the last s-expression (or last N s-expressions?). That way, we know if the last expression (or last N expressions) have changed.
+     1. Support multiple files, so we read and process lesser data when one of them changes.
+     2. Make file writing async
+     3. Don't refresh from file when clocking in.
+     4. Only write to the file when Emacs is idle or being killed, and store data in memory (in the events hash table) in the meantime
+     5. What if commands both write to the file /and/ add to the hash table, so we don't have to re-read the file and re-populate the table for commands? The expensive reading+parsing could be avoided for commands, and only take place for the user changing the file.
+        * jonasw - store length and hash of previous file, see if the new file has the same hash until old-length bytes.
+          * Rather than storing and hashing the full length, we could do it until (before) the last s-expression (or last N s-expressions?). That way, we know if the last expression (or last N expressions) have changed.
+            * Or even the first expression of the current date. That way, we just re-read the events for today. Because chronometrist-events uses dates as keys, it's easy to work on the basis of dates.
 ** Code
    1. use variables instead of hardcoded numbers to determine spacing
    2. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
