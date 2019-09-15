@@ -30,7 +30,7 @@
 
 (defun chronometrist-maybe-string-to-symbol (list)
   "For each string in LIST, if it has no spaces, convert it to a symbol."
-  (--map (unless (string-match-p "[[:space:]]" it)
+  (--map (unless (chronometrist-string-has-whitespace-p it)
            (make-symbol it))
          list))
 
@@ -311,6 +311,9 @@ It currently supports ido, ido-ubiquitous, ivy, and helm."
           "\\<helm-comp-read-map>\\[helm-cr-empty-string]")
          (t "leave blank"))))
 
+(defun chronometrist-string-has-whitespace-p (string)
+  (string-match-p "[[:space:]]" string))
+
 (defun chronometrist-kv-add (&rest args)
   "Read key-values from user, adding them to a temporary buffer for review.
 
@@ -320,6 +323,7 @@ to add them to the last s-expression in `chronometrist-file', or
 
 ARGS are ignored. This function always returns t."
   (let ((buffer (get-buffer-create chronometrist-kv-buffer-name))
+        (first-key-p t)
         last-sexp)
     (switch-to-buffer buffer)
     (with-current-buffer buffer
@@ -347,7 +351,10 @@ ARGS are ignored. This function always returns t."
                   input key)
             (if (string-empty-p input)
                 (throw 'empty-input nil)
-              (insert " :" key))
+              (unless first-key-p
+                (insert " ")
+                (setq first-key-p nil))
+              (insert ":" key))
             (setq value-history (gethash key chronometrist-value-history)
                   value (read-from-minibuffer "Value (RET to quit): "
                                               nil nil nil
@@ -355,7 +362,9 @@ ARGS are ignored. This function always returns t."
                   input value)
             (if (string-empty-p input)
                 (throw 'empty-input nil)
-              (insert " " value "\n")))))
+              (if (chronometrist-string-has-whitespace-p value)
+                  (insert " \"" value "\"")
+                (insert " " value "\n"))))))
       (chronometrist-reindent-buffer)))
   t)
 
