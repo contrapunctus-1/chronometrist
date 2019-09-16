@@ -40,6 +40,7 @@
       * [X] narrow it down to the :name
     * [X] write tags to last expression
     * [X] show task name in prompt
+    * [X] bug - tags being added twice
 ** UX
    1. don't suggest nil when asking for first project on first run
    2. when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh

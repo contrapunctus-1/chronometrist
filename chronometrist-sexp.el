@@ -196,7 +196,12 @@ ARGS are ignored. This function always returns t."
                          (apply #'concat)
                          (chronometrist-tags-prompt last-name)
                          (chronometrist-maybe-string-to-symbol))))
-    (when input (chronometrist-append-to-last-expr input nil))
+    (when input
+      (-> (append last-tags input)
+          (reverse)
+          (remove-duplicates :test #'equal)
+          (reverse)
+          (chronometrist-append-to-last-expr nil)))
     t))
 
 ;;;; KEY-VALUES ;;;;
@@ -393,7 +398,8 @@ ARGS are ignored. This function always returns t."
               (insert ":" key))
             (setq value-history (gethash key chronometrist-value-history)
                   value (read-from-minibuffer "Value (RET to quit): "
-                                              nil nil nil
+                                              (car (gethash key chronometrist-value-history))
+                                              nil nil
                                               'value-history)
                   input value)
             (if (string-empty-p input)
