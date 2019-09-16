@@ -108,14 +108,18 @@ be removed."
 
 ;;;; TAGS ;;;;
 (defvar chronometrist-tags-history (make-hash-table :test #'equal)
-  "List of past tag combinations.
+  "Hash table of tasks and past tag combinations.
 
-Each combination is a list containing tags as symbol and/or strings.")
+Each value is a list of tag combinations. Each combination is a
+list containing tags as symbol and/or strings.")
 
 (defun chronometrist-tags-history-combination-strings (task)
   "Return list of past tag combinations for TASK.
 
-Each combination is a string, with tags separated by commas."
+Each combination is a string, with tags separated by commas.
+
+This is used to provide history for `completing-read-multiple' in
+`chronometrist-tags-prompt'."
   (->> (gethash task chronometrist-tags-history)
        (mapcar (lambda (list)
                  (->> list
@@ -127,7 +131,10 @@ Each combination is a string, with tags separated by commas."
                       (apply #'concat))))))
 
 (defun chronometrist-tags-history-individual-strings (task)
-  "Return list of tags for TASK as individual strings."
+  "Return list of tags for TASK, with each tag being a single string.
+
+This is used to provide completion for individual tags, in
+`completing-read-multiple' in `chronometrist-tags-prompt'."
   (--> (gethash task chronometrist-tags-history)
        (-flatten it)
        (remove-duplicates it :test #'equal)

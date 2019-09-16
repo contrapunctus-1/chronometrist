@@ -27,6 +27,7 @@
     * [ ] create text button to add key-values to last entry (whether clocked in or out)
     * [X] insert value as string if it contains spaces and isn't a list
       * Sometimes you want single-word values to be converted to a string, too. Maybe check for capital letters too?
+      * Preserve type in history?
     * [ ] when reading values, add quit keybinding (consistent with output of ~chronometrist-kv-completion-quit-key~) by passing MAP to ~read-from-minibuffer~
     * [ ] fix missing values in history (e.g. check :play)
     * [ ] remove key-values which have already been added
