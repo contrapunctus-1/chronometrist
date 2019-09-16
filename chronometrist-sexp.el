@@ -120,8 +120,9 @@ Each combination is a string, with tags separated by commas."
        (mapcar (lambda (list)
                  (->> list
                       (mapcar (lambda (elt)
-                                (unless (stringp elt)
-                                  (symbol-name elt))))
+                                (if (stringp elt)
+                                    elt
+                                    (symbol-name elt))))
                       (-interpose ",")
                       (apply #'concat))))))
 
