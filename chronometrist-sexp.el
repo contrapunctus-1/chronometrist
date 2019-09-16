@@ -152,7 +152,13 @@ Each combination is a string, with tags separated by commas."
     (loop for task being the hash-keys of table
           using (hash-values list)
           do (puthash task
-                      (remove-duplicates list :test #'equal)
+                      ;; Do not try to avoid this reversing by
+                      ;; changing the call to append above. That will
+                      ;; not get you the correct behavior! (Because
+                      ;; remove-duplicates keeps the _last_
+                      ;; occurrence.)
+                      (-> (reverse list)
+                          (remove-duplicates :test #'equal))
                       table))))
 
 (defun chronometrist-tags-prompt (&optional task initial-input)
