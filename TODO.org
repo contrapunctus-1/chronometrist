@@ -34,10 +34,11 @@
     * [ ] create custom variable to auto-insert previously used key-values (for task with the same :name) in the key-value buffer.
     * [ ] test interaction of -kv-add with next function in hook which modifies window configuration
       * code which deletes the window and switches to a new buffer interferes with the key-value addition flow
-*** 5. Tags [50%]
+*** 5. Tags [100%]
     * [X] generate history from chronometrist-file
       * [X] narrow it down to the :name
-    * [ ] write tags to last expression
+    * [X] write tags to last expression
+    * [X] show task name in prompt
 ** UX
    1. don't suggest nil when asking for first project on first run
    2. when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh

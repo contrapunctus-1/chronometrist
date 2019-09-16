@@ -169,12 +169,12 @@ This is used to provide completion for individual tags, in
                          elt
                        (symbol-name elt)))))
 
-(defun chronometrist-tags-prompt (&optional task initial-input)
+(defun chronometrist-tags-prompt (task &optional initial-input)
   "Read one or more tags from the user and return them as a list of strings.
 
 INITIAL-INPUT is as used in `completing-read'."
   (let ((history (chronometrist-tags-history-combination-strings task)))
-    (completing-read-multiple "Tags (optional): "
+    (completing-read-multiple (concat "Tags for " task " (optional): ")
                               (chronometrist-tags-history-individual-strings task)
                               nil
                               'confirm
