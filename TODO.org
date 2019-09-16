@@ -2,8 +2,9 @@
 2. -report - highlight the current day
 
 * Chronometrist
-** Bugs
-   1. Clocking-in/out doesn't result in updated display, sometimes (2019-09-12)
+** Bugs [50%]
+   1. [X] fix -current-task to return correct results if the last one crosses a midnight
+   2. [ ] Clocking-in/out doesn't result in updated display, sometimes (2019-09-12)
 ** Features
    1. Create chronometrist-unused-projects-list + chronometrist-projects-list.
    2. New commands
@@ -59,7 +60,7 @@
         * jonasw - store length and hash of previous file, see if the new file has the same hash until old-length bytes.
           * Rather than storing and hashing the full length, we could do it until (before) the last s-expression (or last N s-expressions?). That way, we know if the last expression (or last N expressions) have changed.
             * Or even the first expression of the current date. That way, we just re-read the events for today. Because chronometrist-events uses dates as keys, it's easy to work on the basis of dates.
-** Code
+** Code [0%]
    1. use variables instead of hardcoded numbers to determine spacing
    2. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
    3. Use buttercup instead of ert
@@ -67,6 +68,9 @@
    5. Merge all event-querying functions so that they always operate on an entire hash table (so no 'day' variants),
    6. [ ] Use ~substitute-command-keys~ instead of ~chronometrist-format-keybinds~
    7. [ ] See if using iteration constructs (especially ~loop~) can lead to nicer code than nested maps
+   8. [ ] recreate -events-clean, remove splitting code from -events-populate
+      * How should we deal with the active event?
+        * Earlier, we would add a closing entry and update that on a timer.
    +6. Timeclock already _has_ hooks! :| Why do we re-implement them?+
       - I don't know of a way to know the project being clocked into using timeclock hooks.
       - With v0.2.0 Chronometrist also has a before-project-stop-functions, which runs before the project is stopped, and can control whether the project actually is stopped.
