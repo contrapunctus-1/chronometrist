@@ -30,14 +30,16 @@
 
 (defun chronometrist-maybe-string-to-symbol (list)
   "For each string in LIST, if it has no spaces, convert it to a symbol."
-  (--map (unless (chronometrist-string-has-whitespace-p it)
-           (make-symbol it))
+  (--map (if (chronometrist-string-has-whitespace-p it)
+             it
+           (intern it))
          list))
 
 (defun chronometrist-maybe-symbol-to-string (list)
   "Convert each symbol in LIST to a string."
-  (--map (unless (stringp it)
-           (symbol-name it))
+  (--map (if (symbolp it)
+             (symbol-name it)
+           it)
          list))
 
 (defun chronometrist-reindent-buffer ()
