@@ -173,15 +173,15 @@ INITIAL-INPUT is as used in `completing-read'."
 ARGS are ignored. This function always returns t."
   (let* ((last-expr (chronometrist-last-expr))
          (last-name (plist-get last-expr :name))
-         (last-tags (plist-get last-expr :tags)))
-    (chronometrist-append-to-last-expr (->> last-tags
-                               (chronometrist-maybe-symbol-to-string)
-                               (-interpose ",")
-                               (apply #'concat)
-                               (chronometrist-tags-prompt last-name)
-                               (chronometrist-maybe-string-to-symbol))
-                          nil))
-  t)
+         (last-tags (plist-get last-expr :tags))
+         (input     (->> last-tags
+                         (chronometrist-maybe-symbol-to-string)
+                         (-interpose ",")
+                         (apply #'concat)
+                         (chronometrist-tags-prompt last-name)
+                         (chronometrist-maybe-string-to-symbol))))
+    (when input (chronometrist-append-to-last-expr input nil))
+    t))
 
 ;;;; KEY-VALUES ;;;;
 (defvar chronometrist-key-history   (make-hash-table :test #'equal))
