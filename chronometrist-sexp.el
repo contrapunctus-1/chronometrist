@@ -113,36 +113,6 @@ be removed."
 Each value is a list of tag combinations. Each combination is a
 list containing tags as symbol and/or strings.")
 
-(defun chronometrist-tags-history-combination-strings (task)
-  "Return list of past tag combinations for TASK.
-
-Each combination is a string, with tags separated by commas.
-
-This is used to provide history for `completing-read-multiple' in
-`chronometrist-tags-prompt'."
-  (->> (gethash task chronometrist-tags-history)
-       (mapcar (lambda (list)
-                 (->> list
-                      (mapcar (lambda (elt)
-                                (if (stringp elt)
-                                    elt
-                                    (symbol-name elt))))
-                      (-interpose ",")
-                      (apply #'concat))))))
-
-(defun chronometrist-tags-history-individual-strings (task)
-  "Return list of tags for TASK, with each tag being a single string.
-
-This is used to provide completion for individual tags, in
-`completing-read-multiple' in `chronometrist-tags-prompt'."
-  (--> (gethash task chronometrist-tags-history)
-       (-flatten it)
-       (remove-duplicates it :test #'equal)
-       (loop for elt in it
-             collect (if (stringp elt)
-                         elt
-                       (symbol-name elt)))))
-
 (defun chronometrist-tags-history-populate ()
   "Add keys and values to `chronometrist-tags-history' by querying `chronometrist-events'."
   (let ((table chronometrist-tags-history))
@@ -168,6 +138,36 @@ This is used to provide completion for individual tags, in
                       (-> (reverse list)
                           (remove-duplicates :test #'equal))
                       table))))
+
+(defun chronometrist-tags-history-combination-strings (task)
+  "Return list of past tag combinations for TASK.
+
+Each combination is a string, with tags separated by commas.
+
+This is used to provide history for `completing-read-multiple' in
+`chronometrist-tags-prompt'."
+  (->> (gethash task chronometrist-tags-history)
+       (mapcar (lambda (list)
+                 (->> list
+                      (mapcar (lambda (elt)
+                                (if (stringp elt)
+                                    elt
+                                  (symbol-name elt))))
+                      (-interpose ",")
+                      (apply #'concat))))))
+
+(defun chronometrist-tags-history-individual-strings (task)
+  "Return list of tags for TASK, with each tag being a single string.
+
+This is used to provide completion for individual tags, in
+`completing-read-multiple' in `chronometrist-tags-prompt'."
+  (--> (gethash task chronometrist-tags-history)
+       (-flatten it)
+       (remove-duplicates it :test #'equal)
+       (loop for elt in it
+             collect (if (stringp elt)
+                         elt
+                       (symbol-name elt)))))
 
 (defun chronometrist-tags-prompt (&optional task initial-input)
   "Read one or more tags from the user and return them as a list of strings.
