@@ -224,8 +224,6 @@ reversed and will have duplicate elements removed."
 
 ;; Since we have discarded sorting-by-frequency, we can now consider
 ;; implementing this by querying `chronometrist-events' instead of reading the file
-;;
-;; Buggy - getting >1 entries for the same
 (defun chronometrist-key-history-populate ()
   "Clear hash table `chronometrist-key-history' and populate it with user-added keys.
 
@@ -267,26 +265,29 @@ leading \":\" is removed."
 (defun chronometrist-value-history-populate ()
   ;; Note - while keys are Lisp keywords, values may be any Lisp
   ;; object, including lists
-  (clrhash chronometrist-value-history)
-  (let (user-kvs)
+  (let ((table chronometrist-value-history)
+        user-kvs)
+    (clrhash table)
     (maphash (lambda (date plist-list)
                (loop for plist in plist-list
-                     do (setq user-kvs (chronometrist-plist-remove plist :name :tags :start :stop))
-                     for (key1 val1) on user-kvs by #'cddr
-                     do (let ((key1-string (->> (symbol-name key1)
-                                                (s-chop-prefix ":")))
-                              (key1-ht     (gethash key1 chronometrist-value-history))
-                              (val1        (if (not (stringp val1))
-                                               (list
-                                                (format "%s" val1))
-                                             (list val1))))
-                          (puthash key1-string
-                                   (if key1-ht
-                                       (append key1-ht val1)
-                                     val1)
-                                   chronometrist-value-history))))
-             chronometrist-events))
-  (chronometrist-ht-history-prep chronometrist-value-history))
+                     do (setq user-kvs (chronometrist-plist-remove plist
+                                                      :name :tags
+                                                      :start :stop))
+                     (loop for (key1 val1) on user-kvs by #'cddr
+                           do (let* ((key1-string (->> (symbol-name key1)
+                                                       (s-chop-prefix ":")))
+                                     (key1-ht     (gethash key1-string table))
+                                     (val1        (if (not (stringp val1))
+                                                      (list
+                                                       (format "%s" val1))
+                                                    (list val1))))
+                                (puthash key1-string
+                                         (if key1-ht
+                                             (append key1-ht val1)
+                                           val1)
+                                         table)))))
+             chronometrist-events)
+    (chronometrist-ht-history-prep table)))
 
 ;; TODO - refactor this to use `chronometrist-append-to-last-expr'
 (defun chronometrist-kv-accept ()

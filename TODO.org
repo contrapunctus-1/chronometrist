@@ -20,21 +20,29 @@
    3. Hook enhancement - can we supply the whole plist (including tags and key-values) to the task-start hooks, so users can have even smarter hook functions?
       * That would mean ensuring that -kv-read runs before other hooks.
       * Actually, it should be trivial to access the last expression in the file, so maybe this is unnecessary.
-*** 4. Key-values [28%]
+*** 4. Key-values [33%]
     * [X] generate history hash table from chronometrist-file.
       * [X] generate value history hash table from chronometrist-file
       * [X] change "press X to quit" in prompt to suggest keys for ido, helm, and ivy
     * [ ] create custom variable to allow a quick exit from key-value entry - if the user provides blank input on the first key and there are no existing key-values, quit the prompt loop and run -kv-reject automatically.
+      * [ ] and if the user enters valid key-values and quits the key prompt with a blank input, auto-accept
+      * [ ] enh - this will allow using initial-input in value prompts
     * [ ] create text button to add key-values to last entry (whether clocked in or out)
     * [X] insert value as string if it contains spaces and isn't a list
       * Sometimes you want single-word values to be converted to a string, too. Maybe check for capital letters too?
       * Preserve type in history?
     * [ ] when reading values, add quit keybinding (consistent with output of ~chronometrist-kv-completion-quit-key~) by passing MAP to ~read-from-minibuffer~
-    * [ ] fix missing values in history (e.g. check :play)
-    * [ ] remove key-values which have already been added
-    * [ ] create custom variable to auto-insert previously used key-values (for task with the same :name) in the key-value buffer.
-    * [ ] test interaction of -kv-add with next function in hook which modifies window configuration
+    * [X] bug - missing values in history
+    * [ ] enh - remove key-values from suggestions which have already been added
+    * [ ] enh - create custom variable to auto-insert key-values used in previous task of same :name in the key-value buffer.
+    * observe interaction of -kv-add with next function in hook which modifies window configuration
       * code which deletes the window and switches to a new buffer interferes with the key-value addition flow
+    * [ ] bug - incorrect indenting in -kv-buffer
+    * bug - key-values from clock-in expression not displayed, shows () instead
+      * cause - if -kv-add is run after chronometrist-out, ~chronometrist-current-task~ will return nil
+    * how do we handle a blank string as a value?
+      1. some way to require the user to enter a non-empty value (e.g. like the 'require-match' argument to completing-read, except read-from-minibuffer doesn't have that...)
+      2. discard last-entered key?
 *** 5. Tags [100%]
     * [X] generate history from chronometrist-file
       * [X] narrow it down to the :name
