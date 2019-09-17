@@ -20,7 +20,7 @@
    3. Hook enhancement - can we supply the whole plist (including tags and key-values) to the task-start hooks, so users can have even smarter hook functions?
       * That would mean ensuring that -kv-read runs before other hooks.
       * Actually, it should be trivial to access the last expression in the file, so maybe this is unnecessary.
-*** 4. Key-values [33%]
+*** 4. Key-values [40%]
     * [X] generate history hash table from chronometrist-file.
       * [X] generate value history hash table from chronometrist-file
       * [X] change "press X to quit" in prompt to suggest keys for ido, helm, and ivy
@@ -35,11 +35,13 @@
     * [X] bug - missing values in history
     * [ ] enh - remove key-values from suggestions which have already been added
     * [ ] enh - create custom variable to auto-insert key-values used in previous task of same :name in the key-value buffer.
-    * observe interaction of -kv-add with next function in hook which modifies window configuration
-      * code which deletes the window and switches to a new buffer interferes with the key-value addition flow
     * [ ] bug - incorrect indenting in -kv-buffer
-    * bug - key-values from clock-in expression not displayed, shows () instead
+    * [X] bug - I think -append-to-last-expr is eating key-values
+      - to reproduce - clock-in, add tags, add key-values, clock-out, keep tags - kv-add buffer has (), whereas it should have the earlier key-values.
+* bug - key-values from clock-in expression not displayed, shows () instead
       * cause - if -kv-add is run after chronometrist-out, ~chronometrist-current-task~ will return nil
+    * observe interaction of -kv-add with next function in hook which modifies window configuration
+      * code which deletes the window, or switches to a new buffer interferes with the key-value addition flow
     * how do we handle a blank string as a value?
       1. some way to require the user to enter a non-empty value (e.g. like the 'require-match' argument to completing-read, except read-from-minibuffer doesn't have that...)
       2. discard last-entered key?

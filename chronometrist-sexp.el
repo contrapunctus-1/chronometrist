@@ -90,10 +90,12 @@ be removed."
                             (remove-duplicates :test #'equal))
                       tags))
          (new-kvs   (copy-list old-expr))
-         (new-kvs   (-> (loop for (key val) on plist by #'cddr
-                              do (plist-put new-kvs key val)
-                              return new-kvs)
-                        (chronometrist-plist-remove :name :tags :start :stop)))
+         (new-kvs   (if plist
+                        (-> (loop for (key val) on plist by #'cddr
+                                  do (plist-put new-kvs key val)
+                                  return new-kvs)
+                            (chronometrist-plist-remove :name :tags :start :stop))
+                      old-kvs))
          (buffer     (find-file-noselect chronometrist-file)))
     (with-current-buffer buffer
       (goto-char (point-max))
