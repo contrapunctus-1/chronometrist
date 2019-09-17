@@ -188,29 +188,36 @@ START-DATE and END-DATE must be dates in the form '(YEAR MONTH DAY)."
 (cl-defun chronometrist-events-query (table &key get specifiers)
   "Query the `chronometrist-events' hash table.
 
-GET can be nil, a keyword, or a list of keywords.
-
+GET can be -
 nil - return a list of plists
-keyword - return a list of values
-list of keywords - return a list of plists which contain only these keywords and their values
+a keyword - return a list of values
+a list of keywords - return a list of plists which contain only these keywords and their values
 
-SPECIFIERS can be a plist
-(:key value ...) to return plists matching all given key-value pairs
-or nil, to return any entry."
-  (let ((keyword-list (seq-filter #'keywordp specifiers))
-        (length-get   (when (listp get) (length get)))
-        return)
+SPECIFIERS can be -
+nil - to return any entry
+a plist -  to return plists matching all given key-value pairs.
+a list of keywords - to return plists which contain these keywords."
+  (let* ((length-get           (when (listp get) (length get)))
+         (spec-only-keywords-p (seq-every-p #'keywordp specifiers))
+         (keyword-list         (unless spec-only-keywords-p
+                                 (seq-filter #'keywordp specifiers)))
+         return)
     (maphash (lambda (key value-plists)
                (mapc (lambda (plist)
-                       ;; When no keywords are supplied...
-                       (when (or (not keyword-list)
-                                 ;; ...or all key-values match...
-                                 (->> keyword-list
-                                      (mapcar (lambda (keyword)
-                                                (equal (plist-get plist keyword)
-                                                       (plist-get specifiers keyword))))
-                                      (-all-p #'identity)))
-                         ;; ...store the values specified by the return value-plists specifier.
+                       ;; When all keys from SPECIFIERS are present...
+                       (when (cond (spec-only-keywords-p
+                                    (->> (loop for key in specifiers
+                                               collect (plist-member plist key))
+                                         (seq-every-p #'identity)))
+                                   ;; ...or SPECIFIERS has no keywords...
+                                   ((not keyword-list) t)
+                                   ;; ...or all key-values from SPECIFIERS match...
+                                   (t (->> keyword-list
+                                           (mapcar (lambda (keyword)
+                                                     (equal (plist-get plist keyword)
+                                                            (plist-get specifiers keyword))))
+                                           (-all-p #'identity))))
+                         ;; ...store the values specified by GET.
                          (->> (cond ((keywordp get)
                                      `(,(plist-get plist get)))
                                     ;; (listp nil) => t, so we use consp
