@@ -120,9 +120,9 @@ The data is acquired from `chronometrist-file'.
 
 Each key is a date in the form (YEAR MONTH DAY).
 
-Values are vectors containing events, where each event is a
-vector in the form \[\"CODE\" YEAR MONTH DAY HOURS MINUTES
-SECONDS \"PROJECT-NAME-OR-COMMENT\"\].
+Values are lists containing events, where each event is a list in
+the form (:name \"NAME\" :tags (TAGS) <key value pairs> ...
+:start TIME :stop TIME).
 
 Return final number of events read from file, or nil if there
 were none."
@@ -238,8 +238,6 @@ a list of keywords - to return plists which contain these keywords."
                      value-plists))
              table)
     (seq-remove #'null return)))
-
-(provide 'chronometrist-events)
 
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist-events"
