@@ -58,15 +58,14 @@
         (insert "\n")))))
 
 (defun chronometrist-last-expr ()
-  "Return last s-expression from `chronometrist-file'.
-
-Point is left after the last expression."
+  "Return last s-expression from `chronometrist-file'."
   (let ((buffer (find-file-noselect chronometrist-file)))
     (with-current-buffer buffer
-      (goto-char (point-max))
-      (backward-list)
-      (ignore-errors
-        (read buffer)))))
+      (save-excursion
+        (goto-char (point-max))
+        (backward-list)
+        (ignore-errors
+          (read buffer))))))
 
 (defun chronometrist-append-to-last-expr (tags plist)
   "Add TAGS and PLIST to last s-expression in `chronometrist-file'.
