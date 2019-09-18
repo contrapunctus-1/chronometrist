@@ -50,7 +50,7 @@ DATE-STRING must be in the form \"YYYY-MM-DD\"."
   "Return the date specified by `chronometrist-report--ui-date'. If
 it is nil, return the current date as calendrical
 information (see (info \"(elisp)Time Conversion\"))."
-  (if chronometrist-report--ui-date chronometrist-report--ui-date (decode-time)))
+  (if chronometrist-report--ui-date chronometrist-report--ui-date (chronometrist-date)))
 
 (defun chronometrist-report-date->dates-in-week (first-date-in-week)
   "Return a list in the form (DAY-1 DAY-2 ... DAY-7), where each
@@ -272,14 +272,16 @@ current week. Otherwise, display data from the week specified by
   (let ((arg (if (and arg (numberp arg))
                  (abs arg)
                1)))
-    (if chronometrist-report--ui-date
-        (setq chronometrist-report--ui-date
-              (chronometrist-date-op chronometrist-report--ui-date '- (* 7 arg)))
-      (setq chronometrist-report--ui-date
-            (chronometrist-date-op (decode-time) '- (* 7 arg))))
-    (setq chronometrist-report--point (point))
-    (kill-buffer)
-    (chronometrist-report t)))
+    (setq chronometrist-report--ui-date
+          (thread-first (if chronometrist-report--ui-date
+                            (parse-iso8601-time-string
+                             (chronometrist-iso-date->timestamp chronometrist-report--ui-date))
+                          (current-time))
+            (time-subtract `(0 ,(* 7 arg 86400)))
+            (chronometrist-date))))
+  (setq chronometrist-report--point (point))
+  (kill-buffer)
+  (chronometrist-report t))
 
 (defun chronometrist-report-next-week (arg)
   "View the next week's report."
@@ -287,11 +289,13 @@ current week. Otherwise, display data from the week specified by
   (let ((arg (if (and arg (numberp arg))
                  (abs arg)
                1)))
-    (if chronometrist-report--ui-date
-        (setq chronometrist-report--ui-date
-              (chronometrist-date-op chronometrist-report--ui-date '+ (* 7 arg)))
-      (setq chronometrist-report--ui-date
-            (chronometrist-date-op (decode-time) '+ (* 7 arg))))
+    (setq chronometrist-report--ui-date
+          (thread-first (if chronometrist-report--ui-date
+                            (parse-iso8601-time-string
+                             (chronometrist-iso-date->timestamp chronometrist-report--ui-date))
+                          (current-time))
+            (time-add `(0 ,(* 7 arg 86400)))
+            (chronometrist-date)))
     (setq chronometrist-report--point (point))
     (kill-buffer)
     (chronometrist-report t)))

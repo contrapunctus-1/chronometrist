@@ -85,3 +85,6 @@
    +6. Timeclock already _has_ hooks! :| Why do we re-implement them?+
       - I don't know of a way to know the project being clocked into using timeclock hooks.
       - With v0.2.0 Chronometrist also has a before-project-stop-functions, which runs before the project is stopped, and can control whether the project actually is stopped.
+* chronometrist-report
+** Migration [100%]
+   1. [X] next/previous weeks
