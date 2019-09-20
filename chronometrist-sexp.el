@@ -86,7 +86,6 @@ be removed."
                                    :name :tags :start :stop))
          (new-tags  (if old-tags
                         (-> (append old-tags tags)
-                            ;; BUG - why isn't this removing duplicates as expected?
                             (remove-duplicates :test #'equal))
                       tags))
          (new-kvs   (copy-list old-expr))
@@ -113,8 +112,9 @@ be removed."
 (defvar chronometrist-tags-history (make-hash-table :test #'equal)
   "Hash table of tasks and past tag combinations.
 
-Each value is a list of tag combinations. Each combination is a
-list containing tags as symbol and/or strings.")
+Each value is a list of tag combinations, in reverse
+chronological order. Each combination is a list containing tags
+as symbol and/or strings.")
 
 (defun chronometrist-tags-history-populate ()
   "Add keys and values to `chronometrist-tags-history' by querying `chronometrist-events'."
@@ -130,16 +130,18 @@ list containing tags as symbol and/or strings.")
                               (append existing-tags `(,tags))
                             `(,tags))
                           table))))
+    ;; We can't use `chronometrist-ht-history-prep' here, because it uses
+    ;; `-flatten'; `chronometrist-tags-history' holds tag combinations (as lists),
+    ;; not individual tags.
     (loop for task being the hash-keys of table
           using (hash-values list)
           do (puthash task
-                      ;; Do not try to avoid this reversing by
-                      ;; changing the call to append above. That will
-                      ;; not get you the correct behavior! (Because
-                      ;; remove-duplicates keeps the _last_
-                      ;; occurrence.)
-                      (-> (reverse list)
-                          (remove-duplicates :test #'equal))
+                      ;; Because remove-duplicates keeps the _last_
+                      ;; occurrence, trying to avoid this `reverse' by
+                      ;; switching the args in the call to `append'
+                      ;; above will not get you the correct behavior!
+                      (-> (remove-duplicates list :test #'equal)
+                          (reverse))
                       table))))
 
 (defun chronometrist-tags-history-combination-strings (task)
@@ -217,9 +219,11 @@ Each value in hash table TABLE must be a list. Each value will be
 reversed and will have duplicate elements removed."
   (maphash (lambda (key value)
              (puthash key
+                      ;; placing `reverse' after `remove-duplicates'
+                      ;; to get a list in reverse chronological order
                       (-> (-flatten value)
-                          (reverse)
-                          (remove-duplicates :test #'equal))
+                          (remove-duplicates :test #'equal)
+                          (reverse))
                       table))
            table))
 

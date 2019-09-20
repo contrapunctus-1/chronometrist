@@ -13,6 +13,7 @@
         - Somewhat less conservative option - it will operate on the currently clocked-in project, no matter where point is.
         - It _should_ ask for confirmation.
         - Alternatively, or as a complement - an *undo command*, which will undo your last action (clock in or clock out).
+          - Undo and redo seem like the best bets.
       * *Convert* - change the currently clocked-in project to a different task. Tags and key-values may be re-queried. Clock-in hook functions will be run again with the new task as the argument.
       * *Rename* a project (updating all records)
       * *Delete* a project (erasing all records)
@@ -20,37 +21,41 @@
    3. Hook enhancement - can we supply the whole plist (including tags and key-values) to the task-start hooks, so users can have even smarter hook functions?
       * That would mean ensuring that -kv-read runs before other hooks.
       * Actually, it should be trivial to access the last expression in the file, so maybe this is unnecessary.
-*** 4. Key-values [40%]
-    * [X] generate history hash table from chronometrist-file.
-      * [X] generate value history hash table from chronometrist-file
-      * [X] change "press X to quit" in prompt to suggest keys for ido, helm, and ivy
-    * [ ] create custom variable to allow a quick exit from key-value entry - if the user provides blank input on the first key and there are no existing key-values, quit the prompt loop and run -kv-reject automatically.
-      * [ ] and if the user enters valid key-values and quits the key prompt with a blank input, auto-accept
-      * [ ] enh - this will allow using initial-input in value prompts
-    * [ ] create text button to add key-values to last entry (whether clocked in or out)
-    * [X] insert value as string if it contains spaces and isn't a list
-      * Sometimes you want single-word values to be converted to a string, too. Maybe check for capital letters too?
-      * Preserve type in history?
-    * [ ] when reading values, add quit keybinding (consistent with output of ~chronometrist-kv-completion-quit-key~) by passing MAP to ~read-from-minibuffer~
-    * [X] bug - missing values in history
-    * [ ] enh - remove key-values from suggestions which have already been added
-    * [ ] enh - create custom variable to auto-insert key-values used in previous task of same :name in the key-value buffer.
-    * [ ] bug - incorrect indenting in -kv-buffer
-    * [X] bug - I think -append-to-last-expr is eating key-values
-      - to reproduce - clock-in, add tags, add key-values, clock-out, keep tags - kv-add buffer has (), whereas it should have the earlier key-values.
-* bug - key-values from clock-in expression not displayed, shows () instead
-      * cause - if -kv-add is run after chronometrist-out, ~chronometrist-current-task~ will return nil
-    * observe interaction of -kv-add with next function in hook which modifies window configuration
-      * code which deletes the window, or switches to a new buffer interferes with the key-value addition flow
-    * how do we handle a blank string as a value?
-      1. some way to require the user to enter a non-empty value (e.g. like the 'require-match' argument to completing-read, except read-from-minibuffer doesn't have that...)
-      2. discard last-entered key?
+   4. [ ] key-values and tags should work regardless of what hook they're called from, to give users the option to modify behaviour (does clock in start after you've finished adding details, or before?)
+*** 4. Key-values [50%]
+    1. [X] bug - value-history appears in chronological rather than reverse chronological order
+    2. [X] generate history hash table from chronometrist-file.
+       * [X] generate value history hash table from chronometrist-file
+       * [X] change "press X to quit" in prompt to suggest keys for ido, helm, and ivy
+    3. [ ] create custom variable to allow a quick exit from key-value entry - if the user provides blank input on the first key and there are no existing key-values, quit the prompt loop and run -kv-reject automatically.
+       * [ ] and if the user enters valid key-values and quits the key prompt with a blank input, auto-accept
+       * [ ] enh - this will allow using initial-input in value prompts
+    4. [ ] create text button to add key-values to last entry (whether clocked in or out)
+    5. [X] insert value as string if it contains spaces and isn't a list
+       * Sometimes you want single-word values to be converted to a string, too. Maybe check for capital letters too?
+       * Preserve type in history?
+         * Might create inconsistency in prompts? We don't want to expect Lisp knowledge from users.
+       * Ask user to define types for keys, and handle the syntax for them behind the scenes?
+    6. [ ] when reading values, add quit keybinding (consistent with output of ~chronometrist-kv-completion-quit-key~) by passing MAP to ~read-from-minibuffer~
+    7. [X] bug - missing values in history
+    8. *[ ] enh - remove key-values from suggestions which have already been added*
+    9. [ ] enh - create custom variable to auto-insert key-values used in previous task of same :name in the key-value buffer.
+    10. [ ] bug - incorrect indenting in -kv-buffer
+    11. [X] bug - I think -append-to-last-expr is eating key-values
+        * to reproduce - clock-in, add tags, add key-values, clock-out, keep tags - kv-add buffer has (), whereas it should have the earlier key-values.
+    12. bug - key-values from clock-in expression not displayed, shows () instead
+        * cause - if -kv-add is run after chronometrist-out, ~chronometrist-current-task~ will return nil
+    13. observe interaction of -kv-add with next function in hook which modifies window configuration
+        * code which deletes the window, or switches to a new buffer interferes with the key-value addition flow
+    14. how do we handle a blank string as a value?
+        * some way to require the user to enter a non-empty value (e.g. like the 'require-match' argument to completing-read, except read-from-minibuffer doesn't have that...)
+        * discard last-entered key?
 *** 5. Tags [100%]
-    * [X] generate history from chronometrist-file
-      * [X] narrow it down to the :name
-    * [X] write tags to last expression
-    * [X] show task name in prompt
-    * [X] bug - tags being added twice
+    1. [X] generate history from chronometrist-file
+       * [X] narrow it down to the :name
+    2. [X] write tags to last expression
+    3. [X] show task name in prompt
+    4. [X] bug - tags being added twice
 ** UX
    1. don't suggest nil when asking for first project on first run
    2. when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
@@ -60,7 +65,7 @@
    6. Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked /before/ clocking out, which adds time to the project.
    7. Allow calling chronometrist-in/out from anywhere-within-Emacs (a la timeclock) as well as from the chronometrist buffer.
 *** Optimization
-    * ~chronometrist~ takes close to a second to start (as of 2019-09-14; chronometrist.exp is 11,329 lines with 2318 expressions). Can we speed that up?
+    * ~chronometrist~ takes close to a second to start (as of 2019-09-14; chronometrist.sexp is 11,329 lines with 2318 expressions). Can we speed that up?
 
 **** Ideas to make -refresh-file faster
      1. Support multiple files, so we read and process lesser data when one of them changes.
