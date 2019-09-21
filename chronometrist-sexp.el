@@ -399,9 +399,9 @@ ARGS are ignored. This function always returns t."
             (if (string-empty-p input)
                 (throw 'empty-input nil)
               (unless first-key-p
-                (insert " ")
-                (setq first-key-p nil))
-              (insert ":" key))
+                (insert " "))
+              (insert ":" key)
+              (setq first-key-p nil))
             (setq value-history (gethash key chronometrist-value-history)
                   value (read-from-minibuffer "Value (RET to quit): "
                                               (car (gethash key chronometrist-value-history))
@@ -411,7 +411,7 @@ ARGS are ignored. This function always returns t."
             (if (string-empty-p input)
                 (throw 'empty-input nil)
               (if (chronometrist-string-has-whitespace-p value)
-                  (insert " \"" value "\"")
+                  (insert " \"" value "\"\n")
                 (insert " " value "\n"))))))
       (chronometrist-reindent-buffer)))
   t)
