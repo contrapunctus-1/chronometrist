@@ -22,7 +22,7 @@
       * That would mean ensuring that -kv-read runs before other hooks.
       * Actually, it should be trivial to access the last expression in the file, so maybe this is unnecessary.
    4. [ ] key-values and tags should work regardless of what hook they're called from, to give users the option to modify behaviour (does clock in start after you've finished adding details, or before?)
-*** 4. Key-values [54%]
+*** 4. Key-values [58%]
     1. [X] bug - value-history appears in chronological rather than reverse chronological order
     2. [X] generate history hash table from chronometrist-file.
        * [X] generate value history hash table from chronometrist-file
@@ -38,7 +38,7 @@
        * Ask user to define types for keys, and handle the syntax for them behind the scenes?
     6. [ ] when reading values, add quit keybinding (consistent with output of ~chronometrist-kv-completion-quit-key~) by passing MAP to ~read-from-minibuffer~
     7. [X] bug - missing values in history
-    8. *[ ] enh - remove key-values from suggestions which have already been added*
+    8. [X] enh - remove key-values from suggestions which have already been added
     9. [ ] enh - create custom variable to auto-insert key-values used in previous task of same :name in the key-value buffer.
     10. [X] bug - incorrect indenting in -kv-buffer
     11. [X] bug - I think -append-to-last-expr is eating key-values

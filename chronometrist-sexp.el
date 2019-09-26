@@ -361,6 +361,21 @@ It currently supports ido, ido-ubiquitous, ivy, and helm."
 (defun chronometrist-string-has-whitespace-p (string)
   (string-match-p "[[:space:]]" string))
 
+(defun chronometrist-key-prompt (used-keys)
+  (let ((key-suggestions (--> (chronometrist-last-expr)
+                              (plist-get it :name)
+                              (gethash it chronometrist-key-history))))
+    (completing-read (concat "Key ("
+                             (chronometrist-kv-completion-quit-key)
+                             " to quit): ")
+                     ;; don't suggest keys which have already been used
+                     (loop for used-key in used-keys
+                           do (->> key-suggestions
+                                   (seq-remove (lambda (key)
+                                                 (equal key used-key)))
+                                   (setq key-suggestions))
+                           finally return key-suggestions))))
+
 (defun chronometrist-kv-add (&rest args)
   "Read key-values from user, adding them to a temporary buffer for review.
 
@@ -369,19 +384,20 @@ to add them to the last s-expression in `chronometrist-file', or
 `chronometrist-kv-reject' to cancel.
 
 ARGS are ignored. This function always returns t."
-  (let ((buffer (get-buffer-create chronometrist-kv-buffer-name))
-        (first-key-p t)
-        last-sexp)
+  (let* ((buffer      (get-buffer-create chronometrist-kv-buffer-name))
+         (first-key-p t)
+         (last-kvs    (chronometrist-plist-remove (chronometrist-last-expr)
+                                     :name :tags :start :stop))
+         (used-keys   (->> (seq-filter #'keywordp last-kvs)
+                           (mapcar #'symbol-name)
+                           (--map (s-chop-prefix ":" it)))))
     (switch-to-buffer buffer)
     (with-current-buffer buffer
       (chronometrist-common-clear-buffer buffer)
       (chronometrist-kv-read-mode)
-      (if (and
-           (chronometrist-current-task)
-           (setq last-sexp (chronometrist-plist-remove (chronometrist-last-expr)
-                                          :name :tags :start :stop)))
+      (if (and (chronometrist-current-task) last-kvs)
           (progn
-            (plist-pp last-sexp buffer)
+            (plist-pp last-kvs buffer)
             (down-list -1)
             (insert "\n "))
         (insert "()")
@@ -389,13 +405,10 @@ ARGS are ignored. This function always returns t."
       (catch 'empty-input
         (let (input key value value-history)
           (while t
-            (setq key (completing-read (concat "Key ("
-                                               (chronometrist-kv-completion-quit-key)
-                                               " to quit): ")
-                                       (-> (chronometrist-last-expr)
-                                           (plist-get :name)
-                                           (gethash chronometrist-key-history)))
-                  input key)
+            (setq key (chronometrist-key-prompt used-keys)
+                  input key
+                  used-keys (append used-keys
+                                    (list key)))
             (if (string-empty-p input)
                 (throw 'empty-input nil)
               (unless first-key-p
