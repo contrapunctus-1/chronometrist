@@ -92,7 +92,7 @@ be removed."
          (new-kvs   (if plist
                         (-> (loop for (key val) on plist by #'cddr
                                   do (plist-put new-kvs key val)
-                                  return new-kvs)
+                                  finally return new-kvs)
                             (chronometrist-plist-remove :name :tags :start :stop))
                       old-kvs))
          (buffer     (find-file-noselect chronometrist-file)))
@@ -101,7 +101,7 @@ be removed."
       (backward-list)
       (chronometrist-delete-list)
       (-> (append `(:name ,old-name)
-                  `(:tags ,new-tags)
+                  (when tags `(:tags ,new-tags))
                   new-kvs
                   `(:start ,old-start)
                   (when old-stop `(:stop  ,old-stop)))
