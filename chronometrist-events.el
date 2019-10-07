@@ -183,9 +183,28 @@ START-DATE and END-DATE must be dates in the form '(YEAR MONTH DAY)."
              chronometrist-events)
     subset))
 
+(defun chronometrist-events-query-spec-match-p (plist specifiers)
+  "Return non-nil if PLIST matches SPECIFIERS."
+  (let* ((spec-only-keywords-p (seq-every-p #'keywordp specifiers))
+         (keyword-list         (unless spec-only-keywords-p
+                                 (seq-filter #'keywordp specifiers))))
+    ;; When all keys from SPECIFIERS are present...
+    (cond (spec-only-keywords-p
+           (->> (loop for key in specifiers
+                      collect (plist-member plist key))
+                (seq-every-p #'identity)))
+          ;; ...or SPECIFIERS has no keywords...
+          ((not keyword-list) t)
+          ;; ...or all key-values from SPECIFIERS match...
+          (t (->> keyword-list
+                  (mapcar (lambda (keyword)
+                            (equal (plist-get plist keyword)
+                                   (plist-get specifiers keyword))))
+                  (-all-p #'identity))))))
+
 ;; examples -
 ;; (chronometrist-events-query chronometrist-events :get :name) - get all values for :name
-(cl-defun chronometrist-events-query (table &key get specifiers)
+(cl-defun chronometrist-events-query (table &key get specifiers except)
   "Query the `chronometrist-events' hash table.
 
 GET can be -
@@ -196,28 +215,17 @@ a list of keywords - return a list of plists which contain only these keywords a
 SPECIFIERS can be -
 nil - to return any entry
 a plist -  to return plists matching all given key-value pairs.
-a list of keywords - to return plists which contain these keywords."
-  (let* ((length-get           (when (listp get) (length get)))
-         (spec-only-keywords-p (seq-every-p #'keywordp specifiers))
-         (keyword-list         (unless spec-only-keywords-p
-                                 (seq-filter #'keywordp specifiers)))
+a list of keywords - to return plists which contain these keywords.
+
+EXCEPT takes any values SPECIFIERS does. The plists matched by
+EXCEPT will be excluded from the return value."
+  (let* ((length-get (when (listp get) (length get)))
          return)
     (maphash (lambda (key value-plists)
                (mapc (lambda (plist)
-                       ;; When all keys from SPECIFIERS are present...
-                       (when (cond (spec-only-keywords-p
-                                    (->> (loop for key in specifiers
-                                               collect (plist-member plist key))
-                                         (seq-every-p #'identity)))
-                                   ;; ...or SPECIFIERS has no keywords...
-                                   ((not keyword-list) t)
-                                   ;; ...or all key-values from SPECIFIERS match...
-                                   (t (->> keyword-list
-                                           (mapcar (lambda (keyword)
-                                                     (equal (plist-get plist keyword)
-                                                            (plist-get specifiers keyword))))
-                                           (-all-p #'identity))))
-                         ;; ...store the values specified by GET.
+                       (when (and (chronometrist-events-query-spec-match-p plist specifiers)
+                                  (not (chronometrist-events-query-spec-match-p plist except)))
+                         ;; ...Store the values specified by GET.
                          (->> (cond ((keywordp get)
                                      `(,(plist-get plist get)))
                                     ;; (listp nil) => t, so we use consp
