@@ -116,10 +116,10 @@ See (info \"(elisp)Time of Day\")."
 (defun chronometrist-seconds-to-hms (seconds)
   "Convert SECONDS to a vector in the form [HOURS MINUTES SECONDS].
 SECONDS must be a positive integer."
-  (setq seconds (truncate seconds))
-  (let* ((s (% seconds 60))
-         (m (% (/ seconds 60) 60))
-         (h (/ seconds 3600)))
+  (let* ((seconds (truncate seconds))
+         (s       (% seconds 60))
+         (m       (% (/ seconds 60) 60))
+         (h       (/ seconds 3600)))
     (vector h m s)))
 
 (defun chronometrist-time-add (a b)
