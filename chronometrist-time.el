@@ -10,6 +10,8 @@
 
 ;;; Code:
 
+(defconst chronometrist-seconds-in-day (* 60 60 24))
+
 (defun chronometrist-date (&optional time)
   "Return date for TIME or today, in the form \"YYYY-MM-DD\"."
   (s-left 10 (chronometrist-format-time-iso8601 time)))

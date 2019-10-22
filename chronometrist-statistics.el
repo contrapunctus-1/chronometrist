@@ -218,8 +218,8 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
     (insert ", from")
     (insert
      (format " %s to %s\n"
-             (chronometrist-statistics-format-date (plist-get chronometrist-statistics--ui-state :start))
-             (chronometrist-statistics-format-date (plist-get chronometrist-statistics--ui-state :end))))))
+             (plist-get chronometrist-statistics--ui-state :start)
+             (plist-get chronometrist-statistics--ui-state :end)))))
 
 (defun chronometrist-statistics-refresh (&optional ignore-auto noconfirm)
   "Refresh the `chronometrist-statistics' buffer, without re-reading `timeclock-file'.
@@ -281,19 +281,21 @@ If PRESERVE-STATE is nil (the default when not supplied), display
 data from the current week. Otherwise, display data from the week
 specified by `chronometrist-statistics--ui-state'."
   (interactive)
-  (let* ((buffer (get-buffer-create chronometrist-statistics-buffer-name))
-         (today  (decode-time))
-         (week-start (chronometrist-calendrical->date
-                      (chronometrist-report-previous-week-start today)))
-         (week-end   (chronometrist-date-op week-start #'+ 6)))
+  (let* ((buffer         (get-buffer-create chronometrist-statistics-buffer-name))
+         (today          (chronometrist-date))
+         (week-start     (chronometrist-report-previous-week-start today))
+         (week-end       (time-add week-start
+                                   `(0 ,(* 6 chronometrist-seconds-in-day))))
+         (week-start-iso (chronometrist-date week-start))
+         (week-end-iso   (chronometrist-date week-end)))
     (with-current-buffer buffer
       (cond ((get-buffer-window chronometrist-statistics-buffer-name)
              (kill-buffer buffer))
             (t ;; (delete-other-windows)
              (when (not preserve-state)
-               (setq chronometrist-statistics--ui-state `(:mode week
-                                  :start ,week-start
-                                  :end ,week-end)))
+               (setq chronometrist-statistics--ui-state `(:mode  week
+                                                          :start ,week-start-iso
+                                                          :end   ,week-end-iso)))
              (chronometrist-common-create-chronometrist-file)
              (chronometrist-statistics-mode)
              (switch-to-buffer buffer)
@@ -304,17 +306,27 @@ specified by `chronometrist-statistics--ui-state'."
 
 If ARG is a numeric argument, go back that many times."
   (interactive "P")
-  (let* ((arg   (if (and arg (numberp arg))
-                    (abs arg)
-                  1))
-         (start (plist-get chronometrist-statistics--ui-state :start))
-         (end   (plist-get chronometrist-statistics--ui-state :end)))
+  (let* ((arg        (if (and arg (numberp arg))
+                         (abs arg)
+                       1))
+         (start-unix (->> (plist-get chronometrist-statistics--ui-state :start)
+                          (chronometrist-iso-date->timestamp)
+                          (parse-iso8601-time-string)))
+         (end-unix   (->> (plist-get chronometrist-statistics--ui-state :end)
+                          (chronometrist-iso-date->timestamp)
+                          (parse-iso8601-time-string))))
     (case (plist-get chronometrist-statistics--ui-state :mode)
       ('week
-       (let* ((new-start (chronometrist-date-op start     #'- (* 7 arg)))
-              (new-end   (chronometrist-date-op new-start #'+ 6)))
-         (plist-put chronometrist-statistics--ui-state :start new-start)
-         (plist-put chronometrist-statistics--ui-state :end new-end))))
+       (let* ((new-start (time-subtract start-unix
+                                        (* 7 chronometrist-seconds-in-day arg)))
+              (new-end   (time-add new-start
+                                   (* 6 chronometrist-seconds-in-day))))
+         (plist-put chronometrist-statistics--ui-state
+                    :start
+                    (chronometrist-date new-start))
+         (plist-put chronometrist-statistics--ui-state
+                    :end
+                    (chronometrist-date new-end)))))
     (setq chronometrist-statistics--point (point))
     (kill-buffer)
     (chronometrist-statistics t)))
@@ -327,14 +339,24 @@ If ARG is a numeric argument, go forward that many times."
   (let* ((arg   (if (and arg (numberp arg))
                     (abs arg)
                   1))
-         (start (plist-get chronometrist-statistics--ui-state :start))
-         (end   (plist-get chronometrist-statistics--ui-state :end)))
+         (start-unix (->> (plist-get chronometrist-statistics--ui-state :start)
+                          (chronometrist-iso-date->timestamp)
+                          (parse-iso8601-time-string)))
+         (end-unix   (->> (plist-get chronometrist-statistics--ui-state :end)
+                          (chronometrist-iso-date->timestamp)
+                          (parse-iso8601-time-string))))
     (case (plist-get chronometrist-statistics--ui-state :mode)
       ('week
-       (let* ((new-start (chronometrist-date-op start     #'+ (* 7 arg)))
-              (new-end   (chronometrist-date-op new-start #'+ 6)))
-         (plist-put chronometrist-statistics--ui-state :start new-start)
-         (plist-put chronometrist-statistics--ui-state :end new-end))))
+       (let* ((new-start (time-add start-unix
+                                   (* 7 chronometrist-seconds-in-day arg)))
+              (new-end   (time-add new-start
+                                   (* 6 chronometrist-seconds-in-day))))
+         (plist-put chronometrist-statistics--ui-state
+                    :start
+                    (chronometrist-date new-start))
+         (plist-put chronometrist-statistics--ui-state
+                    :end
+                    (chronometrist-date new-end)))))
     (setq chronometrist-statistics--point (point))
     (kill-buffer)
     (chronometrist-statistics t)))
