@@ -3,6 +3,7 @@
 (require 'chronometrist-common)
 (require 'chronometrist-timer)
 (require 'chronometrist-report-custom)
+(require 'chronometrist-migrate)
 
 ;; TODO - improve first-run (no file, or no data in file) behaviour
 
@@ -251,6 +252,7 @@ If KEEP-DATE is nil (the default when not supplied), set
 current week. Otherwise, display data from the week specified by
 `chronometrist-report--ui-date'."
   (interactive)
+  (chronometrist-migrate-check)
   (let ((buffer (get-buffer-create chronometrist-report-buffer-name)))
     (with-current-buffer buffer
       (cond ((and (get-buffer-window chronometrist-report-buffer-name)

@@ -9,6 +9,7 @@
 (require 'chronometrist-statistics)
 (require 'chronometrist-sexp)
 (require 'chronometrist-queries)
+(require 'chronometrist-migrate)
 
 ;;; Commentary:
 ;;
@@ -401,6 +402,7 @@ Based on their timelog file `timeclock-file'. This is the
 If numeric argument ARG is 1, run `chronometrist-report'.
 If numeric argument ARG is 2, run `chronometrist-statistics'."
   (interactive "P")
+  (chronometrist-migrate-check)
   (let ((buffer (get-buffer-create chronometrist-buffer-name))
         (w      (get-buffer-window chronometrist-buffer-name t)))
     (cond

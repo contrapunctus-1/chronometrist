@@ -8,6 +8,7 @@
 (require 'chronometrist-timer)
 (require 'chronometrist-events)
 (require 'chronometrist-statistics-custom)
+(require 'chronometrist-migrate)
 
 ;; for each activity -
 ;; [x] days active - int (float percent)
@@ -281,6 +282,7 @@ If PRESERVE-STATE is nil (the default when not supplied), display
 data from the current week. Otherwise, display data from the week
 specified by `chronometrist-statistics--ui-state'."
   (interactive)
+  (chronometrist-migrate-check)
   (let* ((buffer         (get-buffer-create chronometrist-statistics-buffer-name))
          (today          (chronometrist-date))
          (week-start     (chronometrist-report-previous-week-start today))
