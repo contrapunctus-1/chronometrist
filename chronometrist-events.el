@@ -1,6 +1,6 @@
 ;;; chronometrist-events.el --- Event management and querying code for Chronometrist -*- lexical-binding: t; -*-
 
-(require 'plist-pp)
+(require 'chronometrist-plist-pp)
 (require 'subr-x)
 
 ;;; Commentary:
@@ -74,13 +74,13 @@ It returns t if the table was modified, else nil."
                   (-> expr
                       (plist-put :start first-start)
                       (plist-put :stop  first-stop)
-                      (plist-pp buffer))
+                      (chronometrist-plist-pp buffer))
                   (when (looking-at-p "\n\n")
                     (delete-char 2))
                   (-> expr
                       (plist-put :start second-start)
                       (plist-put :stop  second-stop)
-                      (plist-pp buffer))
+                      (chronometrist-plist-pp buffer))
                   (setq modified t))))))
         (save-buffer)))
     modified))

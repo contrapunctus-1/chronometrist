@@ -1,6 +1,8 @@
 1. [-] Move time operations into a chronometrist-time file
 2. -report - highlight the current day
 
+* v0.3.0 [100%]
+  1. [X] +Release or+ bundle plist-pp.el
 * Chronometrist
 ** Bugs [50%]
    1. [X] fix -current-task to return correct results if the last one crosses a midnight
@@ -94,3 +96,5 @@
 * chronometrist-report
 ** Migration [100%]
    1. [X] next/previous weeks
+* Documentation [0%]
+  1. [ ] Make Texinfo documentation

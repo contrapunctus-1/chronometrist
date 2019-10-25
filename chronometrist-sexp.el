@@ -2,6 +2,7 @@
 
 (require 'chronometrist-migrate)
 (require 'chronometrist-events)
+(require 'chronometrist-plist-pp)
 (require 'dash)
 (require 'seq)
 
@@ -52,7 +53,7 @@
       (when (looking-at "\n*")
         (delete-region (match-beginning 0)
                        (match-end 0)))
-      (plist-pp expr (current-buffer))
+      (chronometrist-plist-pp expr (current-buffer))
       (insert "\n")
       (unless (eobp)
         (insert "\n")))))
@@ -105,7 +106,7 @@ be removed."
                   new-kvs
                   `(:start ,old-start)
                   (when old-stop `(:stop  ,old-stop)))
-          (plist-pp buffer))
+          (chronometrist-plist-pp buffer))
       (save-buffer))))
 
 ;;;; TAGS ;;;;
@@ -318,12 +319,12 @@ leading \":\" is removed."
             (tags  (plist-get last-expr :tags))
             (start (plist-get last-expr :start))
             (stop  (plist-get last-expr :stop)))
-        (plist-pp (append (when name  `(:name  ,name))
-                          (when tags  `(:tags  ,tags))
-                          user-kv-expr
-                          (when start `(:start ,start))
-                          (when stop  `(:stop  ,stop)))
-                  backend-buffer))
+        (chronometrist-plist-pp (append (when name  `(:name  ,name))
+                           (when tags  `(:tags  ,tags))
+                           user-kv-expr
+                           (when start `(:start ,start))
+                           (when stop  `(:stop  ,stop)))
+                   backend-buffer))
       (save-buffer))))
 
 (defun chronometrist-kv-reject ()
@@ -397,7 +398,7 @@ ARGS are ignored. This function always returns t."
       (chronometrist-kv-read-mode)
       (if (and (chronometrist-current-task) last-kvs)
           (progn
-            (plist-pp last-kvs buffer)
+            (chronometrist-plist-pp last-kvs buffer)
             (down-list -1)
             (insert "\n "))
         (insert "()")
@@ -441,7 +442,7 @@ TASK is the name of the task, a string."
       (goto-char (point-max))
       (when (not (bobp)) (insert "\n"))
       (when (not (bolp)) (insert "\n"))
-      (plist-pp `(:name  ,task
+      (chronometrist-plist-pp `(:name  ,task
                   :start ,(format-time-string "%FT%T%z"))
                 buffer)
       (save-buffer))))
@@ -462,7 +463,7 @@ this time interval that should be recorded."
            (progn
              (backward-list 1)
              (chronometrist-delete-list)
-             (plist-pp it buffer)))
+             (chronometrist-plist-pp it buffer)))
       (save-buffer))))
 
 (provide 'chronometrist-sexp)
