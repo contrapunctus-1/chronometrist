@@ -102,7 +102,7 @@ be removed."
       (backward-list)
       (chronometrist-delete-list)
       (-> (append `(:name ,old-name)
-                  (when tags `(:tags ,new-tags))
+                  (when new-tags `(:tags ,new-tags))
                   new-kvs
                   `(:start ,old-start)
                   (when old-stop `(:stop  ,old-stop)))
