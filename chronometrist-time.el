@@ -96,6 +96,7 @@ DATE-TIME-LIST must be a list in the form (YEAR MONTH DAY HOURS
 MINUTES SECONDS), as returned by `timestamp->list'.
 
 See (info \"(elisp)Time of Day\")."
+  (declare (obsolete nil "Chronometrist v0.3.0"))
   (->> date-time-list
        (reverse)
        (apply #'encode-time)))
@@ -105,6 +106,7 @@ See (info \"(elisp)Time of Day\")."
 DATE-TIME-STRING must be a string in the form \"YYYY/MM/SS HH:MM:SS\".
 
 See (info \"(elisp)Time of Day\")."
+  (declare (obsolete nil "Chronometrist v0.3.0"))
   (chronometrist-timestamp-list->seconds
    (chronometrist-timestamp->list date-time-string)))
 

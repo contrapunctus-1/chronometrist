@@ -77,6 +77,7 @@ TARGET-DATE must be a date in the form \"YYYY/MM/DD\"
 
 Point must be on a clock-in event having the same date as
 TARGET-DATE."
+  (declare (obsolete nil "Chronometrist v0.3.0"))
   (let* ((date-time (if (progn
                           (forward-line)
                           (beginning-of-line)
