@@ -100,13 +100,13 @@ TARGET-DATE."
 ;; (mapcar #'chronometrist-format-time
 ;;         '([0 0 0] [0 0 1] [0 0 10] [0 1 10] [0 10 10] [1 10 10] [10 10 10]))
 ;; => ("" "00:01" "00:10" "01:10" "10:10" "01:10:10" "10:10:10")
-(defun chronometrist-format-time (time)
-  "Format and display TIME as a string, where TIME is a vector or
-a list of the form [HOURS MINUTES SECONDS] or (HOURS MINUTES
-SECONDS)."
-  (let ((h (elt time 0))
-        (m (elt time 1))
-        (s (elt time 2))
+(defun chronometrist-format-time (duration)
+  "Format DURATION as a string suitable for display in Chronometrist buffers.
+DURATION must be a vector or a list of the form [HOURS MINUTES
+SECONDS] or (HOURS MINUTES SECONDS)."
+  (let ((h (elt duration 0))
+        (m (elt duration 1))
+        (s (elt duration 2))
         (blank "   "))
     (if (and (zerop h) (zerop m) (zerop s))
         "       -"

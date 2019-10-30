@@ -110,9 +110,10 @@ See (info \"(elisp)Time of Day\")."
   (chronometrist-timestamp-list->seconds
    (chronometrist-timestamp->list date-time-string)))
 
-(defun chronometrist-time->seconds (time)
-  "TIME must be a vector in the form [HOURS MINUTES SECONDS]."
-  (-let [[h m s] time]
+(defun chronometrist-time->seconds (duration)
+  "Convert DURATION to seconds.
+DURATION must be a vector in the form [HOURS MINUTES SECONDS]."
+  (-let [[h m s] duration]
     (+ (* h 60 60)
        (* m 60)
        s)))
