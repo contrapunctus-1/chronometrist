@@ -56,21 +56,21 @@
 (defun chronometrist-events->time-list (events)
   "Convert EVENTS to a list of time values.
 
-EVENTS must be a list of property lists in the form \(:name
-\"task name\" :start <time> :stop <time> ...)
-
- (see `chronometrist-events' and `chronometrist-events-populate')
+EVENTS must be a list of valid Chronometrist property lists (see `chronometrist-file').
 
 For time value format, see (info \"(elisp)Time of Day\")."
   (let ((index 0)
         (length (length events))
         result)
     (while (not (= index length))
-      (let* ((elt   (elt events index))
-             (start (parse-iso8601-time-string (plist-get elt :start)))
-             (stop  (parse-iso8601-time-string (plist-get elt :stop))))
+      (let* ((elt       (elt events index))
+             (start-iso (parse-iso8601-time-string (plist-get elt :start)))
+             (stop      (plist-get elt :stop))
+             (stop-iso  (if stop
+                            (parse-iso8601-time-string stop)
+                          (current-time))))
         (incf index)
-        (setq result (append result `((,start ,stop))))))
+        (setq result (append result `((,start-iso ,stop-iso))))))
     result))
 
 (defun chronometrist-time-list->sum-of-intervals (time-value-lists)

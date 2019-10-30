@@ -3,6 +3,7 @@
 
 * v0.3.0 [100%]
   1. [X] +Release or+ bundle plist-pp.el
+  2. [X] -report - error opening when clocked in
 * Chronometrist
 ** Bugs [50%]
    1. [X] fix -current-task to return correct results if the last one crosses a midnight
