@@ -44,8 +44,11 @@
     5. Command - chronometrist-change-update-interval (arg)
 *** chronometrist-statistics.el
     1. Function - chronometrist-events->time-list (events)
+       * (event ...) -> ((encode-time encode-time) ...)
     2. Function - chronometrist-time-list->sum-of-intervals (time-value-lists)
+       * ((encode-time encode-time) ...) -> encode-time
     3. Function - chronometrist-statistics-count-average-time-spent (project &optional table)
+       * string &optional hash-table -> seconds
     4. Variable - chronometrist-statistics--ui-state
     5. Variable - chronometrist-statistics--point
     6. Function - chronometrist-statistics-entries-internal (table)
