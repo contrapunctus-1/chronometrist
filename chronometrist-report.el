@@ -16,13 +16,12 @@
 ;; ## VARIABLES ##
 
 (defvar chronometrist-report--ui-date nil
-  "The first date of the week displayed by `chronometrist-report' (specifically `chronometrist-report-entries').
+  "The first date of the week displayed by `chronometrist-report'.
 A value of nil means the current week. Otherwise, it must be a
-list in the form (YEAR WEEK), where WEEK is the numeric week of
-the year (1-52).")
+date in the form \"YYYY-MM-DD\".")
 
 (defvar chronometrist-report--ui-week-dates nil
-  "List of dates currently displayed by `chronometrist-report' (specifically `chronometrist-report-entries').
+  "List of dates currently displayed by `chronometrist-report'.
 Each date is a list containing calendrical information (see (info \"(elisp)Time Conversion\"))")
 
 (defvar chronometrist-report--point nil)
