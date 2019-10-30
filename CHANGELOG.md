@@ -5,8 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-* Migrate to new format
-* Deprecate -timestamp->seconds, -timestamp-list->seconds, -get-end-time
+### Added
+* s-expression file format support
+
+### Removed
+* timeclock.el file format support
+
+### Deprecated
+* -timestamp->seconds
+* -timestamp-list->seconds
+* -get-end-time
+* -date-op-internal
 
 ## [0.2.1] - 2019-09-09
 ### Fixed

@@ -149,6 +149,7 @@ SECONDS] or (HOURS MINUTES SECONDS)."
 
 (defun chronometrist-date-op-internal (seconds minutes hours day month year operator count)
   "Helper function for `chronometrist-date-op'."
+  (declare (obsolete nil "Chronometrist v0.3.0"))
   (-->
    (encode-time seconds minutes hours day month year)
    (funcall (cond ((equal operator '+) 'time-add)
