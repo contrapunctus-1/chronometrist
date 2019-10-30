@@ -10,8 +10,23 @@
 ;;
 
 ;;; Code:
+
 (defvar chronometrist-file "~/.emacs.d/chronometrist.sexp"
-  "Default path and name of chronometrist database.")
+  "Default path and name of the Chronometrist database.
+
+It should be a text file containing plists in the form -
+\(:name \"task name\"
+ [:tags TAGS]
+ [:comment \"comment\"]
+ [KEY-VALUE-PAIR ...]
+ :start \"TIME\"
+ :stop \"TIME\"\)
+
+Where -
+TAGS is a list. It can contain any strings and symbols.
+KEY-VALUE-PAIR can be any keyword-value pairs. Currently, Chronometrist ignores them.
+TIME must be an ISO-8601 time string.
+\(The square brackets here refer to optional elements, not vectors.\)")
 
 (defun chronometrist-plist-remove (plist &rest keys)
   "Return PLIST with KEYS and their associated values removed."
