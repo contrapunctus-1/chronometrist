@@ -4,18 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.0] - 2019-10-31
 ### Added
 * s-expression file format support
+* functions to read arbitrary key-values (see `chronometrist-kv-add`, `chronometrist-kv-accept`, `chronometrist-kv-reject`)
+* hook `chronometrist-after-in-functions`
+
+### Changed
+* hooks are now called `chronometrist-before-in-functions`, `chronometrist-before-out-functions`, and `chronometrist-after-out-functions`
 
 ### Removed
 * timeclock.el file format support
 
 ### Deprecated
-* -timestamp->seconds
-* -timestamp-list->seconds
-* -get-end-time
-* -date-op-internal
+* `chronometrist-timestamp->seconds`
+* `chronometrist-timestamp-list->seconds`
+* `chronometrist-get-end-time`
+* `chronometrist-date-op-internal`
 
 ## [0.2.1] - 2019-09-09
 ### Fixed
