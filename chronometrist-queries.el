@@ -1,10 +1,12 @@
-;;; chronometrist-queries.el --- Functions which query Chronometrist data
+;;; chronometrist-queries.el --- Functions which query Chronometrist data -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;;
 
+;;; Code:
+
 (defun chronometrist-task-time-one-day (task &optional date-string)
-  "Return total time spent on PROJECT today or (if supplied) on DATE.
+  "Return total time spent on TASK today or (if supplied) on DATE.
 
 The data is obtained from `chronometrist-file', via `chronometrist-events'.
 

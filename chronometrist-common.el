@@ -64,8 +64,9 @@ This is distinct from `chronometrist-time-re-ui' (which see).")
     (if result t nil)))
 
 (defun chronometrist-get-end-time (target-date)
-  "Return the date and time of the next clock-out event after
-point in the file `timeclock-file'.
+  "Return the timestamp of the next clock-out event after point.
+
+This is meant to be run in `timeclock-file'.
 
 If there is no clock-out event after point, return the current
 date and time.
@@ -129,6 +130,10 @@ SECONDS] or (HOURS MINUTES SECONDS)."
         (concat h m s)))))
 
 (defun chronometrist-open-file (&optional button)
+  "Open `chronometrist-file' in another window.
+
+Argument BUTTON is for the purpose of using this command as a
+button action."
   (interactive)
   (find-file-other-window chronometrist-file)
   (goto-char (point-max)))
@@ -145,6 +150,7 @@ SECONDS] or (HOURS MINUTES SECONDS)."
     (if (zerop size) t nil)))
 
 (defun chronometrist-common-clear-buffer (buffer)
+  "Clear the contents of BUFFER."
   (with-current-buffer buffer
     (goto-char (point-min))
     (delete-region (point-min) (point-max))))

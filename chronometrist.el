@@ -318,7 +318,10 @@ is the name of the project to be clocked out of.")
 
 ;; FIXME - there is duplication between this function and `chronometrist-toggle-project's logic
 (defun chronometrist-toggle-project-button (button)
-  "Button action to toggle a project."
+  "Button action to toggle a project.
+
+Argument BUTTON is for the purpose of using this as a button
+action, and is ignored."
   (let ((current  (chronometrist-current-task))
         (at-point (chronometrist-project-at-point)))
     ;; clocked in + point on current    = clock out
@@ -331,7 +334,10 @@ is the name of the project to be clocked out of.")
     (chronometrist-refresh)))
 
 (defun chronometrist-add-new-project-button (button)
-  "Button action to add a new project."
+  "Button action to add a new project.
+
+Argument BUTTON is for the purpose of using this as a button
+action, and is ignored."
   (let ((current (chronometrist-current-task)))
     (when current
       (chronometrist-run-functions-and-clock-out current))

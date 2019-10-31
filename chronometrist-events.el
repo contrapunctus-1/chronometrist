@@ -184,7 +184,7 @@ START-DATE and END-DATE must be dates in the form '(YEAR MONTH DAY)."
     subset))
 
 (defun chronometrist-events-query-spec-match-p (plist specifiers)
-  "Return non-nil if PLIST matches SPECIFIERS."
+  "Return non-nil if SPECIFIERS match PLIST."
   (let* ((spec-only-keywords-p (when specifiers
                                  (seq-every-p #'keywordp specifiers)))
          (keyword-list         (unless spec-only-keywords-p

@@ -1,4 +1,4 @@
-;;; chronometrist-sexp.el --- S-expression backend for Chronometrist
+;;; chronometrist-sexp.el --- S-expression backend for Chronometrist -*- lexical-binding: t; -*-
 
 (require 'chronometrist-migrate)
 (require 'chronometrist-events)

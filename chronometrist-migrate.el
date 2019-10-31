@@ -1,4 +1,4 @@
-;;; chronometrist-migrate.el --- Commands to aid in migrating from timeclock to chronometrist s-expr format
+;;; chronometrist-migrate.el --- Commands to aid in migrating from timeclock to chronometrist s-expr format -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;; TODO - convert project names to tags
@@ -10,7 +10,7 @@
 ;; TODO - support other timeclock codes (currently only "i" and "o"
 ;; are supported.)
 (defun chronometrist-migrate-populate (in-file)
-  "Read data from IN-FILE to `chronometrist-migrate-table', storing events as plists.
+  "Read data from IN-FILE to `chronometrist-migrate-table'.
 
 IN-FILE should be a file in the format supported by timeclock.el.
 See `timeclock-log-data' for a description."
@@ -59,7 +59,10 @@ See `timeclock-log-data' for a description."
       nil)))
 
 (defun chronometrist-migrate-timelog-file->sexp-file (&optional in-file out-file)
-  "Migrate your existing `timeclock-file' to the Chronometrist file format."
+  "Migrate your existing `timeclock-file' to the Chronometrist file format.
+
+IN-FILE and OUT-FILE, if provided, are used as input and output
+file names respectively."
   (interactive `(,(if (featurep 'timeclock)
                       (read-file-name (concat "timeclock file (default: "
                                               timeclock-file "): ")

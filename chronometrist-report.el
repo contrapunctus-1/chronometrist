@@ -1,4 +1,8 @@
-;;  -*- lexical-binding: t; -*-
+;;; chronometrist-report.el --- Report view for Chronometrist -*- lexical-binding: t; -*-
+
+
+;;; Commentary:
+;;
 
 (require 'chronometrist-common)
 (require 'chronometrist-timer)
@@ -15,6 +19,8 @@
 
 ;; ## VARIABLES ##
 
+;;; Code:
+
 (defvar chronometrist-report--ui-date nil
   "The first date of the week displayed by `chronometrist-report'.
 A value of nil means the current week. Otherwise, it must be a
@@ -29,7 +35,9 @@ Each date is a list containing calendrical information (see (info \"(elisp)Time 
 ;; ## FUNCTIONS ##
 
 (defun chronometrist-report-previous-week-start (date-string)
-  "Return the time value of the previous `chronometrist-report-week-start-day' from DATE-STRING.
+  "Find the previous `chronometrist-report-week-start-day' from DATE-STRING.
+
+Return the time value of said day's beginning.
 
 If the day of DATE is the same as the
 `chronometrist-report-week-start-day', return DATE.
@@ -47,8 +55,8 @@ DATE-STRING must be in the form \"YYYY-MM-DD\"."
       date-unix)))
 
 (defun chronometrist-report-date ()
-  "Return the date specified by `chronometrist-report--ui-date'. If
-it is nil, return the current date as calendrical
+  "Return the date specified by `chronometrist-report--ui-date'.
+If it is nil, return the current date as calendrical
 information (see (info \"(elisp)Time Conversion\"))."
   (if chronometrist-report--ui-date chronometrist-report--ui-date (chronometrist-date)))
 
@@ -243,7 +251,7 @@ Argument FS-EVENT is ignored."
 (defun chronometrist-report (&optional keep-date)
   "Display a weekly report of the data in `chronometrist-file'.
 
- This is the 'listing command' for chronometrist-report-mode.
+ This is the 'listing command' for ‘chronometrist-report-mode’.
 
 If a buffer called `chronometrist-report-buffer-name' already
 exists and is visible, kill the buffer.
@@ -308,3 +316,7 @@ current week. Otherwise, display data from the week specified by
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist-report"
 ;; End:
+
+(provide 'chronometrist-report)
+
+;;; chronometrist-report.el ends here

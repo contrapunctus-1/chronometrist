@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t; -*-
+;;; chronometrist-diary-view.el --- A diary-like view for Chronometrist -*- lexical-binding: t; -*-
 
 ;; TODO - add forward/backward, current date display (and don't scroll
 ;; past the actual data)
@@ -13,6 +13,12 @@
 ;; - period start/end ("HH:MM to HH:MM")
 ;; Add variable to store format functions as list (first one is
 ;; default), command to cycle between them
+
+
+;;; Commentary:
+;;
+
+;;; Code:
 
 (defvar chronometrist-diary-buffer-name "*Chronometrist-Diary*"
   "Name for the buffer created by `chronometrist-diary'.")
@@ -79,3 +85,7 @@ format returned by `encode-time'."
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist-diary"
 ;; End:
+
+(provide 'chronometrist-diary-view)
+
+;;; chronometrist-diary-view.el ends here

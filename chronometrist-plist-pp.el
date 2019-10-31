@@ -1,4 +1,4 @@
-;;; chronometrist-plist-pp.el --- Functions to pretty print property lists
+;;; chronometrist-plist-pp.el --- Functions to pretty print property lists -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 
@@ -12,6 +12,9 @@
 (defvar chronometrist-plist-pp-whitespace-re "[\t\s]+?")
 
 (defun chronometrist-plist-pp-longest-keyword-length ()
+  "Find the length of the longest keyword.
+
+This assumes there is a single plist in the current buffer."
   (save-excursion
     (let ((keyword-lengths-list)
           (sexp))
@@ -26,7 +29,8 @@
           (sort #'>)
           (car)))))
 
-(defun chronometrist-plist-pp-buffer-keyword-helper ()
+(defun chronometrist-plist-pp-buffer-keyword-helper (indent)
+  "Indent the keyword after point by INDENT spaces."
   (looking-at chronometrist-plist-pp-keyword-re)
   (let ((keyword (buffer-substring-no-properties (match-beginning 0)
                                                  (match-end 0))))
@@ -44,7 +48,7 @@
        ;; opening paren + first keyword
        ((looking-at-p (concat "(" chronometrist-plist-pp-keyword-re chronometrist-plist-pp-whitespace-re))
         (ignore-errors (down-list 1))
-        (insert (chronometrist-plist-pp-buffer-keyword-helper))
+        (insert (chronometrist-plist-pp-buffer-keyword-helper indent))
         (forward-sexp 1)
         (insert "\n"))
        ((looking-at chronometrist-plist-pp-whitespace-re)
@@ -52,7 +56,7 @@
                        (match-end 0)))
        ;; any other keyword
        ((looking-at chronometrist-plist-pp-keyword-re)
-        (insert " " (chronometrist-plist-pp-buffer-keyword-helper))
+        (insert " " (chronometrist-plist-pp-buffer-keyword-helper indent))
         (forward-sexp 1)
         (when (not (looking-at-p ")"))
           (insert "\n")))
@@ -62,6 +66,7 @@
        (t (forward-char 1))))))
 
 (defun chronometrist-plist-pp-to-string (object)
+  "Convert OBJECT to a pretty-printed string."
   (with-temp-buffer
     (lisp-mode-variables nil)
     (set-syntax-table emacs-lisp-mode-syntax-table)
@@ -72,6 +77,7 @@
     (buffer-string)))
 
 (defun chronometrist-plist-pp (object &optional stream)
+  "Pretty-print OBJECT and output to STREAM (see `princ')."
   (princ (chronometrist-plist-pp-to-string object)
          (or stream standard-output)))
 
