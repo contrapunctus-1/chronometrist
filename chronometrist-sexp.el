@@ -438,10 +438,12 @@ ARGS are ignored. This function always returns t."
               (insert ":" key)
               (setq first-key-p nil))
             (setq value-history (gethash key chronometrist-value-history)
-                  value (read-from-minibuffer "Value (RET to quit): "
-                                              (car (gethash key chronometrist-value-history))
-                                              nil nil
-                                              'value-history)
+                  value (read-from-minibuffer
+                         "Value (RET to quit): "
+                         ;; (2019-09-20T11:54:51+0530) this is more troublesome than helpful...
+                         ;; (car (gethash key chronometrist-value-history))
+                         nil nil nil
+                         'value-history)
                   input value)
             (if (string-empty-p input)
                 (throw 'empty-input nil)
