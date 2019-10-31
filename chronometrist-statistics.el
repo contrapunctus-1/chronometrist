@@ -266,7 +266,11 @@ of `revert-buffer-function'."
   (tabulated-list-init-header)
   ;; (chronometrist-maybe-start-timer)
   (setq revert-buffer-function #'chronometrist-statistics-refresh)
-  (file-notify-add-watch timeclock-file '(change) #'chronometrist-refresh-file))
+  (unless chronometrist--fs-watch
+    (setq chronometrist--fs-watch
+          (file-notify-add-watch chronometrist-file
+                                 '(change)
+                                 #'chronometrist-refresh-file))))
 
 ;; ## COMMANDS ##
 

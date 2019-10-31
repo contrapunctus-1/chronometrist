@@ -171,6 +171,12 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
          (-interpose ", ")
          (apply #'concat))))
 
+(defvar chronometrist--fs-watch nil
+  "Filesystem watch object.
+
+Used to prevent more than one watch being added for the same
+file.")
+
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist-common"
 ;; End:

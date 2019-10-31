@@ -56,7 +56,6 @@
 (defvar chronometrist--project-history nil)
 (defvar chronometrist--point nil)
 (defvar chronometrist-task-list nil)
-(defvar chronometrist--fs-watcher nil)
 
 ;; ## FUNCTIONS ##
 (defun chronometrist-current-task ()
@@ -209,6 +208,7 @@ Argument FS-EVENT is ignored."
 ;; HACK - has some duplicate logic with `chronometrist-task-events-in-day'
 (defun chronometrist-reason-list (project)
   "Filters `timeclock-reason-list' to only return reasons for PROJECT."
+  (declare (obsolete nil "Chronometrist v0.3.0"))
   (let (save-next results)
     (maphash (lambda (date events)
                (seq-do (lambda (event)
@@ -241,6 +241,7 @@ Uses `read-from-minibuffer' instead of `completing-read'. \(see
 Additionally, it uses `chronometrist-reason-list' to only suggest
 reasons used for the relevant project, instead of all reasons as
 in `timeclock-reason-list'."
+  (declare (obsolete nil "Chronometrist v0.3.0"))
   (setq chronometrist--project-history (chronometrist-reason-list timeclock-last-project))
   (read-from-minibuffer "Reason for clocking out (optional): " nil nil nil
                         'chronometrist--project-history))
@@ -437,9 +438,9 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
                    (if chronometrist--point
                        (goto-char chronometrist--point)
                      (chronometrist-goto-last-project))))
-          (unless chronometrist--fs-watcher
-            (setq chronometrist--fs-watcher
-                  (file-notify-add-watch timeclock-file
+          (unless chronometrist--fs-watch
+            (setq chronometrist--fs-watch
+                  (file-notify-add-watch chronometrist-file
                                          '(change)
                                          #'chronometrist-refresh-file))))))))
 

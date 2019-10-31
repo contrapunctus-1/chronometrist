@@ -17,10 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * timeclock.el file format support
 
 ### Deprecated
-* `chronometrist-timestamp->seconds`
-* `chronometrist-timestamp-list->seconds`
-* `chronometrist-get-end-time`
-* `chronometrist-date-op-internal`
+1. `chronometrist-timestamp->seconds`
+2. `chronometrist-timestamp-list->seconds`
+3. `chronometrist-time-re-file`
+4. `chronometrist-get-end-time`
+5. `chronometrist-date-op-internal`
+6. `chronometrist-reason-list`
+7. `chronometrist-ask-for-reason`
 
 ## [0.2.2] - 2019-09-09
 ### Fixed
