@@ -224,9 +224,15 @@ ARGS are ignored. This function always returns t."
     t))
 
 ;;;; KEY-VALUES ;;;;
+(defgroup chronometrist-key-values nil
+  "Add key-values to Chronometrist time intervals.")
+
+(defcustom chronometrist-kv-buffer-name "*Chronometrist-Key-Values*"
+  "Buffer name to read key-values from."
+  :type 'string)
+
 (defvar chronometrist-key-history   (make-hash-table :test #'equal))
 (defvar chronometrist-value-history (make-hash-table :test #'equal))
-(defvar chronometrist-kv-buffer-name "*Chronometrist-Key-Values*")
 
 (defun chronometrist-ht-history-prep (table)
   "Prepare history hash tables for use in prompts.
