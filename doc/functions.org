@@ -35,5 +35,5 @@
   - [ ] chronometrist-get-end-time (target-date)
   - [X] chronometrist-project-time-one-day (project &optional date)
   - [ ] chronometrist-format-time (time)
-  - [ ] chronometrist-open-timeclock-file ()
+  - [ ] chronometrist-open-file ()
   - [X] interval-test (start target)

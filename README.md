@@ -1,5 +1,5 @@
 # chronometrist
-A time tracker with a nice interface, using Emacs' timeclock.el
+A time tracker in Emacs with a nice interface
 
 Largely modelled after the Android application, [A Time Tracker](https://github.com/netmackan/ATimeTracker)
 
@@ -9,14 +9,18 @@ Largely modelled after the Android application, [A Time Tracker](https://github.
   3. Support for both mouse and keyboard
   4. Human errors in tracking are easily fixed by editing a plain text file
   5. Hooks to let you perform arbitrary actions when starting/stopping tasks
-  6. Built using timeclock.el in stock Emacs
 
 * Limitations
   1. No support (yet) for adding a task without clocking into it.
-  2. No support for concurrent tasks. (timeclock.el limitation)
-  3. Does not support all timeclock.el features (please make an issue or a PR)
+  2. No support for concurrent tasks.
 
 **WARNING: with the next version (v0.3), chronometrist will no longer use timeclock as a dependency and will use its own s-expression-based backend. A command to migrate the timeclock-file will be provided.**
+
+## Differences from timeclock
+* Stores data in an s-expression format rather than a line-based one
+* Supports attaching tags and arbitrary key-values to time intervals
+* Has commands to shows useful summaries
+* Has a more useful implementation of hooks (see [Hooks](#Hooks))
 
 ## Installation
 You can get `chronometrist` from https://framagit.org/contrapunctus/chronometrist/
@@ -35,18 +39,23 @@ Whenever you call `chronometrist`, the cursor will helpfully be placed on the la
 
 Alternatively, hit `<numeric prefix> RET` anywhere in the buffer to toggle the corresponding project, e.g. `C-1 RET` will toggle the project with index 1.
 
-Press `l` to view your `timeclock-file` (`~/.emacs.d/timelog` by default). Press `r` to see a weekly report (see `chronometrist-report`)
+Press `l` to view your `chronometrist-file` (`~/.emacs.d/chronometrist.sexp` by default). Press `r` to see a weekly report (see `chronometrist-report`)
 
 Running `M-x chronometrist` when the Chronometrist buffer is visible will kill it, so the key you bind it to can function as a toggle.
 
 `chronometrist` keeps itself updated via an idle timer - no need to frequently press `g` to update.
+
+#### Attaching key values to time intervals
+Add `chronometrist-kv-read` to `chronometrist-before-in-functions` and/or `chronometrist-before-out-functions`, as you like (see [Hooks](#Hooks)).
+
+You will now be prompted to enter key-values when you clock in/out. Leave an entry blank to exit the prompt, edit the resulting key-values by hand if required, then press `C-c C-c` to accept the key-values (or `C-c C-k` to cancel).
 
 ### chronometrist-report
 Run `M-x chronometrist-report` (or `chronometrist` with a prefix argument of 1, or press `r` in the `chronometrist` buffer) to see a weekly report.
 
 Press `b` to look at past weeks, and `f` for future weeks.
 
-Press `l` to view your `timeclock-file`, `~/.emacs.d/timelog` by default.
+Press `l` to view your `chronometrist-file`, `~/.emacs.d/chronometrist.sexp` by default.
 
 Just like `chronometrist`, `chronometrist-report` will also toggle the visibilty of the buffer.
 
@@ -57,12 +66,12 @@ Run `M-x chronometrist-statistics` (or `chronometrist` with a prefix argument of
 
 Press `b` to look at past time ranges, and `f` for future ones.
 
-Press `l` to view your `timeclock-file`, `~/.emacs.d/timelog` by default.
+Press `l` to view your `chronometrist-file`, `~/.emacs.d/chronometrist.sexp` by default.
 
 Just like `chronometrist`, `chronometrist-statistics` will also toggle the visibilty of the buffer.
 
 ## Customization
-See the Customize groups `chronometrist` and `chronometrist-report` for variables intended to be user-customizable. Also see the Customize group `timeclock`.
+See the Customize groups `chronometrist` and `chronometrist-report` for variables intended to be user-customizable.
 
 If you find that you usually _don't_ want to enter a reason, you can switch the default bindings -
 
@@ -73,9 +82,10 @@ If you find that you usually _don't_ want to enter a reason, you can switch the 
 
 ### Hooks
 Chronometrist currently has three hooks -
-1. `chronometrist-project-start-functions`
-2. `chronometrist-before-project-stop-functions`
-3. `chronometrist-after-project-stop-functions`
+1. `chronometrist-before-in-functions`
+1. `chronometrist-after-in-functions`
+2. `chronometrist-before-out-functions`
+3. `chronometrist-after-out-functions`
 
 As their names suggest, these are 'abnormal' hooks, i.e. the functions they contain must accept arguments. In this case, each function must accept exactly one argument, which is the project which is being started or stopped.
 
@@ -86,7 +96,7 @@ As an example from the author's own init -
   (when (equal project "Guitar")
     (find-file-other-window "~/repertoire.org")))
 
-(add-hook 'chronometrist-project-start-functions 'my-start-guitar)
+(add-hook 'chronometrist-before-in-functions 'my-start-guitar)
 ```
 
 Another one, prompting the user if they have uncommitted changes in a git repository (assuming they use [Magit](https://magit.vc/)) -
@@ -102,7 +112,7 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
         nil)
         t))
 
-(add-hook 'chronometrist-before-project-stop-functions 'my-commit-prompt)
+(add-hook 'chronometrist-before-out-functions 'my-commit-prompt)
 ```
 
 ## Roadmap/Ideas
@@ -111,17 +121,12 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
 ### chronometrist
 1. Make clocked-in project row bold, either in addition to the star, or replacing it.
    - Another activity-indication enhancement - show the current time interval being recorded instead of the star.
-2. **'kill'/discard command** (bind to 'k'), which will delete the interval currently being recorded.
-   - Most conservative option - it will only operate on the project at point, and will only kill for a clocked-in project.
-   - Somewhat less conservative option - it will operate on the currently clocked-in project, no matter where point is.
-   - It _should_ ask for confirmation.
-   - Alternatively, or as a complement - an **undo command**, which will undo your last action (clock in or clock out).
-3. **Custom day start/end time** - option to use a specific time to define when a day starts/ends. e.g. 08:00 will mean a day starts and ends at 08:00 instead of the usual 24:00/00:00. Helpful for late sleepers.
-4. Suggest reasons by frequency? So your most-used reason for the task is the default suggestion. If you usually _don't_ provide a reason for the task, the default is nil.
-5. **Better shortcuts** - shortcuts derived from the first alphabet of each project might be nicer.
-6. **Modeline support** - show currently active project + time spent on it so far in the mode-line (see timeclock-mode-line-display)
+2. **Custom day start/end time** - option to use a specific time to define when a day starts/ends. e.g. 08:00 will mean a day starts and ends at 08:00 instead of the usual 24:00/00:00. Helpful for late sleepers.
+3. Suggest reasons by frequency? So your most-used reason for the task is the default suggestion. If you usually _don't_ provide a reason for the task, the default is nil.
+4. **Better shortcuts** - shortcuts derived from the first alphabet of each project might be nicer.
+5. **Modeline support** - show currently active project + time spent on it so far in the mode-line (see timeclock-mode-line-display)
    - Maybe make modeline slowly change color the longer you do something?
-7. **Reminder notifications** - a common issue with time trackers is that people forget to clock in/out. A potential solution can be to have Emacs remind people (ideally via desktop notifications?) -
+6. **Reminder notifications** - a common issue with time trackers is that people forget to clock in/out. A potential solution can be to have Emacs remind people (ideally via desktop notifications?) -
    * when they haven't clocked in, every X minutes (e.g. 30)
    * that they are clocked in, every X minutes (e.g. 30)
    * of course, modeline support might help too.
@@ -142,13 +147,12 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
        - :pattern - glob pattern to match paths
        - :mode - regular expression to match buffer modes
        - :computerp or :emacsp - t if this project (activity) is something you do on a computer/in Emacs (or perhaps, more specifically, the same computer/Emacs instance as the one you run Chronometrist on.). Somewhat implied by the previous arguments. If this is t, Chronometrist will note if the computer has received no events for some time, and clock out of the project. If it's an integer, clock out after that many seconds of computer inactivity.
-8. Use `make-thread` in v26 or the emacs-async library for `chronometrist-entries`/`chronometrist-report-entries`
-9. Some way to update buffers every second without making Emacs unusable. (impossible?)
-10. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
-11. Commands to rename a project, delete a project (erasing all records), and hide a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
-12. Tree of tasks (i.e. sub-tasks etc) - choosing a child task implies the parent tasks too.
+7. Use `make-thread` in v26 or the emacs-async library for `chronometrist-entries`/`chronometrist-report-entries`
+8. Some way to update buffers every second without making Emacs unusable. (impossible?)
+9. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
+10. Tree of tasks (i.e. sub-tasks etc) - choosing a child task implies the parent tasks too.
     - Alternatively - each task can have multiple tags. See [doc/tags.md](doc/tags.md)
-13. Set goal time for one or more tasks.
+11. Set goal time for one or more tasks.
 
 ### Chronometrist-report
 1. Show week counter and max weeks; don't scroll past first/last weeks
@@ -183,9 +187,9 @@ Chronometrist is released under your choice of [Unlicense](https://unlicense.org
 (See files [LICENSE](LICENSE) and [LICENSE.1](LICENSE.1)).
 
 ## Thanks
-wasamasa and #emacs for all their help and support
+wasamasa, bpalmer and #emacs for all their help and support
 
-jwiegley for timeclock.el
+jwiegley for timeclock.el, which we used as a backend in earlier versions
 
 blandest for helping me with the name
 

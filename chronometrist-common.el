@@ -61,44 +61,6 @@ This is distinct from `chronometrist-time-re-ui' (which see).")
                  (car it))))
     (if result t nil)))
 
-(defun chronometrist-timestamp->list (date-time-string)
-  "Convert string timestamp DATE-TIME-STRING to a list of integers."
-  (--> date-time-string
-       (split-string it "[-/ :]")
-       (mapcar #'string-to-number it)))
-
-(defun chronometrist-timestamp-list->seconds (date-time-list)
-  "Convert DATE-TIME-LIST to seconds since the UNIX epoch.
-DATE-TIME-LIST must be a list in the form (YEAR MONTH DAY HOURS
-MINUTES SECONDS), as returned by `timestamp->list'.
-
-See (info \"(elisp)Time of Day\")."
-  (->> date-time-list
-       (reverse)
-       (apply #'encode-time)))
-
-(defun chronometrist-timestamp->seconds (date-time-string)
-  "Convert DATE-TIME-STRING to seconds since the UNIX epoch.
-DATE-TIME-STRING must be a string in the form \"YYYY/MM/SS HH:MM:SS\".
-
-See (info \"(elisp)Time of Day\")."
-  (chronometrist-timestamp-list->seconds
-   (chronometrist-timestamp->list date-time-string)))
-
-(defun chronometrist-time-interval-span-midnight? (t1 t2)
-  "Return t if time range T1 to T2 extends across midnight.
-
-T1 and T2 must be lists in the form (YEAR MONTH DAY HOURS MINUTES
-SECONDS), as returned by `timestamp->list'. T2 must be
-chronologically more recent than T1."
-  (let* ((day-1   (elt t1 2))
-         (day-2   (elt t2 2))
-         (month-1 (elt t1 1))
-         (month-2 (elt t2 1)))
-    ;; not Absolutely Perfect™, but should do for most situations
-    (or (= day-2   (1+ day-1))
-        (= month-2 (1+ month-1)))))
-
 (defun chronometrist-get-end-time (target-date)
   "Return the date and time of the next clock-out event after
 point in the file `timeclock-file'.
@@ -115,6 +77,7 @@ TARGET-DATE must be a date in the form \"YYYY/MM/DD\"
 
 Point must be on a clock-in event having the same date as
 TARGET-DATE."
+  (declare (obsolete nil "Chronometrist v0.3.0"))
   (let* ((date-time (if (progn
                           (forward-line)
                           (beginning-of-line)
@@ -130,34 +93,6 @@ TARGET-DATE."
         (concat target-date " 24:00:00")
       date-time)))
 
-(defun chronometrist-project-time-one-day (project &optional date)
-  "Return total time spent on PROJECT today or (if supplied) on DATE.
-
-The data is obtained from `timeclock-file', via `chronometrist-events'.
-
-DATE must be a list containing calendrical information (see (info
-\"(elisp)Time Conversion\")).
-
-The return value is a vector in the form [HOURS MINUTES SECONDS]"
-  (let* ((target-date    (chronometrist-date date))
-         (project-events (chronometrist-project-events-in-day project target-date))
-         (last-event     (car (last project-events)))
-         (last-code      (chronometrist-vfirst last-event)))
-    (if project-events
-        (->> (if (equal last-code "o")
-                 project-events
-               (append project-events
-                       (cl-destructuring-bind (s m h day month year _ _ _)
-                           (decode-time)
-                         (let* ((new-date   `(,year ,month ,day))
-                                (temp-event `["o" ,year ,month ,day ,h ,m ,s ""]))
-                           (list temp-event)))))
-             (chronometrist-events->time-list)
-             (chronometrist-time-list->sum-of-intervals)
-             (cadr)
-             (chronometrist-seconds-to-hms))
-      [0 0 0])))
-
 ;; tests -
 ;; (mapcar #'chronometrist-format-time
 ;;         '((0 0 0) (0 0 1) (0 0 10) (0 1 10) (0 10 10) (1 10 10) (10 10 10)))
@@ -165,13 +100,13 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
 ;; (mapcar #'chronometrist-format-time
 ;;         '([0 0 0] [0 0 1] [0 0 10] [0 1 10] [0 10 10] [1 10 10] [10 10 10]))
 ;; => ("" "00:01" "00:10" "01:10" "10:10" "01:10:10" "10:10:10")
-(defun chronometrist-format-time (time)
-  "Format and display TIME as a string, where TIME is a vector or
-a list of the form [HOURS MINUTES SECONDS] or (HOURS MINUTES
-SECONDS)."
-  (let ((h (elt time 0))
-        (m (elt time 1))
-        (s (elt time 2))
+(defun chronometrist-format-time (duration)
+  "Format DURATION as a string suitable for display in Chronometrist buffers.
+DURATION must be a vector or a list of the form [HOURS MINUTES
+SECONDS] or (HOURS MINUTES SECONDS)."
+  (let ((h (elt duration 0))
+        (m (elt duration 1))
+        (s (elt duration 2))
         (blank "   "))
     (if (and (zerop h) (zerop m) (zerop s))
         "       -"
@@ -191,18 +126,19 @@ SECONDS)."
                  (format "%02d" s))))
         (concat h m s)))))
 
-(defun chronometrist-open-timeclock-file (&optional button)
+(defun chronometrist-open-file (&optional button)
   (interactive)
-  (find-file-other-window timeclock-file)
+  (find-file-other-window chronometrist-file)
   (goto-char (point-max)))
 
-(defun chronometrist-common-create-timeclock-file ()
-  "Create `timeclock-file' if it doesn't already exist."
-  (unless (file-exists-p timeclock-file)
-    (with-current-buffer (find-file-noselect timeclock-file)
-      (write-file timeclock-file))))
+(defun chronometrist-common-create-chronometrist-file ()
+  "Create `chronometrist-file' if it doesn't already exist."
+  (unless (file-exists-p chronometrist-file)
+    (with-current-buffer (find-file-noselect chronometrist-file)
+      (write-file chronometrist-file))))
 
 (defun chronometrist-common-file-empty-p (file)
+  "Return t if FILE is empty."
   (let ((size (elt (file-attributes file) 7)))
     (if (zerop size) t nil)))
 
@@ -213,6 +149,7 @@ SECONDS)."
 
 (defun chronometrist-date-op-internal (seconds minutes hours day month year operator count)
   "Helper function for `chronometrist-date-op'."
+  (declare (obsolete nil "Chronometrist v0.3.0"))
   (-->
    (encode-time seconds minutes hours day month year)
    (funcall (cond ((equal operator '+) 'time-add)
@@ -221,38 +158,6 @@ SECONDS)."
             it
             (list 0 (* 86400 count)))
    (decode-time it)))
-
-;; TODO - remove operator argument - use negative/positive integers
-;; instead, and rename it to date-add
-(defun chronometrist-date-op (date operator &optional count)
-  "Return DATE incremented or decremented by COUNT days (1 if not
-supplied).
-
-DATE must be calendrical information (see (info \"(elisp)Time Conversion\"))
-
-OPERATOR must be either '+ or '-
-
-COUNT must be a positive integer."
-  (let ((count (if count count 1)))
-    (case (length date)
-      (3 (cl-destructuring-bind (year month day)
-             date
-           (-> (chronometrist-date-op-internal 0 0 0
-                                  day month year
-                                  operator count)
-               (chronometrist-calendrical->date))))
-      (t (cl-destructuring-bind (s m h day month year _ _ _)
-             date
-           (chronometrist-date-op-internal s m h
-                              day month year
-                              operator count))))))
-
-(defun chronometrist-time->seconds (time)
-  "TIME must be a vector in the form [HOURS MINUTES SECONDS]."
-  (-let [[h m s] time]
-    (+ (* h 60 60)
-       (* m 60)
-       s)))
 
 (defun chronometrist-format-keybinds (command map &optional firstonly)
   "Return the keybindings for COMMAND in MAP as a string.
@@ -267,7 +172,7 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
          (apply #'concat))))
 
 ;; Local Variables:
-;; nameless-current-name: "chronometrist"
+;; nameless-current-name: "chronometrist-common"
 ;; End:
 
 (provide 'chronometrist-common)

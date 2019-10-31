@@ -1,4 +1,9 @@
-;; -*- lexical-binding: t; -*-
+;;; chronometrist-report-custom --- custom definitions for `chronometrist-report' -*- lexical-binding: t; -*-
+
+;;; Commentary:
+;;
+
+;;; Code:
 
 (defgroup chronometrist-report nil
   "Weekly report for the `chronometrist' time tracker.")
@@ -17,10 +22,12 @@
     ("Thursday"  . 4)
     ("Friday"    . 5)
     ("Saturday"  . 6))
-  "alist in the form (\"NAME\" . NUMBER), where \"NAME\" is the name of a weekday and NUMBER its associated number.")
-
-(provide 'chronometrist-report-custom)
+  "Alist in the form (\"NAME\" . NUMBER), where \"NAME\" is the name of a weekday and NUMBER its associated number.")
 
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist-report"
 ;; End:
+
+(provide 'chronometrist-report-custom)
+
+;;; chronometrist-report-custom.el ends here

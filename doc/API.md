@@ -16,7 +16,7 @@ DEPRECATED - function is deprecated and should be removed in the future
 
 # chronometrist-common
 ## Commands
-### chronometrist-open-timeclock-file
+### chronometrist-open-file
 
 ## Predicates
 ### chronometrist-buffer-exists?
@@ -77,7 +77,7 @@ time-vector time-vector -> time-vector
 ### chronometrist-current-project
 -> String
 ### chronometrist-entries
--> (String . [String String String String])
+-> (String  . [String String String String])
 -> (project . ["index" "project" "(hh:)?(mm:)?ss" "indicator"])
 ### chronometrist-total-time-one-day
 (seconds minutes hours day month year &optional zone) -> time-vector

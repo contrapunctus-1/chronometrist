@@ -3,6 +3,7 @@
 (require 'chronometrist-common)
 (require 'chronometrist-timer)
 (require 'chronometrist-report-custom)
+(require 'chronometrist-migrate)
 
 ;; TODO - improve first-run (no file, or no data in file) behaviour
 
@@ -15,41 +16,41 @@
 ;; ## VARIABLES ##
 
 (defvar chronometrist-report--ui-date nil
-  "The first date of the week displayed by `chronometrist-report' (specifically `chronometrist-report-entries').
+  "The first date of the week displayed by `chronometrist-report'.
 A value of nil means the current week. Otherwise, it must be a
-list in the form (YEAR WEEK), where WEEK is the numeric week of
-the year (1-52).")
+date in the form \"YYYY-MM-DD\".")
 
 (defvar chronometrist-report--ui-week-dates nil
-  "List of dates currently displayed by `chronometrist-report' (specifically `chronometrist-report-entries').
+  "List of dates currently displayed by `chronometrist-report'.
 Each date is a list containing calendrical information (see (info \"(elisp)Time Conversion\"))")
 
 (defvar chronometrist-report--point nil)
 
 ;; ## FUNCTIONS ##
 
-(defun chronometrist-report-previous-week-start (date)
-  "Return the date of the previous `chronometrist-report-week-start-day' from DATE.
+(defun chronometrist-report-previous-week-start (date-string)
+  "Return the time value of the previous `chronometrist-report-week-start-day' from DATE-STRING.
+
 If the day of DATE is the same as the
 `chronometrist-report-week-start-day', return DATE.
 
-DATE must be calendrical information (see (info \"(elisp)Time Conversion\")).
-
-Any time data provided is reset to midnight (00:00:00)."
-  (let* ((date       (->> date (-drop 3) (append '(0 0 0))))
-         (day        (elt date 6)) ;; 0-6, where 0 = Sunday
+DATE-STRING must be in the form \"YYYY-MM-DD\"."
+  (let* ((date-time  (chronometrist-iso-date->timestamp date-string))
+         (date-unix  (parse-iso8601-time-string date-time))
+         (date-list  (decode-time date-unix))
+         (day        (elt date-list 6)) ;; 0-6, where 0 = Sunday
          (week-start (chronometrist-day-of-week->number chronometrist-report-week-start-day))
          (gap        (cond ((> day week-start) (- day week-start))
                            ((< day week-start) (+ day (- 7 week-start))))))
     (if gap
-        (chronometrist-date-op date '- gap)
-      date)))
+        (time-subtract date-unix `(0 ,(* gap 86400)))
+      date-unix)))
 
 (defun chronometrist-report-date ()
   "Return the date specified by `chronometrist-report--ui-date'. If
 it is nil, return the current date as calendrical
 information (see (info \"(elisp)Time Conversion\"))."
-  (if chronometrist-report--ui-date chronometrist-report--ui-date (decode-time)))
+  (if chronometrist-report--ui-date chronometrist-report--ui-date (chronometrist-date)))
 
 (defun chronometrist-report-date->dates-in-week (first-date-in-week)
   "Return a list in the form (DAY-1 DAY-2 ... DAY-7), where each
@@ -79,22 +80,21 @@ calendrical information (see (info \"(elisp)Time Conversion\")).
 The first date is the first occurrence of
 `chronometrist-report-week-start-day' before the date specified in
 `chronometrist-report--ui-date' (if non-nil) or the current date."
-  (->> (chronometrist-report-date)
+  (->> (or chronometrist-report--ui-date (chronometrist-date))
        (chronometrist-report-previous-week-start)
-       (-take 6)
-       (apply #'encode-time)
-       (chronometrist-report-date->dates-in-week)
-       (-map #'decode-time)))
+       (chronometrist-report-date->dates-in-week)))
 
 (defun chronometrist-report-entries ()
   "Creates entries to be displayed in the buffer created by
 `chronometrist-report'."
   (let* ((week-dates        (chronometrist-report-date->week-dates)) ;; uses today if chronometrist-report--ui-date is nil
-         (week-dates-string (chronometrist-report-dates-in-week->string week-dates)))
+         (week-dates-string (mapcar #'chronometrist-date week-dates)))
     (setq chronometrist-report--ui-week-dates week-dates)
     (mapcar (lambda (project)
               (let ((project-daily-time-list
-                     (--map (chronometrist-project-time-one-day project it) week-dates)))
+                     (--map (chronometrist-task-time-one-day project
+                                                 (chronometrist-date it))
+                            week-dates)))
                 (list project
                       (vconcat
                        (vector project)
@@ -105,7 +105,7 @@ The first date is the first occurrence of
                             (-reduce #'chronometrist-time-add)
                             (chronometrist-format-time)
                             (vector))))))
-            timeclock-project-list)))
+            chronometrist-task-list)))
 
 (defun chronometrist-report-format-date (format-string time-date)
   "Extract date from TIME-DATE and format it according to
@@ -135,12 +135,14 @@ FORMAT-STRING."
                                          t)))
     (goto-char (point-min))
     (insert "                         ")
-    (--map (insert (chronometrist-report-format-date "%04d-%02d-%02d " it))
+    (--map (insert (chronometrist-date it) " ")
            (chronometrist-report-date->week-dates))
     (insert "\n")
     (goto-char (point-max))
     (insert w (format "%- 21s" "Total"))
-    (let ((total-time-daily (mapcar #'chronometrist-total-time-one-day chronometrist-report--ui-week-dates)))
+    (let ((total-time-daily (->> chronometrist-report--ui-week-dates
+                                 (mapcar #'chronometrist-date)
+                                 (mapcar #'chronometrist-active-time-one-day))))
       (->> total-time-daily
            (mapcar #'chronometrist-format-time)
            (--map (format "% 9s  " it))
@@ -169,9 +171,9 @@ FORMAT-STRING."
     (insert-text-button "next week"
                         'action #'chronometrist-report-next-week
                         'follow-link t)
-    (chronometrist-report-print-keybind 'chronometrist-open-timeclock-file)
+    (chronometrist-report-print-keybind 'chronometrist-open-file)
     (insert-text-button "open log file"
-                        'action #'chronometrist-open-timeclock-file
+                        'action #'chronometrist-open-file
                         'follow-link t)))
 
 (defun chronometrist-report-refresh (&optional ignore-auto noconfirm)
@@ -188,15 +190,14 @@ FORMAT-STRING."
   "Re-populate and clean `chronometrist-events', and refresh the `chronometrist-report' buffer.
 Argument FS-EVENT is ignored."
   (chronometrist-events-populate)
-  (chronometrist-events-clean)
-  (timeclock-reread-log)
+  ;; (chronometrist-events-clean)
   (chronometrist-report-refresh))
 
 ;; ## MAJOR MODE ##
 
 (defvar chronometrist-report-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "l") #'chronometrist-open-timeclock-file)
+    (define-key map (kbd "l") #'chronometrist-open-file)
     (define-key map (kbd "b") #'chronometrist-report-previous-week)
     (define-key map (kbd "f") #'chronometrist-report-next-week)
     ;; Works when number of projects < screen length; after that, you
@@ -250,6 +251,7 @@ If KEEP-DATE is nil (the default when not supplied), set
 current week. Otherwise, display data from the week specified by
 `chronometrist-report--ui-date'."
   (interactive)
+  (chronometrist-migrate-check)
   (let ((buffer (get-buffer-create chronometrist-report-buffer-name)))
     (with-current-buffer buffer
       (cond ((and (get-buffer-window chronometrist-report-buffer-name)
@@ -259,7 +261,7 @@ current week. Otherwise, display data from the week specified by
             (t (delete-other-windows)
                (when (not keep-date)
                  (setq chronometrist-report--ui-date nil))
-               (chronometrist-common-create-timeclock-file)
+               (chronometrist-common-create-chronometrist-file)
                (chronometrist-report-mode)
                (switch-to-buffer buffer)
                (chronometrist-report-refresh-file nil)
@@ -271,14 +273,16 @@ current week. Otherwise, display data from the week specified by
   (let ((arg (if (and arg (numberp arg))
                  (abs arg)
                1)))
-    (if chronometrist-report--ui-date
-        (setq chronometrist-report--ui-date
-              (chronometrist-date-op chronometrist-report--ui-date '- (* 7 arg)))
-      (setq chronometrist-report--ui-date
-            (chronometrist-date-op (decode-time) '- (* 7 arg))))
-    (setq chronometrist-report--point (point))
-    (kill-buffer)
-    (chronometrist-report t)))
+    (setq chronometrist-report--ui-date
+          (thread-first (if chronometrist-report--ui-date
+                            (parse-iso8601-time-string
+                             (chronometrist-iso-date->timestamp chronometrist-report--ui-date))
+                          (current-time))
+            (time-subtract `(0 ,(* 7 arg 86400)))
+            (chronometrist-date))))
+  (setq chronometrist-report--point (point))
+  (kill-buffer)
+  (chronometrist-report t))
 
 (defun chronometrist-report-next-week (arg)
   "View the next week's report."
@@ -286,11 +290,13 @@ current week. Otherwise, display data from the week specified by
   (let ((arg (if (and arg (numberp arg))
                  (abs arg)
                1)))
-    (if chronometrist-report--ui-date
-        (setq chronometrist-report--ui-date
-              (chronometrist-date-op chronometrist-report--ui-date '+ (* 7 arg)))
-      (setq chronometrist-report--ui-date
-            (chronometrist-date-op (decode-time) '+ (* 7 arg))))
+    (setq chronometrist-report--ui-date
+          (thread-first (if chronometrist-report--ui-date
+                            (parse-iso8601-time-string
+                             (chronometrist-iso-date->timestamp chronometrist-report--ui-date))
+                          (current-time))
+            (time-add `(0 ,(* 7 arg 86400)))
+            (chronometrist-date)))
     (setq chronometrist-report--point (point))
     (kill-buffer)
     (chronometrist-report t)))

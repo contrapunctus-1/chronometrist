@@ -4,8 +4,12 @@
 (require 'chronometrist-common)
 (require 'chronometrist-timer)
 (require 'chronometrist-custom)
+(require 'chronometrist-history)
 (require 'chronometrist-report)
 (require 'chronometrist-statistics)
+(require 'chronometrist-sexp)
+(require 'chronometrist-queries)
+(require 'chronometrist-migrate)
 
 ;;; Commentary:
 ;;
@@ -51,41 +55,30 @@
 (defvar chronometrist--timer-object nil)
 (defvar chronometrist--project-history nil)
 (defvar chronometrist--point nil)
+(defvar chronometrist-task-list nil)
 (defvar chronometrist--fs-watcher nil)
 
 ;; ## FUNCTIONS ##
-(defun chronometrist-current-project ()
-  "Return the name of the currently clocked-in project, or nil if the user is not clocked in."
-  (let* ((last-event (-> (chronometrist-date)
-                         (gethash chronometrist-events)
-                         (chronometrist-vlast)))
-         (last-code (chronometrist-vfirst last-event)))
-    (if (equal last-code "i")
-        (elt last-event 8)
-      nil)))
+(defun chronometrist-current-task ()
+  "Return the name of the currently clocked-in task, or nil if not clocked in."
+  (let ((last-event (chronometrist-last-expr)))
+    (if (plist-member last-event :stop)
+        nil
+      (plist-get last-event :name))))
 
-(defun chronometrist-project-active? (project)
-  "Return t if PROJECT is currently clocked in, else nil."
-  (equal (chronometrist-current-project) project))
-
-(defun chronometrist-seconds-to-hms (seconds)
-  "Convert SECONDS to a vector in the form [HOURS MINUTES SECONDS].
-SECONDS must be a positive integer."
-  (setq seconds (truncate seconds))
-  (let* ((s (% seconds 60))
-         (m (% (/ seconds 60) 60))
-         (h (/ seconds 3600)))
-    (vector h m s)))
+(defun chronometrist-task-active? (task)
+  "Return t if TASK is currently clocked in, else nil."
+  (equal (chronometrist-current-task) task))
 
 (defun chronometrist-entries ()
   "Create entries to be displayed in the buffer created by `chronometrist', in the format specified by `tabulated-list-entries'."
-  ;; HACK - these should not be here. `chronometrist-entries' is called by both
-  ;; `chronometrist-refresh' and `chronometrist-refresh-file', and only the latter should
-  ;; refresh from a file.
+  ;; HACK - these calls are commented out, because `chronometrist-entries' is
+  ;; called by both `chronometrist-refresh' and `chronometrist-refresh-file', and only the
+  ;; latter should refresh from a file.
   ;; (timeclock-reread-log)
   ;; (chronometrist-events-populate)
   ;; (chronometrist-events-clean)
-  (->> timeclock-project-list
+  (->> chronometrist-task-list
        (-sort #'string-lessp)
        (--map-indexed
         (list it
@@ -93,9 +86,9 @@ SECONDS must be a positive integer."
                       (list it
                             'action 'chronometrist-toggle-project-button
                             'follow-link t)
-                      (-> (chronometrist-project-time-one-day it)
+                      (-> (chronometrist-task-time-one-day it)
                           (chronometrist-format-time))
-                      (if (chronometrist-project-active? it)
+                      (if (chronometrist-task-active? it)
                           "*" ""))))))
 
 (defun chronometrist-project-at-point ()
@@ -116,31 +109,6 @@ SECONDS must be a positive integer."
   (goto-char (point-min))
   (re-search-forward timeclock-last-project nil t)
   (beginning-of-line))
-
-(defun chronometrist-time-add (a b)
-  "Add two vectors A and B in the form [HOURS MINUTES SECONDS] and return a vector in the same form."
-  (let ((h1 (elt a 0))
-        (m1 (elt a 1))
-        (s1 (elt a 2))
-        (h2 (elt b 0))
-        (m2 (elt b 1))
-        (s2 (elt b 2)))
-    (chronometrist-seconds-to-hms (+ (* h1 3600) (* h2 3600)
-                        (* m1 60) (* m2 60)
-                        s1 s2))))
-
-(defun chronometrist-total-time-one-day (&optional date)
-  "Return the total active time on DATE (if non-nil) or today.
-
-Return value is a vector in the form [HOURS MINUTES SECONDS].
-
-DATE must be calendrical information calendrical
-information (see (info \"(elisp)Time Conversion\"))."
-  (if timeclock-project-list
-      (->> timeclock-project-list
-           (--map (chronometrist-project-time-one-day it date))
-           (-reduce #'chronometrist-time-add))
-    [0 0 0]))
 
 (defun chronometrist-print-keybind (command &optional description firstonly)
   "Insert the keybindings for COMMAND.
@@ -166,7 +134,7 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
                                                t)))
       (goto-char (point-max))
       (-->
-       (chronometrist-total-time-one-day)
+       (chronometrist-active-time-one-day)
        (chronometrist-format-time it)
        (format "%s%- 26s%s" w "Total" it)
        (insert it))
@@ -196,9 +164,9 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
                           'action #'chronometrist-report
                           'follow-link t)
 
-      (chronometrist-print-keybind 'chronometrist-open-timeclock-file)
+      (chronometrist-print-keybind 'chronometrist-open-file)
       (insert-text-button "open log file"
-                          'action #'chronometrist-open-timeclock-file
+                          'action #'chronometrist-open-file
                           'follow-link t)
       (insert "\n"))))
 
@@ -212,28 +180,33 @@ project. N must be a positive integer."
     (chronometrist-project-at-point)))
 
 (defun chronometrist-refresh (&optional ignore-auto noconfirm)
-  "Refresh the `chronometrist' buffer, without re-reading `timeclock-file'.
+  "Refresh the `chronometrist' buffer, without re-reading `chronometrist-file'.
 
 The optional arguments IGNORE-AUTO and NOCONFIRM are ignored, and
 are present solely for the sake of using this function as a value
 of `revert-buffer-function'."
   (let* ((w (get-buffer-window chronometrist-buffer-name t))
-         (p (window-point w)))
-    (with-current-buffer chronometrist-buffer-name
-      (tabulated-list-print t nil)
-      (chronometrist-print-non-tabular)
-      (chronometrist-maybe-start-timer)
-      (set-window-point w p))))
+         (task (window-point w)))
+    (when w
+      (setq chronometrist-task-list (chronometrist-tasks-from-table))
+      (with-current-buffer chronometrist-buffer-name
+        (tabulated-list-print t nil)
+        (chronometrist-print-non-tabular)
+        (chronometrist-maybe-start-timer)
+        (set-window-point w task)))))
 
 (defun chronometrist-refresh-file (fs-event)
-  "Re-read `timeclock-file' and refresh the `chronometrist' buffer.
+  "Re-read `chronometrist-file' and refresh the `chronometrist' buffer.
 Argument FS-EVENT is ignored."
+  ;; (chronometrist-file-clean)
   (chronometrist-events-populate)
-  (chronometrist-events-clean)
-  (timeclock-reread-log)
+  (setq chronometrist-task-list (chronometrist-tasks-from-table))
+  (chronometrist-tags-history-populate)
+  (chronometrist-key-history-populate)
+  (chronometrist-value-history-populate)
   (chronometrist-refresh))
 
-;; HACK - has some duplicate logic with `chronometrist-project-events-in-day'
+;; HACK - has some duplicate logic with `chronometrist-task-events-in-day'
 (defun chronometrist-reason-list (project)
   "Filters `timeclock-reason-list' to only return reasons for PROJECT."
   (let (save-next results)
@@ -274,10 +247,10 @@ in `timeclock-reason-list'."
 
 ;; ## HOOKS ##
 
-(defvar chronometrist-project-start-functions nil
+(defvar chronometrist-before-in-functions nil
   "Functions to run before a project is clocked in.
 Each function in this hook must accept a single argument, which
-is the project to be clocked-in.
+is the name of the project to be clocked-in.
 
 The commands `chronometrist-toggle-project-button',
 `chronometrist-add-new-project-button',
@@ -285,43 +258,48 @@ The commands `chronometrist-toggle-project-button',
 `chronometrist-add-new-project', and
 `chronometrist-toggle-project-no-reason' will run this hook.")
 
-(defvar chronometrist-before-project-stop-functions nil
+(defvar chronometrist-after-in-functions nil
+  "Functions to run after a project is clocked in.
+Each function in this hook must accept a single argument, which
+is the name of the project to be clocked-in.
+
+The commands `chronometrist-toggle-project-button',
+`chronometrist-add-new-project-button',
+`chronometrist-toggle-project',
+`chronometrist-add-new-project', and
+`chronometrist-toggle-project-no-reason' will run this hook.")
+
+(defvar chronometrist-before-out-functions nil
   "Functions to run before a project is clocked out.
 Each function in this hook must accept a single argument, which
-is the clocked-out project.
+is the name of the project to be clocked out of.
 
 The project will be stopped only if all functions in this list
 return a non-nil value.")
 
-(defvar chronometrist-after-project-stop-functions nil
+(defvar chronometrist-after-out-functions nil
   "Functions to run after a project is clocked out.
 Each function in this hook must accept a single argument, which
-is the clocked-out project.")
+is the name of the project to be clocked out of.")
 
-(defun chronometrist-run-project-start-functions (project)
-  "Call each function in `chronometrist-project-start-functions' with PROJECT."
-  (run-hook-with-args 'chronometrist-project-start-functions
-                      project))
+(defun chronometrist-run-functions-and-clock-in (task)
+  "Run hooks and clock in to TASK."
+  (run-hook-with-args 'chronometrist-before-in-functions task)
+  (chronometrist-in task)
+  (run-hook-with-args 'chronometrist-after-in-functions task))
 
-(defun chronometrist-run-after-project-stop-functions (project)
-  "Call each function in `chronometrist-after-project-stop-functions' with PROJECT."
-  (run-hook-with-args 'chronometrist-after-project-stop-functions
-                      project))
-
-(defun chronometrist-run-functions-and-clock-out (project ask)
-  "Run hooks and clock out of PROJECT.
-ASK is used like in `timeclock-out'."
-  (when (run-hook-with-args-until-failure 'chronometrist-before-project-stop-functions
-                                          project)
-    (timeclock-out nil nil ask)
-    (chronometrist-run-after-project-stop-functions project)))
+(defun chronometrist-run-functions-and-clock-out (task)
+  "Run hooks and clock out of TASK."
+  (when (run-hook-with-args-until-failure 'chronometrist-before-out-functions task)
+    (chronometrist-out)
+    (run-hook-with-args 'chronometrist-after-out-functions task)))
 
 ;; ## MAJOR-MODE ##
 (defvar chronometrist-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "RET")   #'chronometrist-toggle-project)
     (define-key map (kbd "M-RET") #'chronometrist-toggle-project-no-reason)
-    (define-key map (kbd "l")     #'chronometrist-open-timeclock-file)
+    (define-key map (kbd "l")     #'chronometrist-open-file)
     (define-key map (kbd "r")     #'chronometrist-report)
     (define-key map [mouse-1]     #'chronometrist-toggle-project)
     (define-key map [mouse-3]     #'chronometrist-toggle-project-no-reason)
@@ -350,48 +328,44 @@ ASK is used like in `timeclock-out'."
 ;; FIXME - there is duplication between this function and `chronometrist-toggle-project's logic
 (defun chronometrist-toggle-project-button (button)
   "Button action to toggle a project."
-  (let ((current  (chronometrist-current-project))
+  (let ((current  (chronometrist-current-task))
         (at-point (chronometrist-project-at-point)))
     ;; clocked in + point on current    = clock out
     ;; clocked in + point on some other project = clock out, clock in to project
     ;; clocked out = clock in
     (when current
-      (chronometrist-run-functions-and-clock-out current t))
+      (chronometrist-run-functions-and-clock-out current))
     (unless (equal at-point current)
-      (chronometrist-run-project-start-functions at-point)
-      (timeclock-in nil at-point nil))
+      (chronometrist-run-functions-and-clock-in at-point))
     (chronometrist-refresh)))
 
 (defun chronometrist-add-new-project-button (button)
   "Button action to add a new project."
-  (let ((current (chronometrist-current-project)))
+  (let ((current (chronometrist-current-task)))
     (when current
-      (chronometrist-run-functions-and-clock-out current t))
-    (let ((p (read-from-minibuffer "New project name: " nil nil nil nil nil t)))
-      (chronometrist-run-project-start-functions p)
-      (timeclock-in nil p nil))
+      (chronometrist-run-functions-and-clock-out current))
+    (let ((task (read-from-minibuffer "New task name: " nil nil nil nil nil t)))
+      (chronometrist-run-functions-and-clock-in task))
     (chronometrist-refresh)))
 
 ;; ## COMMANDS ##
 
 ;; TODO - if clocked in and point not on a project, just clock out
 ;; PROFILE
-(defun chronometrist-toggle-project (&optional prefix no-prompt)
+;; TODO - implement `chronometrist-ask-tags-p' and `chronometrist-ask-key-values-p' (don't prompt for them if nil)
+(defun chronometrist-toggle-project (&optional prefix)
   "Start or stop the project at point.
 
 If there is no project at point, do nothing.
 
-With numeric prefix argument PREFIX, toggle the Nth project. If
-there is no corresponding project, do nothing.
-
-If NO-PROMPT is non-nil, don't ask for a reason."
+With numeric prefix argument PREFIX, toggle the Nth project in
+the buffer. If there is no corresponding project, do nothing."
   (interactive "P")
-  (let* ((empty-file (chronometrist-common-file-empty-p timeclock-file))
+  (let* ((empty-file (chronometrist-common-file-empty-p chronometrist-file))
          (nth        (when prefix (chronometrist-goto-nth-project prefix)))
          (at-point   (chronometrist-project-at-point))
          (target     (or nth at-point))
-         (current    (chronometrist-current-project))
-         (ask        (not no-prompt)))
+         (current    (chronometrist-current-task)))
     (cond (empty-file (chronometrist-add-new-project)) ;; do not run hooks - chronometrist-add-new-project will do it
           ;; What should we do if the user provides an invalid argument? Currently - nothing.
           ((and prefix (not nth)))
@@ -400,10 +374,9 @@ If NO-PROMPT is non-nil, don't ask for a reason."
            ;; clocked in + target is some other project = clock out, clock in to project
            ;; clocked out = clock in
            (when current
-             (chronometrist-run-functions-and-clock-out current ask))
+             (chronometrist-run-functions-and-clock-out current))
            (unless (equal target current)
-             (chronometrist-run-project-start-functions target)
-             (timeclock-in nil target nil))))
+             (chronometrist-run-functions-and-clock-in target))))
     (chronometrist-refresh)))
 
 (defun chronometrist-toggle-project-no-reason (&optional prefix)
@@ -429,6 +402,7 @@ Based on their timelog file `timeclock-file'. This is the
 If numeric argument ARG is 1, run `chronometrist-report'.
 If numeric argument ARG is 2, run `chronometrist-statistics'."
   (interactive "P")
+  (chronometrist-migrate-check)
   (let ((buffer (get-buffer-create chronometrist-buffer-name))
         (w      (get-buffer-window chronometrist-buffer-name t)))
     (cond
@@ -439,10 +413,10 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
           (setq chronometrist--point (point))
           (kill-buffer chronometrist-buffer-name)))
      (t (with-current-buffer buffer
-          (cond ((or (not (file-exists-p timeclock-file))
-                     (chronometrist-common-file-empty-p timeclock-file))
+          (cond ((or (not (file-exists-p chronometrist-file))
+                     (chronometrist-common-file-empty-p chronometrist-file))
                  ;; first run
-                 (chronometrist-common-create-timeclock-file)
+                 (chronometrist-common-create-chronometrist-file)
                  (let ((inhibit-read-only t))
                    (chronometrist-common-clear-buffer buffer)
                    (insert "Welcome to Chronometrist! Hit RET to ")

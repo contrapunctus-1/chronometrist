@@ -4,9 +4,11 @@
 ;;
 
 (require 'chronometrist-common)
+(require 'chronometrist-time)
 (require 'chronometrist-timer)
 (require 'chronometrist-events)
 (require 'chronometrist-statistics-custom)
+(require 'chronometrist-migrate)
 
 ;; for each activity -
 ;; [x] days active - int (float percent)
@@ -51,79 +53,39 @@
 
 ;;; Code:
 
-(defun chronometrist-date->time (date)
-  "Convert DATE to a time value (see (info \"(elisp)Time of Day\")).
-DATE must be a list in the form (YEAR MONTH DAY)."
-  (->> date (reverse) (apply #'encode-time 0 0 0)))
-
-(defun chronometrist-date-less-p (date1 date2)
-  "Like `time-less-p' but for dates. Return t if DATE1 is less than DATE2.
-Both must be lists in the form (YEAR MONTH DAY)."
-  (time-less-p (chronometrist-date->time date1) (chronometrist-date->time date2)))
-
-(defun chronometrist-statistics-count-active-days (project &optional table)
-  "Return the number of days the user spent any time on PROJECT.
-TABLE must be a hash table - if not supplied, `chronometrist-events' is used.
-
-This will not return correct results if TABLE contains records
-which span midnights. (see `chronometrist-events-clean')"
-  (let ((count 0)
-        (table (if table table chronometrist-events)))
-    (maphash (lambda (date events)
-               (when (seq-find (lambda (event)
-                                 (and (equal (elt event 0) "i")
-                                      (equal (elt event 7) project)))
-                               events)
-                 (setq count (1+ count))))
-             table)
-    count))
-
-(defun chronometrist-project-events-in-day (project date)
-  "Get events for PROJECT on DATE. DATE must be in the form (YEAR MONTH DAY).
-
-Returns a list of events, where each event is a vector in the
-form [CODE YEAR MONTH DAY HOURS MINUTES SECONDS PROJECT-OR-COMMENT].
-
-This will not return correct results if TABLE contains records
-which span midnights. (see `chronometrist-events-clean')"
-  (let ((save-next)
-        (results))
-    (seq-do (lambda (event)
-              (cond ((and (equal "i" (chronometrist-vfirst event))
-                          (equal project (chronometrist-vlast event)))
-                     (->> event (list) (append results) (setq results))
-                     (setq save-next t))
-                    (save-next
-                     (->> event (list) (append results) (setq results))
-                     (setq save-next nil))
-                    (t nil)))
-            (gethash date chronometrist-events))
-    results))
-
 (defun chronometrist-events->time-list (events)
   "Convert EVENTS to a list of time values.
 
-EVENTS must be a list of vectors in the form [\"CODE\" YEAR MONTH
-DATE HOUR MINUTES SECONDS \"PROJECT-NAME-OR-COMMENT\"] (see
-`chronometrist-events' and `chronometrist-events-populate')
+EVENTS must be a list of valid Chronometrist property lists (see `chronometrist-file').
 
 For time value format, see (info \"(elisp)Time of Day\")."
-  (--map (pcase it
-           (`[,_ ,year ,month ,day ,h ,m ,s ,_]
-            (encode-time s m h day month year)))
-         events))
+  (let ((index 0)
+        (length (length events))
+        result)
+    (while (not (= index length))
+      (let* ((elt       (elt events index))
+             (start-iso (parse-iso8601-time-string (plist-get elt :start)))
+             (stop      (plist-get elt :stop))
+             (stop-iso  (if stop
+                            (parse-iso8601-time-string stop)
+                          (current-time))))
+        (incf index)
+        (setq result (append result `((,start-iso ,stop-iso))))))
+    result))
 
-(defun chronometrist-time-list->sum-of-intervals (time-values)
+(defun chronometrist-time-list->sum-of-intervals (time-value-lists)
   "From a list of start/end timestamps TIME-VALUES, get the total time interval.
 
-TIME-VALUES are a list of time values (see (info \"(elisp)Time of
-Day\")), assumed to be alternating start/end times. This function
-obtains the intervals between them, and adds the intervals to
-return a single time value.
+TIME-VALUE-LISTS is a list in the form
+\((START STOP) ...)
+where START and STOP are time values (see (info \"(elisp)Time of Day\")).
+
+This function obtains the intervals between them, and adds the
+intervals to return a single time value.
 
 If TIME-VALUES is nil, return '(0 0)."
-  (if time-values
-      (->> (-partition 2 time-values)
+  (if time-value-lists
+      (->> time-value-lists
            (--map (time-subtract (cadr it) (car it)))
            (-reduce #'time-add))
     '(0 0)))
@@ -140,7 +102,7 @@ which span midnights. (see `chronometrist-events-clean')"
         (days  0)
         (per-day-time-list))
     (maphash (lambda (key value)
-               (let ((events-in-day (chronometrist-project-events-in-day project key)))
+               (let ((events-in-day (chronometrist-task-events-in-day project key)))
                  (when events-in-day
                    (setq days (1+ days))
                    (->> events-in-day
@@ -180,12 +142,6 @@ displayed. They must be dates in the form (YEAR MONTH DAY).")
 
 ;; ## FUNCTIONS ##
 
-(defun chronometrist-calendrical->date (date)
-  "Convert calendrical information DATE to a date in the form (YEAR MONTH DAY).
-
-For input format, see (info \"(elisp)Time of Day\")."
-  (-> date (-slice 3 6) (reverse)))
-
 (defun chronometrist-statistics-entries-internal (table)
   "Helper function for `chronometrist-statistics-entries'.
 
@@ -213,7 +169,7 @@ reduced to the desired range using
                                            active-percent
                                            average-time)))
               (list project content)))
-          timeclock-project-list))
+          chronometrist-task-list))
 
 (defun chronometrist-statistics-entries ()
   "Create entries to be displayed in the buffer created by `chronometrist-statistics'."
@@ -263,8 +219,8 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
     (insert ", from")
     (insert
      (format " %s to %s\n"
-             (chronometrist-statistics-format-date (plist-get chronometrist-statistics--ui-state :start))
-             (chronometrist-statistics-format-date (plist-get chronometrist-statistics--ui-state :end))))))
+             (plist-get chronometrist-statistics--ui-state :start)
+             (plist-get chronometrist-statistics--ui-state :end)))))
 
 (defun chronometrist-statistics-refresh (&optional ignore-auto noconfirm)
   "Refresh the `chronometrist-statistics' buffer, without re-reading `timeclock-file'.
@@ -284,7 +240,7 @@ of `revert-buffer-function'."
 
 (defvar chronometrist-statistics-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "l") #'chronometrist-open-timeclock-file)
+    (define-key map (kbd "l") #'chronometrist-open-file)
     (define-key map (kbd "b") #'chronometrist-statistics-previous-range)
     (define-key map (kbd "f") #'chronometrist-statistics-next-range)
     map)
@@ -326,20 +282,23 @@ If PRESERVE-STATE is nil (the default when not supplied), display
 data from the current week. Otherwise, display data from the week
 specified by `chronometrist-statistics--ui-state'."
   (interactive)
-  (let* ((buffer (get-buffer-create chronometrist-statistics-buffer-name))
-         (today  (decode-time))
-         (week-start (chronometrist-calendrical->date
-                      (chronometrist-report-previous-week-start today)))
-         (week-end   (chronometrist-date-op week-start #'+ 6)))
+  (chronometrist-migrate-check)
+  (let* ((buffer         (get-buffer-create chronometrist-statistics-buffer-name))
+         (today          (chronometrist-date))
+         (week-start     (chronometrist-report-previous-week-start today))
+         (week-end       (time-add week-start
+                                   `(0 ,(* 6 chronometrist-seconds-in-day))))
+         (week-start-iso (chronometrist-date week-start))
+         (week-end-iso   (chronometrist-date week-end)))
     (with-current-buffer buffer
       (cond ((get-buffer-window chronometrist-statistics-buffer-name)
              (kill-buffer buffer))
             (t ;; (delete-other-windows)
              (when (not preserve-state)
-               (setq chronometrist-statistics--ui-state `(:mode week
-                                  :start ,week-start
-                                  :end ,week-end)))
-             (chronometrist-common-create-timeclock-file)
+               (setq chronometrist-statistics--ui-state `(:mode  week
+                                                          :start ,week-start-iso
+                                                          :end   ,week-end-iso)))
+             (chronometrist-common-create-chronometrist-file)
              (chronometrist-statistics-mode)
              (switch-to-buffer buffer)
              (chronometrist-statistics-refresh))))))
@@ -349,17 +308,27 @@ specified by `chronometrist-statistics--ui-state'."
 
 If ARG is a numeric argument, go back that many times."
   (interactive "P")
-  (let* ((arg   (if (and arg (numberp arg))
-                    (abs arg)
-                  1))
-         (start (plist-get chronometrist-statistics--ui-state :start))
-         (end   (plist-get chronometrist-statistics--ui-state :end)))
+  (let* ((arg        (if (and arg (numberp arg))
+                         (abs arg)
+                       1))
+         (start-unix (->> (plist-get chronometrist-statistics--ui-state :start)
+                          (chronometrist-iso-date->timestamp)
+                          (parse-iso8601-time-string)))
+         (end-unix   (->> (plist-get chronometrist-statistics--ui-state :end)
+                          (chronometrist-iso-date->timestamp)
+                          (parse-iso8601-time-string))))
     (case (plist-get chronometrist-statistics--ui-state :mode)
       ('week
-       (let* ((new-start (chronometrist-date-op start     #'- (* 7 arg)))
-              (new-end   (chronometrist-date-op new-start #'+ 6)))
-         (plist-put chronometrist-statistics--ui-state :start new-start)
-         (plist-put chronometrist-statistics--ui-state :end new-end))))
+       (let* ((new-start (time-subtract start-unix
+                                        (* 7 chronometrist-seconds-in-day arg)))
+              (new-end   (time-add new-start
+                                   (* 6 chronometrist-seconds-in-day))))
+         (plist-put chronometrist-statistics--ui-state
+                    :start
+                    (chronometrist-date new-start))
+         (plist-put chronometrist-statistics--ui-state
+                    :end
+                    (chronometrist-date new-end)))))
     (setq chronometrist-statistics--point (point))
     (kill-buffer)
     (chronometrist-statistics t)))
@@ -372,14 +341,24 @@ If ARG is a numeric argument, go forward that many times."
   (let* ((arg   (if (and arg (numberp arg))
                     (abs arg)
                   1))
-         (start (plist-get chronometrist-statistics--ui-state :start))
-         (end   (plist-get chronometrist-statistics--ui-state :end)))
+         (start-unix (->> (plist-get chronometrist-statistics--ui-state :start)
+                          (chronometrist-iso-date->timestamp)
+                          (parse-iso8601-time-string)))
+         (end-unix   (->> (plist-get chronometrist-statistics--ui-state :end)
+                          (chronometrist-iso-date->timestamp)
+                          (parse-iso8601-time-string))))
     (case (plist-get chronometrist-statistics--ui-state :mode)
       ('week
-       (let* ((new-start (chronometrist-date-op start     #'+ (* 7 arg)))
-              (new-end   (chronometrist-date-op new-start #'+ 6)))
-         (plist-put chronometrist-statistics--ui-state :start new-start)
-         (plist-put chronometrist-statistics--ui-state :end new-end))))
+       (let* ((new-start (time-add start-unix
+                                   (* 7 chronometrist-seconds-in-day arg)))
+              (new-end   (time-add new-start
+                                   (* 6 chronometrist-seconds-in-day))))
+         (plist-put chronometrist-statistics--ui-state
+                    :start
+                    (chronometrist-date new-start))
+         (plist-put chronometrist-statistics--ui-state
+                    :end
+                    (chronometrist-date new-end)))))
     (setq chronometrist-statistics--point (point))
     (kill-buffer)
     (chronometrist-statistics t)))

@@ -14,6 +14,11 @@
 
 This is not guaranteed to be accurate - see (info \"(elisp)Timers\").")
 
+(defcustom chronometrist-day-start-time "00:00:00"
+  "The time at which a day is considered to start, in \"HH:MM:SS\".
+
+The default is midnight, i.e. \"00:00:00\".")
+
 (provide 'chronometrist-custom)
 
 ;; Local Variables:
