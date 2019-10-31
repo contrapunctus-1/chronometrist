@@ -14,7 +14,7 @@ Largely modelled after the Android application, [A Time Tracker](https://github.
   1. No support (yet) for adding a task without clocking into it.
   2. No support for concurrent tasks.
 
-**WARNING: with the next version (v0.3), chronometrist will no longer use timeclock as a dependency and will use its own s-expression-based backend. A command to migrate the timeclock-file will be provided.**
+**IMPORTANT: with version v0.3, chronometrist no longer uses timeclock as a dependency and will use its own s-expression-based backend. A command to migrate the timeclock-file, `chronometrist-migrate-timelog-file->sexp-file`, is provided.**
 
 ## Differences from timeclock
 * Stores data in an s-expression format rather than a line-based one
@@ -45,7 +45,7 @@ Running `M-x chronometrist` when the Chronometrist buffer is visible will kill i
 
 `chronometrist` keeps itself updated via an idle timer - no need to frequently press `g` to update.
 
-#### Attaching key values to time intervals
+#### Attaching key values to time intervals (experimental)
 Add `chronometrist-kv-read` to `chronometrist-before-in-functions` and/or `chronometrist-before-out-functions`, as you like (see [Hooks](#Hooks)).
 
 You will now be prompted to enter key-values when you clock in/out. Leave an entry blank to exit the prompt, edit the resulting key-values by hand if required, then press `C-c C-c` to accept the key-values (or `C-c C-k` to cancel).
