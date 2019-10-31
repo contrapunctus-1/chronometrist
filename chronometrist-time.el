@@ -169,6 +169,14 @@ Both must be dates in the ISO-8601 format."
 For input format, see (info \"(elisp)Time of Day\")."
   (-> date (-slice 3 6) (reverse)))
 
+(defun chronometrist-interval (event)
+  "Return the period of time covered by EVENT as a time value.
+EVENT should be a plist (see `chronometrist-file')."
+  (let ((start (plist-get event :start))
+        (stop  (plist-get event :stop)))
+    (time-subtract (parse-iso8601-time-string stop)
+                   (parse-iso8601-time-string start))))
+
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"
 ;; End:
