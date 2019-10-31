@@ -226,16 +226,15 @@
     4. Function - chronometrist-report-previous-week-start (date-string)
     5. Function - chronometrist-report-date ()
     6. Function - chronometrist-report-date->dates-in-week (first-date-in-week)
-    7. Function - chronometrist-report-dates-in-week->string (dates-in-week)
-    8. Function - chronometrist-report-date->week-dates ()
-    9. Function - chronometrist-report-entries ()
-    10. Function - chronometrist-report-format-date (format-string time-date)
-    11. Function - chronometrist-report-print-keybind (command &optional description firstonly)
-    12. Function - chronometrist-report-print-non-tabular ()
-    13. Function - chronometrist-report-refresh (&optional ignore-auto noconfirm)
-    14. Function - chronometrist-report-refresh-file (fs-event)
-    15. Variable - chronometrist-report-mode-map
-    16. Major Mode - chronometrist-report-mode
-    17. Function - chronometrist-report (&optional keep-date)
-    18. Function - chronometrist-report-previous-week (arg)
-    19. Function - chronometrist-report-next-week (arg)
+    7. Function - chronometrist-report-date->week-dates ()
+    8. Function - chronometrist-report-entries ()
+    9. Function - chronometrist-report-format-date (format-string time-date)
+    10. Function - chronometrist-report-print-keybind (command &optional description firstonly)
+    11. Function - chronometrist-report-print-non-tabular ()
+    12. Function - chronometrist-report-refresh (&optional ignore-auto noconfirm)
+    13. Function - chronometrist-report-refresh-file (fs-event)
+    14. Variable - chronometrist-report-mode-map
+    15. Major Mode - chronometrist-report-mode
+    16. Function - chronometrist-report (&optional keep-date)
+    17. Function - chronometrist-report-previous-week (arg)
+    18. Function - chronometrist-report-next-week (arg)

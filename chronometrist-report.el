@@ -73,15 +73,6 @@ FIRST-DATE-IN-WEEK must be a time value representing DAY-1."
                (+ (cadr first-date-in-week) it))
               it)))
 
-(defun chronometrist-report-dates-in-week->string (dates-in-week)
-  "Return a list in the form (DAY-1 DAY-2 ... DAY-7), where each
-day is a string in the form \"YYYY/MM/DD\""
-  (--map (format "%04d/%02d/%02d"
-                 (elt it 5)
-                 (elt it 4)
-                 (elt it 3))
-         dates-in-week))
-
 (defun chronometrist-report-date->week-dates ()
   "Return dates in week as a list, where each element is
 calendrical information (see (info \"(elisp)Time Conversion\")).
