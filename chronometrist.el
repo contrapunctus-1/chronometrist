@@ -1,4 +1,4 @@
-;;; chronometrist.el --- A time tracker for Emacs with a nice interface, built timeclock.el -*- lexical-binding: t; -*-
+;;; chronometrist.el --- A time tracker for Emacs with a nice interface -*- lexical-binding: t; -*-
 
 (require 'filenotify)
 (require 'chronometrist-common)
@@ -27,14 +27,6 @@
 ;; 2. Should use *earmuffs* for global variables for clarity
 ;; 3. Should names of major modes (chronometrist-mode,
 ;;    chronometrist-report-mode) end with -major-mode ?
-
-;; Limitations of timeclock.el
-;; 1. Concurrent tasks not permitted
-;; 2. timeclock-project-list contains only the projects found in the
-;;    timeclock-file - no way for a user to specify tasks beforehand.
-;; 3. Uses non-standard slashes in the date instead of dashes (e.g.
-;;    "2018/01/01" instead of "2018-01-01") and a space for the
-;;    date-time separator instead of T
 
 ;; Limitations of tabulated-list-mode
 ;; 1. Can't mix tabulated and non-tabulated data!!! What if I want
@@ -74,7 +66,6 @@
   ;; HACK - these calls are commented out, because `chronometrist-entries' is
   ;; called by both `chronometrist-refresh' and `chronometrist-refresh-file', and only the
   ;; latter should refresh from a file.
-  ;; (timeclock-reread-log)
   ;; (chronometrist-events-populate)
   ;; (chronometrist-events-clean)
   (->> chronometrist-task-list
@@ -106,7 +97,8 @@
 (defun chronometrist-goto-last-project ()
   "In the `chronometrist' buffer, move point to the line containing the last active project."
   (goto-char (point-min))
-  (re-search-forward timeclock-last-project nil t)
+  ;; FIXME
+  ;; (re-search-forward timeclock-last-project nil t)
   (beginning-of-line))
 
 (defun chronometrist-print-keybind (command &optional description firstonly)
@@ -310,7 +302,6 @@ is the name of the project to be clocked out of.")
 
 (define-derived-mode chronometrist-mode tabulated-list-mode "Chronometrist"
   "Major mode for `chronometrist'."
-  (timeclock-reread-log)
   (make-local-variable 'tabulated-list-format)
   (setq tabulated-list-format [("#"       3  t)
                                ("Project" 25 t)
@@ -321,8 +312,7 @@ is the name of the project to be clocked out of.")
   (make-local-variable 'tabulated-list-sort-key)
   (setq tabulated-list-sort-key '("Project" . nil))
   (tabulated-list-init-header)
-  (setq revert-buffer-function #'chronometrist-refresh
-        timeclock-get-reason-function #'chronometrist-ask-for-reason))
+  (setq revert-buffer-function #'chronometrist-refresh))
 
 ;; ## BUTTONS ##
 
@@ -395,9 +385,9 @@ is no corresponding project, do nothing."
 
 ;;;###autoload
 (defun chronometrist (&optional arg)
-  "Display the user's timeclock.el projects and the time spent on them today.
+  "Display the user's tasks and the time spent on them today.
 
-Based on their timelog file `timeclock-file'. This is the
+Based on their timelog file `chronometrist-file'. This is the
 'listing command' for `chronometrist-mode'.
 
 If numeric argument ARG is 1, run `chronometrist-report'.

@@ -214,7 +214,6 @@ Argument FS-EVENT is ignored."
 
 (define-derived-mode chronometrist-report-mode tabulated-list-mode "Chronometrist-Report"
   "Major mode for `chronometrist-report'."
-  (timeclock-reread-log)
   (make-local-variable 'tabulated-list-format)
   (setq tabulated-list-format [("Project"   25 t)
                                ("Sunday"    10 t)
@@ -242,10 +241,9 @@ Argument FS-EVENT is ignored."
 
 ;;;###autoload
 (defun chronometrist-report (&optional keep-date)
-  "Display a weekly report of the user's timeclock.el projects
-and the time spent on them each day, based on their timelog file
-in `timeclock-file'. This is the 'listing command' for
-chronometrist-report-mode.
+  "Display a weekly report of the data in `chronometrist-file'.
+
+ This is the 'listing command' for chronometrist-report-mode.
 
 If a buffer called `chronometrist-report-buffer-name' already
 exists and is visible, kill the buffer.

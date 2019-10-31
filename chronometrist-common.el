@@ -3,7 +3,6 @@
 ;;; Commentary:
 ;;
 
-(require 'timeclock)
 (require 'dash)
 (require 'cl-lib)
 (require 'chronometrist-time)
@@ -12,7 +11,9 @@
 ;;; Code:
 
 (defvar chronometrist-empty-time-string "-")
+
 (defvar chronometrist-date-re "[0-9]\\{4\\}/[0-9]\\{2\\}/[0-9]\\{2\\}")
+
 (defvar chronometrist-time-re-ui
   (rx-to-string
    `(or
@@ -24,6 +25,7 @@
 This is distinct from `chronometrist-time-re-file' (which see) -
 `chronometrist-time-re-ui' is meant for the user interface, and
 must correspond to the output from `chronometrist-format-time'.")
+
 (defvar chronometrist-time-re-file "[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}"
   "Regular expression to represent a timestamp in the file `timeclock-file'.
 This is distinct from `chronometrist-time-re-ui' (which see).")

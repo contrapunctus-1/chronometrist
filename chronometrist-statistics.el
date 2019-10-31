@@ -1,4 +1,4 @@
-;;; chronometrist-statistics.el --- View statistics from timeclock.el data -*- lexical-binding: t; -*-
+;;; chronometrist-statistics.el --- View statistics for Chronometrist data -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;;
@@ -131,7 +131,7 @@ This must be a plist in the form (:MODE :START :END).
 respectively.
 
 'full means display statistics from the beginning to the end of
-the `timeclock-file'.
+the `chronometrist-file'.
 
 'custom means display statistics from an arbitrary date range.
 
@@ -223,7 +223,7 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
              (plist-get chronometrist-statistics--ui-state :end)))))
 
 (defun chronometrist-statistics-refresh (&optional ignore-auto noconfirm)
-  "Refresh the `chronometrist-statistics' buffer, without re-reading `timeclock-file'.
+  "Refresh the `chronometrist-statistics' buffer, without re-reading `chronometrist-file'.
 
 The optional arguments IGNORE-AUTO and NOCONFIRM are ignored, and
 are present solely for the sake of using this function as a value
@@ -248,7 +248,6 @@ of `revert-buffer-function'."
 
 (define-derived-mode chronometrist-statistics-mode tabulated-list-mode "Chronometrist-Statistics"
   "Major mode for `chronometrist-statistics'."
-  (timeclock-reread-log)
   (make-local-variable 'tabulated-list-format)
   (setq tabulated-list-format
         [("Project"      25 t)
@@ -276,7 +275,8 @@ of `revert-buffer-function'."
 
 ;;;###autoload
 (defun chronometrist-statistics (&optional preserve-state)
-  "Display statistics based on data from the user's `timeclock-file'.
+  "Display statistics for data in `chronometrist-file'.
+
 This is the 'listing command' for `chronometrist-statistics-mode'.
 
 If a buffer called `chronometrist-statistics-buffer-name' already
