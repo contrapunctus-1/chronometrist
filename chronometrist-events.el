@@ -185,7 +185,8 @@ START-DATE and END-DATE must be dates in the form '(YEAR MONTH DAY)."
 
 (defun chronometrist-events-query-spec-match-p (plist specifiers)
   "Return non-nil if PLIST matches SPECIFIERS."
-  (let* ((spec-only-keywords-p (seq-every-p #'keywordp specifiers))
+  (let* ((spec-only-keywords-p (when specifiers
+                                 (seq-every-p #'keywordp specifiers)))
          (keyword-list         (unless spec-only-keywords-p
                                  (seq-filter #'keywordp specifiers))))
     ;; When all keys from SPECIFIERS are present...
@@ -204,6 +205,15 @@ START-DATE and END-DATE must be dates in the form '(YEAR MONTH DAY)."
 
 ;; examples -
 ;; (chronometrist-events-query chronometrist-events :get :name) - get all values for :name
+
+;; TODO - values for SPECIFIERS and EXCEPT are AND'ed. No way to express an OR.
+;; TODO - same goes for SPECIFIERS and EXCEPT themselves. No way to combine them.
+;; TODO - an argument to SPECIFIERS and EXCEPT cannot be a combination of keyword-values and keywords (e.g. '(:a 1 :b) - where :a is 1 and :b is present)
+;;   - Can we add support for arbitrary predicates as values? As a
+;;     bonus, arguments like '(:a 1 :b) could be internally converted
+;;     into '(:a 1 :b #'identity). Distinguishing between cases where
+;;     :b actually has a value called #'identity would be the problem,
+;;     but that seems highly unlikely in our use-case.
 (cl-defun chronometrist-events-query (table &key get specifiers except)
   "Query the `chronometrist-events' hash table.
 
@@ -224,7 +234,9 @@ EXCEPT will be excluded from the return value."
     (maphash (lambda (key value-plists)
                (mapc (lambda (plist)
                        (when (and (chronometrist-events-query-spec-match-p plist specifiers)
-                                  (not (chronometrist-events-query-spec-match-p plist except)))
+                                  (if except
+                                      (not (chronometrist-events-query-spec-match-p plist except))
+                                    t))
                          ;; ...Store the values specified by GET.
                          (->> (cond ((keywordp get)
                                      `(,(plist-get plist get)))
