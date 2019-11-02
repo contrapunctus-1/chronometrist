@@ -28,6 +28,10 @@ KEY-VALUE-PAIR can be any keyword-value pairs. Currently, Chronometrist ignores 
 TIME must be an ISO-8601 time string.
 \(The square brackets here refer to optional elements, not vectors.\)")
 
+(defvar chronometrist--tag-suggestions nil
+  "Suggestions for tags.
+Used as history by `chronometrist-tags-prompt'.")
+
 (defun chronometrist-plist-remove (plist &rest keys)
   "Return PLIST with KEYS and their associated values removed."
   (let ((keys (--filter (plist-member plist it) keys)))
@@ -194,13 +198,13 @@ This is used to provide completion for individual tags, in
   "Read one or more tags from the user and return them as a list of strings.
 
 INITIAL-INPUT is as used in `completing-read'."
-  (let ((history (chronometrist-tags-history-combination-strings task)))
-    (completing-read-multiple (concat "Tags for " task " (optional): ")
-                              (chronometrist-tags-history-individual-strings task)
-                              nil
-                              'confirm
-                              initial-input
-                              'history)))
+  (setq chronometrist--tag-suggestions (chronometrist-tags-history-combination-strings task))
+  (completing-read-multiple (concat "Tags for " task " (optional): ")
+                            (chronometrist-tags-history-individual-strings task)
+                            nil
+                            'confirm
+                            initial-input
+                            'chronometrist--tag-suggestions))
 
 (defun chronometrist-tags-add (&rest args)
   "Read tags from the user and add them to the last s-expr in `chronometrist-file'.
@@ -398,6 +402,16 @@ It currently supports ido, ido-ubiquitous, ivy, and helm."
                                    (setq key-suggestions))
                            finally return key-suggestions))))
 
+(defun chronometrist-value-prompt (key)
+  (setq chronometrist--value-suggestions
+        (gethash key chronometrist-value-history))
+  (read-from-minibuffer
+   "Value (RET to quit): "
+   ;; (2019-09-20T11:54:51+0530) this is more troublesome than helpful...
+   ;; (car (gethash key chronometrist-value-history))
+   nil nil nil
+   'chronometrist--value-suggestions))
+
 (defun chronometrist-kv-add (&rest args)
   "Read key-values from user, adding them to a temporary buffer for review.
 
@@ -437,13 +451,7 @@ ARGS are ignored. This function always returns t."
                 (insert " "))
               (insert ":" key)
               (setq first-key-p nil))
-            (setq value-history (gethash key chronometrist-value-history)
-                  value (read-from-minibuffer
-                         "Value (RET to quit): "
-                         ;; (2019-09-20T11:54:51+0530) this is more troublesome than helpful...
-                         ;; (car (gethash key chronometrist-value-history))
-                         nil nil nil
-                         'value-history)
+            (setq value (chronometrist-value-prompt key)
                   input value)
             (if (string-empty-p input)
                 (throw 'empty-input nil)
