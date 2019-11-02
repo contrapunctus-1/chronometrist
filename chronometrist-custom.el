@@ -1,4 +1,9 @@
-;;  -*- lexical-binding: t; -*-
+;;; chronometrist-custom.el --- Custom definitions for Chronometrist -*- lexical-binding: t; -*-
+
+;;; Commentary:
+;;
+
+;;; Code:
 
 (defgroup chronometrist nil
   "A time tracker with a nice UI.")
@@ -19,8 +24,10 @@ This is not guaranteed to be accurate - see (info \"(elisp)Timers\").")
 
 The default is midnight, i.e. \"00:00:00\".")
 
-(provide 'chronometrist-custom)
-
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"
 ;; End:
+
+(provide 'chronometrist-custom)
+
+;;; chronometrist-custom.el ends here

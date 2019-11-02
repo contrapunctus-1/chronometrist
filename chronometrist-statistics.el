@@ -58,6 +58,8 @@
 
 EVENTS must be a list of valid Chronometrist property lists (see `chronometrist-file').
 
+For each event, a list of two time values is returned.
+
 For time value format, see (info \"(elisp)Time of Day\")."
   (let ((index 0)
         (length (length events))

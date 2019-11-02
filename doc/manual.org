@@ -187,7 +187,8 @@
     2. Variable - chronometrist-diary--current-date
     3. Function - chronometrist-intervals-on (date)
     4. Function - chronometrist-diary-projects-reasons-on (date)
-    5. Function - chronometrist-decode-time->date (date)
+    5. Function - chronometrist-decode-time->date ()
+       * -> list-date
     6. Function - chronometrist-diary-refresh (&optional ignore-auto noconfirm date)
     7. Major Mode - chronometrist-diary-view-mode
     8. Command - chronometrist-diary-view (&optional date)
