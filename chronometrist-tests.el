@@ -1,4 +1,9 @@
-;;  -*- lexical-binding: t; -*-
+;;; chronometrist-tests.el --- Tests for Chronometrist -*- lexical-binding: t; -*-
+
+
+;;; Commentary:
+;; These should be replaced by buttercup tests, which have a nicer
+;; syntax.
 
 (require 'ert)
 (require 'chronometrist)
@@ -9,9 +14,10 @@
 
 ;; #### CHRONOMETRIST-REPORT ####
 
+;;; Code:
+
 (defun interval-test (start target)
-  "Basic logic used to derive 'gap' in
-`chronometrist-report-previous-week-start'"
+  "Basic logic used to derive 'gap' in `chronometrist-report-previous-week-start'."
   (cond ((= start target) 7)
         ((> start target) (- start target))
         ((< start target) (+ start (- 7 target)))))
@@ -337,8 +343,10 @@ across midnight + when not clocked out."
   (should (equal (chronometrist-date-op '(2020 2 28) '+)
                  '(2020 2 29))))
 
-(provide 'chronometrist-tests)
-
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"
 ;; End:
+
+(provide 'chronometrist-tests)
+
+;;; chronometrist-tests.el ends here

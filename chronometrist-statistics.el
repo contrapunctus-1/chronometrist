@@ -58,7 +58,8 @@
 (defun chronometrist-events->time-list (events)
   "Convert EVENTS to a list of time values.
 
-EVENTS must be a list of valid Chronometrist property lists (see `chronometrist-file').
+EVENTS must be a list of valid Chronometrist property lists (see
+`chronometrist-file').
 
 For each event, a list of two time values is returned.
 
@@ -227,7 +228,8 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
              (plist-get chronometrist-statistics--ui-state :end)))))
 
 (defun chronometrist-statistics-refresh (&optional ignore-auto noconfirm)
-  "Refresh the `chronometrist-statistics' buffer, without re-reading `chronometrist-file'.
+  "Refresh the `chronometrist-statistics' buffer.
+This does not re-read `chronometrist-file'.
 
 The optional arguments IGNORE-AUTO and NOCONFIRM are ignored, and
 are present solely for the sake of using this function as a value

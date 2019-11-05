@@ -12,13 +12,14 @@
 
 ;;; Code:
 
-(defconst chronometrist-seconds-in-day (* 60 60 24))
+(defconst chronometrist-seconds-in-day (* 60 60 24)
+  "Number of seconds in a day.")
 
 (defun chronometrist-date (&optional time)
   "Return date for TIME or today, in the form \"YYYY-MM-DD\"."
   (s-left 10 (chronometrist-format-time-iso8601 time)))
 
-(defun chronometrist-time (&optional time))
+;; (defun chronometrist-time (&optional time))
 
 (defun chronometrist-day-of-week->number (day-of-week)
   "Return an integer (0-6) representing DAY-OF-WEEK.
@@ -130,7 +131,8 @@ SECONDS must be a positive integer."
     (vector h m s)))
 
 (defun chronometrist-time-add (a b)
-  "Add two vectors A and B in the form [HOURS MINUTES SECONDS] and return a vector in the same form."
+  "Add durations A and B and return a vector in the same form.
+A and B should be vectors in the form [HOURS MINUTES SECONDS]."
   (let ((h1 (elt a 0))
         (m1 (elt a 1))
         (s1 (elt a 2))
@@ -162,6 +164,9 @@ Both must be dates in the ISO-8601 format."
                    (parse-iso8601-time-string))))
 
 (defun chronometrist-time-less-or-equal-p (t1 t2)
+  "Return t if T1 is less than or equal to T2.
+
+T1 and T2 should be time values (see `current-time')."
   (or (equal t1 t2)
       (time-less-p t1 t2)))
 

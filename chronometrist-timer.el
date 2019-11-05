@@ -24,12 +24,16 @@ is clocked in to a project."
       (chronometrist-statistics-refresh))))
 
 (defun chronometrist-stop-timer ()
+  "Stop the timer for Chronometrist buffers."
   (interactive)
   (cancel-timer chronometrist--timer-object)
   (setq chronometrist--timer-object nil))
 
 (defun chronometrist-maybe-start-timer (&optional interactive-test)
-  "Start `chronometrist-timer' if `chronometrist--timer-object' is non-nil."
+  "Start `chronometrist-timer' if `chronometrist--timer-object' is non-nil.
+
+INTERACTIVE-TEST is used to determine if this has been called
+interactively."
   (interactive "p")
   (unless chronometrist--timer-object
     (setq chronometrist--timer-object
@@ -39,6 +43,7 @@ is clocked in to a project."
     t))
 
 (defun chronometrist-force-restart-timer ()
+  "Restart the timer for Chronometrist buffers."
   (interactive)
   (when chronometrist--timer-object
     (cancel-timer chronometrist--timer-object))
@@ -46,6 +51,9 @@ is clocked in to a project."
         (run-at-time t chronometrist-update-interval #'chronometrist-timer)))
 
 (defun chronometrist-change-update-interval (arg)
+  "Change the update interval for Chronometrist buffers.
+
+ARG should be the new update interval, in seconds."
   (interactive "NEnter new interval (in seconds): ")
   (cancel-timer chronometrist--timer-object)
   (setq chronometrist-update-interval arg

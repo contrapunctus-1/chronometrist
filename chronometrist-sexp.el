@@ -23,10 +23,16 @@ It should be a text file containing plists in the form -
  :stop \"TIME\"\)
 
 Where -
+
 TAGS is a list. It can contain any strings and symbols.
-KEY-VALUE-PAIR can be any keyword-value pairs. Currently, Chronometrist ignores them.
+
+KEY-VALUE-PAIR can be any keyword-value pairs. Currently,
+Chronometrist ignores them.
+
 TIME must be an ISO-8601 time string.
-\(The square brackets here refer to optional elements, not vectors.\)")
+
+\(The square brackets here refer to optional elements, not
+vectors.\)")
 
 (defvar chronometrist--tag-suggestions nil
   "Suggestions for tags.
@@ -63,6 +69,8 @@ Used as history by `chronometrist-tags-prompt'.")
          list))
 
 (defun chronometrist-reindent-buffer ()
+  "Reindent the current buffer.
+This is meant to be run in `chronometrist-file'."
   (interactive)
   (let (expr)
     (goto-char (point-min))
@@ -131,7 +139,6 @@ be removed."
 ;;;; TAGS ;;;;
 (defvar chronometrist-tags-history (make-hash-table :test #'equal)
   "Hash table of tasks and past tag combinations.
-
 Each value is a list of tag combinations, in reverse
 chronological order. Each combination is a list containing tags
 as symbol and/or strings.")
@@ -166,7 +173,6 @@ as symbol and/or strings.")
 
 (defun chronometrist-tags-history-combination-strings (task)
   "Return list of past tag combinations for TASK.
-
 Each combination is a string, with tags separated by commas.
 
 This is used to provide history for `completing-read-multiple' in
@@ -183,7 +189,6 @@ This is used to provide history for `completing-read-multiple' in
 
 (defun chronometrist-tags-history-individual-strings (task)
   "Return list of tags for TASK, with each tag being a single string.
-
 This is used to provide completion for individual tags, in
 `completing-read-multiple' in `chronometrist-tags-prompt'."
   (--> (gethash task chronometrist-tags-history)
@@ -196,7 +201,7 @@ This is used to provide completion for individual tags, in
 
 (defun chronometrist-tags-prompt (task &optional initial-input)
   "Read one or more tags from the user and return them as a list of strings.
-
+TASK should be a string.
 INITIAL-INPUT is as used in `completing-read'."
   (setq chronometrist--tag-suggestions (chronometrist-tags-history-combination-strings task))
   (completing-read-multiple (concat "Tags for " task " (optional): ")
@@ -207,8 +212,7 @@ INITIAL-INPUT is as used in `completing-read'."
                             'chronometrist--tag-suggestions))
 
 (defun chronometrist-tags-add (&rest args)
-  "Read tags from the user and add them to the last s-expr in `chronometrist-file'.
-
+  "Read tags from the user, add them to the last s-expr in `chronometrist-file'.
 ARGS are ignored. This function always returns t."
   (let* ((last-expr (chronometrist-last-expr))
          (last-name (plist-get last-expr :name))
@@ -235,12 +239,20 @@ ARGS are ignored. This function always returns t."
   "Buffer name to read key-values from."
   :type 'string)
 
-(defvar chronometrist-key-history   (make-hash-table :test #'equal))
-(defvar chronometrist-value-history (make-hash-table :test #'equal))
+(defvar chronometrist-key-history
+  (make-hash-table :test #'equal)
+  "Hash table to store previously-used user-keys.
+The hash table keys are task names (as strings), and the values
+are lists containing user-key names (as strings).")
+
+(defvar chronometrist-value-history
+  (make-hash-table :test #'equal)
+  "Hash table to store previously-used values for user-keys.
+The hash table keys are user-key names (as strings), and the
+values are lists containing values (as strings).")
 
 (defun chronometrist-ht-history-prep (table)
   "Prepare history hash tables for use in prompts.
-
 Each value in hash table TABLE must be a list. Each value will be
 reversed and will have duplicate elements removed."
   (maphash (lambda (key value)
@@ -256,10 +268,7 @@ reversed and will have duplicate elements removed."
 ;; Since we have discarded sorting-by-frequency, we can now consider
 ;; implementing this by querying `chronometrist-events' instead of reading the file
 (defun chronometrist-key-history-populate ()
-  "Clear hash table `chronometrist-key-history' and populate it with user-added keys.
-
-The data is acquired from `chronometrist-file'.
-
+  "Populate `chronometrist-key-history' from from `chronometrist-file'.
 Each hash table key is the name of a task. Each hash table value
 is a list containing keywords used with that task, in reverse
 chronological order. The keywords are stored as strings and their
@@ -294,6 +303,8 @@ leading \":\" is removed."
 ;; is different from the one that ends up as the last in
 ;; `chronometrist-value-history' (before being reversed by `chronometrist-ht-history-prep')
 (defun chronometrist-value-history-populate ()
+  "Read values for user-keys from `chronometrist-events'.
+The values are stored in `chronometrist-value-history'."
   ;; Note - while keys are Lisp keywords, values may be any Lisp
   ;; object, including lists
   (let ((table chronometrist-value-history)
@@ -322,7 +333,7 @@ leading \":\" is removed."
 
 ;; TODO - refactor this to use `chronometrist-append-to-last-expr'
 (defun chronometrist-kv-accept ()
-  "Accept the property list in `chronometrist-kv-buffer-name', adding it to `chronometrist-file'."
+  "Accept the plist in `chronometrist-kv-buffer-name' and add it to `chronometrist-file'."
   (interactive)
   (let ((backend-buffer (find-file-noselect chronometrist-file))
         user-kv-expr
@@ -353,6 +364,7 @@ leading \":\" is removed."
       (save-buffer))))
 
 (defun chronometrist-kv-reject ()
+  "Reject the property list in `chronometrist-kv-buffer-name'."
   (interactive)
   (kill-buffer chronometrist-kv-buffer-name)
   (chronometrist-refresh))
@@ -385,9 +397,12 @@ It currently supports ido, ido-ubiquitous, ivy, and helm."
          (t "leave blank"))))
 
 (defun chronometrist-string-has-whitespace-p (string)
+  "Return non-nil if STRING contains whitespace."
   (string-match-p "[[:space:]]" string))
 
 (defun chronometrist-key-prompt (used-keys)
+  "Prompt the user to enter keys.
+USED-KEYS are keys they have already used in this session."
   (let ((key-suggestions (--> (chronometrist-last-expr)
                               (plist-get it :name)
                               (gethash it chronometrist-key-history))))
@@ -403,6 +418,8 @@ It currently supports ido, ido-ubiquitous, ivy, and helm."
                            finally return key-suggestions))))
 
 (defun chronometrist-value-prompt (key)
+  "Prompt the user to enter values.
+KEY should be a string for the just-entered key."
   (setq chronometrist--value-suggestions
         (gethash key chronometrist-value-history))
   (read-from-minibuffer
@@ -465,8 +482,9 @@ ARGS are ignored. This function always returns t."
 ;;;; COMMANDS ;;;;
 (defun chronometrist-in (task &optional prefix)
   "Clock in to TASK; record current time in `chronometrist-file'.
+TASK is the name of the task, a string.
 
-TASK is the name of the task, a string."
+PREFIX is ignored."
   (interactive "P")
   (let ((buffer (find-file-noselect chronometrist-file)))
     (with-current-buffer buffer
@@ -480,9 +498,10 @@ TASK is the name of the task, a string."
 
 (defun chronometrist-out (&optional prefix)
   "Record current moment as stop time to last s-exp in `chronometrist-file'.
-
 PLIST is a property list containing any other information about
-this time interval that should be recorded."
+this time interval that should be recorded.
+
+PREFIX is ignored."
   (interactive "P")
   (let ((buffer (find-file-noselect chronometrist-file)))
     (with-current-buffer buffer
