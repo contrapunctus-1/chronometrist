@@ -1,5 +1,7 @@
 ;;; chronometrist-events.el --- Event management and querying code for Chronometrist -*- lexical-binding: t; -*-
 
+;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
+
 (require 'chronometrist-plist-pp)
 (require 'subr-x)
 

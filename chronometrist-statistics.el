@@ -1,5 +1,7 @@
 ;;; chronometrist-statistics.el --- View statistics for Chronometrist data -*- lexical-binding: t; -*-
 
+;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
+
 ;;; Commentary:
 ;;
 

@@ -1,5 +1,6 @@
 ;;; chronometrist-report.el --- Report view for Chronometrist -*- lexical-binding: t; -*-
 
+;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
 
 ;;; Commentary:
 ;;

@@ -1,5 +1,7 @@
 ;;; chronometrist-time.el --- Time and date functions for Chronometrist -*- lexical-binding: t; -*-
 
+;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
+
 (require 'dash)
 (require 's)
 

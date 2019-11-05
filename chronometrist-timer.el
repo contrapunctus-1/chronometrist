@@ -1,5 +1,7 @@
 ;;; chronometrist-timer.el --- Timer-related functions for Chronometrist -*- lexical-binding: t; -*-
 
+;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
+
 ;;; Commentary:
 ;;
 

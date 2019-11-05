@@ -1,5 +1,7 @@
 ;;; chronometrist-diary-view.el --- A diary-like view for Chronometrist -*- lexical-binding: t; -*-
 
+;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
+
 ;; TODO - add forward/backward, current date display (and don't scroll
 ;; past the actual data)
 

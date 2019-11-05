@@ -1,5 +1,7 @@
 ;;; chronometrist-migrate.el --- Commands to aid in migrating from timeclock to chronometrist s-expr format -*- lexical-binding: t; -*-
 
+;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
+
 ;;; Commentary:
 ;; TODO - convert project names to tags
 

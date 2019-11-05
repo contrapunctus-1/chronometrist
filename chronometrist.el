@@ -1,5 +1,9 @@
 ;;; chronometrist.el --- A time tracker for Emacs with a nice interface -*- lexical-binding: t; -*-
 
+;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
+;; Keywords: calendar
+;; Homepage: https://framagit.org/contrapunctus/chronometrist
+
 (require 'filenotify)
 (require 'chronometrist-common)
 (require 'chronometrist-timer)

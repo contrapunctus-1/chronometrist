@@ -1,5 +1,7 @@
 ;;; chronometrist-report-custom --- custom definitions for `chronometrist-report' -*- lexical-binding: t; -*-
 
+;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
+
 ;;; Commentary:
 ;;
 

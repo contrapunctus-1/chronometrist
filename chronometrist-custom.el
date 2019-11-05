@@ -1,5 +1,7 @@
 ;;; chronometrist-custom.el --- Custom definitions for Chronometrist -*- lexical-binding: t; -*-
 
+;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
+
 ;;; Commentary:
 ;;
 

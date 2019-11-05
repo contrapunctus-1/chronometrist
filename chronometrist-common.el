@@ -1,5 +1,7 @@
 ;;; chronometrist-common.el --- Common definitions for Chronometrist -*- lexical-binding: t; -*-
 
+;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
+
 ;;; Commentary:
 ;;
 

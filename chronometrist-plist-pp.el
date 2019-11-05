@@ -1,5 +1,7 @@
 ;;; chronometrist-plist-pp.el --- Functions to pretty print property lists -*- lexical-binding: t; -*-
 
+;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
+
 ;;; Commentary:
 
 ;;; potential improvements -
