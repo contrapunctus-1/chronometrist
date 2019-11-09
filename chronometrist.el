@@ -180,15 +180,15 @@ project. N must be a positive integer."
 The optional arguments IGNORE-AUTO and NOCONFIRM are ignored, and
 are present solely for the sake of using this function as a value
 of `revert-buffer-function'."
-  (let* ((w (get-buffer-window chronometrist-buffer-name t))
-         (task (window-point w)))
-    (when w
+  (let* ((window (get-buffer-window chronometrist-buffer-name t))
+         (point  (window-point window)))
+    (when window
       (setq chronometrist-task-list (chronometrist-tasks-from-table))
       (with-current-buffer chronometrist-buffer-name
         (tabulated-list-print t nil)
         (chronometrist-print-non-tabular)
         (chronometrist-maybe-start-timer)
-        (set-window-point w task)))))
+        (set-window-point window point)))))
 
 (defun chronometrist-refresh-file (fs-event)
   "Re-read `chronometrist-file' and refresh the `chronometrist' buffer.
