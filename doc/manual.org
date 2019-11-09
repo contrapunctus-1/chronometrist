@@ -7,16 +7,18 @@
 
 ** Explanation
 *** Design goals
-    1. Don't make assumptions about the user's profession
+    1. Don't make assumptions about the user's profession (timeclock)
     2. Incentivize use
        * Hooks allow the time tracker to automate tasks and become a useful part of your workflow
     3. Make it easy to edit data using existing, familiar tools
-       * We don't use an SQL database, where changing a single statement is tricky
+       * We don't use an SQL database, where changing a single statement is tricky [1]
        * We use a text file containing s-expressions (easy for humans to read and write)
        * We use ISO-8601 for timestamps (easy for humans to read and write) rather than UNIX epoch time
     4. Reduce human errors in tracking
     5. Have a useful, informative, interactive interface
     6. Support mouse and keyboard use equally
+
+    [1] I still have doubts about this. Having SQL as a query language would be very useful in perusing the stored data. Maybe we should have tried to create a companion mode to edit SQL databases interactively?
 
 ** Reference
    * (?) - of dubious utility, a candidate for deprecation
