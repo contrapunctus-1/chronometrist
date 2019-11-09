@@ -46,18 +46,18 @@
    * DEPRECATED - deprecated, slated to be removed in the future
 
 *** Legend of currently-used time formats
-    |  1. | (DEPRECATED) timeclock-timestamp | "year/month/day hours:minutes:seconds"                |
-    |  2. | (DEPRECATED) timeclock-date      | "year/month/day"                                      |
-    |  3. | decode-time                      | (seconds minutes hours day month year dow dst utcoff) |
-    |  4. | list-timestamp                   | (year month day hours minutes seconds)                |
-    |  5. | list-time/list-duration          | (hours minutes seconds)                               |
-    |  6. | list-date                        | (year month day)                                      |
-    |  7. | vector-date                      | [year month day]                                      |
-    |  8. | vector-time/vector-duration      | [hours minutes seconds]                               |
-    |  9. | encode-time (UNIX epoch)         | (sec-high sec-low microsec picosec)                   |
-    | 10. | seconds                          | seconds as an integer                                 |
-    | 11. | iso-timestamp                    | "YYYY-MM-DDTHH:MM:SSZ"                                |
-    | 12. | iso-date                         | "YYYY-MM-DD"                                          |
+    |  1. | decode-time                      | (seconds minutes hours day month year dow dst utcoff) |
+    |  2. | list-timestamp                   | (year month day hours minutes seconds)                |
+    |  3. | list-time/list-duration          | (hours minutes seconds)                               |
+    |  4. | list-date                        | (year month day)                                      |
+    |  5. | vector-date                      | [year month day]                                      |
+    |  6. | vector-time/vector-duration      | [hours minutes seconds]                               |
+    |  7. | encode-time (UNIX epoch)         | (sec-high sec-low microsec picosec)                   |
+    |  8. | seconds                          | seconds as an integer                                 |
+    |  9. | iso-timestamp                    | "YYYY-MM-DDTHH:MM:SSZ"                                |
+    | 10. | iso-date                         | "YYYY-MM-DD"                                          |
+    | 11. | (DEPRECATED) timeclock-timestamp | "year/month/day hours:minutes:seconds"                |
+    | 12. | (DEPRECATED) timeclock-date      | "year/month/day"                                      |
 
 *** chronometrist-timer.el
     1. Function - chronometrist-timer ()
