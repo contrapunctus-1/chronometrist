@@ -20,6 +20,27 @@
 
     [1] I still have doubts about this. Having SQL as a query language would be very useful in perusing the stored data. Maybe we should have tried to create a companion mode to edit SQL databases interactively?
 
+*** Midnight-spanning events
+    A unique problem in working with Chronometrist, one I had never foreseen, was tasks which start on one day and end on another. These mess up data consumption (especially interval calculations and acquiring data for a specific date) in all sorts of unforeseen ways.
+
+    There are a few different approaches of dealing with them.
+    1. (timeclock format) When the code of the first event in the day is "o", it's a midnight-spanning event.
+       * Advantage - very simple to process
+       * Disadvantage - "in" and "out" events must be represented separately
+    2. Split them at the file level
+       * Advantage - operation is performed only once for each such event (no repeated work) + simplified data-consuming code  reduced post-parsing load.
+       * What happens when the user changes their day-start-time? The split-up events are now split wrongly, and the second event may get split _again._
+         Possible solutions -
+         1. Add another function to check if, for two events A and B, the :stop of A is the same as the :start of B, and that all their other tags are identical. Then we can re-split them according to the new day-start-time.
+         2. Add a :split marker to split events. It can denote that the next event was originally a part of this one.
+         3. Re-check and update the file when the day-start-time changes.
+            * Possible with `add-variable-watcher` or `:custom-set` in Customize (thanks bpalmer)
+    3. Split them at the hash-table-level (i.e. rewrite ~chronometrist-events-clean~)
+       * Advantage - simplifies data-consuming code.
+    4. Split them at the data-consumer level (e.g. when calculating time for one day/getting events for one day)
+       * Advantage - should reduce repetitive post-parsing load.
+
+    Currently, Chronometrist uses #3.
 ** Reference
    * (?) - of dubious utility, a candidate for deprecation
    * DEPRECATED - deprecated, slated to be removed in the future
