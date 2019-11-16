@@ -183,7 +183,6 @@ of `revert-buffer-function'."
   (let* ((window (get-buffer-window chronometrist-buffer-name t))
          (point  (window-point window)))
     (when window
-      (setq chronometrist-task-list (chronometrist-tasks-from-table))
       (with-current-buffer chronometrist-buffer-name
         (tabulated-list-print t nil)
         (chronometrist-print-non-tabular)
