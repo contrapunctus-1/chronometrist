@@ -334,8 +334,7 @@ action, and is ignored."
     (when current
       (chronometrist-run-functions-and-clock-out current))
     (unless (equal at-point current)
-      (chronometrist-run-functions-and-clock-in at-point))
-    (chronometrist-refresh)))
+      (chronometrist-run-functions-and-clock-in at-point))))
 
 (defun chronometrist-add-new-project-button (button)
   "Button action to add a new project.
@@ -346,8 +345,7 @@ action, and is ignored."
     (when current
       (chronometrist-run-functions-and-clock-out current))
     (let ((task (read-from-minibuffer "New task name: " nil nil nil nil nil t)))
-      (chronometrist-run-functions-and-clock-in task))
-    (chronometrist-refresh)))
+      (chronometrist-run-functions-and-clock-in task))))
 
 ;; ## COMMANDS ##
 
@@ -377,8 +375,7 @@ the buffer. If there is no corresponding project, do nothing."
            (when current
              (chronometrist-run-functions-and-clock-out current))
            (unless (equal target current)
-             (chronometrist-run-functions-and-clock-in target))))
-    (chronometrist-refresh)))
+             (chronometrist-run-functions-and-clock-in target))))))
 
 (defun chronometrist-toggle-project-no-reason (&optional prefix)
   "Like `chronometrist-toggle-project', but don't ask for a reason.
