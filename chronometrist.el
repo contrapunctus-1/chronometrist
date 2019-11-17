@@ -440,10 +440,10 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
                                          '(change)
                                          #'chronometrist-refresh-file))))))))
 
+(provide 'chronometrist)
+
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"
 ;; End:
-
-(provide 'chronometrist)
 
 ;;; chronometrist.el ends here

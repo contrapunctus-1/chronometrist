@@ -26,10 +26,10 @@
     ("Saturday"  . 6))
   "Alist in the form (\"NAME\" . NUMBER), where \"NAME\" is the name of a weekday and NUMBER its associated number.")
 
+(provide 'chronometrist-report-custom)
+
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist-report"
 ;; End:
-
-(provide 'chronometrist-report-custom)
 
 ;;; chronometrist-report-custom.el ends here

@@ -101,8 +101,8 @@ file names respectively."
 
 (provide 'chronometrist-migrate)
 
-;;; chronometrist-migrate.el ends here
-
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist-migrate"
 ;; End:
+
+;;; chronometrist-migrate.el ends here

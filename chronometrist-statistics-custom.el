@@ -13,10 +13,10 @@
 (defcustom chronometrist-statistics-buffer-name "*Chronometrist-Statistics*"
   "The name of the buffer created by `chronometrist-statistics'.")
 
+(provide 'chronometrist-statistics-custom)
+
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist-statistics"
 ;; End:
-
-(provide 'chronometrist-statistics-custom)
 
 ;;; chronometrist-statistics-custom.el ends here

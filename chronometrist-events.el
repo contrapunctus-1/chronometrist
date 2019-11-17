@@ -261,10 +261,10 @@ EXCEPT will be excluded from the return value."
              table)
     (seq-remove #'null return)))
 
+(provide 'chronometrist-events)
+
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist-events"
 ;; End:
-
-(provide 'chronometrist-events)
 
 ;;; chronometrist-events.el ends here

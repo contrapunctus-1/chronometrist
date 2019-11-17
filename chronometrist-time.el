@@ -184,10 +184,10 @@ EVENT should be a plist (see `chronometrist-file')."
     (time-subtract (parse-iso8601-time-string stop)
                    (parse-iso8601-time-string start))))
 
+(provide 'chronometrist-time)
+
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"
 ;; End:
-
-(provide 'chronometrist-time)
 
 ;;; chronometrist-time.el ends here

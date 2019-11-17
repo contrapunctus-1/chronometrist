@@ -15,10 +15,10 @@
                       (symbol-name)
                       (s-chop-prefix ":"))))))
 
+(provide 'chronometrist-history)
+
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"
 ;; End:
-
-(provide 'chronometrist-history)
 
 ;;; chronometrist-history.el ends here

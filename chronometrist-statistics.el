@@ -373,10 +373,10 @@ If ARG is a numeric argument, go forward that many times."
     (kill-buffer)
     (chronometrist-statistics t)))
 
+(provide 'chronometrist-statistics)
+
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist-statistics"
 ;; End:
-
-(provide 'chronometrist-statistics)
 
 ;;; chronometrist-statistics.el ends here

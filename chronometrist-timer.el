@@ -60,10 +60,10 @@ ARG should be the new update interval, in seconds."
         chronometrist--timer-object nil)
   (chronometrist-maybe-start-timer))
 
+(provide 'chronometrist-timer)
+
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"
 ;; End:
-
-(provide 'chronometrist-timer)
 
 ;;; chronometrist-timer.el ends here

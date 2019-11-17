@@ -343,10 +343,10 @@ across midnight + when not clocked out."
   (should (equal (chronometrist-date-op '(2020 2 28) '+)
                  '(2020 2 29))))
 
+(provide 'chronometrist-tests)
+
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"
 ;; End:
-
-(provide 'chronometrist-tests)
 
 ;;; chronometrist-tests.el ends here

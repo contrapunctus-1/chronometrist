@@ -309,6 +309,4 @@ current week. Otherwise, display data from the week specified by
 ;; nameless-current-name: "chronometrist-report"
 ;; End:
 
-(provide 'chronometrist-report)
-
 ;;; chronometrist-report.el ends here
