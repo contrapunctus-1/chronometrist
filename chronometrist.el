@@ -9,7 +9,6 @@
 (require 'chronometrist-common)
 (require 'chronometrist-timer)
 (require 'chronometrist-custom)
-(require 'chronometrist-history)
 (require 'chronometrist-report)
 (require 'chronometrist-statistics)
 (require 'chronometrist-sexp)
