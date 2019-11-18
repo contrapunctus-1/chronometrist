@@ -12,29 +12,6 @@
 
 ;;; Code:
 
-(defvar chronometrist-file "~/.emacs.d/chronometrist.sexp"
-  "Default path and name of the Chronometrist database.
-
-It should be a text file containing plists in the form -
-\(:name \"task name\"
- [:tags TAGS]
- [:comment \"comment\"]
- [KEY-VALUE-PAIR ...]
- :start \"TIME\"
- :stop \"TIME\"\)
-
-Where -
-
-TAGS is a list. It can contain any strings and symbols.
-
-KEY-VALUE-PAIR can be any keyword-value pairs. Currently,
-Chronometrist ignores them.
-
-TIME must be an ISO-8601 time string.
-
-\(The square brackets here refer to optional elements, not
-vectors.\)")
-
 (defvar chronometrist--tag-suggestions nil
   "Suggestions for tags.
 Used as history by `chronometrist-tags-prompt'.")
@@ -234,10 +211,12 @@ _ARGS are ignored. This function always returns t."
 
 ;;;; KEY-VALUES ;;;;
 (defgroup chronometrist-key-values nil
-  "Add key-values to Chronometrist time intervals.")
+  "Add key-values to Chronometrist time intervals."
+  :group 'chronometrist)
 
 (defcustom chronometrist-kv-buffer-name "*Chronometrist-Key-Values*"
   "Buffer name to read key-values from."
+  :group 'chronometrist-key-values
   :type 'string)
 
 (defvar chronometrist-key-history

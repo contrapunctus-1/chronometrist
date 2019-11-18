@@ -8,10 +8,12 @@
 ;;; Code:
 
 (defgroup chronometrist-statistics nil
-  "Statistics buffer for the `chronometrist' time tracker.")
+  "Statistics buffer for the `chronometrist' time tracker."
+  :group 'chronometrist)
 
 (defcustom chronometrist-statistics-buffer-name "*Chronometrist-Statistics*"
-  "The name of the buffer created by `chronometrist-statistics'.")
+  "The name of the buffer created by `chronometrist-statistics'."
+  :type 'string)
 
 (provide 'chronometrist-statistics-custom)
 
