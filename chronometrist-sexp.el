@@ -26,12 +26,6 @@ Used as history by `chronometrist-tags-prompt'.")
           keys)
     plist))
 
-(defun chronometrist-delete-list (&optional arg)
-  "Delete ARG lists after point."
-  (let ((point-1 (point)))
-    (forward-sexp (or arg 1))
-    (delete-region point-1 (point))))
-
 (defun chronometrist-maybe-string-to-symbol (list)
   "For each string in LIST, if it has no spaces, convert it to a symbol."
   (--map (if (chronometrist-string-has-whitespace-p it)

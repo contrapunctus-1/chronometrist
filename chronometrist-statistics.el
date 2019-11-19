@@ -58,46 +58,6 @@
 
 ;;; Code:
 
-(defun chronometrist-events->time-list (events)
-  "Convert EVENTS to a list of time values.
-
-EVENTS must be a list of valid Chronometrist property lists (see
-`chronometrist-file').
-
-For each event, a list of two time values is returned.
-
-For time value format, see (info \"(elisp)Time of Day\")."
-  (let ((index 0)
-        (length (length events))
-        result)
-    (while (not (= index length))
-      (let* ((elt       (elt events index))
-             (start-iso (parse-iso8601-time-string (plist-get elt :start)))
-             (stop      (plist-get elt :stop))
-             (stop-iso  (if stop
-                            (parse-iso8601-time-string stop)
-                          (current-time))))
-        (cl-incf index)
-        (setq result (append result `((,start-iso ,stop-iso))))))
-    result))
-
-(defun chronometrist-time-list->sum-of-intervals (time-value-lists)
-  "From a list of start/end timestamps TIME-VALUES, get the total time interval.
-
-TIME-VALUE-LISTS is a list in the form
-\((START STOP) ...)
-where START and STOP are time values (see (info \"(elisp)Time of Day\")).
-
-This function obtains the intervals between them, and adds the
-intervals to return a single time value.
-
-If TIME-VALUES is nil, return '(0 0)."
-  (if time-value-lists
-      (->> time-value-lists
-           (--map (time-subtract (cadr it) (car it)))
-           (-reduce #'time-add))
-    '(0 0)))
-
 (defun chronometrist-statistics-count-average-time-spent (project &optional table)
   "Return the average time the user has spent on PROJECT from TABLE.
 

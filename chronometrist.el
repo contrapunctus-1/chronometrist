@@ -50,17 +50,9 @@
 
 (defvar chronometrist--project-history nil)
 (defvar chronometrist--point nil)
-(defvar chronometrist-task-list nil)
 (defvar chronometrist-mode-map)
 
 ;; ## FUNCTIONS ##
-(defun chronometrist-current-task ()
-  "Return the name of the currently clocked-in task, or nil if not clocked in."
-  (let ((last-event (chronometrist-last-expr)))
-    (if (plist-member last-event :stop)
-        nil
-      (plist-get last-event :name))))
-
 (defun chronometrist-task-active? (task)
   "Return t if TASK is currently clocked in, else nil."
   (equal (chronometrist-current-task) task))
