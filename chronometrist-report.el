@@ -105,13 +105,7 @@ FORMAT-STRING."
 (defun chronometrist-report-print-non-tabular ()
   "Print the non-tabular part of the buffer in `chronometrist-report'."
   (let ((inhibit-read-only t)
-        (w            "\n    ")
-        (key-previous (chronometrist-format-keybinds #'chronometrist-report-previous-week
-                                         chronometrist-report-mode-map
-                                         t))
-        (key-next     (chronometrist-format-keybinds #'chronometrist-report-next-week
-                                         chronometrist-report-mode-map
-                                         t)))
+        (w "\n    "))
     (goto-char (point-min))
     (insert "                         ")
     (--map (insert (chronometrist-date it) " ")
