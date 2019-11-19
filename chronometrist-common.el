@@ -8,6 +8,7 @@
 (require 'dash)
 (require 'cl-lib)
 (require 'chronometrist-custom)
+(require 'chronometrist-report-custom)
 (require 'chronometrist-time)
 
 ;; ## VARIABLES ##
@@ -236,6 +237,26 @@ If TIME-VALUES is nil, return '(0 0)."
   (let ((point-1 (point)))
     (forward-sexp (or arg 1))
     (delete-region point-1 (point))))
+
+(defun chronometrist-previous-week-start (date-string)
+  "Find the previous `chronometrist-report-week-start-day' from DATE-STRING.
+
+Return the time value of said day's beginning.
+
+If the day of DATE is the same as the
+`chronometrist-report-week-start-day', return DATE.
+
+DATE-STRING must be in the form \"YYYY-MM-DD\"."
+  (let* ((date-time  (chronometrist-iso-date->timestamp date-string))
+         (date-unix  (parse-iso8601-time-string date-time))
+         (date-list  (decode-time date-unix))
+         (day        (elt date-list 6)) ;; 0-6, where 0 = Sunday
+         (week-start (chronometrist-day-of-week->number chronometrist-report-week-start-day))
+         (gap        (cond ((> day week-start) (- day week-start))
+                           ((< day week-start) (+ day (- 7 week-start))))))
+    (if gap
+        (time-subtract date-unix `(0 ,(* gap 86400)))
+      date-unix)))
 
 (defun chronometrist-current-task ()
   "Return the name of the currently clocked-in task, or nil if not clocked in."

@@ -35,26 +35,6 @@ Each date is a list containing calendrical information (see (info \"(elisp)Time 
 
 ;; ## FUNCTIONS ##
 
-(defun chronometrist-report-previous-week-start (date-string)
-  "Find the previous `chronometrist-report-week-start-day' from DATE-STRING.
-
-Return the time value of said day's beginning.
-
-If the day of DATE is the same as the
-`chronometrist-report-week-start-day', return DATE.
-
-DATE-STRING must be in the form \"YYYY-MM-DD\"."
-  (let* ((date-time  (chronometrist-iso-date->timestamp date-string))
-         (date-unix  (parse-iso8601-time-string date-time))
-         (date-list  (decode-time date-unix))
-         (day        (elt date-list 6)) ;; 0-6, where 0 = Sunday
-         (week-start (chronometrist-day-of-week->number chronometrist-report-week-start-day))
-         (gap        (cond ((> day week-start) (- day week-start))
-                           ((< day week-start) (+ day (- 7 week-start))))))
-    (if gap
-        (time-subtract date-unix `(0 ,(* gap 86400)))
-      date-unix)))
-
 (defun chronometrist-report-date ()
   "Return the date specified by `chronometrist-report--ui-date'.
 If it is nil, return the current date as calendrical
@@ -81,14 +61,13 @@ The first date is the first occurrence of
 `chronometrist-report-week-start-day' before the date specified in
 `chronometrist-report--ui-date' (if non-nil) or the current date."
   (->> (or chronometrist-report--ui-date (chronometrist-date))
-       (chronometrist-report-previous-week-start)
+       (chronometrist-previous-week-start)
        (chronometrist-report-date->dates-in-week)))
 
 (defun chronometrist-report-entries ()
   "Creates entries to be displayed in the buffer created by
 `chronometrist-report'."
-  (let* ((week-dates        (chronometrist-report-date->week-dates)) ;; uses today if chronometrist-report--ui-date is nil
-         (week-dates-string (mapcar #'chronometrist-date week-dates)))
+  (let* ((week-dates        (chronometrist-report-date->week-dates))) ;; uses today if chronometrist-report--ui-date is nil
     (setq chronometrist-report--ui-week-dates week-dates)
     (mapcar (lambda (project)
               (let ((project-daily-time-list
