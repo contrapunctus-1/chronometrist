@@ -83,7 +83,9 @@ value of `revert-buffer-function'."
   (setq revert-buffer-function #'chronometrist-diary-refresh))
 
 (defun chronometrist-diary-view (&optional date)
-  "Display today's Chronometrist data in a diary-like view."
+  "Display today's Chronometrist data in a diary-like view.
+If DATE is supplied, show data for that date. DATE should be an
+ISO-8601 date string (\"YYYY-MM-DD\")."
   (interactive)
   (switch-to-buffer
    (get-buffer-create chronometrist-diary-buffer-name))
