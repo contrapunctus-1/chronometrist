@@ -47,10 +47,10 @@ information (see (info \"(elisp)Time Conversion\"))."
   (if chronometrist-report--ui-date chronometrist-report--ui-date (chronometrist-date)))
 
 (defun chronometrist-report-date->dates-in-week (first-date-in-week)
-  "Return a list in the form (DAY-1 DAY-2 ... DAY-7), where each
-day is a time value (see (info \"(elisp)Time of Day\")).
+  "Return a list of dates in a week, starting from FIRST-DATE-IN-WEEK.
+Each day is a time value (see (info \"(elisp)Time of Day\")).
 
-FIRST-DATE-IN-WEEK must be a time value representing DAY-1."
+FIRST-DATE-IN-WEEK must be a time value representing the first date."
   (--> '(0 1 2 3 4 5 6)
        ;; 1 day = 86400 seconds
        (--map (* 86400 it) it)
@@ -60,8 +60,9 @@ FIRST-DATE-IN-WEEK must be a time value representing DAY-1."
               it)))
 
 (defun chronometrist-report-date->week-dates ()
-  "Return dates in week as a list, where each element is
-calendrical information (see (info \"(elisp)Time Conversion\")).
+  "Return dates in week as a list.
+Each element is calendrical information (see (info \"(elisp)Time Conversion\")).
+
 The first date is the first occurrence of
 `chronometrist-report-week-start-day' before the date specified in
 `chronometrist-report--ui-date' (if non-nil) or the current date."
@@ -70,8 +71,7 @@ The first date is the first occurrence of
        (chronometrist-report-date->dates-in-week)))
 
 (defun chronometrist-report-entries ()
-  "Creates entries to be displayed in the buffer created by
-`chronometrist-report'."
+  "Create entries to be displayed in the `chronometrist-report' buffer."
   (let* ((week-dates        (chronometrist-report-date->week-dates))) ;; uses today if chronometrist-report--ui-date is nil
     (setq chronometrist-report--ui-week-dates week-dates)
     (mapcar (lambda (project)
@@ -92,8 +92,7 @@ The first date is the first occurrence of
             chronometrist-task-list)))
 
 (defun chronometrist-report-format-date (format-string time-date)
-  "Extract date from TIME-DATE and format it according to
-FORMAT-STRING."
+  "Extract date from TIME-DATE and format it according to FORMAT-STRING."
   (->> time-date
        (-take 6)
        (-drop 3)
@@ -101,6 +100,10 @@ FORMAT-STRING."
        (apply #'format format-string)))
 
 (defun chronometrist-report-print-keybind (command &optional description firstonly)
+  "Insert one or more keybindings for COMMAND into the current buffer.
+DESCRIPTION is a description of the command.
+
+If FIRSTONLY is non-nil, insert only the first keybinding found."
   (insert "\n    "
           (chronometrist-format-keybinds command firstonly)
           " - "
@@ -166,7 +169,7 @@ FORMAT-STRING."
 
 ;; REVIEW - merge this into `chronometrist-refresh-file', while moving the -refresh call to the call site?
 (defun chronometrist-report-refresh-file (_fs-event)
-  "Re-populate and clean `chronometrist-events', and refresh the `chronometrist-report' buffer.
+  "Re-read `chronometrist-file' and refresh the `chronometrist-report' buffer.
 Argument _FS-EVENT is ignored."
   (chronometrist-events-populate)
   ;; (chronometrist-events-clean)
@@ -249,7 +252,8 @@ current week. Otherwise, display data from the week specified by
                (goto-char (or chronometrist-report--point 1)))))))
 
 (defun chronometrist-report-previous-week (arg)
-  "View the previous week's report."
+  "View the previous week's report.
+With prefix argument ARG, move back ARG weeks."
   (interactive "P")
   (let ((arg (if (and arg (numberp arg))
                  (abs arg)
@@ -266,7 +270,8 @@ current week. Otherwise, display data from the week specified by
   (chronometrist-report t))
 
 (defun chronometrist-report-next-week (arg)
-  "View the next week's report."
+  "View the next week's report.
+With prefix argument ARG, move forward ARG weeks."
   (interactive "P")
   (let ((arg (if (and arg (numberp arg))
                  (abs arg)
