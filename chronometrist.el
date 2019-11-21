@@ -6,6 +6,8 @@
 
 (require 'filenotify)
 (require 'cl-lib)
+(require 'subr-x)
+
 (require 'chronometrist-common)
 (require 'chronometrist-timer)
 (require 'chronometrist-custom)

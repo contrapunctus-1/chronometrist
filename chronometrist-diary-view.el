@@ -21,6 +21,8 @@
 ;;
 
 ;;; Code:
+(require 'chronometrist-events)
+(require 'chronometrist-common)
 
 (defvar chronometrist-diary-buffer-name "*Chronometrist-Diary*"
   "Name for the buffer created by `chronometrist-diary'.")

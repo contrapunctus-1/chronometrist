@@ -5,10 +5,15 @@
 ;;; Commentary:
 ;;
 
+(require 'filenotify)
+(require 'subr-x)
 (require 'chronometrist-common)
+(require 'chronometrist-queries)
 (require 'chronometrist-timer)
 (require 'chronometrist-report-custom)
 (require 'chronometrist-migrate)
+
+(declare-function chronometrist-refresh-file "chronometrist.el")
 
 ;; TODO - improve first-run (no file, or no data in file) behaviour
 

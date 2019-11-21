@@ -7,6 +7,8 @@
 
 ;;; Code:
 
+(require 'cl-lib)
+
 (defvar chronometrist-migrate-table (make-hash-table))
 
 ;; TODO - support other timeclock codes (currently only "i" and "o"
@@ -59,6 +61,8 @@ See `timeclock-log-data' for a description."
           (forward-line)
           (goto-char (point-at-bol))))
       nil)))
+
+(defvar timeclock-file)
 
 (defun chronometrist-migrate-timelog-file->sexp-file (&optional in-file out-file)
   "Migrate your existing `timeclock-file' to the Chronometrist file format.

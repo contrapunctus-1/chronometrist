@@ -1,11 +1,16 @@
 ;;; chronometrist-sexp.el --- S-expression backend for Chronometrist -*- lexical-binding: t; -*-
 
 (require 'cl-lib)
+(require 'subr-x)
+(require 'dash)
+(require 'seq)
+
 (require 'chronometrist-migrate)
 (require 'chronometrist-events)
 (require 'chronometrist-plist-pp)
-(require 'dash)
-(require 'seq)
+(require 'chronometrist-common)
+
+(declare-function chronometrist-refresh "chronometrist.el")
 
 ;;; Commentary:
 ;;
@@ -15,6 +20,10 @@
 (defvar chronometrist--tag-suggestions nil
   "Suggestions for tags.
 Used as history by `chronometrist-tags-prompt'.")
+
+(defvar chronometrist--value-suggestions nil
+  "Suggestions for values.
+Used as history by `chronometrist--value-suggestions'.")
 
 (defun chronometrist-plist-remove (plist &rest keys)
   "Return PLIST with KEYS and their associated values removed."

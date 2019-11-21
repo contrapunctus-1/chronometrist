@@ -7,8 +7,8 @@
 
 ;;; Code:
 (require 'chronometrist-custom)
+(require 'chronometrist-common)
 
-(declare-function chronometrist-current-task "chronometrist.el")
 (declare-function chronometrist-refresh "chronometrist.el")
 (declare-function chronometrist-report-refresh "chronometrist-report.el")
 (declare-function chronometrist-statistics-refresh "chronometrist-statistics.el")

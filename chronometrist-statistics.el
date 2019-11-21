@@ -7,6 +7,8 @@
 
 (require 'parse-time)
 (require 'cl-lib)
+(require 'filenotify)
+
 (require 'chronometrist-common)
 (require 'chronometrist-time)
 (require 'chronometrist-timer)
@@ -14,6 +16,8 @@
 (require 'chronometrist-statistics-custom)
 (require 'chronometrist-migrate)
 (require 'chronometrist-queries)
+
+(declare-function chronometrist-refresh-file "chronometrist.el")
 
 ;; for each activity -
 ;; [x] days active - int (float percent)
@@ -157,6 +161,8 @@ reduced to the desired range using
             (table      (chronometrist-events-subset start end)))
        (setq chronometrist-statistics--ui-state `(:mode week :start ,start :end ,end))
        (chronometrist-statistics-entries-internal table)))))
+
+(defvar chronometrist-statistics-mode-map nil)
 
 (defun chronometrist-statistics-print-keybind (command &optional description firstonly)
   "Insert the keybindings for COMMAND.

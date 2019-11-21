@@ -3,7 +3,7 @@
 ;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
 
 (require 'chronometrist-plist-pp)
-(require 'subr-x)
+(require 'chronometrist-common)
 
 ;;; Commentary:
 ;;
