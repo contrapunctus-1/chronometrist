@@ -154,8 +154,9 @@ reduced to the desired range using
             (table (chronometrist-events-subset start end)))
        (chronometrist-statistics-entries-internal table)))
     (t ;; `chronometrist-statistics--ui-state' is nil, show current week's data
-     (let* ((start-long (chronometrist-previous-week-start (decode-time)))
-            (end-long   (chronometrist-date-op start-long '+ 7))
+     (let* ((start-long (chronometrist-previous-week-start (chronometrist-date)))
+            (end-long   (time-add start-long
+                                  (* chronometrist-seconds-in-day 7)))
             (start      (chronometrist-calendrical->date start-long))
             (end        (chronometrist-calendrical->date end-long))
             (table      (chronometrist-events-subset start end)))
