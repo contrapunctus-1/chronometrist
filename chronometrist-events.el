@@ -12,15 +12,6 @@
 
 (defvar chronometrist-events (make-hash-table :test #'equal))
 
-(defun chronometrist-list-midnight-spanning-events ()
-  "Test function to check for events which span midnights."
-  (let ((dates))
-    (maphash (lambda (key value)
-               (when (-> value (chronometrist-vfirst) (chronometrist-vfirst) (equal "o"))
-                 (->> key (list) (append dates) (setq dates))))
-             chronometrist-events)
-    dates))
-
 (defun chronometrist-day-start (timestamp)
   "Get start of day (according to `chronometrist-day-start-time') for TIMESTAMP.
 

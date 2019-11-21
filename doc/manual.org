@@ -233,20 +233,18 @@
     6. Function - chronometrist-time-interval-span-midnight? (t1 t2)
        * list-timestamp list-timestamp -> Boolean
     7. Function - chronometrist-midnight-spanning-p (start-time stop-time)
-    8. Function - chronometrist-timestamp->list (date-time-string)
-       * timeclock-timestamp -> list-timestamp
-    9. Function - chronometrist-time->seconds (time)
+    8. Function - chronometrist-time->seconds (time)
        * vector-duration -> seconds
-    10. Function - chronometrist-seconds-to-hms (seconds)
-        * seconds -> vector-duration
-    11. Function - chronometrist-time-add (a b)
+    9. Function - chronometrist-seconds-to-hms (seconds)
+       * seconds -> vector-duration
+    10. Function - chronometrist-time-add (a b)
         * time-vector time-vector -> time-vector
-    12. Function - chronometrist-iso-date->timestamp (date)
-    13. Function - chronometrist-date->time (date)
-    14. Function - chronometrist-date-less-p (date1 date2)
-    15. Function - chronometrist-time-less-or-equal-p (t1 t2)
-    16. Function - chronometrist-calendrical->date (date)
-    17. Function - chronometrist-interval (event)
+    11. Function - chronometrist-iso-date->timestamp (date)
+    12. Function - chronometrist-date->time (date)
+    13. Function - chronometrist-date-less-p (date1 date2)
+    14. Function - chronometrist-time-less-or-equal-p (t1 t2)
+    15. Function - chronometrist-calendrical->date (date)
+    16. Function - chronometrist-interval (event)
         * event -> encode-time
 *** chronometrist-timer.el
     1. Variable - chronometrist--timer-object

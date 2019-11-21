@@ -88,12 +88,6 @@ Return value is a list in the form
             `(:start ,(chronometrist-format-time-iso8601 next-day-start)
                      :stop  ,stop-time)))))
 
-(defun chronometrist-timestamp->list (date-time-string)
-  "Convert string timestamp DATE-TIME-STRING to a list of integers."
-  (--> date-time-string
-       (split-string it "[-/ :]")
-       (mapcar #'string-to-number it)))
-
 (defun chronometrist-time->seconds (duration)
   "Convert DURATION to seconds.
 DURATION must be a vector in the form [HOURS MINUTES SECONDS]."
