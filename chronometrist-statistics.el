@@ -62,6 +62,31 @@
 
 ;;; Code:
 
+;; ## VARIABLES ##
+
+(defvar chronometrist-statistics--ui-state nil
+  "Stores the display state for `chronometrist-statistics'.
+
+This must be a plist in the form (:MODE :START :END).
+
+:MODE is either 'week, 'month, 'year, 'full, or 'custom. 'week,
+'month, and 'year mean display statistics weekly/monthly/yearly
+respectively.
+
+'full means display statistics from the beginning to the end of
+the `chronometrist-file'.
+
+'custom means display statistics from an arbitrary date range.
+
+:START and :END are the start and end of the date range to be
+displayed. They must be dates in the form (YEAR MONTH DAY).")
+
+(defvar chronometrist-statistics--point nil)
+
+(defvar chronometrist-statistics-mode-map nil)
+
+;; ## FUNCTIONS ##
+
 (defun chronometrist-statistics-count-average-time-spent (project &optional table)
   "Return the average time the user has spent on PROJECT from TABLE.
 
@@ -90,29 +115,6 @@ which span midnights. (see `chronometrist-events-clean')"
              (cadr it)
              (/ it days))
       0)))
-
-;; ## VARIABLES ##
-
-(defvar chronometrist-statistics--ui-state nil
-  "Stores the display state for `chronometrist-statistics'.
-
-This must be a plist in the form (:MODE :START :END).
-
-:MODE is either 'week, 'month, 'year, 'full, or 'custom. 'week,
-'month, and 'year mean display statistics weekly/monthly/yearly
-respectively.
-
-'full means display statistics from the beginning to the end of
-the `chronometrist-file'.
-
-'custom means display statistics from an arbitrary date range.
-
-:START and :END are the start and end of the date range to be
-displayed. They must be dates in the form (YEAR MONTH DAY).")
-
-(defvar chronometrist-statistics--point nil)
-
-;; ## FUNCTIONS ##
 
 (defun chronometrist-statistics-entries-internal (table)
   "Helper function for `chronometrist-statistics-entries'.
@@ -162,8 +164,6 @@ reduced to the desired range using
             (table      (chronometrist-events-subset start end)))
        (setq chronometrist-statistics--ui-state `(:mode week :start ,start :end ,end))
        (chronometrist-statistics-entries-internal table)))))
-
-(defvar chronometrist-statistics-mode-map nil)
 
 (defun chronometrist-statistics-print-keybind (command &optional description firstonly)
   "Insert the keybindings for COMMAND.

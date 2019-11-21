@@ -35,6 +35,12 @@ must correspond to the output from `chronometrist-format-time'.")
 (defvar chronometrist-task-list nil
   "List of tasks in `chronometrist-file', as returned by `chronometrist-tasks-from-table'.")
 
+(defvar chronometrist--fs-watch nil
+  "Filesystem watch object.
+
+Used to prevent more than one watch being added for the same
+file.")
+
 (defun chronometrist-buffer-exists? (buffer-name)
   "Return non-nil if BUFFER-NAME exists."
   (--> (buffer-list)
@@ -138,12 +144,6 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
          (-take 2)
          (-interpose ", ")
          (apply #'concat))))
-
-(defvar chronometrist--fs-watch nil
-  "Filesystem watch object.
-
-Used to prevent more than one watch being added for the same
-file.")
 
 (defun chronometrist-events->time-list (events)
   "Convert EVENTS to a list of time values.
