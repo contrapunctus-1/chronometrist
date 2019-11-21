@@ -64,8 +64,8 @@ It returns t if the table was modified, else nil."
         (goto-char (point-min))
         (while (setq expr (ignore-errors (read (current-buffer))))
           (when (plist-get expr :stop)
-            (let ((split-time (chronometrist-events-midnight-spanning-p (plist-get expr :start)
-                                                    (plist-get expr :stop))))
+            (let ((split-time (chronometrist-midnight-spanning-p (plist-get expr :start)
+                                                     (plist-get expr :stop))))
               (when split-time
                 (let ((first-start  (plist-get (cl-first  split-time) :start))
                       (first-stop   (plist-get (cl-first  split-time) :stop))
