@@ -194,47 +194,6 @@ Argument _FS-EVENT is ignored."
   (chronometrist-value-history-populate)
   (chronometrist-refresh))
 
-;; HACK - has some duplicate logic with `chronometrist-task-events-in-day'
-(defun chronometrist-reason-list (project)
-  "Filters `timeclock-reason-list' to only return reasons for PROJECT."
-  (declare (obsolete nil "Chronometrist v0.3.0"))
-  (let (save-next results)
-    (maphash (lambda (_date events)
-               (seq-do (lambda (event)
-                         (cond ((and (equal "i"     (chronometrist-vfirst event))
-                                     (equal project (chronometrist-vlast event)))
-                                (setq save-next t))
-                               (save-next
-                                (->> (chronometrist-vlast event)
-                                     (list)
-                                     (append results)
-                                     (setq results))
-                                (setq save-next nil))
-                               (t nil)))
-                       events))
-             chronometrist-events)
-    (->> results
-         ;; the order of reverse and seq-uniq is important, so that
-         ;; the most recent reasons come first in the history
-         (reverse)
-         (seq-uniq)
-         (seq-remove (lambda (elt)
-                       (equal elt ""))))))
-
-(defun chronometrist-ask-for-reason ()
-  "Replacement for `timeclock-ask-for-reason'.
-
-Uses `read-from-minibuffer' instead of `completing-read'. \(see
-`timeclock-get-reason-function')
-
-Additionally, it uses `chronometrist-reason-list' to only suggest
-reasons used for the relevant project, instead of all reasons as
-in `timeclock-reason-list'."
-  (declare (obsolete nil "Chronometrist v0.3.0"))
-  (setq chronometrist--project-history (chronometrist-reason-list timeclock-last-project))
-  (read-from-minibuffer "Reason for clocking out (optional): " nil nil nil
-                        'chronometrist--project-history))
-
 ;; ## HOOKS ##
 
 (defvar chronometrist-before-in-functions nil

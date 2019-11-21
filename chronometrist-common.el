@@ -32,10 +32,6 @@ This is distinct from `chronometrist-time-re-file' (which see) -
 `chronometrist-time-re-ui' is meant for the user interface, and
 must correspond to the output from `chronometrist-format-time'.")
 
-(defvar chronometrist-time-re-file "[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}"
-  "Regular expression to represent a timestamp in the file `timeclock-file'.
-This is distinct from `chronometrist-time-re-ui' (which see).")
-
 (defvar chronometrist-task-list nil
   "List of tasks in `chronometrist-file', as returned by `chronometrist-tasks-from-table'.")
 
@@ -71,39 +67,6 @@ This is distinct from `chronometrist-time-re-ui' (which see).")
                  (mapcar #'car it)
                  (car it))))
     (if result t nil)))
-
-(defun chronometrist-get-end-time (target-date)
-  "Return the timestamp of the next clock-out event after point.
-
-This is meant to be run in `timeclock-file'.
-
-If there is no clock-out event after point, return the current
-date and time.
-
-If the clock-out time is past midnight, return the date in
-TARGET-DATE with the time at midnight (\"24:00:00\").
-
-Return value is a string in the form \"YYYY/MM/DD HH:MM:SS\"
-
-TARGET-DATE must be a date in the form \"YYYY/MM/DD\"
-
-Point must be on a clock-in event having the same date as
-TARGET-DATE."
-  (declare (obsolete nil "Chronometrist v0.3.0"))
-  (let* ((date-time (if (progn
-                          (forward-line)
-                          (beginning-of-line)
-                          (looking-at-p "^o "))
-                        (progn
-                          (re-search-forward "o ")
-                          (buffer-substring-no-properties (point)
-                                                          (+ 10 1 8 (point))))
-                      (format-time-string "%Y/%m/%d %T")))
-         (date-time-list   (chronometrist-timestamp->list date-time))
-         (target-date-list (chronometrist-timestamp->list target-date)))
-    (if (chronometrist-time-interval-span-midnight? target-date-list date-time-list)
-        (concat target-date " 24:00:00")
-      date-time)))
 
 ;; tests -
 ;; (mapcar #'chronometrist-format-time
@@ -163,18 +126,6 @@ button action."
   (with-current-buffer buffer
     (goto-char (point-min))
     (delete-region (point-min) (point-max))))
-
-(defun chronometrist-date-op-internal (seconds minutes hours day month year operator count)
-  "Helper function for `chronometrist-date-op'."
-  (declare (obsolete nil "Chronometrist v0.3.0"))
-  (-->
-   (encode-time seconds minutes hours day month year)
-   (funcall (cond ((equal operator '+) 'time-add)
-                  ((equal operator '-) 'time-subtract)
-                  (t (error "Unknown operator %s" operator)))
-            it
-            (list 0 (* 86400 count)))
-   (decode-time it)))
 
 (defun chronometrist-format-keybinds (command map &optional firstonly)
   "Return the keybindings for COMMAND in MAP as a string.

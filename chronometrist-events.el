@@ -12,16 +12,6 @@
 
 (defvar chronometrist-events (make-hash-table :test #'equal))
 
-;; As we're no longer dealing with vectors, these are deprecated, and
-;; will be removed once the rest of the codebase is migrated.
-(defun chronometrist-vfirst (vector)
-  "Return the first element of VECTOR."
-  (elt vector 0))
-
-(defun chronometrist-vlast (vector)
-  "Return the last element of VECTOR."
-  (elt vector (1- (length vector))))
-
 (defun chronometrist-list-midnight-spanning-events ()
   "Test function to check for events which span midnights."
   (let ((dates))
