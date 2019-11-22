@@ -17,7 +17,7 @@ DATE-STRING must be in the form \"YYYY-MM-DD\".
 The return value is a vector in the form [HOURS MINUTES SECONDS]"
   (let* ((date-string    (if date-string date-string (chronometrist-date)))
          (task-events    (chronometrist-task-events-in-day task date-string))
-         (last-event     (copy-list (car (last task-events))))
+         (last-event     (cl-copy-list (car (last task-events))))
          (reversed-events-tail (-> task-events
                                    (reverse)
                                    (cdr))))

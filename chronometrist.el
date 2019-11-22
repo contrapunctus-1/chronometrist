@@ -404,7 +404,7 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
   (let ((buffer (get-buffer-create chronometrist-buffer-name))
         (w      (get-buffer-window chronometrist-buffer-name t)))
     (cond
-     (arg (case arg
+     (arg (cl-case arg
             (1 (chronometrist-report))
             (2 (chronometrist-statistics))))
      (w (with-current-buffer buffer

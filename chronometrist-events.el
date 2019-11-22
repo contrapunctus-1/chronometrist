@@ -67,10 +67,10 @@ It returns t if the table was modified, else nil."
             (let ((split-time (chronometrist-events-midnight-spanning-p (plist-get expr :start)
                                                     (plist-get expr :stop))))
               (when split-time
-                (let ((first-start  (plist-get (first  split-time) :start))
-                      (first-stop   (plist-get (first  split-time) :stop))
-                      (second-start (plist-get (second split-time) :start))
-                      (second-stop  (plist-get (second split-time) :stop)))
+                (let ((first-start  (plist-get (cl-first  split-time) :start))
+                      (first-stop   (plist-get (cl-first  split-time) :stop))
+                      (second-start (plist-get (cl-second split-time) :start))
+                      (second-stop  (plist-get (cl-second split-time) :stop)))
                   (backward-list 1)
                   (chronometrist-delete-list)
                   (-> expr
@@ -95,14 +95,14 @@ Return a list of two events if EVENT was split, else nil."
     (let ((split-time (chronometrist-midnight-spanning-p (plist-get event :start)
                                              (plist-get event :stop))))
       (when split-time
-        (let ((first-start  (plist-get (first  split-time) :start))
-              (first-stop   (plist-get (first  split-time) :stop))
-              (second-start (plist-get (second split-time) :start))
-              (second-stop  (plist-get (second split-time) :stop))
+        (let ((first-start  (plist-get (cl-first  split-time) :start))
+              (first-stop   (plist-get (cl-first  split-time) :stop))
+              (second-start (plist-get (cl-second split-time) :start))
+              (second-stop  (plist-get (cl-second split-time) :stop))
               ;; plist-put modifies lists in-place. The resulting bugs
               ;; left me puzzled for a while.
-              (event-1      (copy-list event))
-              (event-2      (copy-list event)))
+              (event-1      (cl-copy-list event))
+              (event-2      (cl-copy-list event)))
           (list (-> event-1
                     (plist-put :start first-start)
                     (plist-put :stop  first-stop))
@@ -143,13 +143,13 @@ were none."
                                     (prog1 pending-expr
                                       (setq pending-expr nil)))
                                    (split-expr
-                                    (setq pending-expr (second split-expr))
-                                    (first split-expr))
+                                    (setq pending-expr (cl-second split-expr))
+                                    (cl-first split-expr))
                                    (t expr)))
                  (new-value-date (->> (plist-get new-value :start)
                                       (s-left 10)))
                  (existing-value (gethash new-value-date chronometrist-events)))
-            (unless pending-expr (incf index))
+            (unless pending-expr (cl-incf index))
             (puthash new-value-date
                      (if existing-value
                          (append existing-value
@@ -166,8 +166,8 @@ were none."
                        (setq acc (append acc `(,(plist-get event :name)))))
                      value))
              chronometrist-events)
-    (remove-duplicates (sort acc #'string-lessp)
-                       :test #'equal)))
+    (cl-remove-duplicates (sort acc #'string-lessp)
+                          :test #'equal)))
 
 ;; to be replaced by plist-query
 (defun chronometrist-events-subset (start-date end-date)
@@ -193,8 +193,8 @@ START-DATE and END-DATE must be dates in the form '(YEAR MONTH DAY)."
                                  (seq-filter #'keywordp specifiers))))
     ;; When all keys from SPECIFIERS are present...
     (cond (spec-only-keywords-p
-           (->> (loop for key in specifiers
-                      collect (plist-member plist key))
+           (->> (cl-loop for key in specifiers
+                         collect (plist-member plist key))
                 (seq-every-p #'identity)))
           ;; ...or SPECIFIERS has no keywords...
           ((not keyword-list) t)
@@ -251,7 +251,7 @@ EXCEPT will be excluded from the return value."
                                                  (->> `(,get-key ,(plist-get plist get-key))
                                                       (append acc)
                                                       (setq acc))
-                                                 (incf count)))
+                                                 (cl-incf count)))
                                              get)
                                        (list acc)))
                                     (t (list plist)))

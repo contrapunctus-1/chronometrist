@@ -115,13 +115,13 @@ be removed."
                                    :name :tags :start :stop))
          (new-tags  (if old-tags
                         (-> (append old-tags tags)
-                            (remove-duplicates :test #'equal))
+                            (cl-remove-duplicates :test #'equal))
                       tags))
-         (new-kvs   (copy-list old-expr))
+         (new-kvs   (cl-copy-list old-expr))
          (new-kvs   (if plist
-                        (-> (loop for (key val) on plist by #'cddr
-                                  do (plist-put new-kvs key val)
-                                  finally return new-kvs)
+                        (-> (cl-loop for (key val) on plist by #'cddr
+                                     do (plist-put new-kvs key val)
+                                     finally return new-kvs)
                             (chronometrist-plist-remove :name :tags :start :stop))
                       old-kvs))
          (buffer     (find-file-noselect chronometrist-file)))
@@ -148,29 +148,29 @@ as symbol and/or strings.")
   "Add keys and values to `chronometrist-tags-history' by querying `chronometrist-events'."
   (let ((table chronometrist-tags-history))
     (clrhash table)
-    (loop for plist in (chronometrist-events-query chronometrist-events :get '(:name :tags))
-          do (let* ((name          (plist-get plist :name))
-                    (tags          (plist-get plist :tags))
-                    (existing-tags (gethash name table)))
-               (when tags
-                 (puthash name
-                          (if existing-tags
-                              (append existing-tags `(,tags))
-                            `(,tags))
-                          table))))
+    (cl-loop for plist in (chronometrist-events-query chronometrist-events :get '(:name :tags))
+             do (let* ((name          (plist-get plist :name))
+                       (tags          (plist-get plist :tags))
+                       (existing-tags (gethash name table)))
+                  (when tags
+                    (puthash name
+                             (if existing-tags
+                                 (append existing-tags `(,tags))
+                               `(,tags))
+                             table))))
     ;; We can't use `chronometrist-ht-history-prep' here, because it uses
     ;; `-flatten'; `chronometrist-tags-history' holds tag combinations (as lists),
     ;; not individual tags.
-    (loop for task being the hash-keys of table
-          using (hash-values list)
-          do (puthash task
-                      ;; Because remove-duplicates keeps the _last_
-                      ;; occurrence, trying to avoid this `reverse' by
-                      ;; switching the args in the call to `append'
-                      ;; above will not get you the correct behavior!
-                      (-> (remove-duplicates list :test #'equal)
-                          (reverse))
-                      table))))
+    (cl-loop for task being the hash-keys of table
+             using (hash-values list)
+             do (puthash task
+                         ;; Because remove-duplicates keeps the _last_
+                         ;; occurrence, trying to avoid this `reverse' by
+                         ;; switching the args in the call to `append'
+                         ;; above will not get you the correct behavior!
+                         (-> (cl-remove-duplicates list :test #'equal)
+                             (reverse))
+                         table))))
 
 (defun chronometrist-tags-history-combination-strings (task)
   "Return list of past tag combinations for TASK.
@@ -194,11 +194,11 @@ This is used to provide completion for individual tags, in
 `completing-read-multiple' in `chronometrist-tags-prompt'."
   (--> (gethash task chronometrist-tags-history)
        (-flatten it)
-       (remove-duplicates it :test #'equal)
-       (loop for elt in it
-             collect (if (stringp elt)
-                         elt
-                       (symbol-name elt)))))
+       (cl-remove-duplicates it :test #'equal)
+       (cl-loop for elt in it
+                collect (if (stringp elt)
+                            elt
+                          (symbol-name elt)))))
 
 (defun chronometrist-tags-prompt (task &optional initial-input)
   "Read one or more tags from the user and return them as a list of strings.
@@ -227,7 +227,7 @@ _ARGS are ignored. This function always returns t."
     (when input
       (-> (append last-tags input)
           (reverse)
-          (remove-duplicates :test #'equal)
+          (cl-remove-duplicates :test #'equal)
           (reverse)
           (chronometrist-append-to-last-expr nil)))
     t))
@@ -261,7 +261,7 @@ reversed and will have duplicate elements removed."
                       ;; placing `reverse' after `remove-duplicates'
                       ;; to get a list in reverse chronological order
                       (-> (-flatten value)
-                          (remove-duplicates :test #'equal)
+                          (cl-remove-duplicates :test #'equal)
                           (reverse))
                       table))
            table))
@@ -288,16 +288,16 @@ leading \":\" is removed."
                  (name-ht-value (gethash name chronometrist-key-history))
                  (keys          (->> (chronometrist-plist-remove expr :name :start :stop :tags)
                                      (seq-filter #'keywordp))))
-            (loop for key in keys
-                  do (when key
-                       (let ((key-string (->> (symbol-name key)
-                                              (s-chop-prefix ":")
-                                              (list))))
-                         (puthash name
-                                  (if name-ht-value
-                                      (append name-ht-value key-string)
-                                    key-string)
-                                  chronometrist-key-history))))))
+            (cl-loop for key in keys
+                     do (when key
+                          (let ((key-string (->> (symbol-name key)
+                                                 (s-chop-prefix ":")
+                                                 (list))))
+                            (puthash name
+                                     (if name-ht-value
+                                         (append name-ht-value key-string)
+                                       key-string)
+                                     chronometrist-key-history))))))
         (chronometrist-ht-history-prep chronometrist-key-history)))))
 
 ;; FIXME - seems to be a little buggy. The latest value for e.g. :song
@@ -312,25 +312,24 @@ The values are stored in `chronometrist-value-history'."
         user-kvs)
     (clrhash table)
     (maphash (lambda (_date plist-list)
-               (loop for plist in plist-list
-                     do (setq user-kvs (chronometrist-plist-remove plist
-                                                      :name :tags
-                                                      :start :stop))
-                     (loop for (key1 val1) on user-kvs by #'cddr
-                           do (let* ((key1-string (->> (symbol-name key1)
-                                                       (s-chop-prefix ":")))
-                                     (key1-ht     (gethash key1-string table))
-                                     (val1        (if (not (stringp val1))
-                                                      (list
-                                                       (format "%s" val1))
-                                                    (list val1))))
-                                (puthash key1-string
-                                         (if key1-ht
-                                             (append key1-ht val1)
-                                           val1)
-                                         table)))))
-             chronometrist-events)
-    (chronometrist-ht-history-prep table)))
+               (cl-loop for plist in plist-list
+                        do (setq user-kvs (chronometrist-plist-remove plist
+                                                                      :name :tags
+                                                                      :start :stop))
+                        (cl-loop for (key1 val1) on user-kvs by #'cddr
+                                 do (let* ((key1-string (->> (symbol-name key1)
+                                                             (s-chop-prefix ":")))
+                                           (key1-ht     (gethash key1-string table))
+                                           (val1        (if (not (stringp val1))
+                                                            (list
+                                                             (format "%s" val1))
+                                                          (list val1))))
+                                      (puthash key1-string
+                                               (if key1-ht
+                                                   (append key1-ht val1)
+                                                 val1)
+                                               table)))))
+             (chronometrist-ht-history-prep table))))
 
 ;; TODO - refactor this to use `chronometrist-append-to-last-expr'
 (defun chronometrist-kv-accept ()
@@ -411,12 +410,12 @@ USED-KEYS are keys they have already used in this session."
                              (chronometrist-kv-completion-quit-key)
                              " to quit): ")
                      ;; don't suggest keys which have already been used
-                     (loop for used-key in used-keys
-                           do (->> key-suggestions
-                                   (seq-remove (lambda (key)
-                                                 (equal key used-key)))
-                                   (setq key-suggestions))
-                           finally return key-suggestions))))
+                     (cl-loop for used-key in used-keys
+                              do (->> key-suggestions
+                                      (seq-remove (lambda (key)
+                                                    (equal key used-key)))
+                                      (setq key-suggestions))
+                              finally return key-suggestions))))
 
 (defun chronometrist-value-prompt (key)
   "Prompt the user to enter values.

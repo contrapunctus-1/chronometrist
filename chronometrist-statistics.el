@@ -77,7 +77,7 @@ For time value format, see (info \"(elisp)Time of Day\")."
              (stop-iso  (if stop
                             (parse-iso8601-time-string stop)
                           (current-time))))
-        (incf index)
+        (cl-incf index)
         (setq result (append result `((,start-iso ,stop-iso))))))
     result))
 
@@ -159,7 +159,7 @@ reduced to the desired range using
 `chronometrist-events-subset'."
   (mapcar (lambda (project)
             (let* ((active-days    (chronometrist-statistics-count-active-days project table))
-                   (active-percent (case (plist-get chronometrist-statistics--ui-state :mode)
+                   (active-percent (cl-case (plist-get chronometrist-statistics--ui-state :mode)
                                      ('week (* 100 (/ active-days 7.0)))))
                    (active-percent (if (zerop active-days)
                                        (format "    % 6s" "-")
@@ -183,7 +183,7 @@ reduced to the desired range using
   "Create entries to be displayed in the buffer created by `chronometrist-statistics'."
   ;; We assume that all fields in `chronometrist-statistics--ui-state' are set, so they must
   ;; be changed by the view-changing functions.
-  (case (plist-get chronometrist-statistics--ui-state :mode)
+  (cl-case (plist-get chronometrist-statistics--ui-state :mode)
     ('week
      (let* ((start (plist-get chronometrist-statistics--ui-state :start))
             (end   (plist-get chronometrist-statistics--ui-state :end))
@@ -220,7 +220,7 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
         (inhibit-read-only t))
     (goto-char (point-max))
     (insert w)
-    (insert-text-button (case (plist-get chronometrist-statistics--ui-state :mode)
+    (insert-text-button (cl-case (plist-get chronometrist-statistics--ui-state :mode)
                           ('week "Weekly view"))
                         ;; 'action #'chronometrist-report-previous-week ;; TODO - make interactive function to accept new mode from user
                         'follow-link t)
@@ -330,7 +330,7 @@ If ARG is a numeric argument, go back that many times."
          (end-unix   (->> (plist-get chronometrist-statistics--ui-state :end)
                           (chronometrist-iso-date->timestamp)
                           (parse-iso8601-time-string))))
-    (case (plist-get chronometrist-statistics--ui-state :mode)
+    (cl-case (plist-get chronometrist-statistics--ui-state :mode)
       ('week
        (let* ((new-start (time-subtract start-unix
                                         (* 7 chronometrist-seconds-in-day arg)))
@@ -360,7 +360,7 @@ If ARG is a numeric argument, go forward that many times."
          (end-unix   (->> (plist-get chronometrist-statistics--ui-state :end)
                           (chronometrist-iso-date->timestamp)
                           (parse-iso8601-time-string))))
-    (case (plist-get chronometrist-statistics--ui-state :mode)
+    (cl-case (plist-get chronometrist-statistics--ui-state :mode)
       ('week
        (let* ((new-start (time-add start-unix
                                    (* 7 chronometrist-seconds-in-day arg)))

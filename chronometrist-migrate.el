@@ -25,7 +25,7 @@ See `timeclock-log-data' for a description."
           (let* ((event-string (buffer-substring-no-properties (point-at-bol)
                                                                (point-at-eol)))
                  (event-list   (split-string event-string "[ /:]"))
-                 (code         (first event-list))
+                 (code         (cl-first event-list))
                  (date-time    (--> event-list
                                     (seq-drop it 1)
                                     (seq-take it 6)
@@ -43,7 +43,7 @@ See `timeclock-log-data' for a description."
                    event-string)))
             (pcase code
               ("i"
-               (incf key-counter)
+               (cl-incf key-counter)
                (puthash key-counter
                         `(:name ,project-or-comment :start ,date-time)
                         chronometrist-migrate-table))
