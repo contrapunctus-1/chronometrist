@@ -53,7 +53,7 @@ This will not return correct results if TABLE contains records
 which span midnights. (see `chronometrist-events-clean')"
   (let ((count 0)
         (table (if table table chronometrist-events)))
-    (maphash (lambda (date events)
+    (maphash (lambda (_date events)
                (when (seq-find (lambda (event)
                                  (and (equal (elt event 0) "i")
                                       (equal (elt event 7) project)))

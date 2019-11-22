@@ -161,7 +161,7 @@ were none."
 (defun chronometrist-tasks-from-table ()
   "Return a list of task names from `chronometrist-events'."
   (let (acc)
-    (maphash (lambda (key value)
+    (maphash (lambda (_key value)
                (mapc (lambda (event)
                        (setq acc (append acc `(,(plist-get event :name)))))
                      value))
@@ -233,7 +233,7 @@ EXCEPT takes any values SPECIFIERS does. The plists matched by
 EXCEPT will be excluded from the return value."
   (let* ((length-get (when (listp get) (length get)))
          return)
-    (maphash (lambda (key value-plists)
+    (maphash (lambda (_key value-plists)
                (mapc (lambda (plist)
                        (when (and (chronometrist-events-query-spec-match-p plist specifiers)
                                   (if except

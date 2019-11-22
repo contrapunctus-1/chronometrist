@@ -176,7 +176,8 @@ FORMAT-STRING."
                         'action #'chronometrist-open-file
                         'follow-link t)))
 
-(defun chronometrist-report-refresh (&optional ignore-auto noconfirm)
+(defun chronometrist-report-refresh (&optional _ignore-auto _noconfirm)
+  "Refresh the `chronometrist-report' buffer, without re-reading `chronometrist-file'."
   (let* ((w (get-buffer-window chronometrist-report-buffer-name t))
          (p (point)))
     (with-current-buffer chronometrist-report-buffer-name
@@ -186,9 +187,9 @@ FORMAT-STRING."
       (set-window-point w p))))
 
 ;; REVIEW - merge this into `chronometrist-refresh-file', while moving the -refresh call to the call site?
-(defun chronometrist-report-refresh-file (fs-event)
+(defun chronometrist-report-refresh-file (_fs-event)
   "Re-populate and clean `chronometrist-events', and refresh the `chronometrist-report' buffer.
-Argument FS-EVENT is ignored."
+Argument _FS-EVENT is ignored."
   (chronometrist-events-populate)
   ;; (chronometrist-events-clean)
   (chronometrist-report-refresh))

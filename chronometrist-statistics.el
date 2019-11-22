@@ -5,12 +5,15 @@
 ;;; Commentary:
 ;;
 
+(require 'parse-time)
+(require 'cl-lib)
 (require 'chronometrist-common)
 (require 'chronometrist-time)
 (require 'chronometrist-timer)
 (require 'chronometrist-events)
 (require 'chronometrist-statistics-custom)
 (require 'chronometrist-migrate)
+(require 'chronometrist-queries)
 
 ;; for each activity -
 ;; [x] days active - int (float percent)
@@ -106,7 +109,7 @@ which span midnights. (see `chronometrist-events-clean')"
   (let ((table (if table table chronometrist-events))
         (days  0)
         (per-day-time-list))
-    (maphash (lambda (key value)
+    (maphash (lambda (key _value)
                (let ((events-in-day (chronometrist-task-events-in-day project key)))
                  (when events-in-day
                    (setq days (1+ days))
@@ -227,13 +230,13 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
              (plist-get chronometrist-statistics--ui-state :start)
              (plist-get chronometrist-statistics--ui-state :end)))))
 
-(defun chronometrist-statistics-refresh (&optional ignore-auto noconfirm)
+(defun chronometrist-statistics-refresh (&optional _ignore-auto _noconfirm)
   "Refresh the `chronometrist-statistics' buffer.
 This does not re-read `chronometrist-file'.
 
-The optional arguments IGNORE-AUTO and NOCONFIRM are ignored, and
-are present solely for the sake of using this function as a value
-of `revert-buffer-function'."
+The optional arguments _IGNORE-AUTO and _NOCONFIRM are ignored,
+and are present solely for the sake of using this function as a
+value of `revert-buffer-function'."
   (let* ((w (get-buffer-window chronometrist-statistics-buffer-name t))
          (p (point)))
     (with-current-buffer chronometrist-statistics-buffer-name

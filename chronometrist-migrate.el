@@ -83,7 +83,7 @@ file names respectively."
       (with-current-buffer output
         (chronometrist-common-clear-buffer output)
         (chronometrist-migrate-populate in-file)
-        (maphash (lambda (key value)
+        (maphash (lambda (_key value)
                    (chronometrist-plist-pp value output)
                    (insert "\n\n"))
                  chronometrist-migrate-table)

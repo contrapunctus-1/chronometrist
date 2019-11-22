@@ -2,6 +2,7 @@
 
 ;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
 
+(require 'parse-time)
 (require 'dash)
 (require 's)
 

@@ -56,7 +56,7 @@ Each time interval is a string as returned by `chronometrist-seconds-to-hms'."
                       "\n")))
           (gethash date chronometrist-events)))
 
-(defun chronometrist-diary-refresh (&optional ignore-auto noconfirm date)
+(defun chronometrist-diary-refresh (&optional _ignore-auto _noconfirm date)
   "Refresh the `chronometrist-diary' buffer.
 
 This does not re-read `chronometrist-file'.
@@ -64,9 +64,9 @@ This does not re-read `chronometrist-file'.
 Optional argument DATE should be a list in the form
 \"YYYY-MM-DD\". If not supplied, today's date is used.
 
-The optional arguments IGNORE-AUTO and NOCONFIRM are ignored, and
-are present solely for the sake of using this function as a value
-of `revert-buffer-function'."
+The optional arguments _IGNORE-AUTO and _NOCONFIRM are ignored,
+and are present solely for the sake of using this function as a
+value of `revert-buffer-function'."
   (let* ((date              (if date date (chronometrist-date)))
          (intervals         (->> (chronometrist-intervals-on date)
                                  (mapcar #'chronometrist-format-time)))

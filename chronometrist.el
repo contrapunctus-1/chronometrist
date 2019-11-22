@@ -5,6 +5,7 @@
 ;; Homepage: https://framagit.org/contrapunctus/chronometrist
 
 (require 'filenotify)
+(require 'cl-lib)
 (require 'chronometrist-common)
 (require 'chronometrist-timer)
 (require 'chronometrist-custom)
@@ -48,10 +49,10 @@
 ;; ## VARIABLES ##
 ;;; Code:
 
-(defvar chronometrist--timer-object nil)
 (defvar chronometrist--project-history nil)
 (defvar chronometrist--point nil)
 (defvar chronometrist-task-list nil)
+(defvar chronometrist-mode-map)
 
 ;; ## FUNCTIONS ##
 (defun chronometrist-current-task ()
@@ -122,8 +123,8 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
   (with-current-buffer chronometrist-buffer-name
     (let ((inhibit-read-only t)
           (w "\n    ")
-          (keybind-start-new (chronometrist-format-keybinds 'chronometrist-add-new-project
-                                               chronometrist-mode-map))
+          ;; (keybind-start-new (chronometrist-format-keybinds 'chronometrist-add-new-project
+          ;;                                      chronometrist-mode-map))
           (keybind-toggle    (chronometrist-format-keybinds 'chronometrist-toggle-project
                                                chronometrist-mode-map
                                                t)))
@@ -174,12 +175,12 @@ project. N must be a positive integer."
     (beginning-of-line)
     (chronometrist-project-at-point)))
 
-(defun chronometrist-refresh (&optional ignore-auto noconfirm)
+(defun chronometrist-refresh (&optional _ignore-auto _noconfirm)
   "Refresh the `chronometrist' buffer, without re-reading `chronometrist-file'.
 
-The optional arguments IGNORE-AUTO and NOCONFIRM are ignored, and
-are present solely for the sake of using this function as a value
-of `revert-buffer-function'."
+The optional arguments _IGNORE-AUTO and _NOCONFIRM are ignored,
+and are present solely for the sake of using this function as a
+value of `revert-buffer-function'."
   (let* ((window (get-buffer-window chronometrist-buffer-name t))
          (point  (window-point window)))
     (when window
@@ -189,9 +190,9 @@ of `revert-buffer-function'."
         (chronometrist-maybe-start-timer)
         (set-window-point window point)))))
 
-(defun chronometrist-refresh-file (fs-event)
+(defun chronometrist-refresh-file (_fs-event)
   "Re-read `chronometrist-file' and refresh the `chronometrist' buffer.
-Argument FS-EVENT is ignored."
+Argument _FS-EVENT is ignored."
   ;; (chronometrist-file-clean)
   (chronometrist-events-populate)
   (setq chronometrist-task-list (chronometrist-tasks-from-table))
@@ -205,7 +206,7 @@ Argument FS-EVENT is ignored."
   "Filters `timeclock-reason-list' to only return reasons for PROJECT."
   (declare (obsolete nil "Chronometrist v0.3.0"))
   (let (save-next results)
-    (maphash (lambda (date events)
+    (maphash (lambda (_date events)
                (seq-do (lambda (event)
                          (cond ((and (equal "i"     (chronometrist-vfirst event))
                                      (equal project (chronometrist-vlast event)))
@@ -320,10 +321,10 @@ is the name of the project to be clocked out of.")
 ;; ## BUTTONS ##
 
 ;; FIXME - there is duplication between this function and `chronometrist-toggle-project's logic
-(defun chronometrist-toggle-project-button (button)
+(defun chronometrist-toggle-project-button (_button)
   "Button action to toggle a project.
 
-Argument BUTTON is for the purpose of using this as a button
+Argument _BUTTON is for the purpose of using this as a button
 action, and is ignored."
   (let ((current  (chronometrist-current-task))
         (at-point (chronometrist-project-at-point)))
@@ -335,10 +336,10 @@ action, and is ignored."
     (unless (equal at-point current)
       (chronometrist-run-functions-and-clock-in at-point))))
 
-(defun chronometrist-add-new-project-button (button)
+(defun chronometrist-add-new-project-button (_button)
   "Button action to add a new project.
 
-Argument BUTTON is for the purpose of using this as a button
+Argument _BUTTON is for the purpose of using this as a button
 action, and is ignored."
   (let ((current (chronometrist-current-task)))
     (when current

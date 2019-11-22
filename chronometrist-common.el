@@ -131,10 +131,10 @@ SECONDS] or (HOURS MINUTES SECONDS)."
                  (format "%02d" s))))
         (concat h m s)))))
 
-(defun chronometrist-open-file (&optional button)
+(defun chronometrist-open-file (&optional _button)
   "Open `chronometrist-file' in another window.
 
-Argument BUTTON is for the purpose of using this command as a
+Argument _BUTTON is for the purpose of using this command as a
 button action."
   (interactive)
   (find-file-other-window chronometrist-file)

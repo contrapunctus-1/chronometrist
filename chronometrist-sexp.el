@@ -1,5 +1,6 @@
 ;;; chronometrist-sexp.el --- S-expression backend for Chronometrist -*- lexical-binding: t; -*-
 
+(require 'cl-lib)
 (require 'chronometrist-migrate)
 (require 'chronometrist-events)
 (require 'chronometrist-plist-pp)
@@ -211,9 +212,9 @@ INITIAL-INPUT is as used in `completing-read'."
                             initial-input
                             'chronometrist--tag-suggestions))
 
-(defun chronometrist-tags-add (&rest args)
+(defun chronometrist-tags-add (&rest _args)
   "Read tags from the user, add them to the last s-expr in `chronometrist-file'.
-ARGS are ignored. This function always returns t."
+_ARGS are ignored. This function always returns t."
   (let* ((last-expr (chronometrist-last-expr))
          (last-name (plist-get last-expr :name))
          (last-tags (plist-get last-expr :tags))
@@ -310,7 +311,7 @@ The values are stored in `chronometrist-value-history'."
   (let ((table chronometrist-value-history)
         user-kvs)
     (clrhash table)
-    (maphash (lambda (date plist-list)
+    (maphash (lambda (_date plist-list)
                (loop for plist in plist-list
                      do (setq user-kvs (chronometrist-plist-remove plist
                                                       :name :tags
@@ -429,14 +430,14 @@ KEY should be a string for the just-entered key."
    nil nil nil
    'chronometrist--value-suggestions))
 
-(defun chronometrist-kv-add (&rest args)
+(defun chronometrist-kv-add (&rest _args)
   "Read key-values from user, adding them to a temporary buffer for review.
 
 In the resulting buffer, users can run `chronometrist-kv-accept'
 to add them to the last s-expression in `chronometrist-file', or
 `chronometrist-kv-reject' to cancel.
 
-ARGS are ignored. This function always returns t."
+_ARGS are ignored. This function always returns t."
   (let* ((buffer      (get-buffer-create chronometrist-kv-buffer-name))
          (first-key-p t)
          (last-kvs    (chronometrist-plist-remove (chronometrist-last-expr)
@@ -456,7 +457,7 @@ ARGS are ignored. This function always returns t."
         (insert "()")
         (down-list -1))
       (catch 'empty-input
-        (let (input key value value-history)
+        (let (input key value)
           (while t
             (setq key (chronometrist-key-prompt used-keys)
                   input key
@@ -480,7 +481,7 @@ ARGS are ignored. This function always returns t."
 
 
 ;;;; COMMANDS ;;;;
-(defun chronometrist-in (task &optional prefix)
+(defun chronometrist-in (task &optional _prefix)
   "Clock in to TASK; record current time in `chronometrist-file'.
 TASK is the name of the task, a string.
 
@@ -496,7 +497,7 @@ PREFIX is ignored."
                 buffer)
       (save-buffer))))
 
-(defun chronometrist-out (&optional prefix)
+(defun chronometrist-out (&optional _prefix)
   "Record current moment as stop time to last s-exp in `chronometrist-file'.
 PLIST is a property list containing any other information about
 this time interval that should be recorded.
