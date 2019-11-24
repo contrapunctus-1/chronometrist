@@ -10,7 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.1] - 2019-11-22
 ### Fixed
-* Improved load time.
+* Improved load time via code cleanup + inhibiting `chronometrist-events-populate` for task start/stop
+
+### Removed
+1. Deprecated functions
+2. Leftover pre-v0.3 variables
 
 ## [0.3.0] - 2019-10-31
 ### Added
