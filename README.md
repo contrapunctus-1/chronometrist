@@ -73,15 +73,8 @@ Just like `chronometrist`, `chronometrist-statistics` will also toggle the visib
 ## Customization
 See the Customize groups `chronometrist` and `chronometrist-report` for variables intended to be user-customizable.
 
-If you find that you usually _don't_ want to enter a reason, you can switch the default bindings -
-
-```elisp
-(define-key chronometrist-mode-map (kbd "M-RET") #'chronometrist-toggle-project)
-(define-key chronometrist-mode-map (kbd "RET")   #'chronometrist-toggle-project-no-reason)
-```
-
 ### Hooks
-Chronometrist currently has three hooks -
+Chronometrist currently has four hooks -
 1. `chronometrist-before-in-functions`
 1. `chronometrist-after-in-functions`
 2. `chronometrist-before-out-functions`
@@ -114,6 +107,15 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
 
 (add-hook 'chronometrist-before-out-functions 'my-commit-prompt)
 ```
+
+### Adding more information
+    Since v0.3, Chronometrist supports adding additional information to tracked time, in the form of tags and user-defined key-value pairs.
+
+#### Tags
+     Tags can be added using the `chronometrist-tags-add` function. It can currently be added to any hooks except `chronometrist-before-in-functions`.
+
+#### Key-value pairs
+     Key-value pairs can be added using the `chronometrist-kv-add` function. It can currently be added to any hooks except `chronometrist-before-in-functions`. Keys can be any string except "name", "tags", "start", or "end". Values can be any readable Lisp values.
 
 ## Roadmap/Ideas
 * Show details for time spent on a project when clicking on a non-zero "time spent" field (in both Chronometrist and Chronometrist-Report buffers).
