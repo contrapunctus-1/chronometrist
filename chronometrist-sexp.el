@@ -294,8 +294,8 @@ The values are stored in `chronometrist-value-history'."
     (maphash (lambda (_date plist-list)
                (cl-loop for plist in plist-list
                         do (setq user-kvs (chronometrist-plist-remove plist
-                                                                      :name :tags
-                                                                      :start :stop))
+                                                         :name :tags
+                                                         :start :stop))
                         (cl-loop for (key1 val1) on user-kvs by #'cddr
                                  do (let* ((key1-string (->> (symbol-name key1)
                                                              (s-chop-prefix ":")))
@@ -309,7 +309,8 @@ The values are stored in `chronometrist-value-history'."
                                                    (append key1-ht val1)
                                                  val1)
                                                table)))))
-             (chronometrist-ht-history-prep table))))
+             table)
+    (chronometrist-ht-history-prep table)))
 
 ;; TODO - refactor this to use `chronometrist-append-to-last-expr'
 (defun chronometrist-kv-accept ()
