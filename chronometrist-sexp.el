@@ -89,10 +89,8 @@ be removed."
          (old-start (plist-get old-expr :start))
          (old-stop  (plist-get old-expr :stop))
          (old-tags  (plist-get old-expr :tags))
-         (old-kvs   (chronometrist-plist-remove old-expr
-                                   :name :tags :start :stop))
-         (plist     (chronometrist-plist-remove plist
-                                   :name :tags :start :stop))
+         (old-kvs   (chronometrist-plist-remove old-expr :name :tags :start :stop))
+         (plist     (chronometrist-plist-remove plist    :name :tags :start :stop))
          (new-tags  (if old-tags
                         (-> (append old-tags tags)
                             (cl-remove-duplicates :test #'equal))
@@ -324,26 +322,26 @@ The values are stored in `chronometrist-value-history'."
       (goto-char (point-min))
       (setq user-kv-expr (ignore-errors (read (current-buffer))))
       (kill-buffer chronometrist-kv-buffer-name))
-    (with-current-buffer backend-buffer
-      (goto-char (point-max))
-      (backward-list)
-      (setq last-expr (ignore-errors (read backend-buffer)))
-      (backward-list)
-      (chronometrist-delete-list)
-      ;; REVIEW - as a side-effect, this removes anything that isn't
-      ;; one of :name, :tags, :start, and :stop...just for the sake of
-      ;; keeping the keys in a specific order.
-      (let ((name  (plist-get last-expr :name))
-            (tags  (plist-get last-expr :tags))
-            (start (plist-get last-expr :start))
-            (stop  (plist-get last-expr :stop)))
-        (chronometrist-plist-pp (append (when name  `(:name  ,name))
-                           (when tags  `(:tags  ,tags))
-                           user-kv-expr
-                           (when start `(:start ,start))
-                           (when stop  `(:stop  ,stop)))
-                   backend-buffer))
-      (save-buffer))))
+    (when user-kv-expr
+      (with-current-buffer backend-buffer
+        (goto-char (point-max))
+        (backward-list)
+        (setq last-expr (ignore-errors (read backend-buffer)))
+        (backward-list)
+        (chronometrist-delete-list)
+        (let ((name    (plist-get last-expr :name))
+              (tags    (plist-get last-expr :tags))
+              (start   (plist-get last-expr :start))
+              (stop    (plist-get last-expr :stop))
+              (old-kvs (chronometrist-plist-remove last-expr :name :tags :start :stop)))
+          (chronometrist-plist-pp (append (when name  `(:name  ,name))
+                             (when tags  `(:tags  ,tags))
+                             old-kvs
+                             user-kv-expr
+                             (when start `(:start ,start))
+                             (when stop  `(:stop  ,stop)))
+                     backend-buffer))
+        (save-buffer)))))
 
 (defun chronometrist-kv-reject ()
   "Reject the property list in `chronometrist-kv-buffer-name'."
