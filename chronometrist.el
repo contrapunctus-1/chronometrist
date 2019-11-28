@@ -60,6 +60,13 @@
   "Return t if TASK is currently clocked in, else nil."
   (equal (chronometrist-current-task) task))
 
+(defun chronometrist-activity-indicator ()
+  "Return a string to indicate that a task is active.
+See custom variable `chronometrist-activity-indicator'."
+  (if (functionp chronometrist-activity-indicator)
+      (funcall chronometrist-activity-indicator)
+    chronometrist-activity-indicator))
+
 (defun chronometrist-entries ()
   "Create entries to be displayed in the buffer created by `chronometrist', in the format specified by `tabulated-list-entries'."
   ;; HACK - these calls are commented out, because `chronometrist-entries' is
@@ -78,7 +85,8 @@
                       (-> (chronometrist-task-time-one-day it)
                           (chronometrist-format-time))
                       (if (chronometrist-task-active? it)
-                          "*" ""))))))
+                          (chronometrist-activity-indicator)
+                        ""))))))
 
 (defun chronometrist-project-at-point ()
   "Return the project at point in the `chronometrist' buffer, or nil if there is no project at point."

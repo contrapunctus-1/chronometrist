@@ -68,7 +68,7 @@
        * String -> List?
     7. Function - chronometrist-buffer-visible? (buffer-or-buffer-name)
        * Buffer | String -> Boolean
-    8. Function - chronometrist-format-time (time)
+    8. Function - chronometrist-format-time (duration &optional blank)
        * vector-duration | list-duration -> "h:m:s"
     9. Command - chronometrist-open-file (&optional button)
     10. Function - chronometrist-common-create-chronometrist-file ()
@@ -87,7 +87,8 @@
     2. Custom variable - chronometrist-buffer-name
     3. Custom variable - chronometrist-hide-cursor
     4. Custom variable - chronometrist-update-interval
-    5. Custom variable - chronometrist-day-start-time
+    5. Custom variable - chronometrist-activity-indicator
+    6. Custom variable - chronometrist-day-start-time
 *** chronometrist-diary-view.el
     1. Variable - chronometrist-diary-buffer-name
     2. Variable - chronometrist-diary--current-date
@@ -102,28 +103,29 @@
     3. Variable - chronometrist-mode-map
     4. Function - chronometrist-task-active? (task)
        * String -> Boolean
-    5. Function - chronometrist-entries ()
-    6. Function - chronometrist-project-at-point ()
-    7. Function - chronometrist-goto-last-project ()
-    8. Function - chronometrist-print-keybind (command &optional description firstonly)
-    9. Function - chronometrist-print-non-tabular ()
-    10. Function - chronometrist-goto-nth-project (n)
-    11. Function - chronometrist-refresh (&optional ignore-auto noconfirm)
-    12. Function - chronometrist-refresh-file (fs-event)
-    13. Variable - chronometrist-before-in-functions
-    14. Variable - chronometrist-after-in-functions
-    15. Variable - chronometrist-before-out-functions
-    16. Variable - chronometrist-after-out-functions
-    17. Function - chronometrist-run-functions-and-clock-in (task)
-    18. Function - chronometrist-run-functions-and-clock-out (task)
-    16. Variable - chronometrist-mode-map
-    19. Major Mode - chronometrist-mode
-    20. Function - chronometrist-toggle-project-button (button)
-    21. Function - chronometrist-add-new-project-button (button)
-    22. Command - chronometrist-toggle-project (&optional prefix)
-    23. Command - chronometrist-toggle-project-no-reason (&optional prefix)
-    24. Command - chronometrist-add-new-project ()
-    25. Command - chronometrist (&optional arg)
+    5. Function - chronometrist-activity-indicator ()
+    6. Function - chronometrist-entries ()
+    7. Function - chronometrist-project-at-point ()
+    8. Function - chronometrist-goto-last-project ()
+    9. Function - chronometrist-print-keybind (command &optional description firstonly)
+    10. Function - chronometrist-print-non-tabular ()
+    11. Function - chronometrist-goto-nth-project (n)
+    12. Function - chronometrist-refresh (&optional ignore-auto noconfirm)
+    13. Function - chronometrist-refresh-file (fs-event)
+    14. Variable - chronometrist-before-in-functions
+    15. Variable - chronometrist-after-in-functions
+    16. Variable - chronometrist-before-out-functions
+    17. Variable - chronometrist-after-out-functions
+    18. Function - chronometrist-run-functions-and-clock-in (task)
+    19. Function - chronometrist-run-functions-and-clock-out (task)
+    20. Variable - chronometrist-mode-map
+    21. Major Mode - chronometrist-mode
+    22. Function - chronometrist-toggle-project-button (button)
+    23. Function - chronometrist-add-new-project-button (button)
+    24. Command - chronometrist-toggle-project (&optional prefix)
+    25. Command - chronometrist-toggle-project-no-reason (&optional prefix)
+    26. Command - chronometrist-add-new-project ()
+    27. Command - chronometrist (&optional arg)
 *** chronometrist-events.el
     1. Variable - chronometrist-events
     2. Function - chronometrist-list-midnight-spanning-events ()

@@ -74,21 +74,17 @@ file.")
                  (car it))))
     (if result t nil)))
 
-;; tests -
-;; (mapcar #'chronometrist-format-time
-;;         '((0 0 0) (0 0 1) (0 0 10) (0 1 10) (0 10 10) (1 10 10) (10 10 10)))
-;; => ("" "00:01" "00:10" "01:10" "10:10" "01:10:10" "10:10:10")
-;; (mapcar #'chronometrist-format-time
-;;         '([0 0 0] [0 0 1] [0 0 10] [0 1 10] [0 10 10] [1 10 10] [10 10 10]))
-;; => ("" "00:01" "00:10" "01:10" "10:10" "01:10:10" "10:10:10")
-(defun chronometrist-format-time (duration)
+(defun chronometrist-format-time (duration &optional blank)
   "Format DURATION as a string suitable for display in Chronometrist buffers.
 DURATION must be a vector or a list of the form [HOURS MINUTES
-SECONDS] or (HOURS MINUTES SECONDS)."
-  (let ((h (elt duration 0))
-        (m (elt duration 1))
-        (s (elt duration 2))
-        (blank "   "))
+SECONDS] or (HOURS MINUTES SECONDS).
+
+BLANK is a string to display in place of blank values. If not
+supplied, 3 spaces are used."
+  (let ((h     (elt duration 0))
+        (m     (elt duration 1))
+        (s     (elt duration 2))
+        (blank (if blank blank "   ")))
     (if (and (zerop h) (zerop m) (zerop s))
         "       -"
       (let ((h (if (zerop h)

@@ -76,9 +76,9 @@ See the Customize groups `chronometrist` and `chronometrist-report` for variable
 ### Hooks
 Chronometrist currently has four hooks -
 1. `chronometrist-before-in-functions`
-1. `chronometrist-after-in-functions`
-2. `chronometrist-before-out-functions`
-3. `chronometrist-after-out-functions`
+2. `chronometrist-after-in-functions`
+3. `chronometrist-before-out-functions`
+4. `chronometrist-after-out-functions`
 
 As their names suggest, these are 'abnormal' hooks, i.e. the functions they contain must accept arguments. In this case, each function must accept exactly one argument, which is the project which is being started or stopped.
 
@@ -121,14 +121,12 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
 * Show details for time spent on a project when clicking on a non-zero "time spent" field (in both Chronometrist and Chronometrist-Report buffers).
 
 ### chronometrist
-1. Make clocked-in project row bold, either in addition to the star, or replacing it.
-   - Another activity-indication enhancement - show the current time interval being recorded instead of the star.
-2. **Custom day start/end time** - option to use a specific time to define when a day starts/ends. e.g. 08:00 will mean a day starts and ends at 08:00 instead of the usual 24:00/00:00. Helpful for late sleepers.
-3. Suggest reasons by frequency? So your most-used reason for the task is the default suggestion. If you usually _don't_ provide a reason for the task, the default is nil.
-4. **Better shortcuts** - shortcuts derived from the first alphabet of each project might be nicer.
-5. **Modeline support** - show currently active project + time spent on it so far in the mode-line (see timeclock-mode-line-display)
+1. **Custom day start/end time** - option to use a specific time to define when a day starts/ends. e.g. 08:00 will mean a day starts and ends at 08:00 instead of the usual 24:00/00:00. Helpful for late sleepers.
+2. Suggest reasons by frequency? So your most-used reason for the task is the default suggestion. If you usually _don't_ provide a reason for the task, the default is nil.
+3. **Better shortcuts** - shortcuts derived from the first alphabet of each project might be nicer.
+4. **Modeline support** - show currently active project + time spent on it so far in the mode-line (see timeclock-mode-line-display)
    - Maybe make modeline slowly change color the longer you do something?
-6. **Reminder notifications** - a common issue with time trackers is that people forget to clock in/out. A potential solution can be to have Emacs remind people (ideally via desktop notifications?) -
+5. **Reminder notifications** - a common issue with time trackers is that people forget to clock in/out. A potential solution can be to have Emacs remind people (ideally via desktop notifications?) -
    * when they haven't clocked in, every X minutes (e.g. 30)
    * that they are clocked in, every X minutes (e.g. 30)
    * of course, modeline support might help too.
@@ -149,12 +147,12 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
        - :pattern - glob pattern to match paths
        - :mode - regular expression to match buffer modes
        - :computerp or :emacsp - t if this project (activity) is something you do on a computer/in Emacs (or perhaps, more specifically, the same computer/Emacs instance as the one you run Chronometrist on.). Somewhat implied by the previous arguments. If this is t, Chronometrist will note if the computer has received no events for some time, and clock out of the project. If it's an integer, clock out after that many seconds of computer inactivity.
-7. Use `make-thread` in v26 or the emacs-async library for `chronometrist-entries`/`chronometrist-report-entries`
-8. Some way to update buffers every second without making Emacs unusable. (impossible?)
-9. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
-10. Tree of tasks (i.e. sub-tasks etc) - choosing a child task implies the parent tasks too.
+6. Use `make-thread` in v26 or the emacs-async library for `chronometrist-entries`/`chronometrist-report-entries`
+7. Some way to update buffers every second without making Emacs unusable. (impossible?)
+8. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
+9. Tree of tasks (i.e. sub-tasks etc) - choosing a child task implies the parent tasks too.
     - Alternatively - each task can have multiple tags. See [doc/tags.md](doc/tags.md)
-11. Set goal time for one or more tasks.
+10. Set goal time for one or more tasks.
 
 ### Chronometrist-report
 1. Show week counter and max weeks; don't scroll past first/last weeks
