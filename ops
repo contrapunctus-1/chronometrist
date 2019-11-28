@@ -1,1 +1,1 @@
-{"version":1,"ops":[{"author":{"id":"d011bd49f4c5dfed4edcaea2e192b7685c65666e"},"files":null,"message":"Show currently active project + time spent on it so far in the mode-line (see `timeclock-mode-line-display`)\n\nMaybe make modeline slowly change color the longer you do something.","target":"b860608191d49d35d2516f2acc5b33dc5ea0aa4f6976ebcf59d7b6048b13a677","timestamp":1574970940,"type":6}]}
+{"version":1,"ops":[{"added":["feature"],"author":{"id":"d011bd49f4c5dfed4edcaea2e192b7685c65666e"},"removed":null,"timestamp":1574971319,"type":5}]}
