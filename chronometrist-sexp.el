@@ -309,7 +309,7 @@ The values are stored in `chronometrist-value-history'."
                                                    (append key1-ht val1)
                                                  val1)
                                                table)))))
-             table)
+             chronometrist-events)
     (chronometrist-ht-history-prep table)))
 
 ;; TODO - refactor this to use `chronometrist-append-to-last-expr'
