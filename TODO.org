@@ -5,14 +5,15 @@
   1. [X] +Release or+ bundle plist-pp.el
   2. [X] -report - error opening when clocked in
 * Chronometrist
-** Bugs [42%]
+** Bugs [57%]
    1. [X] fix -current-task to return correct results if the last one crosses a midnight
    2. [ ] Clocking-in/out doesn't result in updated display, sometimes (2019-09-12)
    3. [ ] Sorting by clicking the columns makes non-tabular data disappear
       * Advise ~tabulated-list-col-sort~ to run either ~chronometrist-refresh~ or the relevant ~-print-non-tabular~ afterwards
    4. [X] kv-accept with no key values should not modify file
    5. [ ] kv-add and tags-add should not remove other keys from last sexp
-   6. [ ] kv-accept with no key values -> Chronometrist buffer not updated
+   6. [X] kv-accept with no key values -> Chronometrist buffer not updated
+      * timer will only refresh when clocked in...
    7. [X] regression - no value history
 ** Features
    1. Create chronometrist-unused-projects-list + chronometrist-projects-list.
