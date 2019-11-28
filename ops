@@ -1,0 +1,1 @@
+{"version":1,"ops":[{"author":{"id":"d011bd49f4c5dfed4edcaea2e192b7685c65666e"},"files":null,"message":"Show currently active project + time spent on it so far in the mode-line (see `timeclock-mode-line-display`)","timestamp":1574970703,"title":"Modeline support","type":1}]}
