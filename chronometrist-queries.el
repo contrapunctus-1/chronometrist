@@ -8,7 +8,7 @@
 ;;; Code:
 
 (defun chronometrist-task-time-one-day (task &optional date-string)
-  "Return total time spent on TASK today or (if supplied) on DATE.
+  "Return total time spent on TASK today or (if supplied) on DATE-STRING.
 
 The data is obtained from `chronometrist-file', via `chronometrist-events'.
 
@@ -24,7 +24,7 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
     (if task-events
         (->> (if (plist-member last-event :stop)
                  task-events
-               ;; when task is active
+               ;; last-event is a currently ongoing task
                (-> (plist-put last-event :stop (chronometrist-format-time-iso8601))
                    (list)
                    (append reversed-events-tail)
@@ -33,6 +33,7 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
              (chronometrist-time-list->sum-of-intervals)
              (cadr)
              (chronometrist-seconds-to-hms))
+      ;; no events for this task on DATE-STRING i.e. no time spent
       [0 0 0])))
 
 (defun chronometrist-active-time-one-day (&optional date-string)
