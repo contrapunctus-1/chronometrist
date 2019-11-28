@@ -344,7 +344,7 @@ The values are stored in `chronometrist-value-history'."
                        backend-buffer))
           (save-buffer))
       (switch-to-buffer chronometrist-buffer-name)
-      (chronometrist-refresh))))))
+      (chronometrist-refresh))))
 
 (defun chronometrist-kv-reject ()
   "Reject the property list in `chronometrist-kv-buffer-name'."
