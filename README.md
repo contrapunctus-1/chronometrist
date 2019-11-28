@@ -121,12 +121,8 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
 * Show details for time spent on a project when clicking on a non-zero "time spent" field (in both Chronometrist and Chronometrist-Report buffers).
 
 ### chronometrist
-1. **Custom day start/end time** - option to use a specific time to define when a day starts/ends. e.g. 08:00 will mean a day starts and ends at 08:00 instead of the usual 24:00/00:00. Helpful for late sleepers.
-2. Suggest reasons by frequency? So your most-used reason for the task is the default suggestion. If you usually _don't_ provide a reason for the task, the default is nil.
-3. **Better shortcuts** - shortcuts derived from the first alphabet of each project might be nicer.
-4. **Modeline support** - show currently active project + time spent on it so far in the mode-line (see timeclock-mode-line-display)
-   - Maybe make modeline slowly change color the longer you do something?
-5. **Reminder notifications** - a common issue with time trackers is that people forget to clock in/out. A potential solution can be to have Emacs remind people (ideally via desktop notifications?) -
+1. **Better shortcuts** - shortcuts derived from the first alphabet of each project might be nicer.
+2. **Reminder notifications** - a common issue with time trackers is that people forget to clock in/out. A potential solution can be to have Emacs remind people (ideally via desktop notifications?) -
    * when they haven't clocked in, every X minutes (e.g. 30)
    * that they are clocked in, every X minutes (e.g. 30)
    * of course, modeline support might help too.
@@ -147,12 +143,9 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
        - :pattern - glob pattern to match paths
        - :mode - regular expression to match buffer modes
        - :computerp or :emacsp - t if this project (activity) is something you do on a computer/in Emacs (or perhaps, more specifically, the same computer/Emacs instance as the one you run Chronometrist on.). Somewhat implied by the previous arguments. If this is t, Chronometrist will note if the computer has received no events for some time, and clock out of the project. If it's an integer, clock out after that many seconds of computer inactivity.
-6. Use `make-thread` in v26 or the emacs-async library for `chronometrist-entries`/`chronometrist-report-entries`
-7. Some way to update buffers every second without making Emacs unusable. (impossible?)
-8. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
-9. Tree of tasks (i.e. sub-tasks etc) - choosing a child task implies the parent tasks too.
-    - Alternatively - each task can have multiple tags. See [doc/tags.md](doc/tags.md)
-10. Set goal time for one or more tasks.
+3. Use `make-thread` in v26 or the emacs-async library for `chronometrist-entries`/`chronometrist-report-entries`
+4. Some way to update buffers every second without making Emacs unusable. (impossible?)
+5. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
 
 ### Chronometrist-report
 1. Show week counter and max weeks; don't scroll past first/last weeks
@@ -168,11 +161,10 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
 
 ### Miscellaneous
 1. README - add images
-2. [-] Document API somewhere (list of functions, their argument lists, and outputs)
-3. [-] Create test timelog file and UI behaviour tests
-4. Use for chronometrist-report-weekday-number-alist whatever variables like initial-frame-alist use to get that fancy Custom UI for alists.
-5. Multi-timelog-file support?
-6. [inflatable raptor](https://github.com/MichaelMure/git-bug/#planned-features)
+2. [-] Create test timelog file and UI behaviour tests
+3. Use for `chronometrist-report-weekday-number-alist` whatever variables like `initial-frame-alist` use to get that fancy Custom UI for alists.
+4. Multi-timelog-file support?
+5. [inflatable raptor](https://github.com/MichaelMure/git-bug/#planned-features)
 
 ## Contributions and contact
 Feedback and MRs very welcome. 🙂 [doc/hacking.md](doc/hacking.md) contains an introduction to the codebase.

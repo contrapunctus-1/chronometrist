@@ -101,7 +101,7 @@
 ** Code [0%]
    1. use variables instead of hardcoded numbers to determine spacing
    2. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
-   3. Use buttercup instead of ert
+   3. [-] Use buttercup instead of ert
    4. See if it is possible to store buttons in a variable, so *-print-non-tabular functions can be made shorter and less imperative. (see ~make-text-button~)
    5. Merge all event-querying functions so that they always operate on an entire hash table (so no 'day' variants),
    6. [ ] Use ~substitute-command-keys~ instead of ~chronometrist-format-keybinds~
