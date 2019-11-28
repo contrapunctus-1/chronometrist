@@ -1,0 +1,1 @@
+{"version":1,"ops":[{"author":{"id":"d011bd49f4c5dfed4edcaea2e192b7685c65666e"},"files":null,"message":"Option to use a specific time to define when a day starts/ends. e.g. 08:00 will mean a day starts and ends at 08:00 instead of the usual 24:00/00:00. Helpful for late sleepers.","timestamp":1574970277,"title":"Custom day start/end time","type":1}]}
