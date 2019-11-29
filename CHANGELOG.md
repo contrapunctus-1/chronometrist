@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 * `chronometrist-kv-accept` will not modify the file if there are no key-values.
 * Regression in `chronometrist-value-history-populate`
+* Migrate `chronometrist-statistics` to new format
 
 ## [0.3.2] - 2019-11-23
 ### Fixed

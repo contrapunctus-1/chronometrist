@@ -83,7 +83,7 @@ displayed. They must be dates in the form (YEAR MONTH DAY).")
 
 (defvar chronometrist-statistics--point nil)
 
-(defvar chronometrist-statistics-mode-map nil)
+(defvar chronometrist-statistics-mode-map)
 
 ;; ## FUNCTIONS ##
 

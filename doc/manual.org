@@ -152,8 +152,8 @@
 *** chronometrist-queries.el
     1. Function - chronometrist-task-time-one-day (task &optional date-string)
     2. Function - chronometrist-active-time-one-day (&optional date-string)
-    3. Function - chronometrist-statistics-count-active-days (project &optional table)
-    4. Function - chronometrist-task-events-in-day (task date)
+    3. Function - chronometrist-statistics-count-active-days (task &optional table)
+    4. Function - chronometrist-task-events-in-day (task date-string)
 *** chronometrist-report-custom.el
     1. Custom variable - chronometrist-report-buffer-name
     2. Custom variable - chronometrist-report-week-start-day

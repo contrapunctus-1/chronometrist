@@ -9,7 +9,6 @@
 
 (defun chronometrist-task-time-one-day (task &optional date-string)
   "Return total time spent on TASK today or (if supplied) on DATE-STRING.
-
 The data is obtained from `chronometrist-file', via `chronometrist-events'.
 
 DATE-STRING must be in the form \"YYYY-MM-DD\".
@@ -38,16 +37,15 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
 
 (defun chronometrist-active-time-one-day (&optional date-string)
   "Return the total active time on DATE (if non-nil) or today.
+DATE-STRING must be in the form \"YYYY-MM-DD\".
 
-Return value is a vector in the form [HOURS MINUTES SECONDS].
-
-DATE-STRING must be in the form \"YYYY-MM-DD\"."
+Return value is a vector in the form [HOURS MINUTES SECONDS]."
   (->> chronometrist-task-list
        (--map (chronometrist-task-time-one-day it date-string))
        (-reduce #'chronometrist-time-add)))
 
-(defun chronometrist-statistics-count-active-days (project &optional table)
-  "Return the number of days the user spent any time on PROJECT.
+(defun chronometrist-statistics-count-active-days (task &optional table)
+  "Return the number of days the user spent any time on TASK.
 TABLE must be a hash table - if not supplied, `chronometrist-events' is used.
 
 This will not return correct results if TABLE contains records
@@ -56,15 +54,15 @@ which span midnights. (see `chronometrist-events-clean')"
         (table (if table table chronometrist-events)))
     (maphash (lambda (_date events)
                (when (seq-find (lambda (event)
-                                 (and (equal (elt event 0) "i")
-                                      (equal (elt event 7) project)))
+                                 (equal (plist-get event :name) task))
                                events)
-                 (setq count (1+ count))))
+                 (cl-incf count)))
              table)
     count))
 
-(defun chronometrist-task-events-in-day (task date)
-  "Get events for TASK on DATE. DATE must be in the form \"YYYY-MM-DD\".
+(defun chronometrist-task-events-in-day (task date-string)
+  "Get events for TASK on DATE-STRING.
+DATE-STRING must be in the form \"YYYY-MM-DD\".
 
 Returns a list of events, where each event is a property list in
 the form (:name \"NAME\" :start START :stop STOP ...), where
@@ -72,7 +70,7 @@ START and STOP are ISO-8601 time strings.
 
 This will not return correct results if TABLE contains records
 which span midnights. (see `chronometrist-events-clean')"
-  (->> (gethash date chronometrist-events)
+  (->> (gethash date-string chronometrist-events)
        (mapcar (lambda (event)
                  (when (equal task (plist-get event :name))
                    event)))
