@@ -34,41 +34,36 @@
    4. [ ] key-values and tags should work regardless of what hook they're called from, to give users the option to modify behaviour (does clock in start after you've finished adding details, or before?)
    5. [ ] Expandable items - show intervals for task today
       * [ ] Switch between intervals and tag-combination breakdown
-*** Key-values [53%]
+   6. Revisit 'no reason' commands - maybe we should ask for tags and key-values with the regular commands, and skip them with the 'no reason' variants?
+*** Key-values [66%]
     1. [X] bug - value-history appears in chronological rather than reverse chronological order
     2. [X] generate history hash table from chronometrist-file.
        * [X] generate value history hash table from chronometrist-file
        * [X] change "press X to quit" in prompt to suggest keys for ido, helm, and ivy
-    3. [ ] create custom variable to allow a *quick exit from key-value entry* - if the user provides blank input on the first key and there are no existing key-values, quit the prompt loop and run -kv-reject automatically.
-       * [ ] and if the user enters valid key-values and quits the key prompt with a blank input, auto-accept
-       * [ ] enh - this will allow using initial-input in value prompts
-    4. [ ] create text button to add key-values to last entry (whether clocked in or out)
-    5. [X] insert value as string if it contains spaces and isn't a list
+    3. [ ] create text button to add key-values to last entry (whether clocked in or out)
+    4. [X] insert value as string if it contains spaces and isn't a list
        * Sometimes you want single-word values to be converted to a string, too. Maybe check for capital letters too?
        * Preserve type in history?
          * Might create inconsistency in prompts? We don't want to expect Lisp knowledge from users.
        * Ask user to define types for keys, and handle the syntax for them behind the scenes?
-    6. [ ] when reading values, add quit keybinding (consistent with output of ~chronometrist-kv-completion-quit-key~) by passing MAP to ~read-from-minibuffer~
-    7. [X] bug - missing values in history
-    8. [X] enh - remove key-values from suggestions which have already been added
-    9. [ ] enh - create custom variable to auto-insert key-values used in previous task of same :name in the key-value buffer.
-    10. [X] bug - incorrect indenting in -kv-buffer
-    11. [X] bug - I think -append-to-last-expr is eating key-values
+    5. [ ] when reading values, add quit keybinding (consistent with output of ~chronometrist-kv-completion-quit-key~) by passing MAP to ~read-from-minibuffer~
+    6. [X] bug - missing values in history
+    7. [X] enh - remove key-values from suggestions which have already been added
+    8. [ ] enh - create custom variable to auto-insert key-values used in previous task of same :name in the key-value buffer.
+    9. [X] bug - incorrect indenting in -kv-buffer
+    10. [X] bug - I think -append-to-last-expr is eating key-values
         * to reproduce - clock-in, add tags, add key-values, clock-out, keep tags - kv-add buffer has (), whereas it should have the earlier key-values.
-    12. bug - key-values from clock-in expression not displayed, shows () instead
+    11. bug - key-values from clock-in expression not displayed, shows () instead
         * cause - if -kv-add is run after chronometrist-out, ~chronometrist-current-task~ will return nil
-    13. [ ] observe interaction of -kv-add with next function in hook which modifies window configuration
+    12. [ ] observe interaction of -kv-add with next function in hook which modifies window configuration
         * code which deletes the window, or switches to a new buffer, interferes with the key-value addition flow
         * [ ] add a kv-finished-hook? (run after kv-accept/reject)
-    14. how do we handle a blank string as a plist value?
+    13. how do we handle a blank string as a plist value?
         * some way to require the user to enter a non-empty value (e.g. like the 'require-match' argument to completing-read, except read-from-minibuffer doesn't have that...)
         * discard last-entered key?
-    15. [ ] bug - it is possible to add a key twice (should replace the existing key instead)
-    16. [ ] bug - if you use the same key for >1 task, values from other tasks may be suggested
-        * This is because we're only using values as the key in the `chronometrist-value-history` hash table.
-    17. +optimize - going through key (?) and value histories (M-p/M-n) takes a while. Is this because we're using lists?+
+    14. +optimize - going through key (?) and value histories (M-p/M-n) takes a while. Is this because we're using lists?+
         * It doesn't, it's the delay from the hash table update from the fs watch
-    18. [X] bug - tag history starts at the beginning (wtf?), value history is empty (wtf?)
+    15. [X] bug - tag history starts at the beginning (wtf?), value history is empty (wtf?)
         * Does not occur on master, only on dev
         * Does not occur if you disable lexical binding (introduced in 4e89836)
 *** Tags [100%]
@@ -86,9 +81,6 @@
    6. Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked /before/ clocking out, which adds time to the project.
    7. Allow calling chronometrist-in/out from anywhere-within-Emacs (a la timeclock) as well as from the chronometrist buffer.
 *** Optimization
-    * ~chronometrist~ takes close to a second to start (as of 2019-09-14; chronometrist.sexp is 11,329 lines with 2318 expressions). Can we speed that up?
-      * File size should affect only the first start, but in our case even later starts are slow.
-        * Unless we are re-reading the whole file on each start?
 **** Ideas to make -refresh-file faster
      1. Support multiple files, so we read and process lesser data when one of them changes.
      2. Make file writing async
@@ -98,24 +90,34 @@
         * jonasw - store length and hash of previous file, see if the new file has the same hash until old-length bytes.
           * Rather than storing and hashing the full length, we could do it until (before) the last s-expression (or last N s-expressions?). That way, we know if the last expression (or last N expressions) have changed.
             * Or even the first expression of the current date. That way, we just re-read the events for today. Because chronometrist-events uses dates as keys, it's easy to work on the basis of dates.
-** Code [0%]
-   1. use variables instead of hardcoded numbers to determine spacing
-   2. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
-   3. [-] Use buttercup instead of ert
-   4. See if it is possible to store buttons in a variable, so *-print-non-tabular functions can be made shorter and less imperative. (see ~make-text-button~)
-   5. Merge all event-querying functions so that they always operate on an entire hash table (so no 'day' variants),
-   6. [ ] Use ~substitute-command-keys~ instead of ~chronometrist-format-keybinds~
-   7. [ ] See if using iteration constructs (especially ~loop~) can lead to nicer code than nested maps
-   8. [ ] recreate -events-clean, remove splitting code from -events-populate
+
+** Code [25%]
+   1. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
+   2. [X] Use buttercup instead of ert
+   3. See if it is possible to store buttons in a variable, so *-print-non-tabular functions can be made shorter and less imperative. (see ~make-text-button~)
+   4. Merge all event-querying functions so that they always operate on an entire hash table (so no 'day' variants),
+   5. [ ] Use ~substitute-command-keys~ instead of ~chronometrist-format-keybinds~
+   6. [ ] See if using iteration constructs (especially ~loop~) can lead to nicer code than nested maps
+   7. [ ] recreate -events-clean, remove splitting code from -events-populate
       * How should we deal with the active event?
         * Earlier, we would add a closing entry and update that on a timer.
+   8. [ ] Make docstrings consistent - describe inputs and then the return value, in that order.
+   +1. use variables instead of hardcoded numbers to determine spacing+
+      * Don't see the benefit
    +6. Timeclock already _has_ hooks! :| Why do we re-implement them?+
       - I don't know of a way to know the project being clocked into using timeclock hooks.
       - With v0.2.0 Chronometrist also has a before-project-stop-functions, which runs before the project is stopped, and can control whether the project actually is stopped.
+
 * chronometrist-report
 ** Features
    1. [ ] Expandable items - show tag-combination-based breakdown
 ** Migration [100%]
    1. [X] next/previous weeks
+
+* chronometrist-statistics
+** Migration [0%]
+   1. Active days
+   2. % of days active
+
 * Documentation [0%]
   1. [ ] Make Texinfo documentation
