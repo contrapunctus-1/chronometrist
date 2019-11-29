@@ -96,7 +96,7 @@ file names respectively."
   "Offer to import data from `timeclock-file' if `chronometrist-file' does not exist."
   (when (and (bound-and-true-p timeclock-file)
              (not (file-exists-p chronometrist-file)))
-    (if (yes-or-no-p (format (concat "Chronometrist v0.3 uses a new file format;"
+    (if (yes-or-no-p (format (concat "Chronometrist v0.3+ uses a new file format;"
                                      " import data from %s ? ")
                              timeclock-file))
         (chronometrist-migrate-timelog-file->sexp-file timeclock-file chronometrist-file)
