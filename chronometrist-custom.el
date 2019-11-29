@@ -53,17 +53,10 @@ This is not guaranteed to be accurate - see (info \"(elisp)Timers\")."
 (declare-function chronometrist-last-expr "chronometrist-sexp")
 (eval-when-compile (require 'subr-x))
 
-(defcustom chronometrist-activity-indicator
-  (lambda ()
-    (thread-first (chronometrist-last-expr)
-      (plist-put :stop (chronometrist-format-time-iso8601))
-      chronometrist-interval
-      cadr
-      chronometrist-seconds-to-hms
-      (chronometrist-format-time "")))
+(defcustom chronometrist-activity-indicator "*"
   "How to indicate that a task is active.
 Can be a string to be displayed, or a function which returns this string.
-Default is to show the current interval."
+The default is \"*\""
   :type '(choice string function))
 
 (defcustom chronometrist-day-start-time "00:00:00"
