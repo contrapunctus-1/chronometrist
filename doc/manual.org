@@ -112,20 +112,21 @@
     11. Function - chronometrist-goto-nth-task (n)
     12. Function - chronometrist-refresh (&optional ignore-auto noconfirm)
     13. Function - chronometrist-refresh-file (fs-event)
-    14. Variable - chronometrist-before-in-functions
-    15. Variable - chronometrist-after-in-functions
-    16. Variable - chronometrist-before-out-functions
-    17. Variable - chronometrist-after-out-functions
-    18. Function - chronometrist-run-functions-and-clock-in (task)
-    19. Function - chronometrist-run-functions-and-clock-out (task)
-    20. Variable - chronometrist-mode-map
-    21. Major Mode - chronometrist-mode
-    22. Function - chronometrist-toggle-task-button (button)
-    23. Function - chronometrist-add-new-task-button (button)
-    24. Command - chronometrist-toggle-task (&optional prefix)
-    25. Command - chronometrist-toggle-task-no-reason (&optional prefix)
-    26. Command - chronometrist-add-new-task ()
-    27. Command - chronometrist (&optional arg)
+    14. Command - chronometrist-query-stop ()
+    15. Variable - chronometrist-before-in-functions
+    16. Variable - chronometrist-after-in-functions
+    17. Variable - chronometrist-before-out-functions
+    18. Variable - chronometrist-after-out-functions
+    19. Function - chronometrist-run-functions-and-clock-in (task)
+    20. Function - chronometrist-run-functions-and-clock-out (task)
+    21. Variable - chronometrist-mode-map
+    22. Major Mode - chronometrist-mode
+    23. Function - chronometrist-toggle-task-button (button)
+    24. Function - chronometrist-add-new-task-button (button)
+    25. Command - chronometrist-toggle-task (&optional prefix)
+    26. Command - chronometrist-toggle-task-no-reason (&optional prefix)
+    27. Command - chronometrist-add-new-task ()
+    28. Command - chronometrist (&optional arg)
 *** chronometrist-events.el
     1. Variable - chronometrist-events
     2. Function - chronometrist-list-midnight-spanning-events ()

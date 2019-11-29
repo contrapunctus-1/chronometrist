@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 * Custom variable `chronometrist-activity-indicator` to change how an active task is indicated.
+* `chronometrist-query-stop` for prompting on exiting Emacs
 ### Fixed
 * `chronometrist-kv-accept` will not modify the file if there are no key-values.
 * Regression in `chronometrist-value-history-populate`

@@ -203,6 +203,15 @@ Argument _FS-EVENT is ignored."
   (chronometrist-value-history-populate)
   (chronometrist-refresh))
 
+(defun chronometrist-query-stop ()
+  "Ask the user if they would like to clock out."
+  (interactive)
+  (let ((task (chronometrist-current-task)))
+    (and task
+         (yes-or-no-p (concat "Stop tracking time for " task "? "))
+         (chronometrist-out))
+    t))
+
 ;; ## HOOKS ##
 
 (defvar chronometrist-before-in-functions nil

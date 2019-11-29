@@ -117,6 +117,11 @@ Tags can be added using the `chronometrist-tags-add` function. It can currently 
 #### Key-value pairs
 Key-value pairs can be added using the `chronometrist-kv-add` function. It can currently be added to any hooks except `chronometrist-before-in-functions`. Keys can be any string except "name", "tags", "start", or "end". Values can be any readable Lisp values.
 
+### Prompt when exiting Emacs
+If you wish to be prompted when you exit Emacs while tracking time, you can use this -
+
+`(add-hook 'kill-emacs-query-functions 'chronometrist-query-stop)`
+
 ## Roadmap/Ideas
 * Show details for time spent on a project when clicking on a non-zero "time spent" field (in both Chronometrist and Chronometrist-Report buffers).
 
