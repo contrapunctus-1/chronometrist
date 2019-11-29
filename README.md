@@ -109,13 +109,13 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
 ```
 
 ### Adding more information
-    Since v0.3, Chronometrist supports adding additional information to tracked time, in the form of tags and user-defined key-value pairs.
+Since v0.3, Chronometrist supports adding additional information to tracked time, in the form of tags and user-defined key-value pairs.
 
 #### Tags
-     Tags can be added using the `chronometrist-tags-add` function. It can currently be added to any hooks except `chronometrist-before-in-functions`.
+Tags can be added using the `chronometrist-tags-add` function. It can currently be added to any hooks except `chronometrist-before-in-functions`.
 
 #### Key-value pairs
-     Key-value pairs can be added using the `chronometrist-kv-add` function. It can currently be added to any hooks except `chronometrist-before-in-functions`. Keys can be any string except "name", "tags", "start", or "end". Values can be any readable Lisp values.
+Key-value pairs can be added using the `chronometrist-kv-add` function. It can currently be added to any hooks except `chronometrist-before-in-functions`. Keys can be any string except "name", "tags", "start", or "end". Values can be any readable Lisp values.
 
 ## Roadmap/Ideas
 * Show details for time spent on a project when clicking on a non-zero "time spent" field (in both Chronometrist and Chronometrist-Report buffers).
