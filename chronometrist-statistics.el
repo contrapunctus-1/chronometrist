@@ -87,8 +87,8 @@ displayed. They must be dates in the form (YEAR MONTH DAY).")
 
 ;; ## FUNCTIONS ##
 
-(defun chronometrist-statistics-count-average-time-spent (project &optional table)
-  "Return the average time the user has spent on PROJECT from TABLE.
+(defun chronometrist-statistics-count-average-time-spent (task &optional table)
+  "Return the average time the user has spent on TASK from TABLE.
 
 TABLE must be a hash table - if not supplied,
 `chronometrist-events' is used.
@@ -99,7 +99,7 @@ which span midnights. (see `chronometrist-events-clean')"
         (days  0)
         (per-day-time-list))
     (maphash (lambda (key _value)
-               (let ((events-in-day (chronometrist-task-events-in-day project key)))
+               (let ((events-in-day (chronometrist-task-events-in-day task key)))
                  (when events-in-day
                    (setq days (1+ days))
                    (->> events-in-day
@@ -123,8 +123,8 @@ It simply operates on the entire hash table TABLE (see
 `chronometrist-events' for table format), so ensure that TABLE is
 reduced to the desired range using
 `chronometrist-events-subset'."
-  (mapcar (lambda (project)
-            (let* ((active-days    (chronometrist-statistics-count-active-days project table))
+  (mapcar (lambda (task)
+            (let* ((active-days    (chronometrist-statistics-count-active-days task table))
                    (active-percent (cl-case (plist-get chronometrist-statistics--ui-state :mode)
                                      ('week (* 100 (/ active-days 7.0)))))
                    (active-percent (if (zerop active-days)
@@ -134,15 +134,15 @@ reduced to the desired range using
                                            (if (zerop active-days)
                                                "-"
                                              active-days)))
-                   (average-time   (->> (chronometrist-statistics-count-average-time-spent project table)
+                   (average-time   (->> (chronometrist-statistics-count-average-time-spent task table)
                                         (chronometrist-seconds-to-hms)
                                         (chronometrist-format-time)
                                         (format "% 5s")))
-                   (content        (vector project
+                   (content        (vector task
                                            active-days
                                            active-percent
                                            average-time)))
-              (list project content)))
+              (list task content)))
           chronometrist-task-list))
 
 (defun chronometrist-statistics-entries ()
@@ -226,7 +226,7 @@ value of `revert-buffer-function'."
   "Major mode for `chronometrist-statistics'."
   (make-local-variable 'tabulated-list-format)
   (setq tabulated-list-format
-        [("Project"      25 t)
+        [("Task"      25 t)
          ("Active days"  12 t)
          ("%% of days active"   17 t)
          ("Average time" 12 t)
@@ -237,7 +237,7 @@ value of `revert-buffer-function'."
   (make-local-variable 'tabulated-list-entries)
   (setq tabulated-list-entries 'chronometrist-statistics-entries)
   (make-local-variable 'tabulated-list-sort-key)
-  (setq tabulated-list-sort-key '("Project" . nil))
+  (setq tabulated-list-sort-key '("Task" . nil))
   (tabulated-list-init-header)
   ;; (chronometrist-maybe-start-timer)
   (setq revert-buffer-function #'chronometrist-statistics-refresh)

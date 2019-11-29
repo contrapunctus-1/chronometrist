@@ -74,18 +74,18 @@ The first date is the first occurrence of
   "Create entries to be displayed in the `chronometrist-report' buffer."
   (let* ((week-dates        (chronometrist-report-date->week-dates))) ;; uses today if chronometrist-report--ui-date is nil
     (setq chronometrist-report--ui-week-dates week-dates)
-    (mapcar (lambda (project)
-              (let ((project-daily-time-list
-                     (--map (chronometrist-task-time-one-day project
+    (mapcar (lambda (task)
+              (let ((task-daily-time-list
+                     (--map (chronometrist-task-time-one-day task
                                                  (chronometrist-date it))
                             week-dates)))
-                (list project
+                (list task
                       (vconcat
-                       (vector project)
-                       (->> project-daily-time-list
+                       (vector task)
+                       (->> task-daily-time-list
                             (mapcar #'chronometrist-format-time)
                             (apply #'vector))
-                       (->> project-daily-time-list
+                       (->> task-daily-time-list
                             (-reduce #'chronometrist-time-add)
                             (chronometrist-format-time)
                             (vector))))))
@@ -182,11 +182,11 @@ Argument _FS-EVENT is ignored."
     (define-key map (kbd "l") #'chronometrist-open-file)
     (define-key map (kbd "b") #'chronometrist-report-previous-week)
     (define-key map (kbd "f") #'chronometrist-report-next-week)
-    ;; Works when number of projects < screen length; after that, you
+    ;; Works when number of tasks < screen length; after that, you
     ;; probably expect mousewheel to scroll up/down, and
     ;; alt-mousewheel or something for next/previous week. For now,
     ;; I'm assuming most people won't have all that many tasks - I've
-    ;; been using it for ~2 months and have 18 projects, which are
+    ;; been using it for ~2 months and have 18 tasks, which are
     ;; still just half the screen on my 15" laptop. Let's see what
     ;; people say.
     (define-key map [mouse-4] #'chronometrist-report-next-week)
@@ -197,7 +197,7 @@ Argument _FS-EVENT is ignored."
 (define-derived-mode chronometrist-report-mode tabulated-list-mode "Chronometrist-Report"
   "Major mode for `chronometrist-report'."
   (make-local-variable 'tabulated-list-format)
-  (setq tabulated-list-format [("Project"   25 t)
+  (setq tabulated-list-format [("Task"   25 t)
                                ("Sunday"    10 t)
                                ("Monday"    10 t)
                                ("Tuesday"   10 t)
@@ -209,7 +209,7 @@ Argument _FS-EVENT is ignored."
   (make-local-variable 'tabulated-list-entries)
   (setq tabulated-list-entries 'chronometrist-report-entries)
   (make-local-variable 'tabulated-list-sort-key)
-  (setq tabulated-list-sort-key '("Project" . nil))
+  (setq tabulated-list-sort-key '("Task" . nil))
   (tabulated-list-init-header)
   (chronometrist-maybe-start-timer)
   (setq revert-buffer-function #'chronometrist-report-refresh)

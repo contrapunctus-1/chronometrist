@@ -43,12 +43,12 @@ Each time interval is a string as returned by `chronometrist-seconds-to-hms'."
        (--map (time-subtract (cadr it) (car it)))
        (--map (chronometrist-seconds-to-hms (cadr it)))))
 
-;; "X minutes on PROJECT (REASON)"
+;; "X minutes on TASK (REASON)"
 
 ;; TODO - think of a better way to show details concisely, ideally
 ;; combining tags and key-values
 (defun chronometrist-diary-tasks-reasons-on (date)
-  "Return a list of projects and reasons on DATE."
+  "Return a list of tasks and reasons on DATE."
   (mapcar (lambda (plist)
             (let ((task    (plist-get plist :name))
                   (reason  (or (plist-get plist :comment) "")))
@@ -69,14 +69,14 @@ Optional argument DATE should be a list in the form
 The optional arguments _IGNORE-AUTO and _NOCONFIRM are ignored,
 and are present solely for the sake of using this function as a
 value of `revert-buffer-function'."
-  (let* ((date              (if date date (chronometrist-date)))
-         (intervals         (->> (chronometrist-intervals-on date)
-                                 (mapcar #'chronometrist-format-time)))
-         (projects-reasons  (chronometrist-diary-tasks-reasons-on date))
+  (let* ((date          (if date date (chronometrist-date)))
+         (intervals     (->> (chronometrist-intervals-on date)
+                             (mapcar #'chronometrist-format-time)))
+         (tasks-reasons (chronometrist-diary-tasks-reasons-on date))
          (inhibit-read-only t))
     (setq chronometrist-diary--current-date date)
     (chronometrist-common-clear-buffer chronometrist-diary-buffer-name)
-    (seq-mapn #'insert intervals projects-reasons)))
+    (seq-mapn #'insert intervals tasks-reasons)))
 
 (define-derived-mode chronometrist-diary-view-mode special-mode "Chronometrist-Diary"
   "A mode to view your activity today like a diary."

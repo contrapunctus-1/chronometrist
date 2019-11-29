@@ -19,7 +19,7 @@
   "Refresh Chronometrist and related buffers.
 
 Buffers will be refreshed only if they are visible and the user
-is clocked in to a project."
+is clocked in to a task."
   (when (chronometrist-current-task) ;; FIXME - This line is currently
     ;; resulting in no refresh at midnight. When `chronometrist-entries' is
     ;; optimized to consume less CPU and avoid unnecessary parsing,

@@ -3,7 +3,6 @@
 ;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
 
 ;;; Commentary:
-;; TODO - convert project names to tags
 
 ;;; Code:
 

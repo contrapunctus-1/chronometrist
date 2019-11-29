@@ -51,7 +51,7 @@
 ;; ## VARIABLES ##
 ;;; Code:
 
-(defvar chronometrist--project-history nil)
+(defvar chronometrist--task-history nil)
 (defvar chronometrist--point nil)
 (defvar chronometrist-mode-map)
 
@@ -80,7 +80,7 @@ See custom variable `chronometrist-activity-indicator'."
         (list it
               (vector (number-to-string (1+ it-index))
                       (list it
-                            'action 'chronometrist-toggle-project-button
+                            'action 'chronometrist-toggle-task-button
                             'follow-link t)
                       (-> (chronometrist-task-time-one-day it)
                           (chronometrist-format-time))
@@ -88,8 +88,8 @@ See custom variable `chronometrist-activity-indicator'."
                           (chronometrist-activity-indicator)
                         ""))))))
 
-(defun chronometrist-project-at-point ()
-  "Return the project at point in the `chronometrist' buffer, or nil if there is no project at point."
+(defun chronometrist-task-at-point ()
+  "Return the task at point in the `chronometrist' buffer, or nil if there is no task at point."
   (save-excursion
     (beginning-of-line)
     (if (re-search-forward "[0-9]+ +" nil t)
@@ -101,8 +101,8 @@ See custom variable `chronometrist-activity-indicator'."
              (replace-regexp-in-string "[ \t]*$" "" it))
       nil)))
 
-(defun chronometrist-goto-last-project ()
-  "In the `chronometrist' buffer, move point to the line containing the last active project."
+(defun chronometrist-goto-last-task ()
+  "In the `chronometrist' buffer, move point to the line containing the last active task."
   (goto-char (point-min))
   ;; FIXME
   ;; (re-search-forward timeclock-last-project nil t)
@@ -125,9 +125,9 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
   (with-current-buffer chronometrist-buffer-name
     (let ((inhibit-read-only t)
           (w "\n    ")
-          ;; (keybind-start-new (chronometrist-format-keybinds 'chronometrist-add-new-project
+          ;; (keybind-start-new (chronometrist-format-keybinds 'chronometrist-add-new-task
           ;;                                      chronometrist-mode-map))
-          (keybind-toggle    (chronometrist-format-keybinds 'chronometrist-toggle-project
+          (keybind-toggle    (chronometrist-format-keybinds 'chronometrist-toggle-task
                                                chronometrist-mode-map
                                                t)))
       (goto-char (point-max))
@@ -141,21 +141,21 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
       (insert w (format "% 17s" "Keys")
               w (format "% 17s" "----"))
 
-      (chronometrist-print-keybind 'chronometrist-add-new-project)
-      (insert-text-button "start a new project"
-                          'action #'chronometrist-add-new-project-button
+      (chronometrist-print-keybind 'chronometrist-add-new-task)
+      (insert-text-button "start a new task"
+                          'action #'chronometrist-add-new-task-button
                           'follow-link t)
 
-      (chronometrist-print-keybind 'chronometrist-toggle-project
-                      "toggle project at point")
+      (chronometrist-print-keybind 'chronometrist-toggle-task
+                      "toggle task at point")
 
-      (chronometrist-print-keybind 'chronometrist-toggle-project-no-reason
+      (chronometrist-print-keybind 'chronometrist-toggle-task-no-reason
                       "toggle without asking for reason")
 
       (insert "\n " (format "%s %s - %s"
                             "<numeric argument N>"
                             keybind-toggle
-                            "toggle <N>th project"))
+                            "toggle <N>th task"))
 
       (chronometrist-print-keybind 'chronometrist-report)
       (insert-text-button "see weekly report"
@@ -168,14 +168,14 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
                           'follow-link t)
       (insert "\n"))))
 
-(defun chronometrist-goto-nth-project (n)
-  "Move point to the line containing the Nth project.
-Return the project at point, or nil if there is no corresponding
-project. N must be a positive integer."
+(defun chronometrist-goto-nth-task (n)
+  "Move point to the line containing the Nth task.
+Return the task at point, or nil if there is no corresponding
+task. N must be a positive integer."
   (goto-char (point-min))
   (when (re-search-forward (format "^%d" n) nil t)
     (beginning-of-line)
-    (chronometrist-project-at-point)))
+    (chronometrist-task-at-point)))
 
 (defun chronometrist-refresh (&optional _ignore-auto _noconfirm)
   "Refresh the `chronometrist' buffer, without re-reading `chronometrist-file'.
@@ -206,39 +206,39 @@ Argument _FS-EVENT is ignored."
 ;; ## HOOKS ##
 
 (defvar chronometrist-before-in-functions nil
-  "Functions to run before a project is clocked in.
+  "Functions to run before a task is clocked in.
 Each function in this hook must accept a single argument, which
-is the name of the project to be clocked-in.
+is the name of the task to be clocked-in.
 
-The commands `chronometrist-toggle-project-button',
-`chronometrist-add-new-project-button',
-`chronometrist-toggle-project',
-`chronometrist-add-new-project', and
-`chronometrist-toggle-project-no-reason' will run this hook.")
+The commands `chronometrist-toggle-task-button',
+`chronometrist-add-new-task-button',
+`chronometrist-toggle-task',
+`chronometrist-add-new-task', and
+`chronometrist-toggle-task-no-reason' will run this hook.")
 
 (defvar chronometrist-after-in-functions nil
-  "Functions to run after a project is clocked in.
+  "Functions to run after a task is clocked in.
 Each function in this hook must accept a single argument, which
-is the name of the project to be clocked-in.
+is the name of the task to be clocked-in.
 
-The commands `chronometrist-toggle-project-button',
-`chronometrist-add-new-project-button',
-`chronometrist-toggle-project',
-`chronometrist-add-new-project', and
-`chronometrist-toggle-project-no-reason' will run this hook.")
+The commands `chronometrist-toggle-task-button',
+`chronometrist-add-new-task-button',
+`chronometrist-toggle-task',
+`chronometrist-add-new-task', and
+`chronometrist-toggle-task-no-reason' will run this hook.")
 
 (defvar chronometrist-before-out-functions nil
-  "Functions to run before a project is clocked out.
+  "Functions to run before a task is clocked out.
 Each function in this hook must accept a single argument, which
-is the name of the project to be clocked out of.
+is the name of the task to be clocked out of.
 
-The project will be stopped only if all functions in this list
+The task will be stopped only if all functions in this list
 return a non-nil value.")
 
 (defvar chronometrist-after-out-functions nil
-  "Functions to run after a project is clocked out.
+  "Functions to run after a task is clocked out.
 Each function in this hook must accept a single argument, which
-is the name of the project to be clocked out of.")
+is the name of the task to be clocked out of.")
 
 (defun chronometrist-run-functions-and-clock-in (task)
   "Run hooks and clock in to TASK."
@@ -255,13 +255,13 @@ is the name of the project to be clocked out of.")
 ;; ## MAJOR-MODE ##
 (defvar chronometrist-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "RET")   #'chronometrist-toggle-project)
-    (define-key map (kbd "M-RET") #'chronometrist-toggle-project-no-reason)
+    (define-key map (kbd "RET")   #'chronometrist-toggle-task)
+    (define-key map (kbd "M-RET") #'chronometrist-toggle-task-no-reason)
     (define-key map (kbd "l")     #'chronometrist-open-file)
     (define-key map (kbd "r")     #'chronometrist-report)
-    (define-key map [mouse-1]     #'chronometrist-toggle-project)
-    (define-key map [mouse-3]     #'chronometrist-toggle-project-no-reason)
-    (define-key map (kbd "a")     #'chronometrist-add-new-project)
+    (define-key map [mouse-1]     #'chronometrist-toggle-task)
+    (define-key map [mouse-3]     #'chronometrist-toggle-task-no-reason)
+    (define-key map (kbd "a")     #'chronometrist-add-new-task)
     map)
   "Keymap used by `chronometrist-mode'.")
 
@@ -269,36 +269,36 @@ is the name of the project to be clocked out of.")
   "Major mode for `chronometrist'."
   (make-local-variable 'tabulated-list-format)
   (setq tabulated-list-format [("#"       3  t)
-                               ("Project" 25 t)
+                               ("Task" 25 t)
                                ("Time"    10 t)
                                ("Active"  3  t)])
   (make-local-variable 'tabulated-list-entries)
   (setq tabulated-list-entries 'chronometrist-entries)
   (make-local-variable 'tabulated-list-sort-key)
-  (setq tabulated-list-sort-key '("Project" . nil))
+  (setq tabulated-list-sort-key '("Task" . nil))
   (tabulated-list-init-header)
   (setq revert-buffer-function #'chronometrist-refresh))
 
 ;; ## BUTTONS ##
 
-;; FIXME - there is duplication between this function and `chronometrist-toggle-project's logic
-(defun chronometrist-toggle-project-button (_button)
-  "Button action to toggle a project.
+;; FIXME - there is duplication between this function and `chronometrist-toggle-task's logic
+(defun chronometrist-toggle-task-button (_button)
+  "Button action to toggle a task.
 
 Argument _BUTTON is for the purpose of using this as a button
 action, and is ignored."
   (let ((current  (chronometrist-current-task))
-        (at-point (chronometrist-project-at-point)))
+        (at-point (chronometrist-task-at-point)))
     ;; clocked in + point on current    = clock out
-    ;; clocked in + point on some other project = clock out, clock in to project
+    ;; clocked in + point on some other task = clock out, clock in to task
     ;; clocked out = clock in
     (when current
       (chronometrist-run-functions-and-clock-out current))
     (unless (equal at-point current)
       (chronometrist-run-functions-and-clock-in at-point))))
 
-(defun chronometrist-add-new-project-button (_button)
-  "Button action to add a new project.
+(defun chronometrist-add-new-task-button (_button)
+  "Button action to add a new task.
 
 Argument _BUTTON is for the purpose of using this as a button
 action, and is ignored."
@@ -310,46 +310,46 @@ action, and is ignored."
 
 ;; ## COMMANDS ##
 
-;; TODO - if clocked in and point not on a project, just clock out
+;; TODO - if clocked in and point not on a task, just clock out
 ;; PROFILE
 ;; TODO - implement `chronometrist-ask-tags-p' and `chronometrist-ask-key-values-p' (don't prompt for them if nil)
-(defun chronometrist-toggle-project (&optional prefix)
-  "Start or stop the project at point.
+(defun chronometrist-toggle-task (&optional prefix)
+  "Start or stop the task at point.
 
-If there is no project at point, do nothing.
+If there is no task at point, do nothing.
 
-With numeric prefix argument PREFIX, toggle the Nth project in
-the buffer. If there is no corresponding project, do nothing."
+With numeric prefix argument PREFIX, toggle the Nth task in
+the buffer. If there is no corresponding task, do nothing."
   (interactive "P")
   (let* ((empty-file (chronometrist-common-file-empty-p chronometrist-file))
-         (nth        (when prefix (chronometrist-goto-nth-project prefix)))
-         (at-point   (chronometrist-project-at-point))
+         (nth        (when prefix (chronometrist-goto-nth-task prefix)))
+         (at-point   (chronometrist-task-at-point))
          (target     (or nth at-point))
          (current    (chronometrist-current-task)))
-    (cond (empty-file (chronometrist-add-new-project)) ;; do not run hooks - chronometrist-add-new-project will do it
+    (cond (empty-file (chronometrist-add-new-task)) ;; do not run hooks - chronometrist-add-new-task will do it
           ;; What should we do if the user provides an invalid argument? Currently - nothing.
           ((and prefix (not nth)))
-          (target ;; do nothing if there's no project at point
+          (target ;; do nothing if there's no task at point
            ;; clocked in + target is current = clock out
-           ;; clocked in + target is some other project = clock out, clock in to project
+           ;; clocked in + target is some other task = clock out, clock in to task
            ;; clocked out = clock in
            (when current
              (chronometrist-run-functions-and-clock-out current))
            (unless (equal target current)
              (chronometrist-run-functions-and-clock-in target))))))
 
-(defun chronometrist-toggle-project-no-reason (&optional prefix)
-  "Like `chronometrist-toggle-project', but don't ask for a reason.
+(defun chronometrist-toggle-task-no-reason (&optional prefix)
+  "Like `chronometrist-toggle-task', but don't ask for a reason.
 
-With numeric prefix argument PREFIX, toggle the Nth project. If there
-is no corresponding project, do nothing."
+With numeric prefix argument PREFIX, toggle the Nth task. If there
+is no corresponding task, do nothing."
   (interactive "P")
-  (chronometrist-toggle-project prefix))
+  (chronometrist-toggle-task prefix))
 
-(defun chronometrist-add-new-project ()
-  "Add a new project."
+(defun chronometrist-add-new-task ()
+  "Add a new task."
   (interactive)
-  (chronometrist-add-new-project-button nil))
+  (chronometrist-add-new-task-button nil))
 
 ;;;###autoload
 (defun chronometrist (&optional arg)
@@ -379,8 +379,8 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
                  (let ((inhibit-read-only t))
                    (chronometrist-common-clear-buffer buffer)
                    (insert "Welcome to Chronometrist! Hit RET to ")
-                   (insert-text-button "start a new project."
-                                       'action #'chronometrist-add-new-project-button
+                   (insert-text-button "start a new task."
+                                       'action #'chronometrist-add-new-task-button
                                        'follow-link t)
                    (chronometrist-mode)
                    (switch-to-buffer buffer)))
@@ -395,7 +395,7 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
                      (chronometrist-refresh-file nil))
                    (if chronometrist--point
                        (goto-char chronometrist--point)
-                     (chronometrist-goto-last-project))))
+                     (chronometrist-goto-last-task))))
           (unless chronometrist--fs-watch
             (setq chronometrist--fs-watch
                   (file-notify-add-watch chronometrist-file

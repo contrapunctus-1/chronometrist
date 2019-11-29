@@ -98,18 +98,18 @@
     6. Major Mode - chronometrist-diary-view-mode
     7. Command - chronometrist-diary-view (&optional date)
 *** chronometrist.el
-    1. Variable - chronometrist--project-history
+    1. Variable - chronometrist--task-history
     2. Variable - chronometrist--point
     3. Variable - chronometrist-mode-map
     4. Function - chronometrist-task-active? (task)
        * String -> Boolean
     5. Function - chronometrist-activity-indicator ()
     6. Function - chronometrist-entries ()
-    7. Function - chronometrist-project-at-point ()
-    8. Function - chronometrist-goto-last-project ()
+    7. Function - chronometrist-task-at-point ()
+    8. Function - chronometrist-goto-last-task ()
     9. Function - chronometrist-print-keybind (command &optional description firstonly)
     10. Function - chronometrist-print-non-tabular ()
-    11. Function - chronometrist-goto-nth-project (n)
+    11. Function - chronometrist-goto-nth-task (n)
     12. Function - chronometrist-refresh (&optional ignore-auto noconfirm)
     13. Function - chronometrist-refresh-file (fs-event)
     14. Variable - chronometrist-before-in-functions
@@ -120,11 +120,11 @@
     19. Function - chronometrist-run-functions-and-clock-out (task)
     20. Variable - chronometrist-mode-map
     21. Major Mode - chronometrist-mode
-    22. Function - chronometrist-toggle-project-button (button)
-    23. Function - chronometrist-add-new-project-button (button)
-    24. Command - chronometrist-toggle-project (&optional prefix)
-    25. Command - chronometrist-toggle-project-no-reason (&optional prefix)
-    26. Command - chronometrist-add-new-project ()
+    22. Function - chronometrist-toggle-task-button (button)
+    23. Function - chronometrist-add-new-task-button (button)
+    24. Command - chronometrist-toggle-task (&optional prefix)
+    25. Command - chronometrist-toggle-task-no-reason (&optional prefix)
+    26. Command - chronometrist-add-new-task ()
     27. Command - chronometrist (&optional arg)
 *** chronometrist-events.el
     1. Variable - chronometrist-events
@@ -214,7 +214,7 @@
     1. Variable - chronometrist-statistics--ui-state
     2. Variable - chronometrist-statistics--point
     3. Variable - chronometrist-statistics-mode-map
-    4. Function - chronometrist-statistics-count-average-time-spent (project &optional table)
+    4. Function - chronometrist-statistics-count-average-time-spent (task &optional table)
        * string &optional hash-table -> seconds
     5. Function - chronometrist-statistics-entries-internal (table)
     6. Function - chronometrist-statistics-entries ()
