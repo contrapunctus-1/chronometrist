@@ -66,6 +66,15 @@
     15. [X] bug - tag history starts at the beginning (wtf?), value history is empty (wtf?)
         * Does not occur on master, only on dev
         * Does not occur if you disable lexical binding (introduced in 4e89836)
+**** Values
+     What forms can they take?
+     1. Integers, floating point numbers - easy to identify via regexp
+     2. If it starts and ends with "(" and ")" or "[" and "]", it's a list or a vector
+     3. otherwise - string
+
+     Observations
+     * This means you can't enter symbols via prompt. Can be added if the demand is there...
+     * This also means you can't have multiple atom values for a keyword...but that's irrelevant, because plists can't have multiple values anyway. :)
 *** Tags [100%]
     1. [X] generate history from chronometrist-file
        * [X] narrow it down to the :name
