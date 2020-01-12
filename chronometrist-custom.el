@@ -11,7 +11,8 @@
   "A time tracker with a nice UI."
   :group 'applications)
 
-(defcustom chronometrist-file "~/.emacs.d/chronometrist.sexp"
+(defcustom chronometrist-file
+  (locate-user-emacs-file "chronometrist.sexp")
   "Default path and name of the Chronometrist database.
 
 It should be a text file containing plists in the form -

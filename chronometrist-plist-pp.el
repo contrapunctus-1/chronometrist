@@ -9,6 +9,8 @@
 
 ;;; Code:
 
+(require 'dash)
+
 (defvar chronometrist-plist-pp-keyword-re ":[a-zA-Z0-9\-\?\+]+")
 
 (defvar chronometrist-plist-pp-whitespace-re "[\t\s]+?")
@@ -60,7 +62,7 @@ This assumes there is a single plist in the current buffer."
        ((looking-at chronometrist-plist-pp-keyword-re)
         (insert " " (chronometrist-plist-pp-buffer-keyword-helper indent))
         (forward-sexp 1)
-        (when (not (looking-at-p ")"))
+        (unless (looking-at-p ")")
           (insert "\n")))
        ((and (looking-at ")") (bolp))
         (delete-char -1)

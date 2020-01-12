@@ -7,7 +7,13 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'dash)
+(require 'seq)
+(require 'chronometrist-common)
+(require 'chronometrist-time)
+(require 'chronometrist-plist-pp)
 
+(defvar chronometrist-file)
 (defvar chronometrist-migrate-table (make-hash-table))
 
 ;; TODO - support other timeclock codes (currently only "i" and "o"
@@ -70,13 +76,18 @@ IN-FILE and OUT-FILE, if provided, are used as input and output
 file names respectively."
   (interactive `(,(if (featurep 'timeclock)
                       (read-file-name (concat "timeclock file (default: "
-                                              timeclock-file "): ")
-                                      "~/.emacs.d/" timeclock-file t)
+                                              timeclock-file
+                                              "): ")
+                                      user-emacs-directory
+                                      timeclock-file t)
                     (read-file-name (concat "timeclock file: ")
-                                    "~/.emacs.d/" nil t))
-                 ,(read-file-name "Output file (default: ~/.emacs.d/chronometrist.sexp): "
-                                  "~/.emacs.d/"
-                                  "~/.emacs.d/chronometrist.sexp")))
+                                    user-emacs-directory
+                                    nil t))
+                 ,(read-file-name (concat "Output file (default: "
+                                          (locate-user-emacs-file "chronometrist.sexp")
+                                          "): ")
+                                  user-emacs-directory
+                                  (locate-user-emacs-file "chronometrist.sexp"))))
   (when (if (file-exists-p out-file)
             (yes-or-no-p (concat "Output file "
                                  out-file

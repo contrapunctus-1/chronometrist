@@ -7,6 +7,10 @@
 
 ;;; Code:
 
+(require 'dash)
+(require 'chronometrist-common)
+(require 'chronometrist-events)
+
 (defun chronometrist-task-time-one-day (task &optional date-string)
   "Return total time spent on TASK today or (if supplied) on DATE-STRING.
 The data is obtained from `chronometrist-file', via `chronometrist-events'.
