@@ -4,7 +4,7 @@
 ;; Maintainer: contrapunctus <xmpp:contrapunctus@jabber.fr>
 ;; Keywords: calendar
 ;; Homepage: https://framagit.org/contrapunctus/chronometrist
-;; Package-Requires: (dash cl-lib seq (emacs "25.1"))
+;; Package-Requires: ((emacs "25.1") (dash "2.16.0") (cl-lib "1.0") (seq "2.20"))
 ;; Version: 0.4.0
 
 (require 'filenotify)
