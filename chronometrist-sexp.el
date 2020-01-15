@@ -412,6 +412,20 @@ KEY should be a string for the just-entered key."
    nil nil nil
    'chronometrist--value-suggestions))
 
+(defun chronometrist-value-insert (value)
+  "Insert VALUE into the key-value entry buffer."
+  (insert " ")
+  (cond ((or
+          ;; list or vector
+          (and (string-match-p (rx (and bos (or "(" "\"" "["))) value)
+               (string-match-p (rx (and (or ")" "\"" "]") eos)) value))
+          ;; int or float
+          (string-match-p "^[0-9]*\\.?[0-9]*$" value))
+         (insert value))
+        (t
+         (insert "\"" value "\"")))
+  (insert "\n"))
+
 (defun chronometrist-kv-add (&rest _args)
   "Read key-values from user, adding them to a temporary buffer for review.
 
@@ -455,9 +469,7 @@ _ARGS are ignored. This function always returns t."
                   input value)
             (if (string-empty-p input)
                 (throw 'empty-input nil)
-              (if (chronometrist-string-has-whitespace-p value)
-                  (insert " \"" value "\"\n")
-                (insert " " value "\n"))))))
+              (chronometrist-value-insert value)))))
       (chronometrist-reindent-buffer)))
   t)
 

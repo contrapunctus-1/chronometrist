@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 ### Fixed
 * Refresh buffer when clocking in (instead of waiting for first timer refresh)
+* Insertion of values is now slightly smarter about detecting and handling Lisp data types.
 
 ## [0.4.2] - 2020-01-15
 ### Fixed

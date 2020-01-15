@@ -205,10 +205,11 @@
     25. Function - chronometrist-kv-completion-quit-key ()
     26. Function - chronometrist-string-has-whitespace-p (string)
     27. Function - chronometrist-key-prompt (used-keys)
-    27. Function - chronometrist-value-prompt (key)
-    28. Function - chronometrist-kv-add (&rest args)
-    29. Command - chronometrist-in (task &optional prefix)
-    30. Command - chronometrist-out (&optional prefix)
+    28. Function - chronometrist-value-prompt (key)
+    29. Function - chronometrist-value-insert (value)
+    30. Function - chronometrist-kv-add (&rest args)
+    31. Command - chronometrist-in (task &optional prefix)
+    32. Command - chronometrist-out (&optional prefix)
 *** chronometrist-statistics-custom.el
     1. Custom variable - chronometrist-statistics-buffer-name
 *** chronometrist-statistics.el
