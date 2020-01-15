@@ -19,20 +19,6 @@
 
 (declare-function chronometrist-refresh-file "chronometrist.el")
 
-;; for each activity -
-;; [x] days active - int (float percent)
-;;     - get days in range - count days on which worked on activity
-;; [x] average time - HH:MM:SS
-;;     - get days in range - get time spent per day for activity in range - get the length and the total -> (/ (+ durations) length)
-;; [ ] current streak - [int years, int months,] int days
-;;     - get days in range - calculate all streaks - see if last streak is on current day
-;; [ ] last streak    - [int years, int months,] int days
-;;     - get days in range - calculate all streaks - if current streak, return second-last streak, else return last streak
-;; [ ] longest streak - [int years, int months,] int days
-;;     - get days in range - calculate all streaks - find longest streak
-;; [ ] days since last active - int
-;; ...where "range" is a week, a month, a year, the entire range of records, or an arbitrary date range
-
 ;; details!
 ;; for each activity, spent most time on doing X (where X is a
 ;; comment, assuming you use comments to detail what you did)
