@@ -472,8 +472,8 @@ PREFIX is ignored."
   (let ((buffer (find-file-noselect chronometrist-file)))
     (with-current-buffer buffer
       (goto-char (point-max))
-      (when (not (bobp)) (insert "\n"))
-      (when (not (bolp)) (insert "\n"))
+      (unless (bobp) (insert "\n"))
+      (unless (bolp) (insert "\n"))
       (chronometrist-plist-pp `(:name  ,task
                   :start ,(format-time-string "%FT%T%z"))
                 buffer)

@@ -274,10 +274,10 @@ specified by `chronometrist-statistics--ui-state'."
       (cond ((get-buffer-window chronometrist-statistics-buffer-name)
              (kill-buffer buffer))
             (t ;; (delete-other-windows)
-             (when (not preserve-state)
+             (unless preserve-state
                (setq chronometrist-statistics--ui-state `(:mode  week
-                                                          :start ,week-start-iso
-                                                          :end   ,week-end-iso)))
+                                  :start ,week-start-iso
+                                  :end   ,week-end-iso)))
              (chronometrist-common-create-chronometrist-file)
              (chronometrist-statistics-mode)
              (switch-to-buffer buffer)
