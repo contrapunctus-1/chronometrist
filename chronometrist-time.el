@@ -5,6 +5,8 @@
 (require 'parse-time)
 (require 'dash)
 (require 's)
+(require 'chronometrist-events)
+(require 'chronometrist-report-custom)
 
 ;;; Commentary:
 ;; Pretty sure quite a few of these are redundant. Hopefully putting

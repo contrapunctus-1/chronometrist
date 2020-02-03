@@ -7,6 +7,8 @@
 
 ;;; Code:
 (require 'chronometrist-custom)
+(require 'chronometrist-statistics-custom)
+(require 'chronometrist-report-custom)
 (require 'chronometrist-common)
 
 (declare-function chronometrist-refresh "chronometrist.el")
