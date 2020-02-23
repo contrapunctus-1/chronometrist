@@ -2,6 +2,16 @@
 
 ;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
 
+;; This is free and unencumbered software released into the public domain.
+;;
+;; Anyone is free to copy, modify, publish, use, compile, sell, or
+;; distribute this software, either in source code form or as a compiled
+;; binary, for any purpose, commercial or non-commercial, and by any
+;; means.
+;;
+;; For more information, please refer to <https://unlicense.org>
+
+;;; Commentary:
 ;; TODO - add forward/backward, current date display (and don't scroll
 ;; past the actual data)
 
@@ -15,10 +25,6 @@
 ;; - period start/end ("HH:MM to HH:MM")
 ;; Add variable to store format functions as list (first one is
 ;; default), command to cycle between them
-
-
-;;; Commentary:
-;;
 
 ;;; Code:
 (require 'chronometrist-events)
