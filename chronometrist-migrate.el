@@ -21,6 +21,7 @@
 (require 'chronometrist-common)
 (require 'chronometrist-time)
 (require 'chronometrist-plist-pp)
+(require 'emacsql-sqlite)
 
 (defvar chronometrist-file)
 (defvar chronometrist-migrate-table (make-hash-table))
@@ -111,6 +112,39 @@ file names respectively."
                    (insert "\n\n"))
                  chronometrist-migrate-table)
         (save-buffer)))))
+
+(defvar chronometrist-migrate-db )
+
+(defun chronometrist-migrate-sexp-file->sql-db (&optional in-file out-file)
+  "Migrate your existing `chronometrist-file' to an SQL database.
+
+IN-FILE and OUT-FILE, if provided, are used as input and output
+file names respectively."
+  (interactive `(,(read-file-name (concat "s-expression file (default: "
+                                         chronometrist-file
+                                         "): ")
+                                 user-emacs-directory
+                                 chronometrist-file t)
+                 ,(read-file-name (concat "Output file (default: "
+                                          (locate-user-emacs-file "chronometrist.sqlite")
+                                          "): ")
+                                  user-emacs-directory
+                                  (locate-user-emacs-file "chronometrist.sqlite"))))
+  (when (if (file-exists-p out-file)
+            (yes-or-no-p (concat "Output file "
+                                 out-file
+                                 " already exists - overwrite? "))
+          t)
+    (emacsql chronometrist-migrate-db
+             [:create-table events ([name tags start stop])])
+    (maphash (lambda (_key value)
+               (emacsql chronometrist-migrate-db
+                        ;; There may be more than the four keys we
+                        ;; start with...i.e. we'd need to add a new
+                        ;; field
+                        [:insert :into events
+                                 :values ([(plist-get :na)])]))
+             chronometrist-migrate-table)))
 
 (defun chronometrist-migrate-check ()
   "Offer to import data from `timeclock-file' if `chronometrist-file' does not exist."
