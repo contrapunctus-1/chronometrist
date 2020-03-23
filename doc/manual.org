@@ -139,9 +139,11 @@
     9. Function - chronometrist-events-query-spec-match-p (plist specifiers)
 *** chronometrist-migrate.el
     1. Variable - chronometrist-migrate-table
-    2. Function - chronometrist-migrate-populate (in-file)
+    2. Function - chronometrist-migrate-populate-timelog (in-file)
     3. Function - chronometrist-migrate-timelog-file->sexp-file (&optional in-file out-file)
-    4. Function - chronometrist-migrate-check ()
+    4. Function - chronometrist-migrate-populate-sexp (in-file)
+    5. Function - chronometrist-migrate-sexp-file->sql-db (&optional in-file out-file)
+    6. Function - chronometrist-migrate-check ()
 *** chronometrist-plist-pp.el
     1. Variable - chronometrist-plist-pp-keyword-re
     2. Variable - chronometrist-plist-pp-whitespace-re

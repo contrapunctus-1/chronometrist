@@ -1,4 +1,4 @@
-;;; chronometrist-migrate.el --- Commands to aid in migrating from timeclock to chronometrist s-expr format -*- lexical-binding: t; -*-
+;;; chronometrist-migrate.el --- Commands to aid in migrating between event formats -*- lexical-binding: t; -*-
 
 ;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
 
@@ -24,11 +24,11 @@
 (require 'emacsql-sqlite)
 
 (defvar chronometrist-file)
-(defvar chronometrist-migrate-table (make-hash-table))
+(defvar chronometrist-migrate-table (make-hash-table :test #'equal))
 
 ;; TODO - support other timeclock codes (currently only "i" and "o"
 ;; are supported.)
-(defun chronometrist-migrate-populate (in-file)
+(defun chronometrist-migrate-populate-timelog (in-file)
   "Read data from IN-FILE to `chronometrist-migrate-table'.
 
 IN-FILE should be a file in the format supported by timeclock.el.
@@ -106,14 +106,40 @@ file names respectively."
     (let ((output (find-file-noselect out-file)))
       (with-current-buffer output
         (chronometrist-common-clear-buffer output)
-        (chronometrist-migrate-populate in-file)
+        (chronometrist-migrate-populate-timelog in-file)
         (maphash (lambda (_key value)
                    (chronometrist-plist-pp value output)
                    (insert "\n\n"))
                  chronometrist-migrate-table)
         (save-buffer)))))
 
-(defvar chronometrist-migrate-db )
+(defvar chronometrist-migrate-db)
+
+(defun chronometrist-migrate-populate-sexp (in-file)
+  "Read data from IN-FILE to `chronometrist-migrate-table'.
+
+IN-FILE should be a file in the Chronometrist s-expression format.
+See `chronometrist-file' for a description."
+  (clrhash chronometrist-migrate-table)
+  (with-current-buffer (find-file-noselect in-file)
+    (save-excursion
+      (goto-char (point-min))
+      (let ((index 0)
+            expr)
+        (while (setq expr (ignore-errors (read (current-buffer))))
+          (let* ((new-date       (->> (plist-get expr :start)
+                                      (s-left 10)))
+                 (existing-value (gethash new-date
+                                          chronometrist-migrate-table)))
+            (cl-incf index)
+            (puthash new-date
+                     (if existing-value
+                         (append existing-value
+                                 (list expr))
+                       (list expr))
+                     chronometrist-migrate-table)))
+        (unless (zerop index)
+          index)))))
 
 (defun chronometrist-migrate-sexp-file->sql-db (&optional in-file out-file)
   "Migrate your existing `chronometrist-file' to an SQL database.
@@ -135,6 +161,7 @@ file names respectively."
                                  out-file
                                  " already exists - overwrite? "))
           t)
+    (chronometrist-migrate-populate-sexp in-file)
     (emacsql chronometrist-migrate-db
              [:create-table events ([name tags start stop])])
     (maphash (lambda (_key value)
