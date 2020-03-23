@@ -15,6 +15,8 @@
    6. [X] kv-accept with no key values -> Chronometrist buffer not updated
       * timer will only refresh when clocked in...
    7. [X] regression - no value history
+   8. [ ] Possible to add the same key-value twice
+      * Clock in, clock out, add key-value and accept, delete :stop time and save, clock out again, accept the already-inserted key-value - duplicate!
 ** Features
    1. Create chronometrist-unused-projects-list + chronometrist-projects-list.
    2. New commands
