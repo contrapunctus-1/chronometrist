@@ -264,7 +264,8 @@ is a list containing keywords used with that task, in reverse
 chronological order. The keywords are stored as strings and their
 leading \":\" is removed."
   (clrhash chronometrist-key-history)
-  (--map (puthash it nil chronometrist-key-history)
+  (mapc (lambda (task)
+          (puthash task nil chronometrist-key-history))
          ;; ;; Not necessary, if the only placed this is called is `chronometrist-refresh-file'
          ;; (setq chronometrist--task-list (chronometrist-tasks-from-table))
          chronometrist-task-list)

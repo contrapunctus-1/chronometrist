@@ -125,8 +125,9 @@ If FIRSTONLY is non-nil, insert only the first keybinding found."
         (w "\n    "))
     (goto-char (point-min))
     (insert "                         ")
-    (--map (insert (chronometrist-date it) " ")
-           (chronometrist-report-date->week-dates))
+    (insert (mapconcat #'chronometrist-date
+                       (chronometrist-report-date->week-dates)
+                       " "))
     (insert "\n")
     (goto-char (point-max))
     (insert w (format "%- 21s" "Total"))
