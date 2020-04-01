@@ -7,11 +7,12 @@
 
 ** Explanation
 *** Design goals
-    1. Don't make assumptions about the user's profession (timeclock)
+    1. Don't make assumptions about the user's profession
+       - e.g. timeclock seems to assume you're using it for a 9-to-5/contractor job
     2. Incentivize use
        * Hooks allow the time tracker to automate tasks and become a useful part of your workflow
     3. Make it easy to edit data using existing, familiar tools
-       * We don't use an SQL database, where changing a single statement is tricky [1]
+       * We don't use an SQL database, where changing a single field is tricky [1]
        * We use a text file containing s-expressions (easy for humans to read and write)
        * We use ISO-8601 for timestamps (easy for humans to read and write) rather than UNIX epoch time
     4. Reduce human errors in tracking
@@ -35,7 +36,8 @@
        2. Add a :split tag to split events. It can denote that the next event was originally a part of this one.
        3. Re-check and update the file when the day-start-time changes.
           - Possible with ~add-variable-watcher~ or ~:custom-set~ in Customize (thanks bpalmer)
-**** 3. Split them at the hash-table-level (i.e. rewrite ~chronometrist-events-clean~)
+**** 3. Split them at the hash-table-level
+     Handled by ~chronometrist-events-clean~
      * Advantage - simpler data-consuming code.
 **** 4. Split them at the data-consumer level (e.g. when calculating time for one day/getting events for one day)
      * Advantage - reduced repetitive post-parsing load.
