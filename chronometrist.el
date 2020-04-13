@@ -88,7 +88,9 @@ See custom variable `chronometrist-activity-indicator'."
                           (chronometrist-format-time))
                       (if (chronometrist-task-active? it)
                           (chronometrist-activity-indicator)
-                        ""))))))
+                        "")
+                      ;; targets stub
+                      "")))))
 
 (defun chronometrist-task-at-point ()
   "Return the task at point in the `chronometrist' buffer, or nil if there is no task at point."
@@ -279,10 +281,13 @@ is the name of the task to be clocked out of.")
 (define-derived-mode chronometrist-mode tabulated-list-mode "Chronometrist"
   "Major mode for `chronometrist'."
   (make-local-variable 'tabulated-list-format)
-  (setq tabulated-list-format [("#"       3  t)
-                               ("Task" 25 t)
-                               ("Time"    10 t)
-                               ("Active"  3  t)])
+  (setq tabulated-list-format
+        (vconcat [("#"       3  t)
+                  ("Task"    25 t)
+                  ("Time"    10 t)
+                  ("Active"  10 t)]
+                 (when chronometrist-time-targets-list
+                   [("Target" 3 t)])))
   (make-local-variable 'tabulated-list-entries)
   (setq tabulated-list-entries 'chronometrist-entries)
   (make-local-variable 'tabulated-list-sort-key)

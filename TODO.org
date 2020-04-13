@@ -39,6 +39,7 @@
       * User defines targets for tasks
       * Chronometrist displays targets column
       * Remind user when about to approach target (e.g. -5 minutes)
+      * Warn user when exceeding target
 *** Key-values [66%]
     1. [X] bug - value-history appears in chronological rather than reverse chronological order
     2. [X] generate history hash table from chronometrist-file.
