@@ -1,6 +1,9 @@
 # Chronometrist-Assist
 This is highly experimental and not in a usable stage, and thus lives in the `assist` branch.
 
+TODO -
+1. Investigate [this](https://emacs.stackexchange.com/questions/14466/how-to-run-an-after-save-hook-only-when-the-buffer-has-been-saved-manually) as a solution
+
 ## basic outline
 1. user defines `chronometrist-patterns-list` in the form
 `'(("PROJECT" :PATH ... :MODE ... :REASON ... :HIDE ...) *)`

@@ -1,15 +1,136 @@
-1. Merge *-format-keybinds into a single function
-2. Move time operations into a chronometrist-time file
-3. -report - highlight the current day
+1. [-] Move time operations into a chronometrist-time file
+2. -report - highlight the current day
 
-Chronometrist
-1. don't suggest nil when asking for first project on first run
-2. use variables instead of hardcoded numbers to determine spacing
-3. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
-4. when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
-5. Mouse commands should work only on buttons.
-6. Button actions should accept prefix arguments and behave exactly like their keyboard counterparts.
-7. mouse-3 should clock-out without asking for reason.
-8. Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked _before_ clocking out,which adds time to the project.
-9. Timeclock already _has_ hooks! :| Why do we re-implement them?
-10. Optimization. `chronometrist-refresh' is expensive in CPU, and `chronometrist-timer' runs it every 3 seconds by default. :\
+* v0.3.0 [100%]
+  1. [X] +Release or+ bundle plist-pp.el
+  2. [X] -report - error opening when clocked in
+* Chronometrist
+** Bugs [57%]
+   1. [X] fix -current-task to return correct results if the last one crosses a midnight
+   2. [ ] Clocking-in/out doesn't result in updated display, sometimes (2019-09-12)
+   3. [ ] Sorting by clicking the columns makes non-tabular data disappear
+      * Advise ~tabulated-list-col-sort~ to run either ~chronometrist-refresh~ or the relevant ~-print-non-tabular~ afterwards
+   4. [X] kv-accept with no key values should not modify file
+   5. [ ] kv-add and tags-add should not remove other keys from last sexp
+   6. [X] kv-accept with no key values -> Chronometrist buffer not updated
+      * timer will only refresh when clocked in...
+   7. [X] regression - no value history
+** Features
+   1. Create chronometrist-unused-projects-list + chronometrist-projects-list.
+   2. New commands
+      * *Kill/discard* (bind to 'k') - which will delete the interval currently being recorded.
+        - Most conservative option - it will only operate on the project at point, and will only kill for a clocked-in project.
+        - Somewhat less conservative option - it will operate on the currently clocked-in project, no matter where point is.
+        - It _should_ ask for confirmation.
+        - Alternatively, or as a complement - an *undo command*, which will undo your last action (clock in or clock out).
+          - Undo and redo seem like the best bets.
+      * *Convert* - change the currently clocked-in project to a different task. Tags and key-values may be re-queried. Clock-in hook functions will be run again with the new task as the argument.
+      * *Rename* a project (updating all records)
+      * *Delete* a project (erasing all records)
+      * *Hide* a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
+   3. Hook enhancement - can we supply the whole plist (including tags and key-values) to the task-start hooks, so users can have even smarter hook functions?
+      * That would mean ensuring that -kv-read runs before other hooks.
+      * Actually, it should be trivial to access the last expression in the file, so maybe this is unnecessary.
+   4. [ ] key-values and tags should work regardless of what hook they're called from, to give users the option to modify behaviour (does clock in start after you've finished adding details, or before?)
+   5. [ ] Expandable items - show intervals for task today
+      * [ ] Switch between intervals and tag-combination breakdown
+   6. Revisit 'no reason' commands - maybe we should ask for tags and key-values with the regular commands, and skip them with the 'no reason' variants?
+   7. Time targets/goals
+      * User defines targets for tasks
+      * Chronometrist displays targets column
+      * Remind user when about to approach target (e.g. -5 minutes)
+*** Key-values [66%]
+    1. [X] bug - value-history appears in chronological rather than reverse chronological order
+    2. [X] generate history hash table from chronometrist-file.
+       * [X] generate value history hash table from chronometrist-file
+       * [X] change "press X to quit" in prompt to suggest keys for ido, helm, and ivy
+    3. [ ] create text button to add key-values to last entry (whether clocked in or out)
+    4. [X] insert value as string if it contains spaces and isn't a list
+       * Sometimes you want single-word values to be converted to a string, too. Maybe check for capital letters too?
+       * Preserve type in history?
+         * Might create inconsistency in prompts? We don't want to expect Lisp knowledge from users.
+       * Ask user to define types for keys, and handle the syntax for them behind the scenes?
+    5. [ ] when reading values, add quit keybinding (consistent with output of ~chronometrist-kv-completion-quit-key~) by passing MAP to ~read-from-minibuffer~
+    6. [X] bug - missing values in history
+    7. [X] enh - remove key-values from suggestions which have already been added
+    8. [ ] enh - create custom variable to auto-insert key-values used in previous task of same :name in the key-value buffer.
+    9. [X] bug - incorrect indenting in -kv-buffer
+    10. [X] bug - I think -append-to-last-expr is eating key-values
+        * to reproduce - clock-in, add tags, add key-values, clock-out, keep tags - kv-add buffer has (), whereas it should have the earlier key-values.
+    11. bug - key-values from clock-in expression not displayed, shows () instead
+        * cause - if -kv-add is run after chronometrist-out, ~chronometrist-current-task~ will return nil
+    12. [ ] observe interaction of -kv-add with next function in hook which modifies window configuration
+        * code which deletes the window, or switches to a new buffer, interferes with the key-value addition flow
+        * [ ] add a kv-finished-hook? (run after kv-accept/reject)
+    13. how do we handle a blank string as a plist value?
+        * some way to require the user to enter a non-empty value (e.g. like the 'require-match' argument to completing-read, except read-from-minibuffer doesn't have that...)
+        * discard last-entered key?
+    14. +optimize - going through key (?) and value histories (M-p/M-n) takes a while. Is this because we're using lists?+
+        * It doesn't, it's the delay from the hash table update from the fs watch
+    15. [X] bug - tag history starts at the beginning (wtf?), value history is empty (wtf?)
+        * Does not occur on master, only on dev
+        * Does not occur if you disable lexical binding (introduced in 4e89836)
+**** Values
+     What forms can they take?
+     1. Integers, floating point numbers - easy to identify via regexp
+     2. If it starts and ends with "(" and ")" or "[" and "]", it's a list or a vector
+     3. otherwise - string
+
+     Observations
+     * This means you can't enter symbols via prompt. Can be added if the demand is there...
+     * This also means you can't have multiple atom values for a keyword...but that's irrelevant, because plists can't have multiple values anyway. :)
+*** Tags [100%]
+    1. [X] generate history from chronometrist-file
+       * [X] narrow it down to the :name
+    2. [X] write tags to last expression
+    3. [X] show task name in prompt
+    4. [X] bug - tags being added twice
+** UX
+   1. don't suggest nil when asking for first project on first run
+   2. when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
+   3. Mouse commands should work only on buttons.
+   4. Button actions should accept prefix arguments and behave exactly like their keyboard counterparts.
+   5. mouse-3 should clock-out without asking for reason.
+   6. Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked /before/ clocking out, which adds time to the project.
+   7. Allow calling chronometrist-in/out from anywhere-within-Emacs (a la timeclock) as well as from the chronometrist buffer.
+*** Optimization
+**** Ideas to make -refresh-file faster
+     1. Support multiple files, so we read and process lesser data when one of them changes.
+     2. Make file writing async
+     3. Don't refresh from file when clocking in.
+     4. Only write to the file when Emacs is idle or being killed, and store data in memory (in the events hash table) in the meantime
+     5. What if commands both write to the file /and/ add to the hash table, so we don't have to re-read the file and re-populate the table for commands? The expensive reading+parsing could be avoided for commands, and only take place for the user changing the file.
+        * jonasw - store length and hash of previous file, see if the new file has the same hash until old-length bytes.
+          * Rather than storing and hashing the full length, we could do it until (before) the last s-expression (or last N s-expressions?). That way, we know if the last expression (or last N expressions) have changed.
+            * Or even the first expression of the current date. That way, we just re-read the events for today. Because chronometrist-events uses dates as keys, it's easy to work on the basis of dates.
+
+** Code [25%]
+   1. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
+   2. [X] Use buttercup instead of ert
+   3. See if it is possible to store buttons in a variable, so *-print-non-tabular functions can be made shorter and less imperative. (see ~make-text-button~)
+   4. Merge all event-querying functions so that they always operate on an entire hash table (so no 'day' variants),
+   5. [ ] Use ~substitute-command-keys~ instead of ~chronometrist-format-keybinds~
+   6. [ ] See if using iteration constructs (especially ~loop~) can lead to nicer code than nested maps
+   7. [ ] recreate -events-clean, remove splitting code from -events-populate
+      * How should we deal with the active event?
+        * Earlier, we would add a closing entry and update that on a timer.
+   8. [ ] Make docstrings consistent - describe inputs and then the return value, in that order.
+   +1. use variables instead of hardcoded numbers to determine spacing+
+      * Don't see the benefit
+   +6. Timeclock already _has_ hooks! :| Why do we re-implement them?+
+      - I don't know of a way to know the project being clocked into using timeclock hooks.
+      - With v0.2.0 Chronometrist also has a before-project-stop-functions, which runs before the project is stopped, and can control whether the project actually is stopped.
+
+* chronometrist-report
+** Features
+   1. [ ] Expandable items - show tag-combination-based breakdown
+** Migration [100%]
+   1. [X] next/previous weeks
+
+* chronometrist-statistics
+** Migration [0%]
+   1. Active days
+   2. % of days active
+
+* Documentation [0%]
+  1. [ ] Make Texinfo documentation

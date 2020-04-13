@@ -1,15 +1,23 @@
+;;; chronometrist-tests.el --- Tests for Chronometrist -*- lexical-binding: t; -*-
+
+
+;;; Commentary:
+;; These should be replaced by buttercup tests, which have a nicer
+;; syntax.
+
 (require 'ert)
 (require 'chronometrist)
 (require 'chronometrist-report)
 
-;; TODO - add tests for chronometrist-project-time-one-day with custom day start
+;; TODO - add tests for chronometrist-task-time-one-day with custom day start
 ;; times.
 
 ;; #### CHRONOMETRIST-REPORT ####
 
+;;; Code:
+
 (defun interval-test (start target)
-  "Basic logic used to derive 'gap' in
-`chronometrist-report-previous-week-start'"
+  "Basic logic used to derive 'gap' in `chronometrist-previous-week-start'."
   (cond ((= start target) 7)
         ((> start target) (- start target))
         ((< start target) (+ start (- 7 target)))))
@@ -78,179 +86,179 @@
   (should (= (interval-test 6 6) 7)))
 
 (ert-deftest chronometrist-previous-week-start-sunday ()
-  "Tests for `chronometrist-report-previous-week-start'."
+  "Tests for `chronometrist-previous-week-start'."
   (let ((chronometrist-report-week-start-day "Sunday"))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 1 9 2018 6 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 1 9 2018 6 nil 19800))
                    '(0 0 0 26 8 2018 0 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 2 9 2018 0 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 2 9 2018 0 nil 19800))
                    '(0 0 0 2  9 2018 0 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 3 9 2018 1 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 3 9 2018 1 nil 19800))
                    '(0 0 0 2  9 2018 0 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 4 9 2018 2 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 4 9 2018 2 nil 19800))
                    '(0 0 0 2  9 2018 0 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 5 9 2018 3 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 5 9 2018 3 nil 19800))
                    '(0 0 0 2  9 2018 0 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 6 9 2018 4 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 6 9 2018 4 nil 19800))
                    '(0 0 0 2  9 2018 0 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 7 9 2018 5 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 7 9 2018 5 nil 19800))
                    '(0 0 0 2  9 2018 0 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 8 9 2018 6 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 8 9 2018 6 nil 19800))
                    '(0 0 0 2  9 2018 0 nil 19800)))))
 
 (ert-deftest chronometrist-previous-week-start-monday ()
-  "Tests for `chronometrist-report-previous-week-start'."
+  "Tests for `chronometrist-previous-week-start'."
   (let ((chronometrist-report-week-start-day "Monday"))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 1 9 2018 6 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 1 9 2018 6 nil 19800))
                    '(0 0 0 27 8 2018 1 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 2 9 2018 0 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 2 9 2018 0 nil 19800))
                    '(0 0 0 27 8 2018 1 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 3 9 2018 1 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 3 9 2018 1 nil 19800))
                    '(0 0 0 3  9 2018 1 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 4 9 2018 2 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 4 9 2018 2 nil 19800))
                    '(0 0 0 3  9 2018 1 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 5 9 2018 3 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 5 9 2018 3 nil 19800))
                    '(0 0 0 3  9 2018 1 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 6 9 2018 4 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 6 9 2018 4 nil 19800))
                    '(0 0 0 3  9 2018 1 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 7 9 2018 5 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 7 9 2018 5 nil 19800))
                    '(0 0 0 3  9 2018 1 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 8 9 2018 6 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 8 9 2018 6 nil 19800))
                    '(0 0 0 3  9 2018 1 nil 19800)))))
 
 (ert-deftest chronometrist-previous-week-start-tuesday ()
-  "Tests for `chronometrist-report-previous-week-start'."
+  "Tests for `chronometrist-previous-week-start'."
   (let ((chronometrist-report-week-start-day "Tuesday"))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 1 9 2018 6 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 1 9 2018 6 nil 19800))
                    '(0 0 0 28 8 2018 2 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 2 9 2018 0 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 2 9 2018 0 nil 19800))
                    '(0 0 0 28 8 2018 2 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 3 9 2018 1 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 3 9 2018 1 nil 19800))
                    '(0 0 0 28 8 2018 2 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 4 9 2018 2 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 4 9 2018 2 nil 19800))
                    '(0 0 0 4  9 2018 2 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 5 9 2018 3 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 5 9 2018 3 nil 19800))
                    '(0 0 0 4  9 2018 2 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 6 9 2018 4 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 6 9 2018 4 nil 19800))
                    '(0 0 0 4  9 2018 2 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 7 9 2018 5 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 7 9 2018 5 nil 19800))
                    '(0 0 0 4  9 2018 2 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 8 9 2018 6 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 8 9 2018 6 nil 19800))
                    '(0 0 0 4  9 2018 2 nil 19800)))))
 
 (ert-deftest chronometrist-previous-week-start-wednesday ()
-  "Tests for `chronometrist-report-previous-week-start'."
+  "Tests for `chronometrist-previous-week-start'."
   (let ((chronometrist-report-week-start-day "Wednesday"))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 1 9 2018 6 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 1 9 2018 6 nil 19800))
                    '(0 0 0 29 8 2018 3 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 2 9 2018 0 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 2 9 2018 0 nil 19800))
                    '(0 0 0 29 8 2018 3 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 3 9 2018 1 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 3 9 2018 1 nil 19800))
                    '(0 0 0 29 8 2018 3 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 4 9 2018 2 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 4 9 2018 2 nil 19800))
                    '(0 0 0 29 8 2018 3 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 5 9 2018 3 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 5 9 2018 3 nil 19800))
                    '(0 0 0 5  9 2018 3 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 6 9 2018 4 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 6 9 2018 4 nil 19800))
                    '(0 0 0 5  9 2018 3 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 7 9 2018 5 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 7 9 2018 5 nil 19800))
                    '(0 0 0 5  9 2018 3 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 8 9 2018 6 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 8 9 2018 6 nil 19800))
                    '(0 0 0 5  9 2018 3 nil 19800)))))
 
 (ert-deftest chronometrist-previous-week-start-thursday ()
-  "Tests for `chronometrist-report-previous-week-start'."
+  "Tests for `chronometrist-previous-week-start'."
   (let ((chronometrist-report-week-start-day "Thursday"))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 1 9 2018 6 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 1 9 2018 6 nil 19800))
                    '(0 0 0 30 8 2018 4 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 2 9 2018 0 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 2 9 2018 0 nil 19800))
                    '(0 0 0 30 8 2018 4 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 3 9 2018 1 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 3 9 2018 1 nil 19800))
                    '(0 0 0 30 8 2018 4 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 4 9 2018 2 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 4 9 2018 2 nil 19800))
                    '(0 0 0 30 8 2018 4 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 5 9 2018 3 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 5 9 2018 3 nil 19800))
                    '(0 0 0 30 8 2018 4 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 6 9 2018 4 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 6 9 2018 4 nil 19800))
                    '(0 0 0 6  9 2018 4 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 7 9 2018 5 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 7 9 2018 5 nil 19800))
                    '(0 0 0 6  9 2018 4 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 8 9 2018 6 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 8 9 2018 6 nil 19800))
                    '(0 0 0 6  9 2018 4 nil 19800)))))
 
 (ert-deftest chronometrist-previous-week-start-friday ()
-  "Tests for `chronometrist-report-previous-week-start'."
+  "Tests for `chronometrist-previous-week-start'."
   (let ((chronometrist-report-week-start-day "Friday"))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 1 9 2018 6 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 1 9 2018 6 nil 19800))
                    '(0 0 0 31 8 2018 5 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 2 9 2018 0 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 2 9 2018 0 nil 19800))
                    '(0 0 0 31 8 2018 5 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 3 9 2018 1 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 3 9 2018 1 nil 19800))
                    '(0 0 0 31 8 2018 5 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 4 9 2018 2 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 4 9 2018 2 nil 19800))
                    '(0 0 0 31 8 2018 5 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 5 9 2018 3 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 5 9 2018 3 nil 19800))
                    '(0 0 0 31 8 2018 5 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 6 9 2018 4 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 6 9 2018 4 nil 19800))
                    '(0 0 0 31 8 2018 5 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 7 9 2018 5 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 7 9 2018 5 nil 19800))
                    '(0 0 0 7  9 2018 5 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 8 9 2018 6 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 8 9 2018 6 nil 19800))
                    '(0 0 0 7  9 2018 5 nil 19800)))))
 
 (ert-deftest chronometrist-previous-week-start-saturday ()
-  "Tests for `chronometrist-report-previous-week-start'."
+  "Tests for `chronometrist-previous-week-start'."
   (let ((chronometrist-report-week-start-day "Saturday"))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 30 8 2018 4 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 30 8 2018 4 nil 19800))
                    '(0 0 0 25 8 2018 6 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 31 8 2018 5 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 31 8 2018 5 nil 19800))
                    '(0 0 0 25 8 2018 6 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 2 9 2018 0 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 2 9 2018 0 nil 19800))
                    '(0 0 0 1  9 2018 6 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 3 9 2018 1 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 3 9 2018 1 nil 19800))
                    '(0 0 0 1  9 2018 6 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 4 9 2018 2 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 4 9 2018 2 nil 19800))
                    '(0 0 0 1  9 2018 6 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 5 9 2018 3 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 5 9 2018 3 nil 19800))
                    '(0 0 0 1  9 2018 6 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 6 9 2018 4 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 6 9 2018 4 nil 19800))
                    '(0 0 0 1  9 2018 6 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 7 9 2018 5 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 7 9 2018 5 nil 19800))
                    '(0 0 0 1  9 2018 6 nil 19800)))
-    (should (equal (chronometrist-report-previous-week-start '(0 0 0 8 9 2018 6 nil 19800))
+    (should (equal (chronometrist-previous-week-start '(0 0 0 8 9 2018 6 nil 19800))
                    '(0 0 0 8  9 2018 6 nil 19800)))))
 
 ;; #### CHRONOMETRIST-COMMON ####
 
 (ert-deftest chronometrist-ptod-tests ()
-  "Tests for `chronometrist-project-time-one-day'."
+  "Tests for `chronometrist-task-time-one-day'."
   (let ((timeclock-file "test.timelog"))
     (timeclock-reread-log)
     ;; basic 1 hour test
-    (should (equal (chronometrist-project-time-one-day "Programming" '(0 0 0 1 1 2018))
+    (should (equal (chronometrist-task-time-one-day "Programming" '(0 0 0 1 1 2018))
                    [1 0 0]))
-    (should (equal (chronometrist-project-time-one-day "Swimming"    '(0 0 0 1 1 2018))
+    (should (equal (chronometrist-task-time-one-day "Swimming"    '(0 0 0 1 1 2018))
                    [1 0 0]))
-    (should (equal (chronometrist-project-time-one-day "Cooking"     '(0 0 0 1 1 2018))
+    (should (equal (chronometrist-task-time-one-day "Cooking"     '(0 0 0 1 1 2018))
                    [1 0 0]))
-    (should (equal (chronometrist-project-time-one-day "Guitar"      '(0 0 0 1 1 2018))
+    (should (equal (chronometrist-task-time-one-day "Guitar"      '(0 0 0 1 1 2018))
                    [1 0 0]))
-    (should (equal (chronometrist-project-time-one-day "Cycling"     '(0 0 0 1 1 2018))
+    (should (equal (chronometrist-task-time-one-day "Cycling"     '(0 0 0 1 1 2018))
                    [1 0 0]))
     ;; across midnight
-    (should (equal (chronometrist-project-time-one-day "Programming" '(0 0 0 2 1 2018))
+    (should (equal (chronometrist-task-time-one-day "Programming" '(0 0 0 2 1 2018))
                    [1 0 0]))
-    (should (equal (chronometrist-project-time-one-day "Programming" '(0 0 0 3 1 2018))
+    (should (equal (chronometrist-task-time-one-day "Programming" '(0 0 0 3 1 2018))
                    [1 0 0]))))
 
 (ert-deftest chronometrist-ptod-midnight-clocked-in ()
-  "Tests for `chronometrist-project-time-one-day' behaviour
+  "Tests for `chronometrist-task-time-one-day' behaviour
 across midnight + when not clocked out."
   :expected-result :failed
   (let ((timeclock-file "test2.timelog"))
     (timeclock-reread-log)
-    (should (equal (chronometrist-project-time-one-day "Test" '(0 0 0 1 1 2018))
+    (should (equal (chronometrist-task-time-one-day "Test" '(0 0 0 1 1 2018))
                    [1 0 0]))
-    (should (equal (chronometrist-project-time-one-day "Test" '(0 0 0 2 1 2018))
+    (should (equal (chronometrist-task-time-one-day "Test" '(0 0 0 2 1 2018))
                    [24 0 0]))))
 
 ;; #### CHRONOMETRIST ####
@@ -284,19 +292,19 @@ across midnight + when not clocked out."
                  [1 1 0])))
 
 (ert-deftest chronometrist-ttod-tests ()
-  "Tests for `chronometrist-total-time-one-day'."
+  "Tests for `chronometrist-active-time-one-day'."
   (let ((timeclock-file "test.timelog"))
     (timeclock-reread-log)
     ;; 1 hour per activity test
-    (should (equal (chronometrist-total-time-one-day '(0 0 0 1 1 2018))
+    (should (equal (chronometrist-active-time-one-day '(0 0 0 1 1 2018))
                    [5 0 0]))
     ;; pan-midnight tests
-    (should (equal (chronometrist-total-time-one-day '(0 0 0 2 1 2018))
+    (should (equal (chronometrist-active-time-one-day '(0 0 0 2 1 2018))
                    [1 0 0]))
-    (should (equal (chronometrist-total-time-one-day '(0 0 0 3 1 2018))
+    (should (equal (chronometrist-active-time-one-day '(0 0 0 3 1 2018))
                    [1 0 0]))
     ;; 1 second test
-    (should (equal (chronometrist-total-time-one-day '(0 0 0 4 1 2018))
+    (should (equal (chronometrist-active-time-one-day '(0 0 0 4 1 2018))
                    [0 0 1]))))
 
 (ert-deftest chronometrist-format-time-tests ()
@@ -340,3 +348,5 @@ across midnight + when not clocked out."
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"
 ;; End:
+
+;;; chronometrist-tests.el ends here
