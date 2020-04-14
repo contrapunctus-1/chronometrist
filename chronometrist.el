@@ -80,19 +80,22 @@ See custom variable `chronometrist-activity-indicator'."
        (-sort #'string-lessp)
        (--map-indexed
         (list it
-              (vector (number-to-string (1+ it-index))
-                      (list it
-                            'action 'chronometrist-toggle-task-button
-                            'follow-link t)
-                      (-> (chronometrist-task-time-one-day it)
-                          (chronometrist-format-time))
-                      (if (chronometrist-task-active? it)
-                          (chronometrist-activity-indicator)
-                        "")
-                      (let ((target (chronometrist-get-target it)))
-                        (if target
-                            (number-to-string target)
-                          "")))))))
+              (vconcat (vector (number-to-string (1+ it-index))
+                               (list it
+                                     'action 'chronometrist-toggle-task-button
+                                     'follow-link t)
+                               (-> (chronometrist-task-time-one-day it)
+                                   (chronometrist-format-time))
+                               (if (chronometrist-task-active? it)
+                                   (chronometrist-activity-indicator)
+                                 ""))
+                       (if chronometrist-time-targets-list
+                           (vector
+                            (let ((target (chronometrist-get-target it)))
+                              (if target
+                                  (format "% 4d" target)
+                                "")))
+                         []))))))
 
 (defun chronometrist-task-at-point ()
   "Return the task at point in the `chronometrist' buffer, or nil if there is no task at point."
