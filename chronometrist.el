@@ -95,9 +95,8 @@ See custom variable `chronometrist-activity-indicator'."
                               "")))
           (list task
                 (vconcat (vector index task-button task-time indicator)
-                         (if chronometrist-time-targets-list
-                             (vector target-str)
-                           [])))))))
+                         (when (bound-and-true-p chronometrist-time-targets-list)
+                           (vector target-str))))))))
 
 (defun chronometrist-task-at-point ()
   "Return the task at point in the `chronometrist' buffer, or nil if there is no task at point."
