@@ -79,23 +79,25 @@ See custom variable `chronometrist-activity-indicator'."
   (->> chronometrist-task-list
        (-sort #'string-lessp)
        (--map-indexed
-        (list it
-              (vconcat (vector (number-to-string (1+ it-index))
-                               (list it
-                                     'action 'chronometrist-toggle-task-button
-                                     'follow-link t)
-                               (-> (chronometrist-task-time-one-day it)
-                                   (chronometrist-format-time))
-                               (if (chronometrist-task-active? it)
-                                   (chronometrist-activity-indicator)
-                                 ""))
-                       (if chronometrist-time-targets-list
-                           (vector
-                            (let ((target (chronometrist-get-target it)))
-                              (if target
-                                  (format "% 4d" target)
-                                "")))
-                         []))))))
+        (let* ((task        it)
+               (index       (number-to-string (1+ it-index)))
+               (task-button (list task
+                                  'action 'chronometrist-toggle-task-button
+                                  'follow-link t))
+               (task-time   (-> (chronometrist-task-time-one-day task)
+                                (chronometrist-format-time)))
+               (indicator   (if (chronometrist-task-active? task)
+                                (chronometrist-activity-indicator)
+                              ""))
+               (target      (chronometrist-get-target task))
+               (target-str  (if target
+                                (format "% 4d" target)
+                              "")))
+          (list task
+                (vconcat (vector index task-button task-time indicator)
+                         (if chronometrist-time-targets-list
+                             (vector target-str)
+                           [])))))))
 
 (defun chronometrist-task-at-point ()
   "Return the task at point in the `chronometrist' buffer, or nil if there is no task at point."
