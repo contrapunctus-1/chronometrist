@@ -89,8 +89,10 @@ See custom variable `chronometrist-activity-indicator'."
                       (if (chronometrist-task-active? it)
                           (chronometrist-activity-indicator)
                         "")
-                      ;; targets stub
-                      "")))))
+                      (let ((target (chronometrist-get-target it)))
+                        (if target
+                            (number-to-string target)
+                          "")))))))
 
 (defun chronometrist-task-at-point ()
   "Return the task at point in the `chronometrist' buffer, or nil if there is no task at point."
