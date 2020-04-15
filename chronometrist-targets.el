@@ -10,8 +10,8 @@
 (require 'alert)
 
 ;;; Commentary:
-;;
-
+;; TODO -
+;; clear notifications on file change event
 
 (defcustom chronometrist-time-targets-list nil
   "List to specify daily time goals for each project.
@@ -61,7 +61,9 @@ If TARGETS-LIST is not supplied, `chronometrist-time-targets-list' is used."
 
 (defun chronometrist-run-alert-timers (task)
   "Run timers to alert the user of the time spent on TASK.
-Add this to `chronometrist-after-in-functions' to use."
+To use, add this to `chronometrist-after-in-functions', and
+`chronometrist-stop-alert-timers' to
+`chronometrist-after-out-functions'."
   (let ((target (chronometrist-get-target task)))
     (when target ;; don't run for tasks which don't have a target defined
       (setq chronometrist-approach-timer
@@ -79,6 +81,11 @@ Add this to `chronometrist-after-in-functions' to use."
                          nil
                          #'chronometrist-exceed-alert
                          task)))))
+
+(defun chronometrist-stop-alert-timers (_task)
+  (mapc #'cancel-timer '(chronometrist-approach-timer
+                         chronometrist-complete-timer
+                         chronometrist-exceed-timer)))
 
 (provide 'chronometrist-targets)
 
