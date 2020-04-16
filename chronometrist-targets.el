@@ -82,10 +82,10 @@ To use, add this to `chronometrist-after-in-functions', and
                          #'chronometrist-exceed-alert
                          task)))))
 
-(defun chronometrist-stop-alert-timers (_task)
-  (mapc #'cancel-timer '(chronometrist-approach-timer
-                         chronometrist-complete-timer
-                         chronometrist-exceed-timer)))
+(defun chronometrist-stop-alert-timers (&optional _task)
+  (mapc #'cancel-timer (list chronometrist-approach-timer
+                             chronometrist-complete-timer
+                             chronometrist-exceed-timer)))
 
 (provide 'chronometrist-targets)
 
