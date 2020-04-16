@@ -47,13 +47,13 @@ If TARGETS-LIST is not supplied, `chronometrist-time-targets-list' is used."
 (defvar chronometrist-exceed-timer nil)
 
 (defun chronometrist-approach-alert (task)
-  (alert (format "5 minutes remain for %s" (downcase task))))
+  (alert (format "5 minutes remain for %s" task)))
 
 (defun chronometrist-complete-alert (task)
-  (alert (format "Target for %s reached" (downcase task))))
+  (alert (format "Target for %s reached" task)))
 
 (defun chronometrist-exceed-alert (task)
-  (alert (format "You are exceeding your target for %s!" (downcase task))
+  (alert (format "You are exceeding your target for %s!" task)
          :severity 'high))
 
 (defun chronometrist-minutes-string (minutes)
