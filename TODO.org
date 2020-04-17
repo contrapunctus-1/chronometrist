@@ -35,17 +35,20 @@
    5. [ ] Expandable items - show intervals for task today
       * [ ] Switch between intervals and tag-combination breakdown
    6. Revisit 'no reason' commands - maybe we should ask for tags and key-values with the regular commands, and skip them with the 'no reason' variants?
-   7. Time targets/goals
-      * User defines targets for tasks
-      * Chronometrist displays targets column
-      * Notify user when
+   7. [-] Time targets/goals
+      * [X] User defines targets for tasks
+      * [X] Chronometrist displays targets column
+      * [X] Notify user when
         - approaching target (e.g. -5 minutes)
         - target completed
         - exceeding target (target+5)
-      * Colors
+        - [ ] I wonder if there can be a more flexible way to define alerts. User specifies name, time to run and whether to repeat (passed to ~run-at-time~), alert text (and other parameters for ~alert~)
+          : ((my-timer 15 t "my alert text") ...)
+          And we could generate timer variables from that...
+      * [ ] Colorize times in Chronometrist buffer
         - untouched project with target defined - red
         - target ±5 minutes - green
-        - target*2 - red
+        - target*2 and above - red
 *** Key-values [66%]
     1. [X] bug - value-history appears in chronological rather than reverse chronological order
     2. [X] generate history hash table from chronometrist-file.
