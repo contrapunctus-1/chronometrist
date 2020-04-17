@@ -15,7 +15,6 @@
 
 (defcustom chronometrist-time-targets-list nil
   "List to specify daily time goals for each project.
-
 Each element must be in the form (TARGET PROJECT *).
 
 TARGET is an integer specifying number of minutes.
@@ -48,10 +47,8 @@ If TARGETS-LIST is not supplied, `chronometrist-time-targets-list' is used."
 
 (defun chronometrist-approach-alert (task)
   (alert (format "5 minutes remain for %s" task)))
-
 (defun chronometrist-complete-alert (task)
   (alert (format "Target for %s reached" task)))
-
 (defun chronometrist-exceed-alert (task)
   (alert (format "You are exceeding your target for %s!" task)
          :severity 'high))
