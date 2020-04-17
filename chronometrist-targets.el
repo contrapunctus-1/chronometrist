@@ -83,9 +83,13 @@ To use, add this to `chronometrist-after-in-functions', and
                          task)))))
 
 (defun chronometrist-stop-alert-timers (&optional _task)
-  (mapc #'cancel-timer (list chronometrist-approach-timer
-                             chronometrist-complete-timer
-                             chronometrist-exceed-timer)))
+  ;; in case of start task -> exit Emacs without stopping -> start Emacs -> stop task
+  (or chronometrist-approach-timer
+      chronometrist-complete-timer
+      chronometrist-exceed-timer
+      (mapc #'cancel-timer (list chronometrist-approach-timer
+                                 chronometrist-complete-timer
+                                 chronometrist-exceed-timer))))
 
 (provide 'chronometrist-targets)
 
