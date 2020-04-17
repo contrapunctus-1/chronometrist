@@ -38,13 +38,17 @@
    7. [-] Time targets/goals
       * [X] User defines targets for tasks
       * [X] Chronometrist displays targets column
-      * [X] Notify user when
-        - approaching target (e.g. -5 minutes)
-        - target completed
-        - exceeding target (target+5)
-        - [ ] I wonder if there can be a more flexible way to define alerts. User specifies name, time to run and whether to repeat (passed to ~run-at-time~), alert text (and other parameters for ~alert~)
+      * [ ] Notify user when
+        + approaching target (e.g. -5 minutes)
+        + target completed
+        + exceeding target (target+5)
+        + [ ] I wonder if there can be a more flexible way to define alerts. User specifies name, time to run and whether to repeat (passed to ~run-at-time~), alert text (and other parameters for ~alert~)
           : ((my-timer 15 t "my alert text") ...)
           And we could generate timer variables from that...
+        + [ ] If time goals are defined and there is a task without a goal, just remind the user every 15 minutes of the time they've spent on it
+        + [ ] Handle manual file changes; on file change -
+          - clearing existing notifications
+          - if last expression has a :stop value, stop alert timers
       * [ ] Colorize times in Chronometrist buffer
         - untouched project with target defined - red
         - target ±5 minutes - green
