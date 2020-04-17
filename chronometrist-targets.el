@@ -50,7 +50,7 @@ If TARGETS-LIST is not supplied, `chronometrist-time-targets-list' is used."
 (defun chronometrist-complete-alert (task)
   (alert (format "Target for %s reached" task)))
 (defun chronometrist-exceed-alert (task)
-  (alert (format "You are exceeding your target for %s!" task)
+  (alert (format "You are exceeding the goal for %s!" task)
          :severity 'high))
 
 (defun chronometrist-minutes-string (minutes)
