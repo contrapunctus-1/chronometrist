@@ -5,6 +5,18 @@
 (require 'parse-time)
 (require 'dash)
 (require 's)
+(require 'chronometrist-report-custom)
+
+(declare-function chronometrist-day-start "chronometrist-events.el")
+
+;; This is free and unencumbered software released into the public domain.
+;;
+;; Anyone is free to copy, modify, publish, use, compile, sell, or
+;; distribute this software, either in source code form or as a compiled
+;; binary, for any purpose, commercial or non-commercial, and by any
+;; means.
+;;
+;; For more information, please refer to <https://unlicense.org>
 
 ;;; Commentary:
 ;; Pretty sure quite a few of these are redundant. Hopefully putting

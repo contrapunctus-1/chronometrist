@@ -1,10 +1,10 @@
-;;; chronometrist.el --- A time tracker for Emacs with a nice interface -*- lexical-binding: t; -*-
+;;; chronometrist.el --- A time tracker with a nice interface -*- lexical-binding: t; -*-
 
 ;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
 ;; Maintainer: contrapunctus <xmpp:contrapunctus@jabber.fr>
 ;; Keywords: calendar
 ;; Homepage: https://framagit.org/contrapunctus/chronometrist
-;; Package-Requires: ((emacs "25.1") (dash "2.16.0") (cl-lib "1.0") (seq "2.20"))
+;; Package-Requires: ((emacs "25.1") (dash "2.16.0") (seq "2.20") (s "1.12.0"))
 ;; Version: 0.4.0
 
 (require 'filenotify)
@@ -19,6 +19,15 @@
 (require 'chronometrist-sexp)
 (require 'chronometrist-queries)
 (require 'chronometrist-migrate)
+
+;; This is free and unencumbered software released into the public domain.
+;;
+;; Anyone is free to copy, modify, publish, use, compile, sell, or
+;; distribute this software, either in source code form or as a compiled
+;; binary, for any purpose, commercial or non-commercial, and by any
+;; means.
+;;
+;; For more information, please refer to <https://unlicense.org>
 
 ;;; Commentary:
 ;;

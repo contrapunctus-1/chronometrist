@@ -12,6 +12,15 @@
 
 (declare-function chronometrist-refresh "chronometrist.el")
 
+;; This is free and unencumbered software released into the public domain.
+;;
+;; Anyone is free to copy, modify, publish, use, compile, sell, or
+;; distribute this software, either in source code form or as a compiled
+;; binary, for any purpose, commercial or non-commercial, and by any
+;; means.
+;;
+;; For more information, please refer to <https://unlicense.org>
+
 ;;; Commentary:
 ;;
 
@@ -255,7 +264,8 @@ is a list containing keywords used with that task, in reverse
 chronological order. The keywords are stored as strings and their
 leading \":\" is removed."
   (clrhash chronometrist-key-history)
-  (--map (puthash it nil chronometrist-key-history)
+  (mapc (lambda (task)
+          (puthash task nil chronometrist-key-history))
          ;; ;; Not necessary, if the only placed this is called is `chronometrist-refresh-file'
          ;; (setq chronometrist--task-list (chronometrist-tasks-from-table))
          chronometrist-task-list)
@@ -484,8 +494,8 @@ PREFIX is ignored."
   (let ((buffer (find-file-noselect chronometrist-file)))
     (with-current-buffer buffer
       (goto-char (point-max))
-      (when (not (bobp)) (insert "\n"))
-      (when (not (bolp)) (insert "\n"))
+      (unless (bobp) (insert "\n"))
+      (unless (bolp) (insert "\n"))
       (chronometrist-plist-pp `(:name  ,task
                   :start ,(format-time-string "%FT%T%z"))
                 buffer)

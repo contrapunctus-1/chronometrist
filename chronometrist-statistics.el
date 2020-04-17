@@ -2,6 +2,15 @@
 
 ;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
 
+;; This is free and unencumbered software released into the public domain.
+;;
+;; Anyone is free to copy, modify, publish, use, compile, sell, or
+;; distribute this software, either in source code form or as a compiled
+;; binary, for any purpose, commercial or non-commercial, and by any
+;; means.
+;;
+;; For more information, please refer to <https://unlicense.org>
+
 ;;; Commentary:
 ;;
 
@@ -260,10 +269,10 @@ specified by `chronometrist-statistics--ui-state'."
       (cond ((get-buffer-window chronometrist-statistics-buffer-name)
              (kill-buffer buffer))
             (t ;; (delete-other-windows)
-             (when (not preserve-state)
+             (unless preserve-state
                (setq chronometrist-statistics--ui-state `(:mode  week
-                                                          :start ,week-start-iso
-                                                          :end   ,week-end-iso)))
+                                  :start ,week-start-iso
+                                  :end   ,week-end-iso)))
              (chronometrist-common-create-chronometrist-file)
              (chronometrist-statistics-mode)
              (switch-to-buffer buffer)

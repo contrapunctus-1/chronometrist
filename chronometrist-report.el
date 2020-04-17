@@ -2,6 +2,15 @@
 
 ;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
 
+;; This is free and unencumbered software released into the public domain.
+;;
+;; Anyone is free to copy, modify, publish, use, compile, sell, or
+;; distribute this software, either in source code form or as a compiled
+;; binary, for any purpose, commercial or non-commercial, and by any
+;; means.
+;;
+;; For more information, please refer to <https://unlicense.org>
+
 ;;; Commentary:
 ;;
 
@@ -116,8 +125,9 @@ If FIRSTONLY is non-nil, insert only the first keybinding found."
         (w "\n    "))
     (goto-char (point-min))
     (insert "                         ")
-    (--map (insert (chronometrist-date it) " ")
-           (chronometrist-report-date->week-dates))
+    (insert (mapconcat #'chronometrist-date
+                       (chronometrist-report-date->week-dates)
+                       " "))
     (insert "\n")
     (goto-char (point-max))
     (insert w (format "%- 21s" "Total"))
@@ -243,7 +253,7 @@ current week. Otherwise, display data from the week specified by
              (setq chronometrist-report--point (point))
              (kill-buffer buffer))
             (t (delete-other-windows)
-               (when (not keep-date)
+               (unless keep-date
                  (setq chronometrist-report--ui-date nil))
                (chronometrist-common-create-chronometrist-file)
                (chronometrist-report-mode)
