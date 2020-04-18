@@ -10,8 +10,16 @@
 (require 'alert)
 
 ;;; Commentary:
+
+;;; It is hoped that `chronometrist-timed-alerts-list' provides a good balance of
+;;; flexibility and ease of use for the majority of use cases. A user
+;;; desiring even greater control may define their own versions of
+;;; `chronometrist-run-alert-timers' and `chronometrist-stop-alert-timers' (preferably using
+;;; them as a template) and add them to the desired hooks.
+
 ;; TODO -
 ;; clear notifications on file change event
+;; define types for custom variables
 
 (defcustom chronometrist-time-targets-list nil
   "List to specify daily time goals for each project.
@@ -25,10 +33,31 @@ There can be more than one PROJECT, to specify that you would
 like to spend TARGET time on any one of those projects."
   :group 'chronometrist)
 
-;; TODO - if there are multiple tasks associated with a single time
-;; goal (i.e. `(int "task1" "task2" ...)'), and the user has reached the
-;; goal for one of those tasks, don't display the goal for the other
-;; associated tasks
+;; All this quasiquoting looks...ugly. I think I need to create a macro.
+(defcustom chronometrist-timed-alerts-list
+  `(,(lambda (task goal)
+       `(approach ,(chronometrist-minutes-string (- goal 5))
+                  nil
+                  ,(format "5 minutes remain for %s" task)))
+    ,(lambda (task goal)
+       `(complete ,(chronometrist-minutes-string (- goal 5))
+                  nil
+                  ,(format "5 minutes remain for %s" task))))
+  "List to describe timed alerts.
+Each element can either be a list in the form
+(SYMBOL TIME REPEAT ALERT-TEXT [ALERT-PARAMETERS] ...)
+or a function which returns such a list.
+
+SYMBOL lets the user name the alert.
+TIME and REPEAT are as used in `run-at-time'.
+ALERT-TEXT and ALERT-PARAMETERS are passed to `alert'.
+
+If an element is a function, it must accept two arguments - the
+name of the current task (as a string) and the goal for that
+task (a number representing minutes, or nil)."
+  :group 'chronometrist)
+
+;; TODO - if there are multiple tasks associated with a single time goal (i.e. `(int "task1" "task2" ...)'), and the user has reached the goal for one of those tasks, don't display the goal for the other associated tasks
 (defun chronometrist-get-target (task &optional targets-list)
   "Return time target for TASK from TARGETS-LIST.
 Return value is minutes as an integer, or nil.
@@ -41,9 +70,7 @@ If TARGETS-LIST is not supplied, `chronometrist-time-targets-list' is used."
              when (member task list)
              return (car list))))
 
-(defvar chronometrist-approach-timer nil)
-(defvar chronometrist-complete-timer nil)
-(defvar chronometrist-exceed-timer nil)
+(defvar chronometrist--timers-list nil)
 
 (defun chronometrist-approach-alert (task)
   (alert (format "5 minutes remain for %s" task)))
