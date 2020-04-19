@@ -11,10 +11,10 @@
 
 ;;; Commentary:
 
-;;; It is hoped that `chronometrist-timed-alerts-list' provides a good balance of
-;;; flexibility and ease of use for the majority of use cases. A user
-;;; desiring even greater control may define their own versions of
-;;; `chronometrist-run-alert-timers' and `chronometrist-stop-alert-timers' (preferably using
+;;; It is hoped that `chronometrist-timed-alert-functions' provides a good balance
+;;; of flexibility and ease of use for the majority of use cases. A
+;;; user desiring even greater control may define their own versions
+;;; of `chronometrist-run-alert-timers' and `chronometrist-stop-alert-timers' (preferably using
 ;;; them as a template) and add them to the desired hooks.
 
 ;; TODO -
@@ -33,28 +33,52 @@ There can be more than one PROJECT, to specify that you would
 like to spend TARGET time on any one of those projects."
   :group 'chronometrist)
 
-;; All this quasiquoting looks...ugly. I think I need to create a macro.
-(defcustom chronometrist-timed-alerts-list
-  `(,(lambda (task goal)
-       `(approach ,(chronometrist-minutes-string (- goal 5))
-                  nil
-                  ,(format "5 minutes remain for %s" task)))
-    ,(lambda (task goal)
-       `(complete ,(chronometrist-minutes-string (- goal 5))
-                  nil
-                  ,(format "5 minutes remain for %s" task))))
-  "List to describe timed alerts.
-Each element can either be a list in the form
-(SYMBOL TIME REPEAT ALERT-TEXT [ALERT-PARAMETERS] ...)
-or a function which returns such a list.
+(defun chronometrist-approach-alert (task goal)
+  (when goal
+    (list (chronometrist-minutes-string (- goal 5))
+          nil
+          (format "5 minutes remain for %s" task))))
 
-SYMBOL lets the user name the alert.
-TIME and REPEAT are as used in `run-at-time'.
+(defun chronometrist-complete-alert (task goal)
+  (when goal
+    (list (chronometrist-minutes-string goal)
+          nil
+          (format "Target for %s reached" task))))
+
+(defun chronometrist-exceed-alert (task goal)
+  (when goal
+    (list (chronometrist-minutes-string (+ goal 5))
+          nil
+          (format "You are exceeding the goal for %s!" task)
+          :severity 'high)))
+
+(defun chronometrist-no-goal-alert (task goal)
+  (unless goal
+    (list (chronometrist-minutes-string 15)
+          t
+          (format "You have spent %s time on %s"
+                  (chronometrist-task-time-one-day task)
+                  task))))
+
+(defcustom chronometrist-timed-alert-functions
+  '(chronometrist-approach-alert
+    chronometrist-complete-alert
+    chronometrist-exceed-alert
+    chronometrist-no-goal-alert)
+  "List to describe timed alerts.
+Each element should be a function, which will be called with two
+arguments - the name of the current task (as a string) and the
+goal for that task (a number representing minutes, or nil).
+
+Each function must return a list in the form
+\(TIME REPEAT ALERT-TEXT [ALERT-PARAMETERS])
+
+TIME and REPEAT are passed to `run-at-time'.
 ALERT-TEXT and ALERT-PARAMETERS are passed to `alert'.
 
-If an element is a function, it must accept two arguments - the
-name of the current task (as a string) and the goal for that
-task (a number representing minutes, or nil)."
+A function in this list returning nil is taken as a sign to not
+run that timed alert. This can be used to create conditional
+timed alerts."
   :group 'chronometrist)
 
 ;; TODO - if there are multiple tasks associated with a single time goal (i.e. `(int "task1" "task2" ...)'), and the user has reached the goal for one of those tasks, don't display the goal for the other associated tasks
@@ -72,14 +96,6 @@ If TARGETS-LIST is not supplied, `chronometrist-time-targets-list' is used."
 
 (defvar chronometrist--timers-list nil)
 
-(defun chronometrist-approach-alert (task)
-  (alert (format "5 minutes remain for %s" task)))
-(defun chronometrist-complete-alert (task)
-  (alert (format "Target for %s reached" task)))
-(defun chronometrist-exceed-alert (task)
-  (alert (format "You are exceeding the goal for %s!" task)
-         :severity 'high))
-
 (defun chronometrist-minutes-string (minutes)
   (format "%s minutes" minutes))
 
@@ -89,34 +105,23 @@ To use, add this to `chronometrist-after-in-functions', and
 `chronometrist-stop-alert-timers' to
 `chronometrist-after-out-functions'."
   (let ((target (chronometrist-get-target task)))
-    (when target ;; don't run for tasks which don't have a target defined
-      (setq chronometrist-approach-timer
-            (run-at-time (chronometrist-minutes-string (- target 5))
-                         nil
-                         #'chronometrist-approach-alert
-                         task)
-            chronometrist-complete-timer
-            (run-at-time (chronometrist-minutes-string target)
-                         nil
-                         #'chronometrist-complete-alert
-                         task)
-            chronometrist-exceed-timer
-            (run-at-time (chronometrist-minutes-string (+ target 5))
-                         nil
-                         #'chronometrist-exceed-alert
-                         task)))))
+    (->> (--map (funcall it task target) chronometrist-timed-alert-functions)
+         (-filter #'identity) ;; remove nil results
+         (mapc (lambda (list)
+                 (->> (run-at-time (pop list)
+                                   (pop list)
+                                   (lambda ()
+                                     (apply #'alert (pop list)
+                                            list)))
+                      (list)
+                      (append chronometrist--timers-list)
+                      (setq chronometrist--timers-list)))))))
 
 (defun chronometrist-stop-alert-timers (&optional _task)
   ;; in case of start task -> exit Emacs without stopping -> start Emacs -> stop task
-  (and chronometrist-approach-timer
-       chronometrist-complete-timer
-       chronometrist-exceed-timer
-       (mapc #'cancel-timer (list chronometrist-approach-timer
-                                  chronometrist-complete-timer
-                                  chronometrist-exceed-timer))
-       (setq chronometrist-approach-timer nil
-             chronometrist-complete-timer nil
-             chronometrist-exceed-timer   nil)))
+  (and chronometrist--timers-list
+       (mapc #'cancel-timer chronometrist--timers-list)
+       (setq chronometrist--timers-list   nil)))
 
 (provide 'chronometrist-targets)
 
