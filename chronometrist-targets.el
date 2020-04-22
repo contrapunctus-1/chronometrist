@@ -117,6 +117,10 @@ To use, add this to `chronometrist-after-in-functions', and
                       (setq chronometrist--timers-list)))))))
 
 (defun chronometrist-stop-alert-timers (&optional _task)
+  "Stop timers to alert the user of the time spent on TASK.
+To use, add this to `chronometrist-after-out-functions', and
+`chronometrist-run-alert-timers' to
+`chronometrist-after-in-functions'."
   ;; in case of start task -> exit Emacs without stopping -> start Emacs -> stop task
   (and chronometrist--timers-list
        (mapc #'cancel-timer chronometrist--timers-list)
