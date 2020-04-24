@@ -65,7 +65,7 @@
     2. Variable - chronometrist-date-re
     3. Variable - chronometrist-time-re-ui
     4. Variable - chronometrist-task-list
-    5. Variable - chronometrist--fs-watch
+    5. Internal Variable - chronometrist--fs-watch
     6. Function - chronometrist-buffer-exists? (buffer-name)
        * String -> List?
     7. Function - chronometrist-buffer-visible? (buffer-or-buffer-name)
@@ -93,15 +93,15 @@
     6. Custom variable - chronometrist-day-start-time
 *** chronometrist-diary-view.el
     1. Variable - chronometrist-diary-buffer-name
-    2. Variable - chronometrist-diary--current-date
+    2. Internal Variable - chronometrist-diary--current-date
     3. Function - chronometrist-intervals-on (date)
     4. Function - chronometrist-diary-tasks-reasons-on (date)
     5. Function - chronometrist-diary-refresh (&optional ignore-auto noconfirm date)
     6. Major Mode - chronometrist-diary-view-mode
     7. Command - chronometrist-diary-view (&optional date)
 *** chronometrist.el
-    1. Variable - chronometrist--task-history
-    2. Variable - chronometrist--point
+    1. Internal Variable - chronometrist--task-history
+    2. Internal Variable - chronometrist--point
     3. Variable - chronometrist-mode-map
     4. Function - chronometrist-task-active? (task)
        * String -> Boolean
@@ -162,9 +162,9 @@
     2. Custom variable - chronometrist-report-week-start-day
     3. Custom variable - chronometrist-report-weekday-number-alist
 *** chronometrist-report.el
-    1. Variable - chronometrist-report--ui-date
-    2. Variable - chronometrist-report--ui-week-dates
-    3. Variable - chronometrist-report--point
+    1. Internal Variable - chronometrist-report--ui-date
+    2. Internal Variable - chronometrist-report--ui-week-dates
+    3. Internal Variable - chronometrist-report--point
     4. Function - chronometrist-report-date ()
     5. Function - chronometrist-report-date->dates-in-week (first-date-in-week)
     6. Function - chronometrist-report-date->week-dates ()
@@ -180,8 +180,8 @@
     16. Function - chronometrist-report-previous-week (arg)
     17. Function - chronometrist-report-next-week (arg)
 *** chronometrist-sexp.el
-    1. Variable - chronometrist--tag-suggestions
-    2. Variable - chronometrist--value-suggestions
+    1. Internal Variable - chronometrist--tag-suggestions
+    2. Internal Variable - chronometrist--value-suggestions
     3. Function - chronometrist-plist-remove (plist &rest keys)
     4. Function - chronometrist-maybe-string-to-symbol (list)
     5. Function - chronometrist-maybe-symbol-to-string (list)
@@ -215,8 +215,8 @@
 *** chronometrist-statistics-custom.el
     1. Custom variable - chronometrist-statistics-buffer-name
 *** chronometrist-statistics.el
-    1. Variable - chronometrist-statistics--ui-state
-    2. Variable - chronometrist-statistics--point
+    1. Internal Variable - chronometrist-statistics--ui-state
+    2. Internal Variable - chronometrist-statistics--point
     3. Variable - chronometrist-statistics-mode-map
     4. Function - chronometrist-statistics-count-average-time-spent (task &optional table)
        * string &optional hash-table -> seconds
@@ -253,9 +253,21 @@
     16. Function - chronometrist-interval (event)
         * event -> encode-time
 *** chronometrist-timer.el
-    1. Variable - chronometrist--timer-object
+    1. Internal Variable - chronometrist--timer-object
     2. Function - chronometrist-timer ()
     3. Command - chronometrist-stop-timer ()
     4. Command - chronometrist-maybe-start-timer (&optional interactive-test)
     5. Command - chronometrist-force-restart-timer ()
     6. Command - chronometrist-change-update-interval (arg)
+*** chronometrist-targets
+    1. Custom Variable - chronometrist-time-targets-list nil
+    2. Function - chronometrist-approach-alert (task current goal)
+    3. Function - chronometrist-complete-alert (task current goal)
+    4. Function - chronometrist-exceed-alert (task current goal)
+    5. Function - chronometrist-no-goal-alert (task current goal)
+    6. Custom Variable - chronometrist-timed-alert-functions
+    7. Function - chronometrist-get-target (task &optional targets-list)
+    8. Internal Variable - chronometrist--timers-list
+    9. Function - chronometrist-minutes-string (minutes)
+    10. Function - chronometrist-run-alert-timers (task)
+    11. Function - chronometrist-stop-alert-timers (&optional _task)
