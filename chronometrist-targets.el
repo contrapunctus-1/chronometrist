@@ -18,8 +18,9 @@
 ;;; them as a template) and add them to the desired hooks.
 
 ;; TODO -
-;; clear notifications on file change event
-;; define types for custom variables
+;; * clear notifications on file change event
+;; * define types for custom variables
+;; * behave differently when target has been reached and we're starting again!
 
 (defcustom chronometrist-time-targets-list nil
   "List to specify daily time goals for each project.
@@ -33,26 +34,29 @@ There can be more than one PROJECT, to specify that you would
 like to spend TARGET time on any one of those projects."
   :group 'chronometrist)
 
-(defun chronometrist-approach-alert (task goal)
+(defun chronometrist-approach-alert (task current goal)
+  ;; TODO - don't run if current > goal
   (when goal
     (list (chronometrist-minutes-string (- goal 5))
           nil
           (format "5 minutes remain for %s" task))))
 
-(defun chronometrist-complete-alert (task goal)
+(defun chronometrist-complete-alert (task current goal)
+  ;; TODO - don't run if current > goal
   (when goal
     (list (chronometrist-minutes-string goal)
           nil
           (format "Target for %s reached" task))))
 
-(defun chronometrist-exceed-alert (task goal)
+(defun chronometrist-exceed-alert (task current goal)
   (when goal
+    ;; TODO - if current > (+ 5 goal), run this _now_ instead
     (list (chronometrist-minutes-string (+ goal 5))
           nil
           (format "You are exceeding the goal for %s!" task)
           :severity 'high)))
 
-(defun chronometrist-no-goal-alert (task goal)
+(defun chronometrist-no-goal-alert (task current goal)
   (unless goal
     (list (chronometrist-minutes-string 15)
           t
@@ -66,9 +70,10 @@ like to spend TARGET time on any one of those projects."
     chronometrist-exceed-alert
     chronometrist-no-goal-alert)
   "List to describe timed alerts.
-Each element should be a function, which will be called with two
-arguments - the name of the current task (as a string) and the
-goal for that task (a number representing minutes, or nil).
+Each element should be a function, which will be called with
+three arguments - the name of the current task (as a string), the
+time spent on it today, and the goal time for that task (a number
+representing minutes, or nil).
 
 Each function must return a list in the form
 \(TIME REPEAT ALERT-TEXT [ALERT-PARAMETERS])
@@ -104,8 +109,10 @@ If TARGETS-LIST is not supplied, `chronometrist-time-targets-list' is used."
 To use, add this to `chronometrist-after-in-functions', and
 `chronometrist-stop-alert-timers' to
 `chronometrist-after-out-functions'."
-  (let ((target (chronometrist-get-target task)))
-    (->> (--map (funcall it task target) chronometrist-timed-alert-functions)
+  (let ((current (-> (chronometrist-task-time-one-day task)
+                     (chronometrist-format-time)))
+        (target  (chronometrist-get-target task)))
+    (->> (--map (funcall it task current target) chronometrist-timed-alert-functions)
          (-filter #'identity) ;; remove nil results
          (mapc (lambda (list)
                  (->> (run-at-time (pop list)
