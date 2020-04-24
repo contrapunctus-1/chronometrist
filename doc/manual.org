@@ -47,18 +47,19 @@
    * DEPRECATED - deprecated, slated to be removed in the future
 
 *** Legend of currently-used time formats
-    |  1. | decode-time                      | (seconds minutes hours day month year dow dst utcoff) |
-    |  2. | list-timestamp                   | (year month day hours minutes seconds)                |
-    |  3. | list-time/list-duration          | (hours minutes seconds)                               |
-    |  4. | list-date                        | (year month day)                                      |
-    |  5. | vector-date                      | [year month day]                                      |
-    |  6. | vector-time/vector-duration      | [hours minutes seconds]                               |
-    |  7. | encode-time (UNIX epoch)         | (sec-high sec-low microsec picosec)                   |
-    |  8. | seconds                          | seconds as an integer                                 |
-    |  9. | iso-timestamp                    | "YYYY-MM-DDTHH:MM:SSZ"                                |
-    | 10. | iso-date                         | "YYYY-MM-DD"                                          |
-    | 11. | (DEPRECATED) timeclock-timestamp | "year/month/day hours:minutes:seconds"                |
-    | 12. | (DEPRECATED) timeclock-date      | "year/month/day"                                      |
+    |  1. | (Emacs) decode-time                | (seconds minutes hours day month year dow dst utcoff) |
+    |  2. | list-timestamp                     | (year month day hours minutes seconds)                |
+    |  3. | list-date                          | (year month day)                                      |
+    |  4. | list-time/list-duration            | (hours minutes seconds)                               |
+    |  5. | vector-date                        | [year month day]                                      |
+    |  6. | vector-time/vector-duration        | [hours minutes seconds]                               |
+    |  7. | (Emacs) encode-time AKA UNIX epoch | (sec-high sec-low microsec picosec)                   |
+    |  8. | seconds                            | seconds as an integer                                 |
+    |  9. | minutes                            | minutes as an integer                                 |
+    | 10. | iso-timestamp                      | "YYYY-MM-DDTHH:MM:SSZ"                                |
+    | 11. | iso-date                           | "YYYY-MM-DD"                                          |
+    | 12. | (DEPRECATED) timeclock-timestamp   | "year/month/day hours:minutes:seconds"                |
+    | 13. | (DEPRECATED) timeclock-date        | "year/month/day"                                      |
 
 *** chronometrist-common.el
     1. Variable - chronometrist-empty-time-string
@@ -154,7 +155,9 @@
     7. Function - chronometrist-plist-pp (object &optional stream)
 *** chronometrist-queries.el
     1. Function - chronometrist-task-time-one-day (task &optional date-string)
+       * String &optional iso-date -> vector-duration
     2. Function - chronometrist-active-time-one-day (&optional date-string)
+       * &optional iso-date -> vector-duration
     3. Function - chronometrist-statistics-count-active-days (task &optional table)
     4. Function - chronometrist-task-events-in-day (task date-string)
 *** chronometrist-report-custom.el
@@ -244,8 +247,9 @@
     9. Function - chronometrist-seconds-to-hms (seconds)
        * seconds -> vector-duration
     10. Function - chronometrist-time-add (a b)
-        * time-vector time-vector -> time-vector
+        * vector-duration vector-duration -> vector-duration
     11. Function - chronometrist-iso-date->timestamp (date)
+        * iso-date -> iso-timestamp
     12. Function - chronometrist-date->time (date)
     13. Function - chronometrist-date-less-p (date1 date2)
     14. Function - chronometrist-time-less-or-equal-p (t1 t2)
@@ -267,6 +271,7 @@
     5. Function - chronometrist-no-goal-alert (task current goal)
     6. Custom Variable - chronometrist-timed-alert-functions
     7. Function - chronometrist-get-target (task &optional targets-list)
+       * String &optional List -> minutes
     8. Internal Variable - chronometrist--timers-list
     9. Function - chronometrist-minutes-string (minutes)
     10. Function - chronometrist-run-alert-timers (task)
