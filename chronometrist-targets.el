@@ -58,8 +58,8 @@ like to spend TARGET time on any one of those projects."
 
 (defun chronometrist-no-goal-alert (task current goal)
   (unless goal
-    (list (chronometrist-minutes-string 15)
-          t
+    (list t
+          (* 15 60) ;; every 15 minutes
           (format "You have spent %s time on %s"
                   (chronometrist-task-time-one-day task)
                   task))))
