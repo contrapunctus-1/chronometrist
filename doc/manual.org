@@ -51,8 +51,8 @@
     |  2. | list-timestamp                     | (year month day hours minutes seconds)                |
     |  3. | list-date                          | (year month day)                                      |
     |  4. | list-time/list-duration            | (hours minutes seconds)                               |
-    |  5. | vector-date                        | [year month day]                                      |
-    |  6. | vector-time/vector-duration        | [hours minutes seconds]                               |
+    |  5. | (?) vector-date                    | [year month day]                                      |
+    |  6. | (?) vector-time/vector-duration    | [hours minutes seconds]                               |
     |  7. | (Emacs) encode-time AKA UNIX epoch | (sec-high sec-low microsec picosec)                   |
     |  8. | seconds                            | seconds as an integer                                 |
     |  9. | minutes                            | minutes as an integer                                 |
