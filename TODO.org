@@ -37,23 +37,6 @@
    5. [ ] Expandable items - show intervals for task today
       * [ ] Switch between intervals and tag-combination breakdown
    6. Revisit 'no reason' commands - maybe we should ask for tags and key-values with the regular commands, and skip them with the 'no reason' variants?
-   7. [-] Time targets/goals
-      * [X] User defines targets for tasks
-      * [X] Chronometrist displays targets column
-      * [-] Notify user when
-        + approaching target (e.g. -5 minutes)
-        + target completed
-        + exceeding target (target+5)
-        + [X] More flexible way to define alerts.
-        + [ ] If time goals are defined and there is a task without a goal, just remind the user every 15 minutes of the time they've spent on it
-        + [ ] Handle manual file changes; on file change -
-          - clearing existing notifications
-          - if last expression has a :stop value, stop alert timers
-        + [ ] Also take time spent so far into account (e.g. don't start approach or complete alerts again if time has been exceeded and we're starting the task again despite that)
-      * [ ] Colorize times in Chronometrist buffer
-        - untouched project with target defined - red
-        - target ±5 minutes - green
-        - target*2 and above - red
 *** Key-values [66%]
     1. [X] bug - value-history appears in chronological rather than reverse chronological order
     2. [X] generate history hash table from chronometrist-file.
@@ -149,3 +132,21 @@
 
 * Documentation [0%]
   1. [ ] Make Texinfo documentation
+* Time targets/goals [50%]
+  1. [X] User defines targets for tasks
+  2. [X] Chronometrist displays targets column
+  3. [-] Notify user when
+     + approaching target (e.g. -5 minutes)
+     + target completed
+     + exceeding target (target+5)
+     + [X] More flexible way to define alerts.
+     + [ ] If time goals are defined and there is a task without a goal, just remind the user every 15 minutes of the time they've spent on it
+       - [ ] Needs an even more flexible way to define alerts...
+     + [ ] Handle manual file changes; on file change -
+       - clearing existing notifications
+       - if last expression has a :stop value, stop alert timers
+     + [ ] Also take time spent so far into account (e.g. don't start approach or complete alerts again if time has been exceeded and we're starting the task again despite that)
+  4. [ ] Colorize times in Chronometrist buffer
+     - untouched project with target defined - red
+     - target ±5 minutes - green
+     - target*2 and above - red
