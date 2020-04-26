@@ -34,35 +34,46 @@ There can be more than one PROJECT, to specify that you would
 like to spend TARGET time on any one of those projects."
   :group 'chronometrist)
 
-(defun chronometrist-approach-alert (task current goal)
+(defun chronometrist-run-at-time (time repeat function &rest args)
+  "Like `run-at-time', but append timers to `chronometrist--timers-list'."
+  (->> (run-at-time time repeat function &rest args)
+       (list)
+       (append chronometrist--timers-list)
+       (setq chronometrist--timers-list)))
+
+(defun chronometrist-approach-alert (task goal)
   ;; TODO - don't run if current > goal
   (when goal
-    (list (chronometrist-minutes-string (- goal 5))
-          nil
-          (format "5 minutes remain for %s" task))))
+    (chronometrist-run-at-time (chronometrist-minutes-string (- goal 5))
+                  nil
+                  (lambda ()
+                    (alert (format "5 minutes remain for %s" task))))))
 
-(defun chronometrist-complete-alert (task current goal)
+(defun chronometrist-complete-alert (task goal)
   ;; TODO - don't run if current > goal
   (when goal
-    (list (chronometrist-minutes-string goal)
-          nil
-          (format "Target for %s reached" task))))
+    (chronometrist-run-at-time (chronometrist-minutes-string goal)
+                  nil
+                  (lambda ()
+                    (alert (format "Target for %s reached" task))))))
 
-(defun chronometrist-exceed-alert (task current goal)
+(defun chronometrist-exceed-alert (task goal)
   (when goal
     ;; TODO - if current > (+ 5 goal), run this _now_ instead
-    (list (chronometrist-minutes-string (+ goal 5))
-          nil
-          (format "You are exceeding the goal for %s!" task)
-          :severity 'high)))
+    (chronometrist-run-at-time (chronometrist-minutes-string (+ goal 5))
+                  nil
+                  (lambda ()
+                    (alert (format "You are exceeding the goal for %s!" task)
+                           :severity 'high)))))
 
-(defun chronometrist-no-goal-alert (task current goal)
+(defun chronometrist-no-goal-alert (task goal)
   (unless goal
-    (list t
-          (* 15 60) ;; every 15 minutes
-          (format "You have spent %s time on %s"
-                  (chronometrist-task-time-one-day task)
-                  task))))
+    (chronometrist-run-at-time t
+                  (* 15 60) ;; every 15 minutes
+                  (lambda ()
+                    (alert (format "You have spent %s time on %s"
+                                   (chronometrist-task-time-one-day task)
+                                   task))))))
 
 (defcustom chronometrist-timed-alert-functions
   '(chronometrist-approach-alert
@@ -70,20 +81,18 @@ like to spend TARGET time on any one of those projects."
     chronometrist-exceed-alert
     chronometrist-no-goal-alert)
   "List to describe timed alerts.
-Each element should be a function, which will be called with
-three arguments - the name of the current task (as a string), the
-time spent on it today, and the goal time for that task (a number
-representing minutes, or nil).
+Each element should be a function, which will be called with one
+argument - the name of the current task (as a string) and the
+goal time for that task (minutes as an integer).
 
-Each function must return a list in the form
-\(TIME REPEAT ALERT-TEXT [ALERT-PARAMETERS])
+Typically, each function in this list should call `run-at-time'
+to run another function, which in turn should call `alert' to
+notify the user.
 
-TIME and REPEAT are passed to `run-at-time'.
-ALERT-TEXT and ALERT-PARAMETERS are passed to `alert'.
-
-A function in this list returning nil is taken as a sign to not
-run that timed alert. This can be used to create conditional
-timed alerts."
+The timer returned by `run-at-time' should also be appended to
+`chronometrist--timers-list', so that it can later be stopped by
+`chronometrist-stop-alert-timers'. `chronometrist-run-at-time'
+will do that for you."
   :group 'chronometrist)
 
 ;; TODO - if there are multiple tasks associated with a single time goal (i.e. `(int "task1" "task2" ...)'), and the user has reached the goal for one of those tasks, don't display the goal for the other associated tasks
@@ -112,16 +121,8 @@ To use, add this to `chronometrist-after-in-functions', and
   (let ((current (-> (chronometrist-task-time-one-day task)
                      (chronometrist-format-time)))
         (target  (chronometrist-get-target task)))
-    (->> (--map (funcall it task current target) chronometrist-timed-alert-functions)
-         (-filter #'identity) ;; remove nil results
-         (mapc (lambda (list)
-                 (->> (run-at-time (pop list)
-                                   (pop list)
-                                   (lambda ()
-                                     (apply #'alert list)))
-                      (list)
-                      (append chronometrist--timers-list)
-                      (setq chronometrist--timers-list)))))))
+    (mapc (funcall it task target)
+          chronometrist-timed-alert-functions)))
 
 (defun chronometrist-stop-alert-timers (&optional _task)
   "Stop timers to alert the user of the time spent on TASK.
