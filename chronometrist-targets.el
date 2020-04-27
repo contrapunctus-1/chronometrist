@@ -36,7 +36,7 @@ like to spend TARGET time on any one of those projects."
 
 (defun chronometrist-run-at-time (time repeat function &rest args)
   "Like `run-at-time', but append timers to `chronometrist--timers-list'."
-  (->> (run-at-time time repeat function &rest args)
+  (->> (run-at-time time repeat function args)
        (list)
        (append chronometrist--timers-list)
        (setq chronometrist--timers-list)))
@@ -121,7 +121,8 @@ To use, add this to `chronometrist-after-in-functions', and
   (let ((current (-> (chronometrist-task-time-one-day task)
                      (chronometrist-format-time)))
         (target  (chronometrist-get-target task)))
-    (mapc (funcall it task target)
+    (mapc (lambda (f)
+            (funcall f task target))
           chronometrist-timed-alert-functions)))
 
 (defun chronometrist-stop-alert-timers (&optional _task)
