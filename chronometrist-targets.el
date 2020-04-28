@@ -36,7 +36,7 @@ like to spend TARGET time on any one of those projects."
 
 (defun chronometrist-run-at-time (time repeat function &rest args)
   "Like `run-at-time', but append timers to `chronometrist--timers-list'."
-  (->> (run-at-time time repeat function args)
+  (->> (apply #'run-at-time time repeat function args)
        (list)
        (append chronometrist--timers-list)
        (setq chronometrist--timers-list)))
