@@ -4,9 +4,10 @@
 ;; Maintainer: contrapunctus <xmpp:contrapunctus@jabber.fr>
 ;; Keywords: calendar
 ;; Homepage: https://framagit.org/contrapunctus/chronometrist
-;; Package-Requires: ((emacs "25.1") (cl-lib "1.0") (alert "1.2"))
+;; Package-Requires: ((emacs "25.1") (cl-lib "1.0") (alert "1.2") (chronometrist "0.4.3"))
 ;; Version: 0.1.0
 
+(require 'chronometrist)
 (require 'alert)
 
 ;;; Commentary:
@@ -121,6 +122,7 @@ To use, add this to `chronometrist-after-in-functions', and
   (let ((current (-> (chronometrist-task-time-one-day task)
                      (chronometrist-format-time)))
         (target  (chronometrist-get-target task)))
+    (add-hook 'chronometrist-file-change-hook #'chronometrist-targets-file-change)
     (mapc (lambda (f)
             (funcall f task target))
           chronometrist-timed-alert-functions)))
@@ -134,6 +136,14 @@ To use, add this to `chronometrist-after-out-functions', and
   (and chronometrist--timers-list
        (mapc #'cancel-timer chronometrist--timers-list)
        (setq chronometrist--timers-list   nil)))
+
+(defun chronometrist-targets-file-change ()
+  "Manage timed alerts when `chronometrist-file' changes."
+  (let ((last (chronometrist-last-expr)))
+    (chronometrist-stop-alert-timers)
+    ;; if there's a task running, start timed alerts for it
+    (unless (plist-get last :stop)
+      (chronometrist-run-alert-timers (plist-get last :name)))))
 
 (provide 'chronometrist-targets)
 

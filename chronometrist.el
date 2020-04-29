@@ -215,6 +215,8 @@ value of `revert-buffer-function'."
   "Re-read `chronometrist-file' and refresh the `chronometrist' buffer.
 Argument _FS-EVENT is ignored."
   ;; (chronometrist-file-clean)
+  (run-hooks chronometrist-file-change-hook)
+  ;; REVIEW - can we move most/all of this to the `chronometrist-file-change-hook'?
   (chronometrist-events-populate)
   (setq chronometrist-task-list (chronometrist-tasks-from-table))
   (chronometrist-tags-history-populate)
@@ -267,6 +269,9 @@ return a non-nil value.")
   "Functions to run after a task is clocked out.
 Each function in this hook must accept a single argument, which
 is the name of the task to be clocked out of.")
+
+(defvar chronometrist-file-change-hook nil
+  "Functions to be run after `chronometrist-file' is changed on disk.")
 
 (defun chronometrist-run-functions-and-clock-in (task)
   "Run hooks and clock in to TASK."
