@@ -215,7 +215,7 @@ value of `revert-buffer-function'."
   "Re-read `chronometrist-file' and refresh the `chronometrist' buffer.
 Argument _FS-EVENT is ignored."
   ;; (chronometrist-file-clean)
-  (run-hooks chronometrist-file-change-hook)
+  (run-hooks 'chronometrist-file-change-hook)
   ;; REVIEW - can we move most/all of this to the `chronometrist-file-change-hook'?
   (chronometrist-events-populate)
   (setq chronometrist-task-list (chronometrist-tasks-from-table))
