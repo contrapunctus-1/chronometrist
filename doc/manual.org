@@ -126,8 +126,8 @@
     22. Major Mode - chronometrist-mode
     23. Function - chronometrist-toggle-task-button (button)
     24. Function - chronometrist-add-new-task-button (button)
-    25. Command - chronometrist-toggle-task (&optional prefix)
-    26. Command - chronometrist-toggle-task-no-reason (&optional prefix)
+    25. Command - chronometrist-toggle-task (&optional prefix inhibit-hooks)
+    26. Command - chronometrist-toggle-task-no-hooks (&optional prefix)
     27. Command - chronometrist-add-new-task ()
     28. Command - chronometrist (&optional arg)
 *** chronometrist-events.el

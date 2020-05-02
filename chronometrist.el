@@ -168,8 +168,8 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
       (chronometrist-print-keybind 'chronometrist-toggle-task
                       "toggle task at point")
 
-      (chronometrist-print-keybind 'chronometrist-toggle-task-no-reason
-                      "toggle without asking for reason")
+      (chronometrist-print-keybind 'chronometrist-toggle-task-no-hooks
+                      "toggle without running hooks")
 
       (insert "\n " (format "%s %s - %s"
                             "<numeric argument N>"
@@ -241,10 +241,8 @@ Each function in this hook must accept a single argument, which
 is the name of the task to be clocked-in.
 
 The commands `chronometrist-toggle-task-button',
-`chronometrist-add-new-task-button',
-`chronometrist-toggle-task',
-`chronometrist-add-new-task', and
-`chronometrist-toggle-task-no-reason' will run this hook.")
+`chronometrist-add-new-task-button', `chronometrist-toggle-task',
+and `chronometrist-add-new-task' will run this hook.")
 
 (defvar chronometrist-after-in-functions nil
   "Functions to run after a task is clocked in.
@@ -252,10 +250,8 @@ Each function in this hook must accept a single argument, which
 is the name of the task to be clocked-in.
 
 The commands `chronometrist-toggle-task-button',
-`chronometrist-add-new-task-button',
-`chronometrist-toggle-task',
-`chronometrist-add-new-task', and
-`chronometrist-toggle-task-no-reason' will run this hook.")
+`chronometrist-add-new-task-button', `chronometrist-toggle-task',
+and `chronometrist-add-new-task' will run this hook.")
 
 (defvar chronometrist-before-out-functions nil
   "Functions to run before a task is clocked out.
@@ -289,11 +285,11 @@ is the name of the task to be clocked out of.")
 (defvar chronometrist-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "RET")   #'chronometrist-toggle-task)
-    (define-key map (kbd "M-RET") #'chronometrist-toggle-task-no-reason)
+    (define-key map (kbd "M-RET") #'chronometrist-toggle-task-no-hooks)
     (define-key map (kbd "l")     #'chronometrist-open-file)
     (define-key map (kbd "r")     #'chronometrist-report)
     (define-key map [mouse-1]     #'chronometrist-toggle-task)
-    (define-key map [mouse-3]     #'chronometrist-toggle-task-no-reason)
+    (define-key map [mouse-3]     #'chronometrist-toggle-task-no-hooks)
     (define-key map (kbd "a")     #'chronometrist-add-new-task)
     map)
   "Keymap used by `chronometrist-mode'.")
@@ -349,19 +345,31 @@ action, and is ignored."
 ;; TODO - if clocked in and point not on a task, just clock out
 ;; PROFILE
 ;; TODO - implement `chronometrist-ask-tags-p' and `chronometrist-ask-key-values-p' (don't prompt for them if nil)
-(defun chronometrist-toggle-task (&optional prefix)
+(defun chronometrist-toggle-task (&optional prefix inhibit-hooks)
   "Start or stop the task at point.
 
 If there is no task at point, do nothing.
 
 With numeric prefix argument PREFIX, toggle the Nth task in
-the buffer. If there is no corresponding task, do nothing."
+the buffer. If there is no corresponding task, do nothing.
+
+If INHIBIT-HOOKS is non-nil, the hooks
+`chronometrist-before-in-functions',
+`chronometrist-after-in-functions',
+`chronometrist-before-out-functions', and
+`chronometrist-after-out-functions' will not be run."
   (interactive "P")
   (let* ((empty-file (chronometrist-common-file-empty-p chronometrist-file))
          (nth        (when prefix (chronometrist-goto-nth-task prefix)))
          (at-point   (chronometrist-task-at-point))
          (target     (or nth at-point))
-         (current    (chronometrist-current-task)))
+         (current    (chronometrist-current-task))
+         (in-fn      (if inhibit-hooks
+                         #'chronometrist-in
+                       #'chronometrist-run-functions-and-clock-in))
+         (out-fn     (if inhibit-hooks
+                         #'chronometrist-out
+                       #'chronometrist-run-functions-and-clock-out)))
     (cond (empty-file (chronometrist-add-new-task)) ;; do not run hooks - chronometrist-add-new-task will do it
           ;; What should we do if the user provides an invalid argument? Currently - nothing.
           ((and prefix (not nth)))
@@ -370,17 +378,17 @@ the buffer. If there is no corresponding task, do nothing."
            ;; clocked in + target is some other task = clock out, clock in to task
            ;; clocked out = clock in
            (when current
-             (chronometrist-run-functions-and-clock-out current))
+             (funcall out-fn current))
            (unless (equal target current)
-             (chronometrist-run-functions-and-clock-in target))))))
+             (funcall in-fn target))))))
 
-(defun chronometrist-toggle-task-no-reason (&optional prefix)
-  "Like `chronometrist-toggle-task', but don't ask for a reason.
+(defun chronometrist-toggle-task-no-hooks (&optional prefix)
+  "Like `chronometrist-toggle-task', but don't run
 
 With numeric prefix argument PREFIX, toggle the Nth task. If there
 is no corresponding task, do nothing."
   (interactive "P")
-  (chronometrist-toggle-task prefix))
+  (chronometrist-toggle-task prefix t))
 
 (defun chronometrist-add-new-task ()
   "Add a new task."
