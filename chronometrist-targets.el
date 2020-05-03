@@ -43,14 +43,17 @@ like to spend TARGET time on any one of those projects."
        (setq chronometrist--timers-list)))
 
 (defun chronometrist-approach-alert (task goal)
+  "Alert the user when they are 5 minutes away from reaching GOAL for TASK."
   ;; TODO - don't run if current > goal
   (when goal
+    ;; FIXME - don't run after (- goal 5); run after (- goal 5 spent)
     (chronometrist-run-at-time (chronometrist-minutes-string (- goal 5))
                   nil
                   (lambda ()
                     (alert (format "5 minutes remain for %s" task))))))
 
 (defun chronometrist-complete-alert (task goal)
+  "Alert the user when they have reached the GOAL for TASK."
   ;; TODO - don't run if current > goal
   (when goal
     (chronometrist-run-at-time (chronometrist-minutes-string goal)
@@ -59,6 +62,7 @@ like to spend TARGET time on any one of those projects."
                     (alert (format "Target for %s reached" task))))))
 
 (defun chronometrist-exceed-alert (task goal)
+  "Alert the user when they have exceeded the GOAL for TASK."
   (when goal
     ;; TODO - if current > (+ 5 goal), run this _now_ instead
     (chronometrist-run-at-time (chronometrist-minutes-string (+ goal 5))
