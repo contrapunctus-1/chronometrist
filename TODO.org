@@ -37,6 +37,10 @@
    5. [ ] Expandable items - show intervals for task today
       * [ ] Switch between intervals and tag-combination breakdown
    6. Revisit 'no reason' commands - maybe we should ask for tags and key-values with the regular commands, and skip them with the 'no reason' variants?
+   7. Time targets/goals
+      * User defines targets for tasks
+      * Chronometrist displays targets column
+      * Remind user when about to approach target (e.g. -5 minutes)
 *** Key-values [66%]
     1. [X] bug - value-history appears in chronological rather than reverse chronological order
     2. [X] generate history hash table from chronometrist-file.
