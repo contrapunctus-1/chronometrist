@@ -68,9 +68,10 @@ like to spend TARGET time on any one of those projects."
                            :severity 'high)))))
 
 (defun chronometrist-no-goal-alert (task goal)
+  "If TASK has no GOAL, regularly remind the user of the time they have spent on it."
   (unless goal
-    (chronometrist-run-at-time t
-                  (* 15 60) ;; every 15 minutes
+    (chronometrist-run-at-time (chronometrist-minutes-string 15)
+                  (* 15 60) ;; repeat every 15 minutes
                   (lambda ()
                     (alert (format "You have spent %s time on %s"
                                    (chronometrist-task-time-one-day task)
