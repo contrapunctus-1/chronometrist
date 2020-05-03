@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * Support for time goals via optional package `chronometrist-targets`.
 * New hook - `chronometrist-file-change-hook`
+
+## [0.4.3] - 2020-05-03
 ### Changed
 * `chronometrist-toggle-task-no-reason` (which did nothing since the migration from timeclock.el) is now called `chronometrist-toggle-task-no-hooks`. It will toggle the task without running the before-in/after-in/before-out/after-out functions.
 ### Fixed
