@@ -26,7 +26,7 @@ The data is obtained from `chronometrist-file', via `chronometrist-events'.
 
 DATE-STRING must be in the form \"YYYY-MM-DD\".
 
-The return value is a vector in the form [HOURS MINUTES SECONDS]"
+The return value is seconds, as an integer."
   (let* ((date-string    (if date-string date-string (chronometrist-date)))
          (task-events    (chronometrist-task-events-in-day task date-string))
          (last-event     (cl-copy-list (car (last task-events))))
@@ -43,10 +43,9 @@ The return value is a vector in the form [HOURS MINUTES SECONDS]"
                    (reverse)))
              (chronometrist-events->time-list)
              (chronometrist-time-list->sum-of-intervals)
-             (cadr)
-             (chronometrist-seconds-to-hms))
+             (cadr))
       ;; no events for this task on DATE-STRING i.e. no time spent
-      [0 0 0])))
+      0)))
 
 (defun chronometrist-active-time-one-day (&optional date-string)
   "Return the total active time on DATE (if non-nil) or today.
@@ -54,7 +53,8 @@ DATE-STRING must be in the form \"YYYY-MM-DD\".
 
 Return value is a vector in the form [HOURS MINUTES SECONDS]."
   (->> chronometrist-task-list
-       (--map (chronometrist-task-time-one-day it date-string))
+       (--map (chronometrist-seconds-to-hms
+               (chronometrist-task-time-one-day it date-string)))
        (-reduce #'chronometrist-time-add)))
 
 (defun chronometrist-statistics-count-active-days (task &optional table)

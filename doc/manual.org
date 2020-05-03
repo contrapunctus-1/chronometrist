@@ -155,7 +155,7 @@
     7. Function - chronometrist-plist-pp (object &optional stream)
 *** chronometrist-queries.el
     1. Function - chronometrist-task-time-one-day (task &optional date-string)
-       * String &optional iso-date -> vector-duration
+       * String &optional iso-date -> seconds
     2. Function - chronometrist-active-time-one-day (&optional date-string)
        * &optional iso-date -> vector-duration
     3. Function - chronometrist-statistics-count-active-days (task &optional table)

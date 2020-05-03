@@ -42,6 +42,14 @@ like to spend TARGET time on any one of those projects."
        (append chronometrist--timers-list)
        (setq chronometrist--timers-list)))
 
+(defun chronometrist-seconds->alert-string (seconds)
+  "Convert SECONDS to a string suitable for displaying in alerts."
+  (let ((m (% (/ seconds 60) 60))
+        (h (/ seconds 3600)))
+    (if (zerop h)
+        (format "%s minutes" m)
+      (format "%s hours and %s minutes" h m))))
+
 (defun chronometrist-approach-alert (task goal)
   "Alert the user when they are 5 minutes away from reaching GOAL for TASK."
   ;; TODO - don't run if current > goal
@@ -77,8 +85,9 @@ like to spend TARGET time on any one of those projects."
     (chronometrist-run-at-time (chronometrist-minutes-string 15)
                   (* 15 60) ;; repeat every 15 minutes
                   (lambda ()
-                    (alert (format "You have spent %s time on %s"
-                                   (chronometrist-task-time-one-day task)
+                    (alert (format "You have spent %s on %s"
+                                   (chronometrist-seconds->alert-string
+                                    (chronometrist-task-time-one-day task))
                                    task))))))
 
 (defcustom chronometrist-timed-alert-functions
@@ -124,9 +133,7 @@ If TARGETS-LIST is not supplied, `chronometrist-time-targets-list' is used."
 To use, add this to `chronometrist-after-in-functions', and
 `chronometrist-stop-alert-timers' to
 `chronometrist-after-out-functions'."
-  (let ((current (-> (chronometrist-task-time-one-day task)
-                     (chronometrist-format-time)))
-        (target  (chronometrist-get-target task)))
+  (let ((target  (chronometrist-get-target task)))
     (add-hook 'chronometrist-file-change-hook #'chronometrist-targets-file-change)
     (mapc (lambda (f)
             (funcall f task target))

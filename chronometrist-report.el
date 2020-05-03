@@ -85,8 +85,9 @@ The first date is the first occurrence of
     (setq chronometrist-report--ui-week-dates week-dates)
     (mapcar (lambda (task)
               (let ((task-daily-time-list
-                     (--map (chronometrist-task-time-one-day task
-                                                 (chronometrist-date it))
+                     (--map (chronometrist-seconds-to-hms
+                             (chronometrist-task-time-one-day task
+                                                  (chronometrist-date it)))
                             week-dates)))
                 (list task
                       (vconcat

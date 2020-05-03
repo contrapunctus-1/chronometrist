@@ -94,6 +94,7 @@ See custom variable `chronometrist-activity-indicator'."
                                   'action 'chronometrist-toggle-task-button
                                   'follow-link t))
                (task-time   (-> (chronometrist-task-time-one-day task)
+                                (chronometrist-seconds-to-hms)
                                 (chronometrist-format-time)))
                (indicator   (if (chronometrist-task-active? task)
                                 (chronometrist-activity-indicator)
