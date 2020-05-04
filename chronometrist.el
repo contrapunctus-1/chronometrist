@@ -99,13 +99,13 @@ See custom variable `chronometrist-activity-indicator'."
                (indicator   (if (chronometrist-task-active? task)
                                 (chronometrist-activity-indicator)
                               ""))
-               (target      (chronometrist-get-target task))
+               (target      (chronometrist-get-goal task))
                (target-str  (if target
                                 (format "% 4d" target)
                               "")))
           (list task
                 (vconcat (vector index task-button task-time indicator)
-                         (when (bound-and-true-p chronometrist-time-targets-list)
+                         (when (bound-and-true-p chronometrist-goals-list)
                            (vector target-str))))))))
 
 (defun chronometrist-task-at-point ()
@@ -303,7 +303,7 @@ is the name of the task to be clocked out of.")
                   ("Task"    25 t)
                   ("Time"    10 t)
                   ("Active"  10 t)]
-                 (when chronometrist-time-targets-list
+                 (when chronometrist-goals-list
                    [("Target" 3 t)])))
   (make-local-variable 'tabulated-list-entries)
   (setq tabulated-list-entries 'chronometrist-entries)

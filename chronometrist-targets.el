@@ -1,4 +1,4 @@
-;;; chronometrist-targets.el --- Adds support for time-goals to Chronometrist -*- lexical-binding: t; -*-
+;;; chronometrist-goals.el --- Adds support for time-goals to Chronometrist -*- lexical-binding: t; -*-
 
 ;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
 ;; Maintainer: contrapunctus <xmpp:contrapunctus@jabber.fr>
@@ -12,28 +12,31 @@
 
 ;;; Commentary:
 
-;;; It is hoped that `chronometrist-timed-alert-functions' provides a good balance
+;;; It is hoped that `chronometrist-goals-alert-functions' provides a good balance
 ;;; of flexibility and ease of use for the majority of use cases. A
 ;;; user desiring even greater control may define their own versions
-;;; of `chronometrist-run-alert-timers' and `chronometrist-stop-alert-timers' (preferably using
+;;; of `chronometrist-goals-run-alert-timers' and `chronometrist-goals-stop-alert-timers' (preferably using
 ;;; them as a template) and add them to the desired hooks.
 
 ;; TODO -
 ;; * clear notifications on file change event
 ;; * define types for custom variables
-;; * behave differently when target has been reached and we're starting again!
+;; * behave differently when goal has been reached and we're starting again!
 
-(defcustom chronometrist-time-targets-list nil
-  "List to specify daily time goals for each project.
-Each element must be in the form (TARGET PROJECT *).
+(defcustom chronometrist-goals-list nil
+  "List to specify daily time goals for each task.
+Each element must be in the form (GOAL TASK *).
 
-TARGET is an integer specifying number of minutes.
+GOAL is an integer specifying number of minutes.
 
-PROJECT is the project on which you would like spend TARGET time.
+TASK is the task on which you would like spend GOAL time.
 
-There can be more than one PROJECT, to specify that you would
-like to spend TARGET time on any one of those projects."
-  :group 'chronometrist)
+There can be more than one TASK, to specify that you would
+like to spend GOAL time on any one of those tasks."
+  :group 'chronometrist
+  :type '(repeat
+          (list integer :value 15
+                (repeat :inline t string))))
 
 (defun chronometrist-run-at-time (time repeat function &rest args)
   "Like `run-at-time', but append timers to `chronometrist--timers-list'."
@@ -67,7 +70,7 @@ like to spend TARGET time on any one of those projects."
     (chronometrist-run-at-time (chronometrist-minutes-string goal)
                   nil
                   (lambda ()
-                    (alert (format "Target for %s reached" task))))))
+                    (alert (format "Goal for %s reached" task))))))
 
 (defun chronometrist-exceed-alert (task goal)
   "Alert the user when they have exceeded the GOAL for TASK."
@@ -90,7 +93,7 @@ like to spend TARGET time on any one of those projects."
                                     (chronometrist-task-time-one-day task))
                                    task))))))
 
-(defcustom chronometrist-timed-alert-functions
+(defcustom chronometrist-goals-alert-functions
   '(chronometrist-approach-alert
     chronometrist-complete-alert
     chronometrist-exceed-alert
@@ -106,20 +109,20 @@ notify the user.
 
 The timer returned by `run-at-time' should also be appended to
 `chronometrist--timers-list', so that it can later be stopped by
-`chronometrist-stop-alert-timers'. `chronometrist-run-at-time'
+`chronometrist-goals-stop-alert-timers'. `chronometrist-run-at-time'
 will do that for you."
   :group 'chronometrist)
 
 ;; TODO - if there are multiple tasks associated with a single time goal (i.e. `(int "task1" "task2" ...)'), and the user has reached the goal for one of those tasks, don't display the goal for the other associated tasks
-(defun chronometrist-get-target (task &optional targets-list)
-  "Return time target for TASK from TARGETS-LIST.
+(defun chronometrist-get-goal (task &optional goals-list)
+  "Return time goal for TASK from GOALS-LIST.
 Return value is minutes as an integer, or nil.
 
-If TARGETS-LIST is not supplied, `chronometrist-time-targets-list' is used."
-  (let ((targets-list (if targets-list
-                          targets-list
-                        chronometrist-time-targets-list)))
-    (cl-loop for list in targets-list
+If GOALS-LIST is not supplied, `chronometrist-time-goals-list' is used."
+  (let ((goals-list (if goals-list
+                        goals-list
+                      chronometrist-goals-list)))
+    (cl-loop for list in goals-list
              when (member task list)
              return (car list))))
 
@@ -128,39 +131,38 @@ If TARGETS-LIST is not supplied, `chronometrist-time-targets-list' is used."
 (defun chronometrist-minutes-string (minutes)
   (format "%s minutes" minutes))
 
-(defun chronometrist-run-alert-timers (task)
+(defun chronometrist-goals-run-alert-timers (task)
   "Run timers to alert the user of the time spent on TASK.
 To use, add this to `chronometrist-after-in-functions', and
-`chronometrist-stop-alert-timers' to
+`chronometrist-goals-stop-alert-timers' to
 `chronometrist-after-out-functions'."
-  (let ((target  (chronometrist-get-target task)))
-    (add-hook 'chronometrist-file-change-hook #'chronometrist-targets-file-change)
+  (let ((goal  (chronometrist-get-goal task)))
+    (add-hook 'chronometrist-file-change-hook #'chronometrist-goals-on-file-change)
     (mapc (lambda (f)
-            (funcall f task target))
-          chronometrist-timed-alert-functions)))
+            (funcall f task goal))
+          chronometrist-goals-alert-functions)))
 
-(defun chronometrist-stop-alert-timers (&optional _task)
+(defun chronometrist-goals-stop-alert-timers (&optional _task)
   "Stop timers to alert the user of the time spent on TASK.
 To use, add this to `chronometrist-after-out-functions', and
-`chronometrist-run-alert-timers' to
+`chronometrist-goals-run-alert-timers' to
 `chronometrist-after-in-functions'."
-  ;; in case of start task -> exit Emacs without stopping -> start Emacs -> stop task
-  (and chronometrist--timers-list
+  (and chronometrist--timers-list ;; in case of start task -> exit Emacs without stopping -> start Emacs -> stop task
        (mapc #'cancel-timer chronometrist--timers-list)
        (setq chronometrist--timers-list   nil)))
 
-(defun chronometrist-targets-file-change ()
+(defun chronometrist-goals-on-file-change ()
   "Manage timed alerts when `chronometrist-file' changes."
   (let ((last (chronometrist-last-expr)))
-    (chronometrist-stop-alert-timers)
+    (chronometrist-goals-stop-alert-timers)
     ;; if there's a task running, start timed alerts for it
     (unless (plist-get last :stop)
-      (chronometrist-run-alert-timers (plist-get last :name)))))
+      (chronometrist-goals-run-alert-timers (plist-get last :name)))))
 
-(provide 'chronometrist-targets)
+(provide 'chronometrist-goals)
 
 ;; Local Variables:
-;; nameless-current-name: "chronometrist"
+;; nameless-current-name: "chronometrist-goals"
 ;; End:
 
-;;; chronometrist-targets.el ends here
+;;; chronometrist-goals.el ends here
