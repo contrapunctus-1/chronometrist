@@ -267,10 +267,10 @@
     1. Custom Variable - chronometrist-goals-list nil
     2. Function - chronometrist-run-at-time (time repeat function &rest args)
     3. Function - chronometrist-seconds->alert-string (seconds)
-    4. Function - chronometrist-approach-alert (task current goal)
-    5. Function - chronometrist-complete-alert (task current goal)
-    6. Function - chronometrist-exceed-alert (task current goal)
-    7. Function - chronometrist-no-goal-alert (task current goal)
+    4. Function - chronometrist-approach-alert (task goal current)
+    5. Function - chronometrist-complete-alert (task goal current)
+    6. Function - chronometrist-exceed-alert (task goal current)
+    7. Function - chronometrist-no-goal-alert (task goal current)
     8. Custom Variable - chronometrist-goals-alert-functions
     9. Function - chronometrist-get-goal (task &optional targets-list)
        * String &optional List -> minutes

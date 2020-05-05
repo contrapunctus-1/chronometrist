@@ -53,7 +53,7 @@ like to spend GOAL time on any one of those tasks."
         (format "%s minutes" m)
       (format "%s hours and %s minutes" h m))))
 
-(defun chronometrist-approach-alert (task goal)
+(defun chronometrist-approach-alert (task goal current)
   "Alert the user when they are 5 minutes away from reaching GOAL for TASK."
   ;; TODO - don't run if current > goal
   (when goal
@@ -63,7 +63,7 @@ like to spend GOAL time on any one of those tasks."
                   (lambda ()
                     (alert (format "5 minutes remain for %s" task))))))
 
-(defun chronometrist-complete-alert (task goal)
+(defun chronometrist-complete-alert (task goal current)
   "Alert the user when they have reached the GOAL for TASK."
   ;; TODO - don't run if current > goal
   (when goal
@@ -72,7 +72,7 @@ like to spend GOAL time on any one of those tasks."
                   (lambda ()
                     (alert (format "Goal for %s reached" task))))))
 
-(defun chronometrist-exceed-alert (task goal)
+(defun chronometrist-exceed-alert (task goal current)
   "Alert the user when they have exceeded the GOAL for TASK."
   (when goal
     ;; TODO - if current > (+ 5 goal), run this _now_ instead
@@ -82,7 +82,7 @@ like to spend GOAL time on any one of those tasks."
                     (alert (format "You are exceeding the goal for %s!" task)
                            :severity 'high)))))
 
-(defun chronometrist-no-goal-alert (task goal)
+(defun chronometrist-no-goal-alert (task goal current)
   "If TASK has no GOAL, regularly remind the user of the time they have spent on it."
   (unless goal
     (chronometrist-run-at-time (chronometrist-minutes-string 15)
@@ -99,9 +99,10 @@ like to spend GOAL time on any one of those tasks."
     chronometrist-exceed-alert
     chronometrist-no-goal-alert)
   "List to describe timed alerts.
-Each element should be a function, which will be called with one
-argument - the name of the current task (as a string) and the
-goal time for that task (minutes as an integer).
+Each element should be a function, which will be called with
+three arguments - the name of the current task (as a string) and
+the goal time for that task (minutes as an integer), and the time
+spent on that task (seconds as an integer).
 
 Typically, each function in this list should call `run-at-time'
 to run another function, which in turn should call `alert' to
@@ -136,10 +137,11 @@ If GOALS-LIST is not supplied, `chronometrist-time-goals-list' is used."
 To use, add this to `chronometrist-after-in-functions', and
 `chronometrist-goals-stop-alert-timers' to
 `chronometrist-after-out-functions'."
-  (let ((goal  (chronometrist-get-goal task)))
+  (let ((goal    (chronometrist-get-goal task))
+        (current (chronometrist-task-time-one-day task)))
     (add-hook 'chronometrist-file-change-hook #'chronometrist-goals-on-file-change)
     (mapc (lambda (f)
-            (funcall f task goal))
+            (funcall f task goal current))
           chronometrist-goals-alert-functions)))
 
 (defun chronometrist-goals-stop-alert-timers (&optional _task)
