@@ -54,7 +54,10 @@ like to spend GOAL time on any one of those tasks."
       (format "%s hours and %s minutes" h m))))
 
 (defun chronometrist-approach-alert (task goal spent)
-  "Alert the user when they are 5 minutes away from reaching GOAL for TASK."
+  "Alert the user when they are 5 minutes away from reaching GOAL for TASK.
+TASK is the name of the current task (as a string).
+GOAL is the goal time for that task (minutes as an integer).
+SPENT is the time spent on that task (minutes as an integer)."
   (and goal
        (< spent goal)
        (chronometrist-run-at-time (* 60 (- goal 5 spent)) ;; negative seconds = run now
@@ -63,7 +66,10 @@ like to spend GOAL time on any one of those tasks."
                         (alert (format "5 minutes remain for %s" task))))))
 
 (defun chronometrist-complete-alert (task goal spent)
-  "Alert the user when they have reached the GOAL for TASK."
+  "Alert the user when they have reached the GOAL for TASK.
+TASK is the name of the current task (as a string).
+GOAL is the goal time for that task (minutes as an integer).
+SPENT is the time spent on that task (minutes as an integer)."
   (and goal
        ;; In case the user reaches GOAL but starts tracking again -
        ;; CURRENT is slightly over GOAL, but we notify the user of
@@ -75,7 +81,10 @@ like to spend GOAL time on any one of those tasks."
                         (alert (format "Goal for %s reached" task))))))
 
 (defun chronometrist-exceed-alert (task goal spent)
-  "Alert the user when they have exceeded the GOAL for TASK."
+  "Alert the user when they have exceeded the GOAL for TASK.
+TASK is the name of the current task (as a string).
+GOAL is the goal time for that task (minutes as an integer).
+SPENT is the time spent on that task (minutes as an integer)."
   (and goal
        (chronometrist-run-at-time (* 60 (- (+ goal 5) spent)) ;; negative seconds = run now
                       nil
@@ -84,7 +93,10 @@ like to spend GOAL time on any one of those tasks."
                                :severity 'high)))))
 
 (defun chronometrist-no-goal-alert (task goal spent)
-  "If TASK has no GOAL, regularly remind the user of the time they have spent on it."
+  "If TASK has no GOAL, regularly remind the user of the time they have spent on it.
+TASK is the name of the current task (as a string).
+GOAL is the goal time for that task (minutes as an integer).
+SPENT is the time spent on that task (minutes as an integer)."
   (unless goal
     (chronometrist-run-at-time (chronometrist-minutes-string 15)
                    (* 15 60) ;; repeat every 15 minutes
