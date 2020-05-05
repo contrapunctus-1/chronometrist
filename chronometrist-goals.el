@@ -45,53 +45,53 @@ like to spend GOAL time on any one of those tasks."
        (append chronometrist--timers-list)
        (setq chronometrist--timers-list)))
 
-(defun chronometrist-seconds->alert-string (seconds)
-  "Convert SECONDS to a string suitable for displaying in alerts."
-  (let ((m (% (/ seconds 60) 60))
-        (h (/ seconds 3600)))
+(defun chronometrist-minutes->alert-string (minutes)
+  "Convert MINUTES to a string suitable for displaying in alerts."
+  (let ((m (% minutes 60))
+        (h (/ minutes 3600)))
     (if (zerop h)
         (format "%s minutes" m)
       (format "%s hours and %s minutes" h m))))
 
-(defun chronometrist-approach-alert (task goal current)
+(defun chronometrist-approach-alert (task goal spent)
   "Alert the user when they are 5 minutes away from reaching GOAL for TASK."
-  ;; TODO - don't run if current > goal
-  (when goal
-    ;; FIXME - don't run after (- goal 5); run after (- goal 5 spent)
-    (chronometrist-run-at-time (chronometrist-minutes-string (- goal 5))
-                  nil
-                  (lambda ()
-                    (alert (format "5 minutes remain for %s" task))))))
+  (and goal
+       (< spent goal)
+       (chronometrist-run-at-time (* 60 (- goal 5 spent)) ;; negative seconds = run now
+                      nil
+                      (lambda ()
+                        (alert (format "5 minutes remain for %s" task))))))
 
-(defun chronometrist-complete-alert (task goal current)
+(defun chronometrist-complete-alert (task goal spent)
   "Alert the user when they have reached the GOAL for TASK."
-  ;; TODO - don't run if current > goal
-  (when goal
-    (chronometrist-run-at-time (chronometrist-minutes-string goal)
-                  nil
-                  (lambda ()
-                    (alert (format "Goal for %s reached" task))))))
+  (and goal
+       ;; In case the user reaches GOAL but starts tracking again -
+       ;; CURRENT is slightly over GOAL, but we notify the user of
+       ;; reaching the GOAL anyway.
+       (< spent (+ goal 5))
+       (chronometrist-run-at-time (* 60 (- goal spent)) ;; negative seconds = run now
+                      nil
+                      (lambda ()
+                        (alert (format "Goal for %s reached" task))))))
 
-(defun chronometrist-exceed-alert (task goal current)
+(defun chronometrist-exceed-alert (task goal spent)
   "Alert the user when they have exceeded the GOAL for TASK."
-  (when goal
-    ;; TODO - if current > (+ 5 goal), run this _now_ instead
-    (chronometrist-run-at-time (chronometrist-minutes-string (+ goal 5))
-                  nil
-                  (lambda ()
-                    (alert (format "You are exceeding the goal for %s!" task)
-                           :severity 'high)))))
+  (and goal
+       (chronometrist-run-at-time (* 60 (- (+ goal 5) spent)) ;; negative seconds = run now
+                      nil
+                      (lambda ()
+                        (alert (format "You are exceeding the goal for %s!" task)
+                               :severity 'high)))))
 
-(defun chronometrist-no-goal-alert (task goal current)
+(defun chronometrist-no-goal-alert (task goal spent)
   "If TASK has no GOAL, regularly remind the user of the time they have spent on it."
   (unless goal
     (chronometrist-run-at-time (chronometrist-minutes-string 15)
-                  (* 15 60) ;; repeat every 15 minutes
-                  (lambda ()
-                    (alert (format "You have spent %s on %s"
-                                   (chronometrist-seconds->alert-string
-                                    (chronometrist-task-time-one-day task))
-                                   task))))))
+                   (* 15 60) ;; repeat every 15 minutes
+                   (lambda ()
+                     (alert (format "You have spent %s on %s"
+                                    (chronometrist-minutes->alert-string spent)
+                                    task))))))
 
 (defcustom chronometrist-goals-alert-functions
   '(chronometrist-approach-alert
@@ -102,7 +102,7 @@ like to spend GOAL time on any one of those tasks."
 Each element should be a function, which will be called with
 three arguments - the name of the current task (as a string) and
 the goal time for that task (minutes as an integer), and the time
-spent on that task (seconds as an integer).
+spent on that task (minutes as an integer).
 
 Typically, each function in this list should call `run-at-time'
 to run another function, which in turn should call `alert' to
@@ -138,10 +138,11 @@ To use, add this to `chronometrist-after-in-functions', and
 `chronometrist-goals-stop-alert-timers' to
 `chronometrist-after-out-functions'."
   (let ((goal    (chronometrist-get-goal task))
-        (current (chronometrist-task-time-one-day task)))
+        (spent (/ (chronometrist-task-time-one-day task)
+                    60)))
     (add-hook 'chronometrist-file-change-hook #'chronometrist-goals-on-file-change)
     (mapc (lambda (f)
-            (funcall f task goal current))
+            (funcall f task goal spent))
           chronometrist-goals-alert-functions)))
 
 (defun chronometrist-goals-stop-alert-timers (&optional _task)
