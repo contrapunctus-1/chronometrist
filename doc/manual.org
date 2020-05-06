@@ -266,16 +266,18 @@
 *** chronometrist-goals
     1. Custom Variable - chronometrist-goals-list nil
     2. Function - chronometrist-run-at-time (time repeat function &rest args)
-    3. Function - chronometrist-minutes->alert-string (minutes)
-    4. Function - chronometrist-approach-alert (task goal spent)
-    5. Function - chronometrist-complete-alert (task goal spent)
-    6. Function - chronometrist-exceed-alert (task goal spent)
-    7. Function - chronometrist-no-goal-alert (task goal spent)
-    8. Custom Variable - chronometrist-goals-alert-functions
-    9. Function - chronometrist-get-goal (task &optional targets-list)
-       * String &optional List -> minutes
-    10. Internal Variable - chronometrist--timers-list
-    11. Function - chronometrist-minutes-string (minutes)
-    12. Function - chronometrist-goals-run-alert-timers (task)
-    13. Function - chronometrist-goals-stop-alert-timers (&optional _task)
-    14. Function - chronometrist-goals-on-file-change ()
+    3. Function - chronometrist-task-minutes-one-day (task)
+       * string -> minutes
+    4. Function - chronometrist-minutes->alert-string (minutes)
+    5. Function - chronometrist-approach-alert (task goal spent)
+    6. Function - chronometrist-complete-alert (task goal spent)
+    7. Function - chronometrist-exceed-alert (task goal spent)
+    8. Function - chronometrist-no-goal-alert (task goal spent)
+    9. Custom Variable - chronometrist-goals-alert-functions
+    10. Function - chronometrist-get-goal (task &optional targets-list)
+        * String &optional List -> minutes
+    11. Internal Variable - chronometrist--timers-list
+    12. Function - chronometrist-minutes-string (minutes)
+    13. Function - chronometrist-goals-run-alert-timers (task)
+    14. Function - chronometrist-goals-stop-alert-timers (&optional _task)
+    15. Function - chronometrist-goals-on-file-change ()

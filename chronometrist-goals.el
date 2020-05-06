@@ -45,6 +45,10 @@ like to spend GOAL time on any one of those tasks."
        (append chronometrist--timers-list)
        (setq chronometrist--timers-list)))
 
+(defun chronometrist-task-minutes-one-day (task)
+  (/ (chronometrist-task-time-one-day task)
+     60))
+
 (defun chronometrist-minutes->alert-string (minutes)
   "Convert MINUTES to a string suitable for displaying in alerts."
   (let ((m (% minutes 60))
@@ -100,9 +104,14 @@ SPENT is the time spent on that task (minutes as an integer)."
   (unless goal
     (chronometrist-run-at-time (chronometrist-minutes-string 15)
                    (* 15 60) ;; repeat every 15 minutes
+                   ;; We cannot use SPENT here, because that will
+                   ;; remain the value it had when we clocked in (when
+                   ;; `chronometrist-goals-run-alert-timers' is run), and we need show
+                   ;; the time spent at the time of notification.
                    (lambda ()
                      (alert (format "You have spent %s on %s"
-                                    (chronometrist-minutes->alert-string spent)
+                                    (chronometrist-minutes->alert-string
+                                     (chronometrist-task-minutes-one-day task))
                                     task))))))
 
 (defcustom chronometrist-goals-alert-functions
@@ -123,10 +132,21 @@ notify the user.
 The timer returned by `run-at-time' should also be appended to
 `chronometrist--timers-list', so that it can later be stopped by
 `chronometrist-goals-stop-alert-timers'. `chronometrist-run-at-time'
-will do that for you."
-  :group 'chronometrist)
+will do that for you.
 
-;; TODO - if there are multiple tasks associated with a single time goal (i.e. `(int "task1" "task2" ...)'), and the user has reached the goal for one of those tasks, don't display the goal for the other associated tasks
+Note - the time spent passed to these functions is calculated
+when `chronometrist-goals-run-alert-timers' is run, i.e. when the
+user clocks in. To obtain the time spent at the time of
+notification, use
+`chronometrist-task-time-one-day'/`chronometrist-task-minutes-one-day'
+within the function passed to `run-at-time'."
+  :group 'chronometrist
+  :type 'hook)
+
+;; TODO - if there are multiple tasks associated with a single time
+;; goal (i.e. `(int "task1" "task2" ...)'), and the user has reached
+;; the goal for one of those tasks, don't display the goal for the
+;; other associated tasks
 (defun chronometrist-get-goal (task &optional goals-list)
   "Return time goal for TASK from GOALS-LIST.
 Return value is minutes as an integer, or nil.
@@ -150,8 +170,7 @@ To use, add this to `chronometrist-after-in-functions', and
 `chronometrist-goals-stop-alert-timers' to
 `chronometrist-after-out-functions'."
   (let ((goal    (chronometrist-get-goal task))
-        (spent (/ (chronometrist-task-time-one-day task)
-                    60)))
+        (spent   (chronometrist-task-minutes-one-day task)))
     (add-hook 'chronometrist-file-change-hook #'chronometrist-goals-on-file-change)
     (mapc (lambda (f)
             (funcall f task goal spent))
