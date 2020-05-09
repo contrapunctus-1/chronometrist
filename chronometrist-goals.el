@@ -21,7 +21,7 @@
 ;; TODO -
 ;; * clear notifications on file change event
 ;; * define types for custom variables
-;; * behave differently when goal has been reached and we're starting again!
+;; * clock in -> go over the goal, get the 'exceeding' -> clock out, file changes, the exceed alert is shown again
 
 (defcustom chronometrist-goals-list nil
   "List to specify daily time goals for each task.
@@ -66,8 +66,9 @@ SPENT is the time spent on that task (minutes as an integer)."
        (< spent goal)
        (chronometrist-run-at-time (* 60 (- goal 5 spent)) ;; negative seconds = run now
                       nil
-                      (lambda ()
-                        (alert (format "5 minutes remain for %s" task))))))
+                      (lambda (task)
+                        (alert (format "5 minutes remain for %s" task)))
+                      task)))
 
 (defun chronometrist-complete-alert (task goal spent)
   "Alert the user when they have reached the GOAL for TASK.
@@ -81,8 +82,9 @@ SPENT is the time spent on that task (minutes as an integer)."
        (< spent (+ goal 5))
        (chronometrist-run-at-time (* 60 (- goal spent)) ;; negative seconds = run now
                       nil
-                      (lambda ()
-                        (alert (format "Goal for %s reached" task))))))
+                      (lambda (task)
+                        (alert (format "Goal for %s reached" task)))
+                      task)))
 
 (defun chronometrist-exceed-alert (task goal spent)
   "Alert the user when they have exceeded the GOAL for TASK.
@@ -92,9 +94,10 @@ SPENT is the time spent on that task (minutes as an integer)."
   (and goal
        (chronometrist-run-at-time (* 60 (- (+ goal 5) spent)) ;; negative seconds = run now
                       nil
-                      (lambda ()
+                      (lambda (task)
                         (alert (format "You are exceeding the goal for %s!" task)
-                               :severity 'high)))))
+                               :severity 'high))
+                      task)))
 
 (defun chronometrist-no-goal-alert (task goal spent)
   "If TASK has no GOAL, regularly remind the user of the time they have spent on it.
@@ -104,15 +107,17 @@ SPENT is the time spent on that task (minutes as an integer)."
   (unless goal
     (chronometrist-run-at-time (chronometrist-minutes-string 15)
                    (* 15 60) ;; repeat every 15 minutes
-                   ;; We cannot use SPENT here, because that will
-                   ;; remain the value it had when we clocked in (when
-                   ;; `chronometrist-goals-run-alert-timers' is run), and we need show
-                   ;; the time spent at the time of notification.
-                   (lambda ()
+                   (lambda (task)
+                     ;; We cannot use SPENT here, because that will
+                     ;; remain the value it had when we clocked in
+                     ;; (when `chronometrist-goals-run-alert-timers'
+                     ;; is run), and we need show the time spent at
+                     ;; the time of notification.
                      (alert (format "You have spent %s on %s"
                                     (chronometrist-minutes->alert-string
                                      (chronometrist-task-minutes-one-day task))
-                                    task))))))
+                                    task)))
+                   task)))
 
 (defcustom chronometrist-goals-alert-functions
   '(chronometrist-approach-alert
