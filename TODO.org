@@ -98,21 +98,24 @@
      3. Don't refresh from file when clocking in.
      4. Only write to the file when Emacs is idle or being killed, and store data in memory (in the events hash table) in the meantime
      5. What if commands both write to the file /and/ add to the hash table, so we don't have to re-read the file and re-populate the table for commands? The expensive reading+parsing could be avoided for commands, and only take place for the user changing the file.
-        * jonasw - store length and hash of previous file, see if the new file has the same hash until old-length bytes.
+        * [ ] jonasw - store length and hash of previous file, see if the new file has the same hash until old-length bytes.
           * Rather than storing and hashing the full length, we could do it until (before) the last s-expression (or last N s-expressions?). That way, we know if the last expression (or last N expressions) have changed.
             * Or even the first expression of the current date. That way, we just re-read the events for today. Because chronometrist-events uses dates as keys, it's easy to work on the basis of dates.
+     6. [ ] Don't generate tag/keyword/value history from the entire log, just from the last N days (where N is user-customizable).
 
-** Code [25%]
-   1. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
-   2. [X] Use buttercup instead of ert
-   3. See if it is possible to store buttons in a variable, so *-print-non-tabular functions can be made shorter and less imperative. (see ~make-text-button~)
-   4. Merge all event-querying functions so that they always operate on an entire hash table (so no 'day' variants),
-   5. [ ] Use ~substitute-command-keys~ instead of ~chronometrist-format-keybinds~
-   6. [ ] See if using iteration constructs (especially ~loop~) can lead to nicer code than nested maps
-   7. [ ] recreate -events-clean, remove splitting code from -events-populate
+** Code [33%]
+   1. [ ] Decouple storage-related code from rest of the program.
+   2. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
+   3. [X] Use buttercup instead of ert
+   4. See if it is possible to store buttons in a variable, so *-print-non-tabular functions can be made shorter and less imperative. (see ~make-text-button~)
+   5. Merge all event-querying functions so that they always operate on an entire hash table (so no 'day' variants),
+   6. [ ] Use ~substitute-command-keys~ instead of ~chronometrist-format-keybinds~
+   7. [X] See if using iteration constructs (especially ~loop~) can lead to nicer code than nested maps
+   8. [ ] recreate -events-clean, remove splitting code from -events-populate
       * How should we deal with the active event?
         * Earlier, we would add a closing entry and update that on a timer.
-   8. [ ] Make docstrings consistent - describe inputs and then the return value, in that order.
+   9. [ ] Make docstrings consistent - describe inputs and then the return value, in that order.
+   10. [ ] ~chronometrist-minutes->alert-string~ can probably be replaced by ~org-duration-from-minutes~ - read the format for FMT
    +1. use variables instead of hardcoded numbers to determine spacing+
       * Don't see the benefit
    +6. Timeclock already _has_ hooks! :| Why do we re-implement them?+
@@ -142,9 +145,9 @@
      + [X] More flexible way to define alerts.
      + [ ] If time goals are defined and there is a task without a goal, just remind the user every 15 minutes of the time they've spent on it
        - [ ] Needs an even more flexible way to define alerts...
-     + [ ] Handle manual file changes; on file change -
-       - clearing existing notifications
-       - if last expression has a :stop value, stop alert timers
+     + [-] Handle manual file changes; on file change -
+       - [ ] clearing existing notifications
+       - [X] if last expression has a :stop value, stop alert timers
      + [ ] Also take time spent so far into account (e.g. don't start approach or complete alerts again if time has been exceeded and we're starting the task again despite that)
   4. [ ] Colorize times in Chronometrist buffer
      - untouched project with target defined - red
