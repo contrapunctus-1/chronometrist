@@ -49,13 +49,29 @@ like to spend GOAL time on any one of those tasks."
   (/ (chronometrist-task-time-one-day task)
      60))
 
+;; (mapcar #'chronometrist-minutes->alert-string '(0 1 2 59 60 61 62 120 121 122))
 (defun chronometrist-minutes->alert-string (minutes)
   "Convert MINUTES to a string suitable for displaying in alerts."
-  (let ((m (% minutes 60))
-        (h (/ minutes 3600)))
-    (if (zerop h)
-        (format "%s minutes" m)
-      (format "%s hours and %s minutes" h m))))
+  (let* ((m      (% minutes 60))
+         (h      (/ minutes 60))
+         (h-str  (unless (zerop h)
+                   (number-to-string h)))
+         (m-str  (unless (zerop m)
+                   (number-to-string m)))
+         (h-unit (case h
+                   (0 nil)
+                   (1 " hour")
+                   (t " hours")))
+         (m-unit (case m
+                   (0 nil)
+                   (1 " minute")
+                   (t " minutes")))
+         (and    (if (and h-unit m-unit)
+                     " and "
+                   "")))
+    (concat h-str h-unit
+            and
+            m-str m-unit)))
 
 (defun chronometrist-approach-alert (task goal spent)
   "Alert the user when they are 5 minutes away from reaching GOAL for TASK.
