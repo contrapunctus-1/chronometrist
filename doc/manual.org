@@ -74,7 +74,7 @@
     8. Function - chronometrist-format-time (duration &optional blank)
        * vector-duration | list-duration -> "h:m:s"
     9. Command - chronometrist-open-file (&optional button)
-    10. Function - chronometrist-common-create-chronometrist-file ()
+    10. Function - chronometrist-common-create-file ()
     11. Function - chronometrist-common-file-empty-p (file)
     12. Function - chronometrist-common-clear-buffer (buffer)
     13. Function - chronometrist-format-keybinds (command map &optional firstonly)
@@ -281,5 +281,6 @@
     14. Function - chronometrist-goals-stop-alert-timers (&optional _task)
     15. Function - chronometrist-goals-on-file-change ()
 *** chronometrist-sexp
-    1. Function - chronometrist-sexp-last ()
-    2. Function - chronometrist-sexp-current-task ()
+    1. Function - chronometrist-sexp-create-file ()
+    2. Function - chronometrist-sexp-last ()
+    3. Function - chronometrist-sexp-current-task ()

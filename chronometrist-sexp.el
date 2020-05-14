@@ -3,6 +3,12 @@
 ;;; Commentary:
 ;;
 
+(defun chronometrist-sexp-create-file ()
+  "Create `chronometrist-file' if it doesn't already exist."
+  (unless (file-exists-p chronometrist-file)
+    (with-current-buffer (find-file-noselect chronometrist-file)
+      (write-file chronometrist-file))))
+
 (defun chronometrist-sexp-last ()
   "Return last s-expression from `chronometrist-file'."
   (let ((buffer (find-file-noselect chronometrist-file)))

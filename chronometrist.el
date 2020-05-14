@@ -420,7 +420,7 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
           (cond ((or (not (file-exists-p chronometrist-file))
                      (chronometrist-common-file-empty-p chronometrist-file))
                  ;; first run
-                 (chronometrist-common-create-chronometrist-file)
+                 (chronometrist-common-create-file)
                  (let ((inhibit-read-only t))
                    (chronometrist-common-clear-buffer buffer)
                    (insert "Welcome to Chronometrist! Hit RET to ")

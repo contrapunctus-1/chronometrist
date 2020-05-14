@@ -122,11 +122,9 @@ button action."
   (find-file-other-window chronometrist-file)
   (goto-char (point-max)))
 
-(defun chronometrist-common-create-chronometrist-file ()
+(defun chronometrist-common-create-file ()
   "Create `chronometrist-file' if it doesn't already exist."
-  (unless (file-exists-p chronometrist-file)
-    (with-current-buffer (find-file-noselect chronometrist-file)
-      (write-file chronometrist-file))))
+  (chronometrist-sexp-create-file))
 
 (defun chronometrist-common-file-empty-p (file)
   "Return t if FILE is empty."

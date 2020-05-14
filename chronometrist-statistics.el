@@ -273,7 +273,7 @@ specified by `chronometrist-statistics--ui-state'."
                (setq chronometrist-statistics--ui-state `(:mode  week
                                   :start ,week-start-iso
                                   :end   ,week-end-iso)))
-             (chronometrist-common-create-chronometrist-file)
+             (chronometrist-common-create-file)
              (chronometrist-statistics-mode)
              (switch-to-buffer buffer)
              (chronometrist-statistics-refresh))))))
