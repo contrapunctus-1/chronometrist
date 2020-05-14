@@ -19,8 +19,9 @@
 (require 'chronometrist-custom)
 (require 'chronometrist-report-custom)
 (require 'chronometrist-time)
+(require 'chronometrist-sexp)
 
-(declare-function chronometrist-last-expr "chronometrist-key-values")
+(declare-function chronometrist-last-expr "chronometrist-sexp")
 
 ;; ## VARIABLES ##
 ;;; Code:
@@ -218,10 +219,7 @@ DATE-STRING must be in the form \"YYYY-MM-DD\"."
 
 (defun chronometrist-current-task ()
   "Return the name of the currently clocked-in task, or nil if not clocked in."
-  (let ((last-event (chronometrist-last-expr)))
-    (if (plist-member last-event :stop)
-        nil
-      (plist-get last-event :name))))
+  (chronometrist-sexp-current-task))
 
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist-common"
