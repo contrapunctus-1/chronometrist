@@ -124,8 +124,7 @@ See custom variable `chronometrist-activity-indicator'."
 (defun chronometrist-goto-last-task ()
   "In the `chronometrist' buffer, move point to the line containing the last active task."
   (goto-char (point-min))
-  ;; FIXME
-  ;; (re-search-forward timeclock-last-project nil t)
+  (re-search-forward (chronometrist-current-task) nil t)
   (beginning-of-line))
 
 (defun chronometrist-print-keybind (command &optional description firstonly)
@@ -408,7 +407,8 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
   (interactive "P")
   (chronometrist-migrate-check)
   (let ((buffer (get-buffer-create chronometrist-buffer-name))
-        (w      (get-buffer-window chronometrist-buffer-name t)))
+        (w      (save-excursion
+                  (get-buffer-window chronometrist-buffer-name t))))
     (cond
      (arg (cl-case arg
             (1 (chronometrist-report))
