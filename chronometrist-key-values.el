@@ -466,36 +466,18 @@ TASK is the name of the task, a string.
 
 PREFIX is ignored."
   (interactive "P")
-  (let ((buffer (find-file-noselect chronometrist-file)))
-    (with-current-buffer buffer
-      (goto-char (point-max))
-      (unless (bobp) (insert "\n"))
-      (unless (bolp) (insert "\n"))
-      (chronometrist-plist-pp `(:name  ,task
-                  :start ,(format-time-string "%FT%T%z"))
-                buffer)
-      (save-buffer))
-    (chronometrist-refresh)))
+  (let ((plist `(:name  ,task
+                 :start ,(format-time-string "%FT%T%z"))))
+    (chronometrist-sexp-new plist)))
 
 (defun chronometrist-out (&optional _prefix)
   "Record current moment as stop time to last s-exp in `chronometrist-file'.
-PLIST is a property list containing any other information about
-this time interval that should be recorded.
-
 PREFIX is ignored."
   (interactive "P")
-  (let ((buffer (find-file-noselect chronometrist-file)))
-    (with-current-buffer buffer
-      (goto-char (point-max))
-      (unless (bobp) (insert "\n"))
-      (backward-list 1)
-      (--> (read buffer)
-           (plist-put it :stop (chronometrist-format-time-iso8601))
-           (progn
-             (backward-list 1)
-             (chronometrist-delete-list)
-             (chronometrist-plist-pp it buffer)))
-      (save-buffer))))
+  (let ((plist (plist-put (chronometrist-last)
+                          :stop
+                          (chronometrist-format-time-iso8601))))
+    (chronometrist-sexp-replace-last plist)))
 
 (provide 'chronometrist-key-values)
 

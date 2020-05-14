@@ -287,5 +287,6 @@
     2. Function - chronometrist-sexp-last ()
        * -> plist
     3. Function - chronometrist-sexp-current-task ()
-    4. Function - chronometrist-sexp-replace-last (plist)
-    5. Function - chronometrist-sexp-reindent-buffer ()
+    4. Function - chronometrist-sexp-new (plist)
+    5. Function - chronometrist-sexp-replace-last (plist)
+    6. Function - chronometrist-sexp-reindent-buffer ()

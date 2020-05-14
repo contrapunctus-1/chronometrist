@@ -3,6 +3,8 @@
 ;;; Commentary:
 ;;
 
+(require 'chronometrist)
+
 (defun chronometrist-sexp-create-file ()
   "Create `chronometrist-file' if it doesn't already exist."
   (unless (file-exists-p chronometrist-file)
@@ -28,12 +30,27 @@
       (plist-get last-event :name))))
 
 ;;;; Modifications
+(cl-defun chronometrist-sexp-new (plist &optional (buffer (find-file-noselect chronometrist-file)))
+  "Add new PLIST at the end of `chronometrist-file'.
+Afterwards, save it and refresh the Chronometrist buffer."
+  (with-current-buffer buffer
+    (goto-char (point-max))
+    ;; If we're adding the first s-exp in the file, don't add a
+    ;; newline before it
+    (unless (bobp) (insert "\n"))
+    (unless (bolp) (insert "\n"))
+    (chronometrist-plist-pp plist buffer)
+    (save-buffer))
+  (chronometrist-refresh))
+
 (defun chronometrist-sexp-replace-last (plist)
-  "Replace the last s-expression in `chronometrist-file' with plist."
+  "Replace the last s-expression in `chronometrist-file' with PLIST."
   (let ((buffer (find-file-noselect chronometrist-file)))
     (with-current-buffer buffer
       (goto-char (point-max))
-      (backward-list)
+      (unless (and (bobp) (bolp))
+        (insert "\n"))
+      (backward-list 1)
       (chronometrist-delete-list)
       (chronometrist-plist-pp plist buffer)
       (save-buffer))))
