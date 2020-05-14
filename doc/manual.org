@@ -281,5 +281,5 @@
     14. Function - chronometrist-goals-stop-alert-timers (&optional _task)
     15. Function - chronometrist-goals-on-file-change ()
 *** chronometrist-sexp
-    1. Function - chronometrist-last-expr ()
+    1. Function - chronometrist-sexp-last ()
     2. Function - chronometrist-sexp-current-task ()

@@ -60,7 +60,7 @@ This is not guaranteed to be accurate - see (info \"(elisp)Timers\")."
   :type 'integer)
 
 (declare-function chronometrist-format-time "chronometrist-common")
-(declare-function chronometrist-last-expr "chronometrist-sexp")
+(declare-function chronometrist-sexp-last "chronometrist-sexp")
 (eval-when-compile (require 'subr-x))
 
 (defcustom chronometrist-activity-indicator "*"

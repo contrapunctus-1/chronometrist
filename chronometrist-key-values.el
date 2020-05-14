@@ -85,7 +85,7 @@ TAGS should be a list of symbols and/or strings.
 PLIST should be a property list. Properties reserved by
 Chronometrist - currently :name, :tags, :start, and :stop - will
 be removed."
-  (let* ((old-expr  (chronometrist-last-expr))
+  (let* ((old-expr  (chronometrist-sexp-last))
          (old-name  (plist-get old-expr :name))
          (old-start (plist-get old-expr :start))
          (old-stop  (plist-get old-expr :stop))
@@ -194,7 +194,7 @@ INITIAL-INPUT is as used in `completing-read'."
 (defun chronometrist-tags-add (&rest _args)
   "Read tags from the user, add them to the last s-expr in `chronometrist-file'.
 _ARGS are ignored. This function always returns t."
-  (let* ((last-expr (chronometrist-last-expr))
+  (let* ((last-expr (chronometrist-sexp-last))
          (last-name (plist-get last-expr :name))
          (last-tags (plist-get last-expr :tags))
          (input     (->> last-tags
@@ -388,7 +388,7 @@ It currently supports ido, ido-ubiquitous, ivy, and helm."
 (defun chronometrist-key-prompt (used-keys)
   "Prompt the user to enter keys.
 USED-KEYS are keys they have already used in this session."
-  (let ((key-suggestions (--> (chronometrist-last-expr)
+  (let ((key-suggestions (--> (chronometrist-sexp-last)
                               (plist-get it :name)
                               (gethash it chronometrist-key-history))))
     (completing-read (concat "Key ("
@@ -438,7 +438,7 @@ to add them to the last s-expression in `chronometrist-file', or
 _ARGS are ignored. This function always returns t."
   (let* ((buffer      (get-buffer-create chronometrist-kv-buffer-name))
          (first-key-p t)
-         (last-kvs    (chronometrist-plist-remove (chronometrist-last-expr)
+         (last-kvs    (chronometrist-plist-remove (chronometrist-sexp-last)
                                      :name :tags :start :stop))
          (used-keys   (->> (seq-filter #'keywordp last-kvs)
                            (mapcar #'symbol-name)

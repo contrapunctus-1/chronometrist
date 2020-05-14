@@ -208,7 +208,7 @@ To use, add this to `chronometrist-after-out-functions', and
 
 (defun chronometrist-goals-on-file-change ()
   "Manage timed alerts when `chronometrist-file' changes."
-  (let ((last (chronometrist-last-expr)))
+  (let ((last (chronometrist-sexp-last)))
     (chronometrist-goals-stop-alert-timers)
     ;; if there's a task running, start timed alerts for it
     (unless (plist-get last :stop)

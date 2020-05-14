@@ -3,7 +3,7 @@
 ;;; Commentary:
 ;;
 
-(defun chronometrist-last-expr ()
+(defun chronometrist-sexp-last ()
   "Return last s-expression from `chronometrist-file'."
   (let ((buffer (find-file-noselect chronometrist-file)))
     (with-current-buffer buffer
@@ -15,7 +15,7 @@
 
 (defun chronometrist-sexp-current-task ()
   "Return the name of the currently clocked-in task, or nil if not clocked in."
-  (let ((last-event (chronometrist-last-expr)))
+  (let ((last-event (chronometrist-sexp-last)))
     (if (plist-member last-event :stop)
         nil
       (plist-get last-event :name))))

@@ -21,7 +21,7 @@
 (require 'chronometrist-time)
 (require 'chronometrist-sexp)
 
-(declare-function chronometrist-last-expr "chronometrist-sexp")
+(declare-function chronometrist-sexp-last "chronometrist-sexp")
 
 ;; ## VARIABLES ##
 ;;; Code:
