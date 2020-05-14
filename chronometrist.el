@@ -124,7 +124,7 @@ See custom variable `chronometrist-activity-indicator'."
 (defun chronometrist-goto-last-task ()
   "In the `chronometrist' buffer, move point to the line containing the last active task."
   (goto-char (point-min))
-  (re-search-forward (chronometrist-current-task) nil t)
+  (re-search-forward (plist-get (chronometrist-last) :name) nil t)
   (beginning-of-line))
 
 (defun chronometrist-print-keybind (command &optional description firstonly)
