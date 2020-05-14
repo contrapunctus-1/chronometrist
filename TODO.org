@@ -153,3 +153,5 @@
      - untouched project with target defined - red
      - target ±5 minutes - green
      - target*2 and above - red
+* Backend abstraction [0%]
+  1. [ ] Add checks to ~chronometrist-sexp-reindent-buffer~ to ensure it only runs on an s-expression buffer
