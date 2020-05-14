@@ -229,7 +229,7 @@ reversed and will have duplicate elements removed."
 ;; Since we have discarded sorting-by-frequency, we can now consider
 ;; implementing this by querying `chronometrist-events' instead of reading the file
 (defun chronometrist-key-history-populate ()
-  "Populate `chronometrist-key-history' from from `chronometrist-file'.
+  "Populate `chronometrist-key-history' from `chronometrist-file'.
 Each hash table key is the name of a task. Each hash table value
 is a list containing keywords used with that task, in reverse
 chronological order. The keywords are stored as strings and their
@@ -237,7 +237,7 @@ leading \":\" is removed."
   (clrhash chronometrist-key-history)
   (mapc (lambda (task)
           (puthash task nil chronometrist-key-history))
-         ;; ;; Not necessary, if the only placed this is called is `chronometrist-refresh-file'
+         ;; ;; Not necessary, if the only place this is called is `chronometrist-refresh-file'
          ;; (setq chronometrist--task-list (chronometrist-tasks-from-table))
          chronometrist-task-list)
   (with-current-buffer (find-file-noselect chronometrist-file)
