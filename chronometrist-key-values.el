@@ -270,25 +270,29 @@ The values are stored in `chronometrist-value-history'."
   (let ((table chronometrist-value-history)
         user-kvs)
     (clrhash table)
-    (maphash (lambda (_date plist-list)
-               (cl-loop for plist in plist-list
-                        do (setq user-kvs (chronometrist-plist-remove plist
-                                                         :name :tags
-                                                         :start :stop))
-                        (cl-loop for (key1 val1) on user-kvs by #'cddr
-                                 do (let* ((key1-string (->> (symbol-name key1)
-                                                             (s-chop-prefix ":")))
-                                           (key1-ht     (gethash key1-string table))
-                                           (val1        (if (not (stringp val1))
-                                                            (list
-                                                             (format "%s" val1))
-                                                          (list val1))))
-                                      (puthash key1-string
-                                               (if key1-ht
-                                                   (append key1-ht val1)
-                                                 val1)
-                                               table)))))
-             chronometrist-events)
+    (cl-loop
+     for plist-list being the hash-values of chronometrist-events do
+     (cl-loop
+      for plist in plist-list do
+      ;; We call them user-kvs because we filter out Chronometrist's
+      ;; reserved key-values
+      (setq user-kvs (chronometrist-plist-remove plist
+                                    :name :tags
+                                    :start :stop))
+      (cl-loop
+       for (key1 val1) on user-kvs by #'cddr do
+       (let* ((key1-string (->> (symbol-name key1)
+                                (s-chop-prefix ":")))
+              (key1-ht     (gethash key1-string table))
+              (val1        (if (not (stringp val1))
+                               (list
+                                (format "%s" val1))
+                             (list val1))))
+         (puthash key1-string
+                  (if key1-ht
+                      (append key1-ht val1)
+                    val1)
+                  table)))))
     (chronometrist-ht-history-prep table)))
 
 ;; TODO - refactor this to use `chronometrist-append-to-last-expr'
