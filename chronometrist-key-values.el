@@ -226,8 +226,6 @@ reversed and will have duplicate elements removed."
                       table))
            table))
 
-;; Since we have discarded sorting-by-frequency, we can now consider
-;; implementing this by querying `chronometrist-events' instead of reading the file
 (defun chronometrist-key-history-populate ()
   "Populate `chronometrist-key-history' from `chronometrist-file'.
 Each hash table key is the name of a task. Each hash table value
@@ -235,31 +233,34 @@ is a list containing keywords used with that task, in reverse
 chronological order. The keywords are stored as strings and their
 leading \":\" is removed."
   (clrhash chronometrist-key-history)
+  ;; add each task as a key
   (mapc (lambda (task)
           (puthash task nil chronometrist-key-history))
-         ;; ;; Not necessary, if the only place this is called is `chronometrist-refresh-file'
-         ;; (setq chronometrist--task-list (chronometrist-tasks-from-table))
-         chronometrist-task-list)
-  (with-current-buffer (find-file-noselect chronometrist-file)
-    (save-excursion
-      (goto-char (point-min))
-      (let (expr)
-        (while (setq expr (ignore-errors (read (current-buffer))))
-          (let* ((name          (plist-get expr :name))
-                 (name-ht-value (gethash name chronometrist-key-history))
-                 (keys          (->> (chronometrist-plist-remove expr :name :start :stop :tags)
-                                     (seq-filter #'keywordp))))
-            (cl-loop for key in keys
-                     do (when key
-                          (let ((key-string (->> (symbol-name key)
-                                                 (s-chop-prefix ":")
-                                                 (list))))
-                            (puthash name
-                                     (if name-ht-value
-                                         (append name-ht-value key-string)
-                                       key-string)
-                                     chronometrist-key-history))))))
-        (chronometrist-ht-history-prep chronometrist-key-history)))))
+        ;; ;; Not necessary, if the only place this is called is `chronometrist-refresh-file'
+        ;; (setq chronometrist--task-list (chronometrist-tasks-from-table))
+        chronometrist-task-list)
+  (cl-loop
+   for hv being the hash-values of chronometrist-events do
+   (cl-loop
+    for plist in hv do
+    (let* ((name   (plist-get plist :name))
+           (old-hv (gethash name ht))
+           (keys   (->> (chronometrist-plist-remove plist
+                                       :name :start
+                                       :stop :tags)
+                        (seq-filter #'keywordp))))
+      (cl-loop
+       for key in keys do
+       (when key
+         (let ((key-string (->> (symbol-name key)
+                                (s-chop-prefix ":")
+                                (list))))
+           (puthash name
+                    (if old-hv
+                        (append old-hv key-string)
+                      key-string)
+                    ht)))))))
+  (chronometrist-ht-history-prep chronometrist-key-history))
 
 (defun chronometrist-value-history-populate ()
   "Read values for user-keys from `chronometrist-events'.
