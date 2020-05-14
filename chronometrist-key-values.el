@@ -282,9 +282,6 @@ leading \":\" is removed."
                                      chronometrist-key-history))))))
         (chronometrist-ht-history-prep chronometrist-key-history)))))
 
-;; FIXME - seems to be a little buggy. The latest value for e.g. :song
-;; is different from the one that ends up as the last in
-;; `chronometrist-value-history' (before being reversed by `chronometrist-ht-history-prep')
 (defun chronometrist-value-history-populate ()
   "Read values for user-keys from `chronometrist-events'.
 The values are stored in `chronometrist-value-history'."
@@ -359,7 +356,7 @@ The values are stored in `chronometrist-value-history'."
     (define-key map (kbd "C-c C-c") #'chronometrist-kv-accept)
     (define-key map (kbd "C-c C-k") #'chronometrist-kv-reject)
     map)
-  "Keymap used by `chronometrist-mode'.")
+  "Keymap used by `chronometrist-kv-read-mode'.")
 
 (define-derived-mode chronometrist-kv-read-mode emacs-lisp-mode "Key-Values"
   "Mode used by `chronometrist' to read key values from the user."
@@ -387,7 +384,8 @@ It currently supports ido, ido-ubiquitous, ivy, and helm."
 
 (defun chronometrist-key-prompt (used-keys)
   "Prompt the user to enter keys.
-USED-KEYS are keys they have already used in this session."
+USED-KEYS are keys they have already added since the invocation
+of `chronometrist-kv-add'."
   (let ((key-suggestions (--> (chronometrist-sexp-last)
                               (plist-get it :name)
                               (gethash it chronometrist-key-history))))
@@ -435,7 +433,8 @@ In the resulting buffer, users can run `chronometrist-kv-accept'
 to add them to the last s-expression in `chronometrist-file', or
 `chronometrist-kv-reject' to cancel.
 
-_ARGS are ignored. This function always returns t."
+_ARGS are ignored. This function always returns t, so it can be
+used in `chronometrist-before-out-functions'."
   (let* ((buffer      (get-buffer-create chronometrist-kv-buffer-name))
          (first-key-p t)
          (last-kvs    (chronometrist-plist-remove (chronometrist-sexp-last)
