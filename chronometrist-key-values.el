@@ -1,4 +1,4 @@
-;;; chronometrist-sexp.el --- S-expression backend for Chronometrist -*- lexical-binding: t; -*-
+;;; chronometrist-key-values.el --- add key-values to Chronometrist data -*- lexical-binding: t; -*-
 
 (require 'cl-lib)
 (require 'subr-x)
@@ -522,10 +522,10 @@ PREFIX is ignored."
              (chronometrist-plist-pp it buffer)))
       (save-buffer))))
 
-(provide 'chronometrist-sexp)
+(provide 'chronometrist-key-values)
 
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"
 ;; End:
 
-;;; chronometrist-sexp.el ends here
+;;; chronometrist-key-values.el ends here

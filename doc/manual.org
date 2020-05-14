@@ -182,7 +182,7 @@
     15. Function - chronometrist-report (&optional keep-date)
     16. Function - chronometrist-report-previous-week (arg)
     17. Function - chronometrist-report-next-week (arg)
-*** chronometrist-sexp.el
+*** chronometrist-key-values.el
     1. Internal Variable - chronometrist--tag-suggestions
     2. Internal Variable - chronometrist--value-suggestions
     3. Function - chronometrist-plist-remove (plist &rest keys)

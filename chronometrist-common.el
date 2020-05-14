@@ -20,7 +20,7 @@
 (require 'chronometrist-report-custom)
 (require 'chronometrist-time)
 
-(declare-function chronometrist-last-expr "chronometrist-sexp.el")
+(declare-function chronometrist-last-expr "chronometrist-key-values")
 
 ;; ## VARIABLES ##
 ;;; Code:

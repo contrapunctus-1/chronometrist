@@ -16,7 +16,7 @@
 (require 'chronometrist-custom)
 (require 'chronometrist-report)
 (require 'chronometrist-statistics)
-(require 'chronometrist-sexp)
+(require 'chronometrist-key-values)
 (require 'chronometrist-queries)
 (require 'chronometrist-migrate)
 

@@ -1,5 +1,5 @@
 (require 'buttercup)
-(require 'chronometrist-sexp)
+(require 'chronometrist-key-values)
 
 (describe
  "chronometrist-plist-remove"
