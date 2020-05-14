@@ -154,12 +154,14 @@
     6. Function - chronometrist-plist-pp-to-string (object)
     7. Function - chronometrist-plist-pp (object &optional stream)
 *** chronometrist-queries.el
-    1. Function - chronometrist-task-time-one-day (task &optional date-string)
+    1. Function - chronometrist-last ()
+       * -> plist
+    2. Function - chronometrist-task-time-one-day (task &optional date-string)
        * String &optional iso-date -> seconds
-    2. Function - chronometrist-active-time-one-day (&optional date-string)
+    3. Function - chronometrist-active-time-one-day (&optional date-string)
        * &optional iso-date -> vector-duration
-    3. Function - chronometrist-statistics-count-active-days (task &optional table)
-    4. Function - chronometrist-task-events-in-day (task date-string)
+    4. Function - chronometrist-statistics-count-active-days (task &optional table)
+    5. Function - chronometrist-task-events-in-day (task date-string)
 *** chronometrist-report-custom.el
     1. Custom variable - chronometrist-report-buffer-name
     2. Custom variable - chronometrist-report-week-start-day
@@ -189,7 +191,7 @@
     4. Function - chronometrist-maybe-string-to-symbol (list)
     5. Function - chronometrist-maybe-symbol-to-string (list)
     6. Command - chronometrist-reindent-buffer ()
-    7. Function - chronometrist-append-to-last-expr (tags plist)
+    7. Function - chronometrist-append-to-last (tags plist)
     8. Variable - chronometrist-tags-history
     9. Function - chronometrist-tags-history-populate ()
     10. Function - chronometrist-tags-history-combination-strings (task)
@@ -283,4 +285,7 @@
 *** chronometrist-sexp
     1. Function - chronometrist-sexp-create-file ()
     2. Function - chronometrist-sexp-last ()
+       * -> plist
     3. Function - chronometrist-sexp-current-task ()
+    4. Function - chronometrist-sexp-replace-last (plist)
+    5. Function - chronometrist-sexp-reindent-buffer ()

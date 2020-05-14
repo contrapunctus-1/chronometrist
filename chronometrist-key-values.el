@@ -60,61 +60,40 @@ Used as history by `chronometrist--value-suggestions'.")
            it)
          list))
 
-(defun chronometrist-reindent-buffer ()
-  "Reindent the current buffer.
-This is meant to be run in `chronometrist-file'."
-  (interactive)
-  (let (expr)
-    (goto-char (point-min))
-    (while (setq expr (ignore-errors (read (current-buffer))))
-      (backward-list)
-      (chronometrist-delete-list)
-      (when (looking-at "\n*")
-        (delete-region (match-beginning 0)
-                       (match-end 0)))
-      (chronometrist-plist-pp expr (current-buffer))
-      (insert "\n")
-      (unless (eobp)
-        (insert "\n")))))
-
-(defun chronometrist-append-to-last-expr (tags plist)
-  "Add TAGS and PLIST to last s-expression in `chronometrist-file'.
+(defun chronometrist-append-to-last (tags plist)
+  "Add TAGS and PLIST to last entry in `chronometrist-file'.
 
 TAGS should be a list of symbols and/or strings.
 
 PLIST should be a property list. Properties reserved by
 Chronometrist - currently :name, :tags, :start, and :stop - will
-be removed."
-  (let* ((old-expr  (chronometrist-sexp-last))
-         (old-name  (plist-get old-expr :name))
-         (old-start (plist-get old-expr :start))
-         (old-stop  (plist-get old-expr :stop))
-         (old-tags  (plist-get old-expr :tags))
-         (old-kvs   (chronometrist-plist-remove old-expr :name :tags :start :stop))
-         (plist     (chronometrist-plist-remove plist    :name :tags :start :stop))
-         (new-tags  (if old-tags
-                        (-> (append old-tags tags)
-                            (cl-remove-duplicates :test #'equal))
-                      tags))
-         (new-kvs   (cl-copy-list old-expr))
-         (new-kvs   (if plist
-                        (-> (cl-loop for (key val) on plist by #'cddr
-                                     do (plist-put new-kvs key val)
-                                     finally return new-kvs)
-                            (chronometrist-plist-remove :name :tags :start :stop))
-                      old-kvs))
-         (buffer     (find-file-noselect chronometrist-file)))
-    (with-current-buffer buffer
-      (goto-char (point-max))
-      (backward-list)
-      (chronometrist-delete-list)
-      (-> (append `(:name ,old-name)
-                  (when new-tags `(:tags ,new-tags))
-                  new-kvs
-                  `(:start ,old-start)
-                  (when old-stop `(:stop  ,old-stop)))
-          (chronometrist-plist-pp buffer))
-      (save-buffer))))
+be removed.
+
+Return a new plist which should be appended to the last entry."
+  (let* ((old-expr    (chronometrist-last))
+         (old-name    (plist-get old-expr :name))
+         (old-start   (plist-get old-expr :start))
+         (old-stop    (plist-get old-expr :stop))
+         (old-tags    (plist-get old-expr :tags))
+         (old-kvs     (chronometrist-plist-remove old-expr :name :tags :start :stop))
+         (plist-clean (chronometrist-plist-remove plist    :name :tags :start :stop))
+         (new-tags    (if old-tags
+                          (-> (append old-tags tags)
+                              (cl-remove-duplicates :test #'equal))
+                        tags))
+         (new-kvs     (cl-copy-list old-expr))
+         (new-kvs     (if plist-clean
+                          (-> (cl-loop for (key val) on plist-clean by #'cddr
+                                       do (plist-put new-kvs key val)
+                                       finally return new-kvs)
+                              (chronometrist-plist-remove :name :tags :start :stop))
+                        old-kvs))
+         (plist     (append `(:name ,old-name)
+                            (when new-tags `(:tags ,new-tags))
+                            new-kvs
+                            `(:start ,old-start)
+                            (when old-stop `(:stop  ,old-stop)))))
+    (chronometrist-sexp-replace-last plist)))
 
 ;;;; TAGS ;;;;
 (defvar chronometrist-tags-history (make-hash-table :test #'equal)
@@ -194,7 +173,7 @@ INITIAL-INPUT is as used in `completing-read'."
 (defun chronometrist-tags-add (&rest _args)
   "Read tags from the user, add them to the last s-expr in `chronometrist-file'.
 _ARGS are ignored. This function always returns t."
-  (let* ((last-expr (chronometrist-sexp-last))
+  (let* ((last-expr (chronometrist-last))
          (last-name (plist-get last-expr :name))
          (last-tags (plist-get last-expr :tags))
          (input     (->> last-tags
@@ -208,7 +187,7 @@ _ARGS are ignored. This function always returns t."
           (reverse)
           (cl-remove-duplicates :test #'equal)
           (reverse)
-          (chronometrist-append-to-last-expr nil)))
+          (chronometrist-append-to-last nil)))
     t))
 
 ;;;; KEY-VALUES ;;;;
@@ -386,7 +365,7 @@ It currently supports ido, ido-ubiquitous, ivy, and helm."
   "Prompt the user to enter keys.
 USED-KEYS are keys they have already added since the invocation
 of `chronometrist-kv-add'."
-  (let ((key-suggestions (--> (chronometrist-sexp-last)
+  (let ((key-suggestions (--> (chronometrist-last)
                               (plist-get it :name)
                               (gethash it chronometrist-key-history))))
     (completing-read (concat "Key ("
@@ -437,7 +416,7 @@ _ARGS are ignored. This function always returns t, so it can be
 used in `chronometrist-before-out-functions'."
   (let* ((buffer      (get-buffer-create chronometrist-kv-buffer-name))
          (first-key-p t)
-         (last-kvs    (chronometrist-plist-remove (chronometrist-sexp-last)
+         (last-kvs    (chronometrist-plist-remove (chronometrist-last)
                                      :name :tags :start :stop))
          (used-keys   (->> (seq-filter #'keywordp last-kvs)
                            (mapcar #'symbol-name)
@@ -471,7 +450,7 @@ used in `chronometrist-before-out-functions'."
             (if (string-empty-p input)
                 (throw 'empty-input nil)
               (chronometrist-value-insert value)))))
-      (chronometrist-reindent-buffer)))
+      (chronometrist-sexp-reindent-buffer)))
   t)
 
 
