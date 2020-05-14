@@ -244,7 +244,7 @@ leading \":\" is removed."
    (cl-loop
     for plist in hv do
     (let* ((name   (plist-get plist :name))
-           (old-hv (gethash name ht))
+           (old-hv (gethash name chronometrist-events))
            (keys   (->> (chronometrist-plist-remove plist
                                        :name :start
                                        :stop :tags)
@@ -259,7 +259,7 @@ leading \":\" is removed."
                     (if old-hv
                         (append old-hv key-string)
                       key-string)
-                    ht)))))))
+                    chronometrist-key-history)))))))
   (chronometrist-ht-history-prep chronometrist-key-history))
 
 (defun chronometrist-value-history-populate ()
