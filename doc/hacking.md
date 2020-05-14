@@ -14,7 +14,7 @@ Each of them has a corresponding `-custom` file, which contain the Customize gro
 
 [chronometrist-common.el](chronometrist-common.el) contains definitions common to all components.
 
-All three components use timers to keep their buffers updated. [chronometrist-timer.el](chronometrist-timer.el) contains all timer-related code. Note - sometimes, when hacking, timers may cause subtle bugs which are very hard to debug. Restarting Emacs can fix them, so try that as a first sanity check.
+All three components use timers to keep their buffers updated. [chronometrist-timer.el](chronometrist-timer.el) contains all timer-related code. Note - sometimes, when hacking or dealing with errors, timers may result in subtle bugs which are very hard to debug. Using `chronometrist-force-restart-timer` or restarting Emacs can fix them, so try that as a first sanity check.
 
 ## Browsing the code
 I recommend using
