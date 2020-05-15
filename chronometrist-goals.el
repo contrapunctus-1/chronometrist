@@ -7,7 +7,7 @@
 ;; Package-Requires: ((emacs "25.1") (cl-lib "1.0") (alert "1.2") (chronometrist "0.4.3"))
 ;; Version: 0.1.0
 
-(require 'chronometrist)
+(require 'chronometrist-queries)
 (require 'alert)
 
 ;;; Commentary:
@@ -22,6 +22,8 @@
 ;; * clear notifications on file change event
 ;; * define types for custom variables
 ;; * clock in -> go over the goal, get the 'exceeding' -> clock out, file changes, the exceed alert is shown again
+
+(defvar chronometrist--timers-list nil)
 
 (defcustom chronometrist-goals-list nil
   "List to specify daily time goals for each task.
@@ -58,11 +60,11 @@ like to spend GOAL time on any one of those tasks."
                    (number-to-string h)))
          (m-str  (unless (zerop m)
                    (number-to-string m)))
-         (h-unit (case h
+         (h-unit (cl-case h
                    (0 nil)
                    (1 " hour")
                    (t " hours")))
-         (m-unit (case m
+         (m-unit (cl-case m
                    (0 nil)
                    (1 " minute")
                    (t " minutes")))
@@ -112,10 +114,10 @@ SPENT is the time spent on that task (minutes as an integer)."
                       nil
                       (lambda (task)
                         (alert (format "You are exceeding the goal for %s!" task)
-                               :severity 'high))
+                               :severity 'medium))
                       task)))
 
-(defun chronometrist-no-goal-alert (task goal spent)
+(defun chronometrist-no-goal-alert (task goal _spent)
   "If TASK has no GOAL, regularly remind the user of the time they have spent on it.
 TASK is the name of the current task (as a string).
 GOAL is the goal time for that task (minutes as an integer).
@@ -179,8 +181,6 @@ If GOALS-LIST is not supplied, `chronometrist-time-goals-list' is used."
     (cl-loop for list in goals-list
              when (member task list)
              return (car list))))
-
-(defvar chronometrist--timers-list nil)
 
 (defun chronometrist-minutes-string (minutes)
   (format "%s minutes" minutes))
