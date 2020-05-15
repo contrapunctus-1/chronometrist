@@ -7,12 +7,6 @@
 
 ;;; Code:
 
-(defun chronometrist-sexp-create-file ()
-  "Create `chronometrist-file' if it doesn't already exist."
-  (unless (file-exists-p chronometrist-file)
-    (with-current-buffer (find-file-noselect chronometrist-file)
-      (write-file chronometrist-file))))
-
 ;;;; Queries
 (defun chronometrist-sexp-open-log ()
   "Open `chronometrist-file' in another window."
@@ -37,6 +31,12 @@
       (plist-get last-event :name))))
 
 ;;;; Modifications
+(defun chronometrist-sexp-create-file ()
+  "Create `chronometrist-file' if it doesn't already exist."
+  (unless (file-exists-p chronometrist-file)
+    (with-current-buffer (find-file-noselect chronometrist-file)
+      (write-file chronometrist-file))))
+
 (cl-defun chronometrist-sexp-new (plist &optional (buffer (find-file-noselect chronometrist-file)))
   "Add new PLIST at the end of `chronometrist-file'.
 Afterwards, save it and refresh the Chronometrist buffer.

@@ -281,11 +281,11 @@
     14. Function - chronometrist-goals-stop-alert-timers (&optional _task)
     15. Function - chronometrist-goals-on-file-change ()
 *** chronometrist-sexp
-    1. Function - chronometrist-sexp-create-file ()
-    2. Function - chronometrist-sexp-open-log ()
-    3. Function - chronometrist-sexp-last ()
+    1. Function - chronometrist-sexp-open-log ()
+    2. Function - chronometrist-sexp-last ()
        * -> plist
-    4. Function - chronometrist-sexp-current-task ()
+    3. Function - chronometrist-sexp-current-task ()
+    4. Function - chronometrist-sexp-create-file ()
     5. Function - chronometrist-sexp-new (plist)
     6. Function - chronometrist-sexp-delete-list (&optional arg)
     7. Function - chronometrist-sexp-replace-last (plist)
