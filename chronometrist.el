@@ -12,13 +12,17 @@
 (require 'subr-x)
 
 (require 'chronometrist-common)
-(require 'chronometrist-timer)
 (require 'chronometrist-custom)
-(require 'chronometrist-report)
-(require 'chronometrist-statistics)
 (require 'chronometrist-key-values)
 (require 'chronometrist-queries)
 (require 'chronometrist-migrate)
+(require 'chronometrist-sexp)
+
+(defvar chronometrist-goals-list)
+(declare-function 'chronometrist-get-goal "chronometrist-goals")
+(autoload 'chronometrist-maybe-start-timer "chronometrist-timer" nil t)
+(autoload 'chronometrist-report "chronometrist-report" nil t)
+(autoload 'chronometrist-statistics "chronometrist-statistics" nil t)
 
 ;; This is free and unencumbered software released into the public domain.
 ;;
@@ -67,6 +71,22 @@
 (defvar chronometrist-mode-map)
 
 ;; ## FUNCTIONS ##
+(defun chronometrist-open-log (&optional _button)
+  "Open `chronometrist-file' in another window.
+
+Argument _BUTTON is for the purpose of using this command as a
+button action."
+  (interactive)
+  (chronometrist-sexp-open-log))
+
+(defun chronometrist-common-create-file ()
+  "Create `chronometrist-file' if it doesn't already exist."
+  (chronometrist-sexp-create-file))
+
+(defun chronometrist-current-task ()
+  "Return the name of the currently clocked-in task, or nil if not clocked in."
+  (chronometrist-sexp-current-task))
+
 (defun chronometrist-task-active? (task)
   "Return t if TASK is currently clocked in, else nil."
   (equal (chronometrist-current-task) task))
@@ -99,13 +119,15 @@ See custom variable `chronometrist-activity-indicator'."
                (indicator   (if (chronometrist-task-active? task)
                                 (chronometrist-activity-indicator)
                               ""))
-               (target      (chronometrist-get-goal task))
+               (target      (when (featurep 'chronometrist-goals)
+                              (chronometrist-get-goal task)))
                (target-str  (if target
                                 (format "% 4d" target)
                               "")))
           (list task
                 (vconcat (vector index task-button task-time indicator)
-                         (when (bound-and-true-p chronometrist-goals-list)
+                         (when (and target
+                                    (bound-and-true-p chronometrist-goals-list))
                            (vector target-str))))))))
 
 (defun chronometrist-task-at-point ()
@@ -241,7 +263,8 @@ PREFIX is ignored."
   (interactive "P")
   (let ((plist `(:name  ,task
                  :start ,(format-time-string "%FT%T%z"))))
-    (chronometrist-sexp-new plist)))
+    (chronometrist-sexp-new plist)
+    (chronometrist-refresh)))
 
 (defun chronometrist-out (&optional _prefix)
   "Record current moment as stop time to last s-exp in `chronometrist-file'.

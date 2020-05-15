@@ -11,8 +11,13 @@
 ;;
 ;; For more information, please refer to <https://unlicense.org>
 
-(require 'chronometrist-plist-pp)
+;; (require 'chronometrist-plist-pp)
 (require 'chronometrist-common)
+
+;; external -
+;; chronometrist-day-start-time (-custom)
+;; chronometrist-midnight-spanning-p (-time)
+;; chronometrist-date-less-p (-time)
 
 ;;; Commentary:
 ;;
@@ -44,44 +49,44 @@ Return value is a time value (see `current-time')."
          (append it timestamp-date-list)
          (apply #'encode-time it))))
 
-(defun chronometrist-file-clean ()
-  "Clean `chronometrist-file' so that events can be processed accurately.
-NOTE - currently unused.
+;; (defun chronometrist-file-clean ()
+;;   "Clean `chronometrist-file' so that events can be processed accurately.
+;; NOTE - currently unused.
 
-This function splits midnight-spanning intervals into two. It
-must be called before running `chronometrist-populate'.
+;; This function splits midnight-spanning intervals into two. It
+;; must be called before running `chronometrist-populate'.
 
-It returns t if the table was modified, else nil."
-  (let ((buffer (find-file-noselect chronometrist-file))
-        modified
-        expr)
-    (with-current-buffer buffer
-      (save-excursion
-        (goto-char (point-min))
-        (while (setq expr (ignore-errors (read (current-buffer))))
-          (when (plist-get expr :stop)
-            (let ((split-time (chronometrist-midnight-spanning-p (plist-get expr :start)
-                                                     (plist-get expr :stop))))
-              (when split-time
-                (let ((first-start  (plist-get (cl-first  split-time) :start))
-                      (first-stop   (plist-get (cl-first  split-time) :stop))
-                      (second-start (plist-get (cl-second split-time) :start))
-                      (second-stop  (plist-get (cl-second split-time) :stop)))
-                  (backward-list 1)
-                  (chronometrist-sexp-delete-list)
-                  (-> expr
-                      (plist-put :start first-start)
-                      (plist-put :stop  first-stop)
-                      (chronometrist-plist-pp buffer))
-                  (when (looking-at-p "\n\n")
-                    (delete-char 2))
-                  (-> expr
-                      (plist-put :start second-start)
-                      (plist-put :stop  second-stop)
-                      (chronometrist-plist-pp buffer))
-                  (setq modified t))))))
-        (save-buffer)))
-    modified))
+;; It returns t if the table was modified, else nil."
+;;   (let ((buffer (find-file-noselect chronometrist-file))
+;;         modified
+;;         expr)
+;;     (with-current-buffer buffer
+;;       (save-excursion
+;;         (goto-char (point-min))
+;;         (while (setq expr (ignore-errors (read (current-buffer))))
+;;           (when (plist-get expr :stop)
+;;             (let ((split-time (chronometrist-midnight-spanning-p (plist-get expr :start)
+;;                                                      (plist-get expr :stop))))
+;;               (when split-time
+;;                 (let ((first-start  (plist-get (cl-first  split-time) :start))
+;;                       (first-stop   (plist-get (cl-first  split-time) :stop))
+;;                       (second-start (plist-get (cl-second split-time) :start))
+;;                       (second-stop  (plist-get (cl-second split-time) :stop)))
+;;                   (backward-list 1)
+;;                   (chronometrist-sexp-delete-list)
+;;                   (-> expr
+;;                       (plist-put :start first-start)
+;;                       (plist-put :stop  first-stop)
+;;                       (chronometrist-plist-pp buffer))
+;;                   (when (looking-at-p "\n\n")
+;;                     (delete-char 2))
+;;                   (-> expr
+;;                       (plist-put :start second-start)
+;;                       (plist-put :stop  second-stop)
+;;                       (chronometrist-plist-pp buffer))
+;;                   (setq modified t))))))
+;;         (save-buffer)))
+;;     modified))
 
 (defun chronometrist-events-maybe-split (event)
   "Split EVENT if it spans midnight.

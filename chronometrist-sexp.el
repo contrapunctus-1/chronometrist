@@ -3,9 +3,15 @@
 ;;; Commentary:
 ;;
 
-(require 'chronometrist)
+(require 'chronometrist-custom)
+(require 'chronometrist-events)
+(require 'chronometrist-plist-pp)
 
 ;;; Code:
+
+;; chronometrist-file (-custom)
+;; chronometrist-events, chronometrist-events-maybe-split (-events)
+;; chronometrist-plist-pp (-plist-pp)
 
 ;;;; Queries
 (defun chronometrist-sexp-open-log ()
@@ -74,8 +80,6 @@ were none."
 
 (cl-defun chronometrist-sexp-new (plist &optional (buffer (find-file-noselect chronometrist-file)))
   "Add new PLIST at the end of `chronometrist-file'.
-Afterwards, save it and refresh the Chronometrist buffer.
-
 BUFFER is the buffer to operate in - default is one accessing `chronometrist-file'."
   (with-current-buffer buffer
     (goto-char (point-max))
@@ -84,8 +88,7 @@ BUFFER is the buffer to operate in - default is one accessing `chronometrist-fil
     (unless (bobp) (insert "\n"))
     (unless (bolp) (insert "\n"))
     (chronometrist-plist-pp plist buffer)
-    (save-buffer))
-  (chronometrist-refresh))
+    (save-buffer)))
 
 (defun chronometrist-sexp-delete-list (&optional arg)
   "Delete ARG lists after point."

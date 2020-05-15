@@ -18,7 +18,7 @@
 (require 'chronometrist-custom)
 (require 'chronometrist-statistics-custom)
 (require 'chronometrist-report-custom)
-(require 'chronometrist-common)
+(require 'chronometrist)
 
 (declare-function chronometrist-refresh "chronometrist.el")
 (declare-function chronometrist-report-refresh "chronometrist-report.el")
