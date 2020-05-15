@@ -233,6 +233,25 @@ Argument _FS-EVENT is ignored."
          (chronometrist-out))
     t))
 
+(defun chronometrist-in (task &optional _prefix)
+  "Clock in to TASK; record current time in `chronometrist-file'.
+TASK is the name of the task, a string.
+
+PREFIX is ignored."
+  (interactive "P")
+  (let ((plist `(:name  ,task
+                 :start ,(format-time-string "%FT%T%z"))))
+    (chronometrist-sexp-new plist)))
+
+(defun chronometrist-out (&optional _prefix)
+  "Record current moment as stop time to last s-exp in `chronometrist-file'.
+PREFIX is ignored."
+  (interactive "P")
+  (let ((plist (plist-put (chronometrist-last)
+                          :stop
+                          (chronometrist-format-time-iso8601))))
+    (chronometrist-sexp-replace-last plist)))
+
 ;; ## HOOKS ##
 
 (defvar chronometrist-before-in-functions nil

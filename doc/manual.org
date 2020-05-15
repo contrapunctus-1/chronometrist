@@ -115,20 +115,22 @@
     12. Function - chronometrist-refresh (&optional ignore-auto noconfirm)
     13. Function - chronometrist-refresh-file (fs-event)
     14. Command - chronometrist-query-stop ()
-    15. Variable - chronometrist-before-in-functions
-    16. Variable - chronometrist-after-in-functions
-    17. Variable - chronometrist-before-out-functions
-    18. Variable - chronometrist-after-out-functions
-    19. Function - chronometrist-run-functions-and-clock-in (task)
-    20. Function - chronometrist-run-functions-and-clock-out (task)
-    21. Variable - chronometrist-mode-map
-    22. Major Mode - chronometrist-mode
-    23. Function - chronometrist-toggle-task-button (button)
-    24. Function - chronometrist-add-new-task-button (button)
-    25. Command - chronometrist-toggle-task (&optional prefix inhibit-hooks)
-    26. Command - chronometrist-toggle-task-no-hooks (&optional prefix)
-    27. Command - chronometrist-add-new-task ()
-    28. Command - chronometrist (&optional arg)
+    15. Command - chronometrist-in (task &optional prefix)
+    16. Command - chronometrist-out (&optional prefix)
+    17. Variable - chronometrist-before-in-functions
+    18. Variable - chronometrist-after-in-functions
+    19. Variable - chronometrist-before-out-functions
+    20. Variable - chronometrist-after-out-functions
+    21. Function - chronometrist-run-functions-and-clock-in (task)
+    22. Function - chronometrist-run-functions-and-clock-out (task)
+    23. Variable - chronometrist-mode-map
+    24. Major Mode - chronometrist-mode
+    25. Function - chronometrist-toggle-task-button (button)
+    26. Function - chronometrist-add-new-task-button (button)
+    27. Command - chronometrist-toggle-task (&optional prefix inhibit-hooks)
+    28. Command - chronometrist-toggle-task-no-hooks (&optional prefix)
+    29. Command - chronometrist-add-new-task ()
+    30. Command - chronometrist (&optional arg)
 *** chronometrist-events.el
     1. Variable - chronometrist-events
     2. Function - chronometrist-list-midnight-spanning-events ()
@@ -189,32 +191,29 @@
     3. Function - chronometrist-plist-remove (plist &rest keys)
     4. Function - chronometrist-maybe-string-to-symbol (list)
     5. Function - chronometrist-maybe-symbol-to-string (list)
-    6. Command - chronometrist-reindent-buffer ()
-    7. Function - chronometrist-append-to-last (tags plist)
-    8. Variable - chronometrist-tags-history
-    9. Function - chronometrist-tags-history-populate ()
-    10. Function - chronometrist-tags-history-combination-strings (task)
-    11. Function - chronometrist-tags-history-individual-strings (task)
-    12. Function - chronometrist-tags-prompt (task &optional initial-input)
-    13. Function - chronometrist-tags-add (&rest args)
-    14. Custom Variable - chronometrist-kv-buffer-name
-    15. Variable - chronometrist-key-history
-    16. Variable - chronometrist-value-history
-    17. Function - chronometrist-ht-history-prep (table)
-    18. Function - chronometrist-key-history-populate ()
-    19. Function - chronometrist-value-history-populate ()
-    20. Command - chronometrist-kv-accept ()
-    21. Command - chronometrist-kv-reject ()
-    22. Variable - chronometrist-kv-read-mode-map
-    23. Major Mode - chronometrist-kv-read-mode
-    24. Function - chronometrist-kv-completion-quit-key ()
-    25. Function - chronometrist-string-has-whitespace-p (string)
-    26. Function - chronometrist-key-prompt (used-keys)
-    27. Function - chronometrist-value-prompt (key)
-    28. Function - chronometrist-value-insert (value)
-    29. Function - chronometrist-kv-add (&rest args)
-    30. Command - chronometrist-in (task &optional prefix)
-    31. Command - chronometrist-out (&optional prefix)
+    6. Function - chronometrist-append-to-last (tags plist)
+    7. Variable - chronometrist-tags-history
+    8. Function - chronometrist-tags-history-populate ()
+    9. Function - chronometrist-tags-history-combination-strings (task)
+    10. Function - chronometrist-tags-history-individual-strings (task)
+    11. Function - chronometrist-tags-prompt (task &optional initial-input)
+    12. Function - chronometrist-tags-add (&rest args)
+    13. Custom Variable - chronometrist-kv-buffer-name
+    14. Variable - chronometrist-key-history
+    15. Variable - chronometrist-value-history
+    16. Function - chronometrist-ht-history-prep (table)
+    17. Function - chronometrist-key-history-populate ()
+    18. Function - chronometrist-value-history-populate ()
+    19. Variable - chronometrist-kv-read-mode-map
+    20. Major Mode - chronometrist-kv-read-mode
+    21. Function - chronometrist-kv-completion-quit-key ()
+    22. Function - chronometrist-string-has-whitespace-p (string)
+    23. Function - chronometrist-key-prompt (used-keys)
+    24. Function - chronometrist-value-prompt (key)
+    25. Function - chronometrist-value-insert (value)
+    26. Function - chronometrist-kv-add (&rest args)
+    27. Command - chronometrist-kv-accept ()
+    28. Command - chronometrist-kv-reject ()
 *** chronometrist-statistics-custom.el
     1. Custom variable - chronometrist-statistics-buffer-name
 *** chronometrist-statistics.el
@@ -290,4 +289,4 @@
     5. Function - chronometrist-sexp-new (plist)
     6. Function - chronometrist-sexp-delete-list (&optional arg)
     7. Function - chronometrist-sexp-replace-last (plist)
-    8. Function - chronometrist-sexp-reindent-buffer ()
+    8. Command - chronometrist-sexp-reindent-buffer ()

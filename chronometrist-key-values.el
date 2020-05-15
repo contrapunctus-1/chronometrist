@@ -295,46 +295,6 @@ The values are stored in `chronometrist-value-history'."
                   table)))))
     (chronometrist-ht-history-prep table)))
 
-;; TODO - refactor this to use `chronometrist-append-to-last-expr'
-(defun chronometrist-kv-accept ()
-  "Accept the plist in `chronometrist-kv-buffer-name' and add it to `chronometrist-file'."
-  (interactive)
-  (let ((backend-buffer (find-file-noselect chronometrist-file))
-        user-kv-expr
-        last-expr)
-    (with-current-buffer (get-buffer chronometrist-kv-buffer-name)
-      (goto-char (point-min))
-      (setq user-kv-expr (ignore-errors (read (current-buffer))))
-      (kill-buffer chronometrist-kv-buffer-name))
-    (if user-kv-expr
-        (with-current-buffer backend-buffer
-          (goto-char (point-max))
-          (backward-list)
-          (setq last-expr (ignore-errors (read backend-buffer)))
-          (backward-list)
-          (chronometrist-sexp-delete-list)
-          (let ((name    (plist-get last-expr :name))
-                (tags    (plist-get last-expr :tags))
-                (start   (plist-get last-expr :start))
-                (stop    (plist-get last-expr :stop))
-                (old-kvs (chronometrist-plist-remove last-expr :name :tags :start :stop)))
-            (chronometrist-plist-pp (append (when name  `(:name  ,name))
-                               (when tags  `(:tags  ,tags))
-                               old-kvs
-                               user-kv-expr
-                               (when start `(:start ,start))
-                               (when stop  `(:stop  ,stop)))
-                       backend-buffer))
-          (save-buffer))
-      (switch-to-buffer chronometrist-buffer-name)
-      (chronometrist-refresh))))
-
-(defun chronometrist-kv-reject ()
-  "Reject the property list in `chronometrist-kv-buffer-name'."
-  (interactive)
-  (kill-buffer chronometrist-kv-buffer-name)
-  (chronometrist-refresh))
-
 (defvar chronometrist-kv-read-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-c") #'chronometrist-kv-accept)
@@ -458,26 +418,46 @@ used in `chronometrist-before-out-functions'."
       (chronometrist-sexp-reindent-buffer)))
   t)
 
-
 ;;;; COMMANDS ;;;;
-(defun chronometrist-in (task &optional _prefix)
-  "Clock in to TASK; record current time in `chronometrist-file'.
-TASK is the name of the task, a string.
+;; TODO - refactor this to use `chronometrist-append-to-last-expr'
+(defun chronometrist-kv-accept ()
+  "Accept the plist in `chronometrist-kv-buffer-name' and add it to `chronometrist-file'."
+  (interactive)
+  (let ((backend-buffer (find-file-noselect chronometrist-file))
+        user-kv-expr
+        last-expr)
+    (with-current-buffer (get-buffer chronometrist-kv-buffer-name)
+      (goto-char (point-min))
+      (setq user-kv-expr (ignore-errors (read (current-buffer))))
+      (kill-buffer chronometrist-kv-buffer-name))
+    (if user-kv-expr
+        (with-current-buffer backend-buffer
+          (goto-char (point-max))
+          (backward-list)
+          (setq last-expr (ignore-errors (read backend-buffer)))
+          (backward-list)
+          (chronometrist-sexp-delete-list)
+          (let ((name    (plist-get last-expr :name))
+                (tags    (plist-get last-expr :tags))
+                (start   (plist-get last-expr :start))
+                (stop    (plist-get last-expr :stop))
+                (old-kvs (chronometrist-plist-remove last-expr :name :tags :start :stop)))
+            (chronometrist-plist-pp (append (when name  `(:name  ,name))
+                               (when tags  `(:tags  ,tags))
+                               old-kvs
+                               user-kv-expr
+                               (when start `(:start ,start))
+                               (when stop  `(:stop  ,stop)))
+                       backend-buffer))
+          (save-buffer))
+      (switch-to-buffer chronometrist-buffer-name)
+      (chronometrist-refresh))))
 
-PREFIX is ignored."
-  (interactive "P")
-  (let ((plist `(:name  ,task
-                 :start ,(format-time-string "%FT%T%z"))))
-    (chronometrist-sexp-new plist)))
-
-(defun chronometrist-out (&optional _prefix)
-  "Record current moment as stop time to last s-exp in `chronometrist-file'.
-PREFIX is ignored."
-  (interactive "P")
-  (let ((plist (plist-put (chronometrist-last)
-                          :stop
-                          (chronometrist-format-time-iso8601))))
-    (chronometrist-sexp-replace-last plist)))
+(defun chronometrist-kv-reject ()
+  "Reject the property list in `chronometrist-kv-buffer-name'."
+  (interactive)
+  (kill-buffer chronometrist-kv-buffer-name)
+  (chronometrist-refresh))
 
 (provide 'chronometrist-key-values)
 
