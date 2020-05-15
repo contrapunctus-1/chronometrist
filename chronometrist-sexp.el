@@ -30,6 +30,41 @@
         nil
       (plist-get last-event :name))))
 
+(defun chronometrist-sexp-events-populate ()
+  "Populate hash table `chronometrist-events'.
+The data is acquired from `chronometrist-file'.
+
+Return final number of events read from file, or nil if there
+were none."
+  (with-current-buffer (find-file-noselect chronometrist-file)
+    (save-excursion
+      (goto-char (point-min))
+      (let ((index 0)
+            expr
+            pending-expr)
+        (while (or pending-expr
+                   (setq expr (ignore-errors (read (current-buffer)))))
+          ;; find and split midnight-spanning events during deserialization itself
+          (let* ((split-expr (chronometrist-events-maybe-split expr))
+                 (new-value  (cond (pending-expr
+                                    (prog1 pending-expr
+                                      (setq pending-expr nil)))
+                                   (split-expr
+                                    (setq pending-expr (cl-second split-expr))
+                                    (cl-first split-expr))
+                                   (t expr)))
+                 (new-value-date (->> (plist-get new-value :start)
+                                      (s-left 10)))
+                 (existing-value (gethash new-value-date chronometrist-events)))
+            (unless pending-expr (cl-incf index))
+            (puthash new-value-date
+                     (if existing-value
+                         (append existing-value
+                                 (list new-value))
+                       (list new-value))
+                     chronometrist-events)))
+        (unless (zerop index) index)))))
+
 ;;;; Modifications
 (defun chronometrist-sexp-create-file ()
   "Create `chronometrist-file' if it doesn't already exist."

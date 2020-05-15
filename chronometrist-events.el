@@ -19,7 +19,12 @@
 
 ;;; Code:
 
-(defvar chronometrist-events (make-hash-table :test #'equal))
+(defvar chronometrist-events (make-hash-table :test #'equal)
+  "Each key is a date in the form (YEAR MONTH DAY).
+
+Values are lists containing events, where each event is a list in
+the form (:name \"NAME\" :tags (TAGS) <key value pairs> ...
+:start TIME :stop TIME).")
 
 (defun chronometrist-day-start (timestamp)
   "Get start of day (according to `chronometrist-day-start-time') for TIMESTAMP.
@@ -41,6 +46,7 @@ Return value is a time value (see `current-time')."
 
 (defun chronometrist-file-clean ()
   "Clean `chronometrist-file' so that events can be processed accurately.
+NOTE - currently unused.
 
 This function splits midnight-spanning intervals into two. It
 must be called before running `chronometrist-populate'.
@@ -106,47 +112,13 @@ Return a list of two events if EVENT was split, else nil."
 ;; OPTIMIZE - It should not be necessary to call this unless the file
 ;; has changed. Any other refresh situations should not require this.
 (defun chronometrist-events-populate ()
-  "Clear hash table `chronometrist-events' and populate it.
-
+  "Clear hash table `chronometrist-events' (which see) and populate it.
 The data is acquired from `chronometrist-file'.
-
-Each key is a date in the form (YEAR MONTH DAY).
-
-Values are lists containing events, where each event is a list in
-the form (:name \"NAME\" :tags (TAGS) <key value pairs> ...
-:start TIME :stop TIME).
 
 Return final number of events read from file, or nil if there
 were none."
   (clrhash chronometrist-events)
-  (with-current-buffer (find-file-noselect chronometrist-file)
-    (save-excursion
-      (goto-char (point-min))
-      (let ((index 0)
-            expr
-            pending-expr)
-        (while (or pending-expr
-                   (setq expr (ignore-errors (read (current-buffer)))))
-          ;; find and split midnight-spanning events during deserialization itself
-          (let* ((split-expr (chronometrist-events-maybe-split expr))
-                 (new-value  (cond (pending-expr
-                                    (prog1 pending-expr
-                                      (setq pending-expr nil)))
-                                   (split-expr
-                                    (setq pending-expr (cl-second split-expr))
-                                    (cl-first split-expr))
-                                   (t expr)))
-                 (new-value-date (->> (plist-get new-value :start)
-                                      (s-left 10)))
-                 (existing-value (gethash new-value-date chronometrist-events)))
-            (unless pending-expr (cl-incf index))
-            (puthash new-value-date
-                     (if existing-value
-                         (append existing-value
-                                 (list new-value))
-                       (list new-value))
-                     chronometrist-events)))
-        (unless (zerop index) index)))))
+  (chronometrist-sexp-events-populate))
 
 (defun chronometrist-tasks-from-table ()
   "Return a list of task names from `chronometrist-events'."
