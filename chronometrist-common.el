@@ -53,39 +53,6 @@ must correspond to the output from `chronometrist-format-time'.")
 Used to prevent more than one watch being added for the same
 file.")
 
-(defun chronometrist-buffer-exists? (buffer-name)
-  "Return non-nil if BUFFER-NAME exists."
-  (--> (buffer-list)
-       (mapcar #'buffer-name it)
-       (member buffer-name it)))
-
-(defun chronometrist-buffer-visible? (buffer-or-buffer-name)
-  "Return t if BUFFER-OR-BUFFER-NAME is visible to user."
-  ;; It'd be simpler to use only the windows of the current frame (-->
-  ;; (selected-frame) (window-list it) ...) - but it wouldn't be
-  ;; robust, because it is possible that a frame partially covers
-  ;; another and the buffer is visible to the user from the latter.
-  (let ((result (-->
-                 (visible-frame-list)
-                 (mapcar #'window-list it)
-                 (mapcar (lambda (list)
-                           (mapcar #'window-buffer list))
-                         it)
-                 (mapcar (lambda (list)
-                           (mapcar (lambda (buffer)
-                                     (if (bufferp buffer-or-buffer-name)
-                                         (equal buffer-or-buffer-name buffer)
-                                       (equal (buffer-name buffer)
-                                              buffer-or-buffer-name)))
-                                   list))
-                         it)
-                 (mapcar (lambda (list)
-                           (-filter #'identity list))
-                         it)
-                 (mapcar #'car it)
-                 (car it))))
-    (if result t nil)))
-
 (defun chronometrist-format-time (duration &optional blank)
   "Format DURATION as a string suitable for display in Chronometrist buffers.
 DURATION must be a vector or a list of the form [HOURS MINUTES

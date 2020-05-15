@@ -67,20 +67,16 @@
     3. Variable - chronometrist-time-re-ui
     4. Variable - chronometrist-task-list
     5. Internal Variable - chronometrist--fs-watch
-    6. Function - chronometrist-buffer-exists? (buffer-name)
-       * String -> List?
-    7. Function - chronometrist-buffer-visible? (buffer-or-buffer-name)
-       * Buffer | String -> Boolean
-    8. Function - chronometrist-format-time (duration &optional blank)
+    6. Function - chronometrist-format-time (duration &optional blank)
        * vector-duration | list-duration -> "h:m:s"
-    9. Function - chronometrist-common-file-empty-p (file)
-    10. Function - chronometrist-common-clear-buffer (buffer)
-    11. Function - chronometrist-format-keybinds (command map &optional firstonly)
-    12. Function - chronometrist-events->time-list (events)
+    7. Function - chronometrist-common-file-empty-p (file)
+    8. Function - chronometrist-common-clear-buffer (buffer)
+    9. Function - chronometrist-format-keybinds (command map &optional firstonly)
+    10. Function - chronometrist-events->time-list (events)
         * (event ...) -> ((encode-time encode-time) ...)
-    13. Function - chronometrist-time-list->sum-of-intervals (time-value-lists)
+    11. Function - chronometrist-time-list->sum-of-intervals (time-value-lists)
         * ((encode-time encode-time) ...) -> encode-time
-    14. Function - chronometrist-previous-week-start (date-string)
+    12. Function - chronometrist-previous-week-start (date-string)
 *** chronometrist-custom.el
     1. Custom variable - chronometrist-file
     2. Custom variable - chronometrist-buffer-name
