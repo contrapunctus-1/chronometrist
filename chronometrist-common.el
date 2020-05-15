@@ -186,12 +186,6 @@ If TIME-VALUES is nil, return '(0 0)."
            (-reduce #'time-add))
     '(0 0)))
 
-(defun chronometrist-delete-list (&optional arg)
-  "Delete ARG lists after point."
-  (let ((point-1 (point)))
-    (forward-sexp (or arg 1))
-    (delete-region point-1 (point))))
-
 (defun chronometrist-previous-week-start (date-string)
   "Find the previous `chronometrist-report-week-start-day' from DATE-STRING.
 

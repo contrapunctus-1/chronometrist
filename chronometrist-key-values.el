@@ -312,7 +312,7 @@ The values are stored in `chronometrist-value-history'."
           (backward-list)
           (setq last-expr (ignore-errors (read backend-buffer)))
           (backward-list)
-          (chronometrist-delete-list)
+          (chronometrist-sexp-delete-list)
           (let ((name    (plist-get last-expr :name))
                 (tags    (plist-get last-expr :tags))
                 (start   (plist-get last-expr :start))

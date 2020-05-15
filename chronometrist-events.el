@@ -62,7 +62,7 @@ It returns t if the table was modified, else nil."
                       (second-start (plist-get (cl-second split-time) :start))
                       (second-stop  (plist-get (cl-second split-time) :stop)))
                   (backward-list 1)
-                  (chronometrist-delete-list)
+                  (chronometrist-sexp-delete-list)
                   (-> expr
                       (plist-put :start first-start)
                       (plist-put :stop  first-stop)

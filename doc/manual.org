@@ -82,9 +82,8 @@
         * (event ...) -> ((encode-time encode-time) ...)
     15. Function - chronometrist-time-list->sum-of-intervals (time-value-lists)
         * ((encode-time encode-time) ...) -> encode-time
-    16. Function - chronometrist-delete-list (&optional arg)
-    17. Function - chronometrist-previous-week-start (date-string)
-    18. Function - chronometrist-current-task ()
+    16. Function - chronometrist-previous-week-start (date-string)
+    17. Function - chronometrist-current-task ()
 *** chronometrist-custom.el
     1. Custom variable - chronometrist-file
     2. Custom variable - chronometrist-buffer-name
@@ -289,5 +288,6 @@
        * -> plist
     4. Function - chronometrist-sexp-current-task ()
     5. Function - chronometrist-sexp-new (plist)
-    6. Function - chronometrist-sexp-replace-last (plist)
-    7. Function - chronometrist-sexp-reindent-buffer ()
+    6. Function - chronometrist-sexp-delete-list (&optional arg)
+    7. Function - chronometrist-sexp-replace-last (plist)
+    8. Function - chronometrist-sexp-reindent-buffer ()

@@ -52,6 +52,12 @@ BUFFER is the buffer to operate in - default is one accessing `chronometrist-fil
     (save-buffer))
   (chronometrist-refresh))
 
+(defun chronometrist-sexp-delete-list (&optional arg)
+  "Delete ARG lists after point."
+  (let ((point-1 (point)))
+    (forward-sexp (or arg 1))
+    (delete-region point-1 (point))))
+
 (defun chronometrist-sexp-replace-last (plist)
   "Replace the last s-expression in `chronometrist-file' with PLIST."
   (let ((buffer (find-file-noselect chronometrist-file)))
@@ -60,7 +66,7 @@ BUFFER is the buffer to operate in - default is one accessing `chronometrist-fil
       (unless (and (bobp) (bolp))
         (insert "\n"))
       (backward-list 1)
-      (chronometrist-delete-list)
+      (chronometrist-sexp-delete-list)
       (chronometrist-plist-pp plist buffer)
       (save-buffer))))
 
@@ -72,7 +78,7 @@ This is meant to be run in `chronometrist-file' when using the s-expression back
     (goto-char (point-min))
     (while (setq expr (ignore-errors (read (current-buffer))))
       (backward-list)
-      (chronometrist-delete-list)
+      (chronometrist-sexp-delete-list)
       (when (looking-at "\n*")
         (delete-region (match-beginning 0)
                        (match-end 0)))
