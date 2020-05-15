@@ -418,38 +418,16 @@ used in `chronometrist-before-out-functions'."
   t)
 
 ;;;; COMMANDS ;;;;
-;; TODO - refactor this to use `chronometrist-append-to-last-expr'
 (defun chronometrist-kv-accept ()
   "Accept the plist in `chronometrist-kv-buffer-name' and add it to `chronometrist-file'."
   (interactive)
-  (let ((backend-buffer (find-file-noselect chronometrist-file))
-        user-kv-expr
-        last-expr)
+  (let (user-kv-expr)
     (with-current-buffer (get-buffer chronometrist-kv-buffer-name)
       (goto-char (point-min))
       (setq user-kv-expr (ignore-errors (read (current-buffer))))
       (kill-buffer chronometrist-kv-buffer-name))
     (if user-kv-expr
-        (with-current-buffer backend-buffer
-          (goto-char (point-max))
-          (backward-list)
-          (setq last-expr (ignore-errors (read backend-buffer)))
-          (backward-list)
-          (chronometrist-sexp-delete-list)
-          (let ((name    (plist-get last-expr :name))
-                (tags    (plist-get last-expr :tags))
-                (start   (plist-get last-expr :start))
-                (stop    (plist-get last-expr :stop))
-                (old-kvs (chronometrist-plist-remove last-expr :name :tags :start :stop)))
-            (chronometrist-plist-pp (append (when name  `(:name  ,name))
-                               (when tags  `(:tags  ,tags))
-                               old-kvs
-                               user-kv-expr
-                               (when start `(:start ,start))
-                               (when stop  `(:stop  ,stop)))
-                       backend-buffer))
-          (save-buffer))
-      (switch-to-buffer chronometrist-buffer-name)
+        (chronometrist-append-to-last nil user-kv-expr)
       (chronometrist-refresh))))
 
 (defun chronometrist-kv-reject ()
