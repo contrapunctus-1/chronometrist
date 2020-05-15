@@ -91,6 +91,12 @@ button action."
   "Return t if TASK is currently clocked in, else nil."
   (equal (chronometrist-current-task) task))
 
+(defun chronometrist-use-goals? ()
+  "Return t if `chronometrist-goals' is available and
+`chronometrist-goals-list' is bound."
+  (and (featurep 'chronometrist-goals)
+       (bound-and-true-p chronometrist-goals-list)))
+
 (defun chronometrist-activity-indicator ()
   "Return a string to indicate that a task is active.
 See custom variable `chronometrist-activity-indicator'."
@@ -119,15 +125,16 @@ See custom variable `chronometrist-activity-indicator'."
                (indicator   (if (chronometrist-task-active? task)
                                 (chronometrist-activity-indicator)
                               ""))
-               (target      (when (featurep 'chronometrist-goals)
+               (use-goals    (chronometrist-use-goals?))
+               (target      (when use-goals
+                              ;; this can return nil if there is no goal for a task
                               (chronometrist-get-goal task)))
                (target-str  (if target
                                 (format "% 4d" target)
                               "")))
           (list task
                 (vconcat (vector index task-button task-time indicator)
-                         (when (and target
-                                    (bound-and-true-p chronometrist-goals-list))
+                         (when use-goals
                            (vector target-str))))))))
 
 (defun chronometrist-task-at-point ()
@@ -344,7 +351,7 @@ is the name of the task to be clocked out of.")
                   ("Task"    25 t)
                   ("Time"    10 t)
                   ("Active"  10 t)]
-                 (when chronometrist-goals-list
+                 (when (chronometrist-use-goals?)
                    [("Target" 3 t)])))
   (make-local-variable 'tabulated-list-entries)
   (setq tabulated-list-entries 'chronometrist-entries)
