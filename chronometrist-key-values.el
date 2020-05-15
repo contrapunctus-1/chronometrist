@@ -61,15 +61,13 @@ Used as history by `chronometrist--value-suggestions'.")
          list))
 
 (defun chronometrist-append-to-last (tags plist)
-  "Add TAGS and PLIST to last entry in `chronometrist-file'.
+  "Add TAGS and PLIST to the last entry in `chronometrist-file'.
 
 TAGS should be a list of symbols and/or strings.
 
 PLIST should be a property list. Properties reserved by
 Chronometrist - currently :name, :tags, :start, and :stop - will
-be removed.
-
-Return a new plist which should be appended to the last entry."
+be removed."
   (let* ((old-expr    (chronometrist-last))
          (old-name    (plist-get old-expr :name))
          (old-start   (plist-get old-expr :start))
@@ -171,8 +169,9 @@ INITIAL-INPUT is as used in `completing-read'."
                             'chronometrist--tag-suggestions))
 
 (defun chronometrist-tags-add (&rest _args)
-  "Read tags from the user, add them to the last s-expr in `chronometrist-file'.
-_ARGS are ignored. This function always returns t."
+  "Read tags from the user and add them to the last entry in `chronometrist-file'.
+_ARGS are ignored. This function always returns t, so it can be
+used in `chronometrist-before-out-functions'."
   (let* ((last-expr (chronometrist-last))
          (last-name (plist-get last-expr :name))
          (last-tags (plist-get last-expr :tags))
