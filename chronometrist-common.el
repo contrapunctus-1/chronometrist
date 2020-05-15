@@ -111,14 +111,13 @@ supplied, 3 spaces are used."
                  (format "%02d" s))))
         (concat h m s)))))
 
-(defun chronometrist-open-file (&optional _button)
+(defun chronometrist-open-log (&optional _button)
   "Open `chronometrist-file' in another window.
 
 Argument _BUTTON is for the purpose of using this command as a
 button action."
   (interactive)
-  (find-file-other-window chronometrist-file)
-  (goto-char (point-max)))
+  (chronometrist-sexp-open-log))
 
 (defun chronometrist-common-create-file ()
   "Create `chronometrist-file' if it doesn't already exist."

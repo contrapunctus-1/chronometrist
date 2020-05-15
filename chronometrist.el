@@ -181,9 +181,9 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
                           'action #'chronometrist-report
                           'follow-link t)
 
-      (chronometrist-print-keybind 'chronometrist-open-file)
-      (insert-text-button "open log file"
-                          'action #'chronometrist-open-file
+      (chronometrist-print-keybind 'chronometrist-open-log)
+      (insert-text-button "view/edit log file"
+                          'action #'chronometrist-open-log
                           'follow-link t)
       (insert "\n"))))
 
@@ -286,7 +286,7 @@ is the name of the task to be clocked out of.")
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "RET")   #'chronometrist-toggle-task)
     (define-key map (kbd "M-RET") #'chronometrist-toggle-task-no-hooks)
-    (define-key map (kbd "l")     #'chronometrist-open-file)
+    (define-key map (kbd "l")     #'chronometrist-open-log)
     (define-key map (kbd "r")     #'chronometrist-report)
     (define-key map [mouse-1]     #'chronometrist-toggle-task)
     (define-key map [mouse-3]     #'chronometrist-toggle-task-no-hooks)

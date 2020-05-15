@@ -163,9 +163,9 @@ If FIRSTONLY is non-nil, insert only the first keybinding found."
     (insert-text-button "next week"
                         'action #'chronometrist-report-next-week
                         'follow-link t)
-    (chronometrist-report-print-keybind 'chronometrist-open-file)
+    (chronometrist-report-print-keybind 'chronometrist-open-log)
     (insert-text-button "open log file"
-                        'action #'chronometrist-open-file
+                        'action #'chronometrist-open-log
                         'follow-link t)))
 
 (defun chronometrist-report-refresh (&optional _ignore-auto _noconfirm)
@@ -190,7 +190,7 @@ Argument _FS-EVENT is ignored."
 
 (defvar chronometrist-report-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "l") #'chronometrist-open-file)
+    (define-key map (kbd "l") #'chronometrist-open-log)
     (define-key map (kbd "b") #'chronometrist-report-previous-week)
     (define-key map (kbd "f") #'chronometrist-report-next-week)
     ;; Works when number of tasks < screen length; after that, you

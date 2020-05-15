@@ -211,7 +211,7 @@ value of `revert-buffer-function'."
 
 (defvar chronometrist-statistics-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "l") #'chronometrist-open-file)
+    (define-key map (kbd "l") #'chronometrist-log)
     (define-key map (kbd "b") #'chronometrist-statistics-previous-range)
     (define-key map (kbd "f") #'chronometrist-statistics-next-range)
     map)

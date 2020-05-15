@@ -12,6 +12,11 @@
       (write-file chronometrist-file))))
 
 ;;;; Queries
+(defun chronometrist-sexp-open-log ()
+  "Open `chronometrist-file' in another window."
+  (find-file-other-window chronometrist-file)
+  (goto-char (point-max)))
+
 (defun chronometrist-sexp-last ()
   "Return last s-expression from `chronometrist-file'."
   (let ((buffer (find-file-noselect chronometrist-file)))

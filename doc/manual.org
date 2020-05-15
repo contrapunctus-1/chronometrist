@@ -73,7 +73,7 @@
        * Buffer | String -> Boolean
     8. Function - chronometrist-format-time (duration &optional blank)
        * vector-duration | list-duration -> "h:m:s"
-    9. Command - chronometrist-open-file (&optional button)
+    9. Command - chronometrist-open-log (&optional button)
     10. Function - chronometrist-common-create-file ()
     11. Function - chronometrist-common-file-empty-p (file)
     12. Function - chronometrist-common-clear-buffer (buffer)
@@ -284,9 +284,10 @@
     15. Function - chronometrist-goals-on-file-change ()
 *** chronometrist-sexp
     1. Function - chronometrist-sexp-create-file ()
-    2. Function - chronometrist-sexp-last ()
+    2. Function - chronometrist-sexp-open-log ()
+    3. Function - chronometrist-sexp-last ()
        * -> plist
-    3. Function - chronometrist-sexp-current-task ()
-    4. Function - chronometrist-sexp-new (plist)
-    5. Function - chronometrist-sexp-replace-last (plist)
-    6. Function - chronometrist-sexp-reindent-buffer ()
+    4. Function - chronometrist-sexp-current-task ()
+    5. Function - chronometrist-sexp-new (plist)
+    6. Function - chronometrist-sexp-replace-last (plist)
+    7. Function - chronometrist-sexp-reindent-buffer ()
