@@ -5,6 +5,8 @@
 
 (require 'chronometrist)
 
+;;; Code:
+
 (defun chronometrist-sexp-create-file ()
   "Create `chronometrist-file' if it doesn't already exist."
   (unless (file-exists-p chronometrist-file)
@@ -37,7 +39,9 @@
 ;;;; Modifications
 (cl-defun chronometrist-sexp-new (plist &optional (buffer (find-file-noselect chronometrist-file)))
   "Add new PLIST at the end of `chronometrist-file'.
-Afterwards, save it and refresh the Chronometrist buffer."
+Afterwards, save it and refresh the Chronometrist buffer.
+
+BUFFER is the buffer to operate in - default is one accessing `chronometrist-file'."
   (with-current-buffer buffer
     (goto-char (point-max))
     ;; If we're adding the first s-exp in the file, don't add a
