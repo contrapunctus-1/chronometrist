@@ -58,8 +58,9 @@
     |  9. | minutes                            | minutes as an integer                                 |
     | 10. | iso-timestamp                      | "YYYY-MM-DDTHH:MM:SSZ"                                |
     | 11. | iso-date                           | "YYYY-MM-DD"                                          |
-    | 12. | (DEPRECATED) timeclock-timestamp   | "year/month/day hours:minutes:seconds"                |
-    | 13. | (DEPRECATED) timeclock-date        | "year/month/day"                                      |
+    | 12. | ts                                 | ts.el struct                                          |
+    | 13. | (DEPRECATED) timeclock-timestamp   | "year/month/day hours:minutes:seconds"                |
+    | 14. | (DEPRECATED) timeclock-date        | "year/month/day"                                      |
 
 *** chronometrist-common.el
     1. Variable - chronometrist-empty-time-string
@@ -77,7 +78,8 @@
         * (event ...) -> ((encode-time encode-time) ...)
     12. Function - chronometrist-time-list->sum-of-intervals (time-value-lists)
         * ((encode-time encode-time) ...) -> encode-time
-    13. Function - chronometrist-previous-week-start (date-string)
+    13. Function - chronometrist-previous-week-start (ts)
+        * ts -> ts
 *** chronometrist-custom.el
     1. Custom variable - chronometrist-file
     2. Custom variable - chronometrist-buffer-name
@@ -232,26 +234,28 @@
     14. Command - chronometrist-statistics-next-range (arg)
 *** chronometrist-time.el
     1. Constant - chronometrist-seconds-in-day
-    2. Function - chronometrist-date (&optional time)
-    3. Function - chronometrist-day-of-week->number (day-of-week)
-    4. Function - chronometrist-number->day-of-week (number)
-    5. Function - chronometrist-format-time-iso8601 (&optional unix-time)
-    6. Function - chronometrist-time-interval-span-midnight? (t1 t2)
+    2. Function - chronometrist-make-ts-date (date)
+       * iso-date -> ts
+    3. Function - chronometrist-date (&optional time)
+    4. Function - chronometrist-day-of-week->number (day-of-week)
+    5. Function - chronometrist-number->day-of-week (number)
+    6. Function - chronometrist-format-time-iso8601 (&optional unix-time)
+    7. Function - chronometrist-time-interval-span-midnight? (t1 t2)
        * list-timestamp list-timestamp -> Boolean
-    7. Function - chronometrist-midnight-spanning-p (start-time stop-time)
-    8. Function - chronometrist-time->seconds (time)
+    8. Function - chronometrist-midnight-spanning-p (start-time stop-time)
+    9. Function - chronometrist-time->seconds (time)
        * vector-duration -> seconds
-    9. Function - chronometrist-seconds-to-hms (seconds)
-       * seconds -> vector-duration
-    10. Function - chronometrist-time-add (a b)
+    10. Function - chronometrist-seconds-to-hms (seconds)
+        * seconds -> vector-duration
+    11. Function - chronometrist-time-add (a b)
         * vector-duration vector-duration -> vector-duration
-    11. Function - chronometrist-iso-date->timestamp (date)
+    12. Function - chronometrist-iso-date->timestamp (date)
         * iso-date -> iso-timestamp
-    12. Function - chronometrist-date->time (date)
-    13. Function - chronometrist-date-less-p (date1 date2)
-    14. Function - chronometrist-time-less-or-equal-p (t1 t2)
-    15. Function - chronometrist-calendrical->date (date)
-    16. Function - chronometrist-interval (event)
+    13. Function - chronometrist-date->time (date)
+    14. Function - chronometrist-date-less-p (date1 date2)
+    15. Function - chronometrist-time-less-or-equal-p (t1 t2)
+    16. Function - chronometrist-calendrical->date (date)
+    17. Function - chronometrist-interval (event)
         * event -> encode-time
 *** chronometrist-timer.el
     1. Internal Variable - chronometrist--timer-object

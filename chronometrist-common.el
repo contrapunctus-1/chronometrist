@@ -156,12 +156,12 @@ If the day of TS is the same as the
 `chronometrist-report-week-start-day', return TS.
 
 TS must be a ts struct (see `ts.el')."
-  (let ((ts (ts-update ts)))
-    (cl-loop
-     until (equal chronometrist-report-week-start-day
-                  (ts-day-name ts))
-     do (ts-decf (ts-day ts))
-     finally return ts)))
+  ;; (message "%s" (ts-format ts))
+  (cl-loop
+   until (equal chronometrist-report-week-start-day
+                (ts-day-name ts))
+   do (ts-decf (ts-day ts))
+   finally return ts))
 
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist-common"
