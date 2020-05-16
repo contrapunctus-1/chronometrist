@@ -64,9 +64,10 @@
 
 This must be a plist in the form (:MODE :START :END).
 
-:MODE is either 'week, 'month, 'year, 'full, or 'custom. 'week,
-'month, and 'year mean display statistics weekly/monthly/yearly
-respectively.
+:MODE is either 'week, 'month, 'year, 'full, or 'custom.
+
+'week, 'month, and 'year mean display statistics
+weekly/monthly/yearly respectively.
 
 'full means display statistics from the beginning to the end of
 the `chronometrist-file'.
@@ -74,7 +75,7 @@ the `chronometrist-file'.
 'custom means display statistics from an arbitrary date range.
 
 :START and :END are the start and end of the date range to be
-displayed. They must be dates in the form (YEAR MONTH DAY).")
+displayed. They must be ts structs (see `ts.el').")
 
 (defvar chronometrist-statistics--point nil)
 

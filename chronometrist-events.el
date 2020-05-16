@@ -14,6 +14,7 @@
 ;; (require 'chronometrist-plist-pp)
 (require 'chronometrist-common)
 (require 'chronometrist-sexp)
+(require 'ts)
 
 ;; external -
 ;; chronometrist-day-start-time (-custom)
@@ -138,17 +139,16 @@ were none."
                           :test #'equal)))
 
 ;; to be replaced by plist-query
-(defun chronometrist-events-subset (start-date end-date)
+(defun chronometrist-events-subset (start end)
   "Return a subset of `chronometrist-events'.
 
-The subset will contain values between START-DATE and
-END-DATE (both inclusive).
+The subset will contain values between START and END (both
+inclusive).
 
-START-DATE and END-DATE must be dates in the form '(YEAR MONTH DAY)."
+START and END must be ts structs (see `ts.el')."
   (let ((subset (make-hash-table :test #'equal)))
     (maphash (lambda (key value)
-               (when (and (not (chronometrist-date-less-p key start-date))
-                          (not (chronometrist-date-less-p end-date key)))
+               (when (ts-in start end key)
                  (puthash key value subset)))
              chronometrist-events)
     subset))

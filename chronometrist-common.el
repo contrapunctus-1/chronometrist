@@ -16,6 +16,8 @@
 
 (require 'dash)
 (require 'cl-lib)
+(require 'ts)
+
 (require 'chronometrist-custom)
 (require 'chronometrist-report-custom)
 (require 'chronometrist-time)
@@ -145,25 +147,21 @@ If TIME-VALUES is nil, return '(0 0)."
            (-reduce #'time-add))
     '(0 0)))
 
-(defun chronometrist-previous-week-start (date-string)
-  "Find the previous `chronometrist-report-week-start-day' from DATE-STRING.
+(defun chronometrist-previous-week-start (ts)
+  "Find the previous `chronometrist-report-week-start-day' from TS.
 
-Return the time value of said day's beginning.
+Return a ts struct for said day's beginning.
 
-If the day of DATE is the same as the
-`chronometrist-report-week-start-day', return DATE.
+If the day of TS is the same as the
+`chronometrist-report-week-start-day', return TS.
 
-DATE-STRING must be in the form \"YYYY-MM-DD\"."
-  (let* ((date-time  (chronometrist-iso-date->timestamp date-string))
-         (date-unix  (parse-iso8601-time-string date-time))
-         (date-list  (decode-time date-unix))
-         (day        (elt date-list 6)) ;; 0-6, where 0 = Sunday
-         (week-start (chronometrist-day-of-week->number chronometrist-report-week-start-day))
-         (gap        (cond ((> day week-start) (- day week-start))
-                           ((< day week-start) (+ day (- 7 week-start))))))
-    (if gap
-        (time-subtract date-unix `(0 ,(* gap 86400)))
-      date-unix)))
+TS must be a ts struct (see `ts.el')."
+  (let ((ts (ts-update ts)))
+    (cl-loop
+     until (equal chronometrist-report-week-start-day
+                  (ts-day-name ts))
+     do (ts-decf (ts-day ts))
+     finally return ts)))
 
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist-common"

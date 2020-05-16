@@ -28,6 +28,8 @@
 (defconst chronometrist-seconds-in-day (* 60 60 24)
   "Number of seconds in a day.")
 
+;; (defun chronometrist-iso-8601-timestamp->ts (iso-8601-string))
+
 (defun chronometrist-date (&optional time)
   "Return date for TIME or today, in the form \"YYYY-MM-DD\"."
   (s-left 10 (chronometrist-format-time-iso8601 time)))
@@ -142,20 +144,13 @@ DATE must be a list in the form (YEAR MONTH DAY)."
 
 (defun chronometrist-date-less-p (date1 date2)
   "Like `time-less-p' but for dates. Return t if DATE1 is less than DATE2.
-Both must be dates in the ISO-8601 format."
+Both must be dates in the ISO-8601 format (\"YYYY-MM-DD\")."
   (time-less-p (-> date1
                    (chronometrist-iso-date->timestamp)
                    (parse-iso8601-time-string))
                (-> date2
                    (chronometrist-iso-date->timestamp)
                    (parse-iso8601-time-string))))
-
-(defun chronometrist-time-less-or-equal-p (t1 t2)
-  "Return t if T1 is less than or equal to T2.
-
-T1 and T2 should be time values (see `current-time')."
-  (or (equal t1 t2)
-      (time-less-p t1 t2)))
 
 (defun chronometrist-calendrical->date (date)
   "Convert calendrical information DATE to a date in the form (YEAR MONTH DAY).

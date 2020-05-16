@@ -24,7 +24,7 @@
   "Return the last entry from `chronometrist-file' as a plist."
   (chronometrist-sexp-last))
 
-(cl-defun chronometrist-task-time-one-day (task &optional (date-string (chronometrist-queries-date)))
+(cl-defun chronometrist-task-time-one-day (task &optional (date-string (chronometrist-date)))
   "Return total time spent on TASK today or (if supplied) on DATE-STRING.
 The data is obtained from `chronometrist-file', via `chronometrist-events'.
 
