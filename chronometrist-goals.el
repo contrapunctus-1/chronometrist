@@ -170,17 +170,14 @@ within the function passed to `run-at-time'."
 ;; goal (i.e. `(int "task1" "task2" ...)'), and the user has reached
 ;; the goal for one of those tasks, don't display the goal for the
 ;; other associated tasks
-(defun chronometrist-get-goal (task &optional goals-list)
+(defun chronometrist-get-goal (task &optional (goals-list chronometrist-goals-list))
   "Return time goal for TASK from GOALS-LIST.
 Return value is minutes as an integer, or nil.
 
-If GOALS-LIST is not supplied, `chronometrist-time-goals-list' is used."
-  (let ((goals-list (if goals-list
-                        goals-list
-                      chronometrist-goals-list)))
-    (cl-loop for list in goals-list
-             when (member task list)
-             return (car list))))
+If GOALS-LIST is not supplied, `chronometrist-goals-list' is used."
+  (cl-loop for list in goals-list
+           when (member task list)
+           return (car list)))
 
 (defun chronometrist-minutes-string (minutes)
   (format "%s minutes" minutes))

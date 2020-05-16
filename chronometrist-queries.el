@@ -24,15 +24,14 @@
   "Return the last entry from `chronometrist-file' as a plist."
   (chronometrist-sexp-last))
 
-(defun chronometrist-task-time-one-day (task &optional date-string)
+(cl-defun chronometrist-task-time-one-day (task &optional (date-string (chronometrist-queries-date)))
   "Return total time spent on TASK today or (if supplied) on DATE-STRING.
 The data is obtained from `chronometrist-file', via `chronometrist-events'.
 
 DATE-STRING must be in the form \"YYYY-MM-DD\".
 
 The return value is seconds, as an integer."
-  (let* ((date-string    (if date-string date-string (chronometrist-date)))
-         (task-events    (chronometrist-task-events-in-day task date-string))
+  (let* ((task-events    (chronometrist-task-events-in-day task date-string))
          (last-event     (cl-copy-list (car (last task-events))))
          (reversed-events-tail (-> task-events
                                    (reverse)
@@ -61,14 +60,13 @@ Return value is a vector in the form [HOURS MINUTES SECONDS]."
                (chronometrist-task-time-one-day it date-string)))
        (-reduce #'chronometrist-time-add)))
 
-(defun chronometrist-statistics-count-active-days (task &optional table)
+(cl-defun chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
   "Return the number of days the user spent any time on TASK.
 TABLE must be a hash table - if not supplied, `chronometrist-events' is used.
 
 This will not return correct results if TABLE contains records
 which span midnights. (see `chronometrist-events-clean')"
-  (let ((count 0)
-        (table (if table table chronometrist-events)))
+  (let ((count 0))
     (maphash (lambda (_date events)
                (when (seq-find (lambda (event)
                                  (equal (plist-get event :name) task))

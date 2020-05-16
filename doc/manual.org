@@ -138,6 +138,7 @@
     7. Function - chronometrist-tasks-from-table ()
     8. Function - chronometrist-events-subset (start-date end-date)
     9. Function - chronometrist-events-query-spec-match-p (plist specifiers)
+    10. Function - chronometrist-events-query (table &key get specifiers except)
 *** chronometrist-migrate.el
     1. Variable - chronometrist-migrate-table
     2. Function - chronometrist-migrate-populate (in-file)
@@ -154,11 +155,11 @@
 *** chronometrist-queries.el
     1. Function - chronometrist-last ()
        * -> plist
-    2. Function - chronometrist-task-time-one-day (task &optional date-string)
+    2. Function - chronometrist-task-time-one-day (task &optional (date-string (chronometrist-queries-date)))
        * String &optional iso-date -> seconds
     3. Function - chronometrist-active-time-one-day (&optional date-string)
        * &optional iso-date -> vector-duration
-    4. Function - chronometrist-statistics-count-active-days (task &optional table)
+    4. Function - chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
     5. Function - chronometrist-task-events-in-day (task date-string)
 *** chronometrist-report-custom.el
     1. Custom variable - chronometrist-report-buffer-name
@@ -270,7 +271,7 @@
     7. Function - chronometrist-exceed-alert (task goal spent)
     8. Function - chronometrist-no-goal-alert (task goal spent)
     9. Custom Variable - chronometrist-goals-alert-functions
-    10. Function - chronometrist-get-goal (task &optional targets-list)
+    10. Function - chronometrist-get-goal (task &optional (goals-list chronometrist-goals-list))
         * String &optional List -> minutes
     11. Internal Variable - chronometrist--timers-list
     12. Function - chronometrist-minutes-string (minutes)
@@ -284,7 +285,7 @@
     3. Function - chronometrist-sexp-current-task ()
     4. Function - chronometrist-sexp-events-populate ()
     5. Function - chronometrist-sexp-create-file ()
-    6. Function - chronometrist-sexp-new (plist)
+    6. Function - chronometrist-sexp-new (plist &optional (buffer (find-file-noselect chronometrist-file)))
     7. Function - chronometrist-sexp-delete-list (&optional arg)
     8. Function - chronometrist-sexp-replace-last (plist)
     9. Command - chronometrist-sexp-reindent-buffer ()
