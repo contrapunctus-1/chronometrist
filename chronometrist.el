@@ -18,12 +18,6 @@
 (require 'chronometrist-migrate)
 (require 'chronometrist-sexp)
 
-(defvar chronometrist-goals-list)
-(declare-function 'chronometrist-get-goal "chronometrist-goals")
-(autoload 'chronometrist-maybe-start-timer "chronometrist-timer" nil t)
-(autoload 'chronometrist-report "chronometrist-report" nil t)
-(autoload 'chronometrist-statistics "chronometrist-statistics" nil t)
-
 ;; This is free and unencumbered software released into the public domain.
 ;;
 ;; Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -66,6 +60,15 @@
 ;; ## VARIABLES ##
 ;;; Code:
 
+;; `chronometrist-goals' is an optional extension. But even these don't make the
+;; warnings go away :\
+(defvar chronometrist-goals-list)
+(declare-function 'chronometrist-get-goal "chronometrist-goals")
+
+(autoload 'chronometrist-maybe-start-timer "chronometrist-timer" nil t)
+(autoload 'chronometrist-report "chronometrist-report" nil t)
+(autoload 'chronometrist-statistics "chronometrist-statistics" nil t)
+
 (defvar chronometrist--task-history nil)
 (defvar chronometrist--point nil)
 (defvar chronometrist-mode-map)
@@ -82,10 +85,6 @@ button action."
 (defun chronometrist-common-create-file ()
   "Create `chronometrist-file' if it doesn't already exist."
   (chronometrist-sexp-create-file))
-
-(defun chronometrist-current-task ()
-  "Return the name of the currently clocked-in task, or nil if not clocked in."
-  (chronometrist-sexp-current-task))
 
 (defun chronometrist-task-active? (task)
   "Return t if TASK is currently clocked in, else nil."

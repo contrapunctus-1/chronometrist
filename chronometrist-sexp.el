@@ -4,7 +4,6 @@
 ;;
 
 (require 'chronometrist-custom)
-(require 'chronometrist-events)
 (require 'chronometrist-plist-pp)
 
 ;;; Code:

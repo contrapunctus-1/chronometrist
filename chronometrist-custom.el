@@ -59,7 +59,6 @@ vectors.\)"
 This is not guaranteed to be accurate - see (info \"(elisp)Timers\")."
   :type 'integer)
 
-(declare-function chronometrist-format-time "chronometrist-common")
 (eval-when-compile (require 'subr-x))
 
 (defcustom chronometrist-activity-indicator "*"

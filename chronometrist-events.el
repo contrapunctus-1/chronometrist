@@ -13,6 +13,7 @@
 
 ;; (require 'chronometrist-plist-pp)
 (require 'chronometrist-common)
+(require 'chronometrist-sexp)
 
 ;; external -
 ;; chronometrist-day-start-time (-custom)

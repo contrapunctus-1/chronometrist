@@ -19,11 +19,7 @@
 (require 'chronometrist-custom)
 (require 'chronometrist-report-custom)
 (require 'chronometrist-time)
-;; (require 'chronometrist-sexp)
-
-;; (declare-function chronometrist-sexp-open-log     "chronometrist-sexp")
-;; (declare-function chronometrist-sexp-create-file  "chronometrist-sexp")
-;; (declare-function chronometrist-sexp-current-task "chronometrist-sexp")
+(require 'chronometrist-sexp)
 
 ;; ## VARIABLES ##
 ;;; Code:
@@ -52,6 +48,10 @@ must correspond to the output from `chronometrist-format-time'.")
 
 Used to prevent more than one watch being added for the same
 file.")
+
+(defun chronometrist-current-task ()
+  "Return the name of the currently clocked-in task, or nil if not clocked in."
+  (chronometrist-sexp-current-task))
 
 (defun chronometrist-format-time (duration &optional blank)
   "Format DURATION as a string suitable for display in Chronometrist buffers.
