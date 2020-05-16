@@ -18,6 +18,22 @@
   (find-file-other-window chronometrist-file)
   (goto-char (point-max)))
 
+;; FIXME - broken, will only return event if date = whatever the date
+;; for the latest events is
+(cl-defun chronometrist-sexp-query-till (&optional (date (chronometrist-date)))
+  "Return events from today until DATE (inclusive).
+Events are a list of plists.
+If DATE is not supplied, today is used."
+  (with-current-buffer (find-file-noselect "~/.emacs.d/chronometrist.sexp")
+    (goto-char (point-max))
+    (let (expr)
+      (cl-loop do (backward-list 1)
+               (setq expr (read (current-buffer)))
+               (backward-list 1)
+               while (and expr
+                          (chronometrist-common-plist-date-match-p expr date))
+               collect expr))))
+
 (defun chronometrist-sexp-last ()
   "Return last s-expression from `chronometrist-file'."
   (let ((buffer (find-file-noselect chronometrist-file)))

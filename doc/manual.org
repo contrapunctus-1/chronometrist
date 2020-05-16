@@ -67,17 +67,18 @@
     3. Variable - chronometrist-time-re-ui
     4. Variable - chronometrist-task-list
     5. Internal Variable - chronometrist--fs-watch
-    6. Function - chronometrist-current-task ()
-    7. Function - chronometrist-format-time (duration &optional blank)
+    6. Function - chronometrist-common-plist-date-match-p (plist date)
+    7. Function - chronometrist-current-task ()
+    8. Function - chronometrist-format-time (duration &optional blank)
        * vector-duration | list-duration -> "h:m:s"
-    8. Function - chronometrist-common-file-empty-p (file)
-    9. Function - chronometrist-common-clear-buffer (buffer)
-    10. Function - chronometrist-format-keybinds (command map &optional firstonly)
-    11. Function - chronometrist-events->time-list (events)
+    9. Function - chronometrist-common-file-empty-p (file)
+    10. Function - chronometrist-common-clear-buffer (buffer)
+    11. Function - chronometrist-format-keybinds (command map &optional firstonly)
+    12. Function - chronometrist-events->time-list (events)
         * (event ...) -> ((encode-time encode-time) ...)
-    12. Function - chronometrist-time-list->sum-of-intervals (time-value-lists)
+    13. Function - chronometrist-time-list->sum-of-intervals (time-value-lists)
         * ((encode-time encode-time) ...) -> encode-time
-    13. Function - chronometrist-previous-week-start (date-string)
+    14. Function - chronometrist-previous-week-start (date-string)
 *** chronometrist-custom.el
     1. Custom variable - chronometrist-file
     2. Custom variable - chronometrist-buffer-name
@@ -233,25 +234,27 @@
 *** chronometrist-time.el
     1. Constant - chronometrist-seconds-in-day
     2. Function - chronometrist-date (&optional time)
-    3. Function - chronometrist-day-of-week->number (day-of-week)
-    4. Function - chronometrist-number->day-of-week (number)
-    5. Function - chronometrist-format-time-iso8601 (&optional unix-time)
-    6. Function - chronometrist-time-interval-span-midnight? (t1 t2)
+    3. Function - chronometrist-timestamp->iso-date (timestamp)
+    4. Function - chronometrist-day-of-week->number (day-of-week)
+    5. Function - chronometrist-number->day-of-week (number)
+    6. Function - chronometrist-format-time-iso8601 (&optional unix-time)
+    7. Function - chronometrist-time-interval-span-midnight? (t1 t2)
        * list-timestamp list-timestamp -> Boolean
-    7. Function - chronometrist-midnight-spanning-p (start-time stop-time)
-    8. Function - chronometrist-time->seconds (time)
+    8. Function - chronometrist-midnight-spanning-p (start-time stop-time)
+    9. Function - chronometrist-time->seconds (time)
        * vector-duration -> seconds
-    9. Function - chronometrist-seconds-to-hms (seconds)
-       * seconds -> vector-duration
-    10. Function - chronometrist-time-add (a b)
+    10. Function - chronometrist-seconds-to-hms (seconds)
+        * seconds -> vector-duration
+    11. Function - chronometrist-time-add (a b)
         * vector-duration vector-duration -> vector-duration
-    11. Function - chronometrist-iso-date->timestamp (date)
+    12. Function - chronometrist-iso-date->timestamp (date)
         * iso-date -> iso-timestamp
-    12. Function - chronometrist-date->time (date)
-    13. Function - chronometrist-date-less-p (date1 date2)
-    14. Function - chronometrist-time-less-or-equal-p (t1 t2)
-    15. Function - chronometrist-calendrical->date (date)
-    16. Function - chronometrist-interval (event)
+    13. Function - chronometrist-date->time (date)
+    14. Function - chronometrist-date-less-p (date1 date2)
+    15. Function - chronometrist-timestamp-less-p (ts1 ts2)
+    16. Function - chronometrist-time-less-or-equal-p (t1 t2)
+    17. Function - chronometrist-calendrical->date (date)
+    18. Function - chronometrist-interval (event)
         * event -> encode-time
 *** chronometrist-timer.el
     1. Internal Variable - chronometrist--timer-object
@@ -280,12 +283,13 @@
     15. Function - chronometrist-goals-on-file-change ()
 *** chronometrist-sexp
     1. Function - chronometrist-sexp-open-log ()
-    2. Function - chronometrist-sexp-last ()
+    2. Function - chronometrist-sexp-query-till (&optional (date (chronometrist-date)))
+    3. Function - chronometrist-sexp-last ()
        * -> plist
-    3. Function - chronometrist-sexp-current-task ()
-    4. Function - chronometrist-sexp-events-populate ()
-    5. Function - chronometrist-sexp-create-file ()
-    6. Function - chronometrist-sexp-new (plist &optional (buffer (find-file-noselect chronometrist-file)))
-    7. Function - chronometrist-sexp-delete-list (&optional arg)
-    8. Function - chronometrist-sexp-replace-last (plist)
-    9. Command - chronometrist-sexp-reindent-buffer ()
+    4. Function - chronometrist-sexp-current-task ()
+    5. Function - chronometrist-sexp-events-populate ()
+    6. Function - chronometrist-sexp-create-file ()
+    7. Function - chronometrist-sexp-new (plist &optional (buffer (find-file-noselect chronometrist-file)))
+    8. Function - chronometrist-sexp-delete-list (&optional arg)
+    9. Function - chronometrist-sexp-replace-last (plist)
+    10. Command - chronometrist-sexp-reindent-buffer ()

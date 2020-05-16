@@ -6,6 +6,6 @@
                                           ("cs" . "chronometrist-statistics")
                                           ("cd" . "chronometrist-diary")
                                           ("cx" . "chronometrist-sexp")))
-                     (outline-regexp . ";;;+ ")))
+                     (outline-regexp . ";;;; #+ ")))
  (dired-mode . ((dired-omit-mode . t)
                 (dired-omit-extensions . (".html" ".texi")))))

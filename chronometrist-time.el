@@ -32,6 +32,9 @@
   "Return date for TIME or today, in the form \"YYYY-MM-DD\"."
   (s-left 10 (chronometrist-format-time-iso8601 time)))
 
+(defun chronometrist-timestamp->iso-date (timestamp)
+  (s-left 10 timestamp))
+
 ;; (defun chronometrist-time (&optional time))
 
 (defun chronometrist-day-of-week->number (day-of-week)
@@ -142,13 +145,20 @@ DATE must be a list in the form (YEAR MONTH DAY)."
 
 (defun chronometrist-date-less-p (date1 date2)
   "Like `time-less-p' but for dates. Return t if DATE1 is less than DATE2.
-Both must be dates in the ISO-8601 format."
+Both must be dates in the ISO-8601 format (\"YYYY-MM-DD\")."
   (time-less-p (-> date1
                    (chronometrist-iso-date->timestamp)
                    (parse-iso8601-time-string))
                (-> date2
                    (chronometrist-iso-date->timestamp)
                    (parse-iso8601-time-string))))
+
+(defun chronometrist-timestamp-less-p (ts1 ts2)
+  "Like `time-less-p' but for timestamps.
+Return t if TIMESTAMP1 is less than TIMESTAMP2. Both must be
+timestamps in the ISO-8601 format (`parse-iso8601-time-string')."
+  (time-less-p (parse-iso8601-time-string ts1)
+               (parse-iso8601-time-string ts2)))
 
 (defun chronometrist-time-less-or-equal-p (t1 t2)
   "Return t if T1 is less than or equal to T2.
