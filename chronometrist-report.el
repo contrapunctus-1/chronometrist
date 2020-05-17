@@ -123,50 +123,36 @@ If FIRSTONLY is non-nil, insert only the first keybinding found."
 (defun chronometrist-report-print-non-tabular ()
   "Print the non-tabular part of the buffer in `chronometrist-report'."
   (let ((inhibit-read-only t)
-        (w "\n    "))
+        (w                 "\n    ")
+        (total-time-daily  (->> chronometrist-report--ui-week-dates
+                                (mapcar #'chronometrist-date)
+                                (mapcar #'chronometrist-active-time-one-day))))
     (goto-char (point-min))
     (insert "                         ")
-    (insert (mapconcat #'chronometrist-date
-                       (chronometrist-report-date->week-dates)
-                       " "))
+    (insert (mapconcat #'chronometrist-date (chronometrist-report-date->week-dates) " "))
     (insert "\n")
     (goto-char (point-max))
     (insert w (format "%- 21s" "Total"))
-    (let ((total-time-daily (->> chronometrist-report--ui-week-dates
-                                 (mapcar #'chronometrist-date)
-                                 (mapcar #'chronometrist-active-time-one-day))))
-      (->> total-time-daily
-           (mapcar #'chronometrist-format-time)
-           (--map (format "% 9s  " it))
-           (apply #'insert))
-      (->> total-time-daily
-           (-reduce #'chronometrist-time-add)
-           (chronometrist-format-time)
-           (format "% 13s")
-           (insert)))
-
+    (->> total-time-daily
+         (mapcar #'chronometrist-format-time)
+         (--map (format "% 9s  " it))
+         (apply #'insert))
+    (->> total-time-daily
+         (-reduce #'chronometrist-time-add)
+         (chronometrist-format-time)
+         (format "% 13s")
+         (insert))
     (insert "\n" w)
-    (insert-text-button "<<"
-                        'action #'chronometrist-report-previous-week
-                        'follow-link t)
+    (insert-text-button "<<" 'action #'chronometrist-report-previous-week 'follow-link t)
     (insert (format "% 4s" " "))
-    (insert-text-button ">>"
-                        'action #'chronometrist-report-next-week
-                        'follow-link t)
-
+    (insert-text-button ">>" 'action #'chronometrist-report-next-week 'follow-link t)
     (insert "\n")
     (chronometrist-report-print-keybind 'chronometrist-report-previous-week)
-    (insert-text-button "previous week"
-                        'action #'chronometrist-report-previous-week
-                        'follow-link t)
+    (insert-text-button "previous week" 'action #'chronometrist-report-previous-week 'follow-link t)
     (chronometrist-report-print-keybind 'chronometrist-report-next-week)
-    (insert-text-button "next week"
-                        'action #'chronometrist-report-next-week
-                        'follow-link t)
+    (insert-text-button "next week" 'action #'chronometrist-report-next-week 'follow-link t)
     (chronometrist-report-print-keybind 'chronometrist-open-log)
-    (insert-text-button "open log file"
-                        'action #'chronometrist-open-log
-                        'follow-link t)))
+    (insert-text-button "open log file" 'action #'chronometrist-open-log 'follow-link t)))
 
 (defun chronometrist-report-refresh (&optional _ignore-auto _noconfirm)
   "Refresh the `chronometrist-report' buffer, without re-reading `chronometrist-file'."
