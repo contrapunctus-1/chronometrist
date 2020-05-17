@@ -31,18 +31,18 @@ The data is obtained from `chronometrist-file', via `chronometrist-events'.
 DATE-STRING must be in the form \"YYYY-MM-DD\".
 
 The return value is seconds, as an integer."
+  ;; the most recent event is the last element
   (let* ((task-events    (chronometrist-task-events-in-day task date-string))
+         ;; we may need it in case it's an ongoing task
          (last-event     (cl-copy-list (car (last task-events))))
-         (reversed-events-tail (-> task-events
-                                   (reverse)
-                                   (cdr))))
+         (other-events-reversed (-> task-events (reverse) (cdr))))
     (if task-events
         (->> (if (plist-member last-event :stop)
                  task-events
                ;; last-event is a currently ongoing task
                (-> (plist-put last-event :stop (chronometrist-format-time-iso8601))
                    (list)
-                   (append reversed-events-tail)
+                   (append other-events-reversed)
                    (reverse)))
              (chronometrist-events->time-list)
              (chronometrist-time-list->sum-of-intervals)
