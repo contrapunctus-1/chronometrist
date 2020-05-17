@@ -130,7 +130,6 @@ reduced to the desired range using
                                                "-"
                                              active-days)))
                    (average-time   (->> (chronometrist-statistics-count-average-time-spent task table)
-                                        (chronometrist-seconds-to-hms)
                                         (chronometrist-format-time)
                                         (format "% 5s")))
                    (content        (vector task

@@ -55,17 +55,13 @@ file.")
   "Return the name of the currently clocked-in task, or nil if not clocked in."
   (chronometrist-sexp-current-task))
 
-(defun chronometrist-format-time (duration &optional blank)
-  "Format DURATION as a string suitable for display in Chronometrist buffers.
-DURATION must be a vector or a list of the form [HOURS MINUTES
-SECONDS] or (HOURS MINUTES SECONDS).
+(cl-defun chronometrist-format-time (seconds &optional (blank "   "))
+  "Format SECONDS as a string suitable for display in Chronometrist buffers.
+SECONDS must be an integer.
 
 BLANK is a string to display in place of blank values. If not
 supplied, 3 spaces are used."
-  (let ((h     (elt duration 0))
-        (m     (elt duration 1))
-        (s     (elt duration 2))
-        (blank (if blank blank "   ")))
+  (-let [(h m s) (chronometrist-seconds-to-hms seconds)]
     (if (and (zerop h) (zerop m) (zerop s))
         "       -"
       (let ((h (if (zerop h)

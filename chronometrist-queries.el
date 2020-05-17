@@ -56,9 +56,8 @@ DATE-STRING must be in the form \"YYYY-MM-DD\".
 
 Return value is a vector in the form [HOURS MINUTES SECONDS]."
   (->> chronometrist-task-list
-       (--map (chronometrist-seconds-to-hms
-               (chronometrist-task-time-one-day it date-string)))
-       (-reduce #'chronometrist-time-add)))
+       (--map (chronometrist-task-time-one-day it date-string))
+       (-reduce #'+)))
 
 (cl-defun chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
   "Return the number of days the user spent any time on TASK.
