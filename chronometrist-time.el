@@ -25,11 +25,6 @@
 
 ;;; Code:
 
-(defconst chronometrist-seconds-in-day (* 60 60 24)
-  "Number of seconds in a day.")
-
-;; (defun chronometrist-iso-8601-timestamp->ts (iso-8601-string))
-
 (defun chronometrist-iso-timestamp->ts (timestamp)
   "Return new ts struct, parsing TIMESTAMP with `parse-iso8601-time-string'."
   (make-ts :unix (parse-iso8601-time-string timestamp)))
@@ -51,24 +46,6 @@ DATE should be an ISO-8601 date string (\"YYYY-MM-DD\")."
 If TS is supplied, use that date instead of today.
 TS should be a ts struct (see `ts.el')."
   (ts-apply :hour 0 :minute 0 :second 0 ts))
-
-;; (defun chronometrist-time (&optional time))
-
-(defun chronometrist-day-of-week->number (day-of-week)
-  "Return an integer (0-6) representing DAY-OF-WEEK.
-
-DAY-OF-WEEK should be a string, e.g. \"Sunday\" - see
-`chronometrist-report-weekday-number-alist'."
-  (cdr
-   (assoc-string day-of-week chronometrist-report-weekday-number-alist)))
-
-(defun chronometrist-number->day-of-week (number)
-  "Return the day of the week (as a string), corresponding to NUMBER.
-
-NUMBER should be an integer (0-6) - see
-`chronometrist-report-weekday-number-alist'."
-  (car
-   (rassoc number chronometrist-report-weekday-number-alist)))
 
 (defun chronometrist-format-time-iso8601 (&optional unix-time)
   "Return current moment as an ISO-8601 format time string.

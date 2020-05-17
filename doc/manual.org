@@ -235,30 +235,27 @@
     13. Command - chronometrist-statistics-previous-range (arg)
     14. Command - chronometrist-statistics-next-range (arg)
 *** chronometrist-time.el
-    1. Constant - chronometrist-seconds-in-day
-    2. Function - chronometrist-iso-timestamp->ts (timestamp)
+    1. Function - chronometrist-iso-timestamp->ts (timestamp)
        * iso-timestamp -> ts
-    3. Function - chronometrist-iso-date->ts (date)
+    2. Function - chronometrist-iso-date->ts (date)
        * iso-date -> ts
-    4. Function - chronometrist-date (&optional (ts (ts-now)))
+    3. Function - chronometrist-date (&optional (ts (ts-now)))
        * &optional ts -> ts
-    5. Function - chronometrist-day-of-week->number (day-of-week)
-    6. Function - chronometrist-number->day-of-week (number)
-    7. Function - chronometrist-format-time-iso8601 (&optional unix-time)
-    8. Function - chronometrist-time-interval-span-midnight? (t1 t2)
+    4. Function - chronometrist-format-time-iso8601 (&optional unix-time)
+    5. Function - chronometrist-time-interval-span-midnight? (t1 t2)
        * list-timestamp list-timestamp -> Boolean
-    9. Function - chronometrist-midnight-spanning-p (start-time stop-time)
-    10. Function - chronometrist-time->seconds (time)
-        * vector-duration -> seconds
-    11. Function - chronometrist-seconds-to-hms (seconds)
-        * seconds -> vector-duration
-    12. Function - chronometrist-time-add (a b)
-        * vector-duration vector-duration -> vector-duration
-    13. Function - chronometrist-iso-date->timestamp (date)
+    6. Function - chronometrist-midnight-spanning-p (start-time stop-time)
+    7. Function - chronometrist-time->seconds (time)
+       * vector-duration -> seconds
+    8. Function - chronometrist-seconds-to-hms (seconds)
+       * seconds -> vector-duration
+    9. Function - chronometrist-time-add (a b)
+       * vector-duration vector-duration -> vector-duration
+    10. Function - chronometrist-iso-date->timestamp (date)
         * iso-date -> iso-timestamp
-    14. Function - chronometrist-date->time (date)
-    15. Function - chronometrist-date-less-p (date1 date2)
-    16. Function - chronometrist-interval (event)
+    11. Function - chronometrist-date->time (date)
+    12. Function - chronometrist-date-less-p (date1 date2)
+    13. Function - chronometrist-interval (event)
         * event -> encode-time
 *** chronometrist-timer.el
     1. Internal Variable - chronometrist--timer-object
