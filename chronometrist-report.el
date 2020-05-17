@@ -80,9 +80,7 @@ The first date is the first occurrence of
     (setq chronometrist-report--ui-week-dates week-dates)
     (mapcar (lambda (task)
               (let ((task-daily-time-list
-                     (--map (chronometrist-seconds-to-hms
-                             (chronometrist-task-time-one-day task
-                                                  (chronometrist-date it)))
+                     (--map (chronometrist-task-time-one-day task (chronometrist-date it))
                             week-dates)))
                 (list task
                       (vconcat
@@ -91,7 +89,7 @@ The first date is the first occurrence of
                             (mapcar #'chronometrist-format-time)
                             (apply #'vector))
                        (->> task-daily-time-list
-                            (-reduce #'chronometrist-time-add)
+                            (-reduce #'+)
                             (chronometrist-format-time)
                             (vector))))))
             chronometrist-task-list)))
@@ -136,7 +134,7 @@ If FIRSTONLY is non-nil, insert only the first keybinding found."
            (--map (format "% 9s  " it))
            (apply #'insert))
       (->> total-time-daily
-           (-reduce #'chronometrist-time-add)
+           (-reduce #'+)
            (chronometrist-format-time)
            (format "% 13s")
            (insert)))

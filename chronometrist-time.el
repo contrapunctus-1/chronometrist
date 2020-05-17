@@ -54,20 +54,6 @@ Optional argument UNIX-TIME should be a time value (see
 `current-time') accepted by `format-time-string'."
   (format-time-string "%FT%T%z" unix-time))
 
-(defun chronometrist-time-interval-span-midnight? (t1 t2)
-  "Return t if time range T1 to T2 extends across midnight.
-
-T1 and T2 must be lists in the form (YEAR MONTH DAY HOURS MINUTES
-SECONDS), as returned by `timestamp->list'. T2 must be
-chronologically more recent than T1."
-  (let* ((day-1   (elt t1 2))
-         (day-2   (elt t2 2))
-         (month-1 (elt t1 1))
-         (month-2 (elt t2 1)))
-    ;; not Absolutely Perfect™, but should do for most situations
-    (or (= day-2   (1+ day-1))
-        (= month-2 (1+ month-1)))))
-
 ;; Note - this assumes that an event never crosses >1 day. This seems
 ;; sufficient for all conceivable cases.
 (defun chronometrist-midnight-spanning-p (start-time stop-time)
@@ -90,7 +76,7 @@ Return value is a list in the form
          (next-day-start  (time-add first-day-start
                                     '(0 . 86400)))
          (stop-time-unix  (parse-iso8601-time-string stop-time)))
-    ;; Does the event stop time exceed the the next day start time?
+    ;; Does the event stop time exceed the next day start time?
     (when (time-less-p next-day-start stop-time-unix)
       (list `(:start ,start-time
                      :stop  ,(chronometrist-format-time-iso8601 next-day-start))
@@ -104,20 +90,7 @@ SECONDS must be a positive integer."
          (s       (% seconds 60))
          (m       (% (/ seconds 60) 60))
          (h       (/ seconds 3600)))
-    (vector h m s)))
-
-(defun chronometrist-time-add (a b)
-  "Add durations A and B and return a vector in the same form.
-A and B should be vectors in the form [HOURS MINUTES SECONDS]."
-  (let ((h1 (elt a 0))
-        (m1 (elt a 1))
-        (s1 (elt a 2))
-        (h2 (elt b 0))
-        (m2 (elt b 1))
-        (s2 (elt b 2)))
-    (chronometrist-seconds-to-hms (+ (* h1 3600) (* h2 3600)
-                        (* m1 60) (* m2 60)
-                        s1 s2))))
+    (list h m s)))
 
 (defun chronometrist-iso-date->timestamp (date)
   "Convert DATE to a complete timestamp by adding a time part (T00:00:00)."
