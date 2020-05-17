@@ -48,7 +48,7 @@ DATE should be an ISO-8601 date string (\"YYYY-MM-DD\")."
 
 (cl-defun chronometrist-date (&optional (ts (ts-now)))
   "Return a ts struct representing the time 00:00:00 on today's date.
-If TS is supplied, use the date from that instead of today.
+If TS is supplied, use that date instead of today.
 TS should be a ts struct (see `ts.el')."
   (ts-apply :hour 0 :minute 0 :second 0 ts))
 

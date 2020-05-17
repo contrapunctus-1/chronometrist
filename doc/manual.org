@@ -173,6 +173,7 @@
     3. Internal Variable - chronometrist-report--point
     4. Function - chronometrist-report-date ()
     5. Function - chronometrist-report-date->dates-in-week (first-date-in-week)
+       * ts-1 -> (ts-1 ... ts-7)
     6. Function - chronometrist-report-date->week-dates ()
     7. Function - chronometrist-report-entries ()
     8. Function - chronometrist-report-format-date (format-string time-date)

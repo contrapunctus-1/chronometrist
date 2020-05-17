@@ -57,16 +57,11 @@ information (see (info \"(elisp)Time Conversion\"))."
 
 (defun chronometrist-report-date->dates-in-week (first-date-in-week)
   "Return a list of dates in a week, starting from FIRST-DATE-IN-WEEK.
-Each day is a time value (see (info \"(elisp)Time of Day\")).
+Each date is a ts struct (see `ts.el').
 
-FIRST-DATE-IN-WEEK must be a time value representing the first date."
-  (--> '(0 1 2 3 4 5 6)
-       ;; 1 day = 86400 seconds
-       (--map (* 86400 it) it)
-       (--map (list
-               (car first-date-in-week)
-               (+ (cadr first-date-in-week) it))
-              it)))
+FIRST-DATE-IN-WEEK must be a ts struct representing the first date."
+  (cl-loop for i from 0 to 6 collect
+           (ts-adjust 'day i first-date-in-week)))
 
 (defun chronometrist-report-date->week-dates ()
   "Return dates in week as a list.
@@ -81,7 +76,7 @@ The first date is the first occurrence of
 
 (defun chronometrist-report-entries ()
   "Create entries to be displayed in the `chronometrist-report' buffer."
-  (let* ((week-dates        (chronometrist-report-date->week-dates))) ;; uses today if chronometrist-report--ui-date is nil
+  (let* ((week-dates (chronometrist-report-date->week-dates))) ;; uses today if chronometrist-report--ui-date is nil
     (setq chronometrist-report--ui-week-dates week-dates)
     (mapcar (lambda (task)
               (let ((task-daily-time-list
@@ -126,7 +121,8 @@ If FIRSTONLY is non-nil, insert only the first keybinding found."
         (w "\n    "))
     (goto-char (point-min))
     (insert "                         ")
-    (insert (mapconcat #'chronometrist-date
+    (insert (mapconcat (lambda (ts)
+                         (ts-format "%F" ts))
                        (chronometrist-report-date->week-dates)
                        " "))
     (insert "\n")
@@ -270,12 +266,10 @@ With prefix argument ARG, move back ARG weeks."
                  (abs arg)
                1)))
     (setq chronometrist-report--ui-date
-          (thread-first (if chronometrist-report--ui-date
-                            (parse-iso8601-time-string
-                             (chronometrist-iso-date->timestamp chronometrist-report--ui-date))
-                          (current-time))
-            (time-subtract `(0 ,(* 7 arg 86400)))
-            (chronometrist-date))))
+          (ts-adjust 'day -7
+                     (if chronometrist-report--ui-date
+                         chronometrist-report--ui-date
+                       (ts-now)))))
   (setq chronometrist-report--point (point))
   (kill-buffer)
   (chronometrist-report t))
@@ -288,12 +282,10 @@ With prefix argument ARG, move forward ARG weeks."
                  (abs arg)
                1)))
     (setq chronometrist-report--ui-date
-          (thread-first (if chronometrist-report--ui-date
-                            (parse-iso8601-time-string
-                             (chronometrist-iso-date->timestamp chronometrist-report--ui-date))
-                          (current-time))
-            (time-add `(0 ,(* 7 arg 86400)))
-            (chronometrist-date)))
+          (ts-adjust 'day 7
+                     (if chronometrist-report--ui-date
+                         chronometrist-report--ui-date
+                       (ts-now))))
     (setq chronometrist-report--point (point))
     (kill-buffer)
     (chronometrist-report t)))
