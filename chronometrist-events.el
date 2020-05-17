@@ -142,13 +142,16 @@ were none."
 (defun chronometrist-events-subset (start end)
   "Return a subset of `chronometrist-events'.
 
-The subset will contain values between START and END (both
+The subset will contain values between dates START and END (both
 inclusive).
 
-START and END must be ts structs (see `ts.el')."
-  (let ((subset (make-hash-table :test #'equal)))
+START and END must be ts structs (see `ts.el'). They will be
+treated as though their time is 00:00:00."
+  (let ((subset (make-hash-table :test #'equal))
+        (start  (chronometrist-date start))
+        (end    (chronometrist-date end)))
     (maphash (lambda (key value)
-               (when (ts-in start end key)
+               (when (ts-in start end (chronometrist-iso-date->ts key))
                  (puthash key value subset)))
              chronometrist-events)
     subset))

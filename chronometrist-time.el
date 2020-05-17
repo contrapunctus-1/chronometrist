@@ -170,12 +170,6 @@ Both must be dates in the ISO-8601 format (\"YYYY-MM-DD\")."
                    (chronometrist-iso-date->timestamp)
                    (parse-iso8601-time-string))))
 
-(defun chronometrist-calendrical->date (date)
-  "Convert calendrical information DATE to a date in the form (YEAR MONTH DAY).
-
-For input format, see (info \"(elisp)Time of Day\")."
-  (-> date (-slice 3 6) (reverse)))
-
 (defun chronometrist-interval (event)
   "Return the period of time covered by EVENT as a time value.
 EVENT should be a plist (see `chronometrist-file')."
