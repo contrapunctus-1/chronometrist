@@ -97,14 +97,6 @@ Return value is a list in the form
             `(:start ,(chronometrist-format-time-iso8601 next-day-start)
                      :stop  ,stop-time)))))
 
-(defun chronometrist-time->seconds (duration)
-  "Convert DURATION to seconds.
-DURATION must be a vector in the form [HOURS MINUTES SECONDS]."
-  (-let [[h m s] duration]
-    (+ (* h 60 60)
-       (* m 60)
-       s)))
-
 (defun chronometrist-seconds-to-hms (seconds)
   "Convert SECONDS to a vector in the form [HOURS MINUTES SECONDS].
 SECONDS must be a positive integer."
@@ -131,21 +123,6 @@ A and B should be vectors in the form [HOURS MINUTES SECONDS]."
   "Convert DATE to a complete timestamp by adding a time part (T00:00:00)."
   ;; potential problem - time zones are ignored
   (concat date "T00:00:00"))
-
-(defun chronometrist-date->time (date)
-  "Convert DATE to a time value (see (info \"(elisp)Time of Day\")).
-DATE must be a list in the form (YEAR MONTH DAY)."
-  (->> date (reverse) (apply #'encode-time 0 0 0)))
-
-(defun chronometrist-date-less-p (date1 date2)
-  "Like `time-less-p' but for dates. Return t if DATE1 is less than DATE2.
-Both must be dates in the ISO-8601 format (\"YYYY-MM-DD\")."
-  (time-less-p (-> date1
-                   (chronometrist-iso-date->timestamp)
-                   (parse-iso8601-time-string))
-               (-> date2
-                   (chronometrist-iso-date->timestamp)
-                   (parse-iso8601-time-string))))
 
 (defun chronometrist-interval (event)
   "Return the period of time covered by EVENT as a time value.
