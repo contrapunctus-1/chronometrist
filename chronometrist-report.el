@@ -266,7 +266,7 @@ With prefix argument ARG, move back ARG weeks."
                  (abs arg)
                1)))
     (setq chronometrist-report--ui-date
-          (ts-adjust 'day -7
+          (ts-adjust 'day (- (* arg 7))
                      (if chronometrist-report--ui-date
                          chronometrist-report--ui-date
                        (ts-now)))))
@@ -282,7 +282,7 @@ With prefix argument ARG, move forward ARG weeks."
                  (abs arg)
                1)))
     (setq chronometrist-report--ui-date
-          (ts-adjust 'day 7
+          (ts-adjust 'day (* arg 7)
                      (if chronometrist-report--ui-date
                          chronometrist-report--ui-date
                        (ts-now))))

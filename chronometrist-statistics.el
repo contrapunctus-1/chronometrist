@@ -283,7 +283,7 @@ If ARG is a numeric argument, go back that many times."
          (start (plist-get chronometrist-statistics--ui-state :start)))
     (cl-case (plist-get chronometrist-statistics--ui-state :mode)
       ('week
-       (let* ((new-start (ts-adjust 'day -7 start))
+       (let* ((new-start (ts-adjust 'day (- (* arg 7)) start))
               (new-end   (ts-adjust 'day +6 new-start)))
          (plist-put chronometrist-statistics--ui-state :start new-start)
          (plist-put chronometrist-statistics--ui-state :end   new-end))))
@@ -302,7 +302,7 @@ If ARG is a numeric argument, go forward that many times."
          (start (plist-get chronometrist-statistics--ui-state :start)))
     (cl-case (plist-get chronometrist-statistics--ui-state :mode)
       ('week
-       (let* ((new-start (ts-adjust 'day 7 start))
+       (let* ((new-start (ts-adjust 'day (* arg 7) start))
               (new-end   (ts-adjust 'day 6 new-start)))
          (plist-put chronometrist-statistics--ui-state :start new-start)
          (plist-put chronometrist-statistics--ui-state :end   new-end))))
