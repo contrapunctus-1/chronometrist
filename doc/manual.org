@@ -253,9 +253,8 @@
         * iso-date -> iso-timestamp
     13. Function - chronometrist-date->time (date)
     14. Function - chronometrist-date-less-p (date1 date2)
-    15. Function - chronometrist-time-less-or-equal-p (t1 t2)
-    16. Function - chronometrist-calendrical->date (date)
-    17. Function - chronometrist-interval (event)
+    15. Function - chronometrist-calendrical->date (date)
+    16. Function - chronometrist-interval (event)
         * event -> encode-time
 *** chronometrist-timer.el
     1. Internal Variable - chronometrist--timer-object
