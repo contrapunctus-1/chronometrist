@@ -30,8 +30,12 @@
 
 ;; (defun chronometrist-iso-8601-timestamp->ts (iso-8601-string))
 
-(defun chronometrist-make-ts-date (date)
-  "Return a TS struct (see `ts.el') representing DATE.
+(defun chronometrist-iso-timestamp->ts (timestamp)
+  "Return new ts struct, parsing TIMESTAMP with `parse-iso8601-time-string'."
+  (make-ts :unix (parse-iso8601-time-string timestamp)))
+
+(defun chronometrist-iso-date->ts (date)
+  "Return a ts struct (see `ts.el') representing DATE.
 DATE should be an ISO-8601 date string (\"YYYY-MM-DD\")."
   (let* ((date-list (mapcar #'string-to-number
                             (split-string date "-")))
@@ -42,9 +46,11 @@ DATE should be an ISO-8601 date string (\"YYYY-MM-DD\")."
      (make-ts :hour 0 :minute 0 :second 0
               :day day :month month :year year))))
 
-(defun chronometrist-date (&optional time)
-  "Return date for TIME or today, in the form \"YYYY-MM-DD\"."
-  (s-left 10 (chronometrist-format-time-iso8601 time)))
+(cl-defun chronometrist-date (&optional (ts (ts-now)))
+  "Return a ts struct representing the time 00:00:00 on today's date.
+If TS is supplied, use the date from that instead of today.
+TS should be a ts struct (see `ts.el')."
+  (ts-apply :hour 0 :minute 0 :second 0 ts))
 
 ;; (defun chronometrist-time (&optional time))
 
