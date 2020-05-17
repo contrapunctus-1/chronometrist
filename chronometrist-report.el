@@ -70,7 +70,7 @@ FIRST-DATE-IN-WEEK must be a time value representing the first date."
 
 (defun chronometrist-report-date->week-dates ()
   "Return dates in week as a list.
-Each element is calendrical information (see (info \"(elisp)Time Conversion\")).
+Each element is a ts struct (see `ts.el').
 
 The first date is the first occurrence of
 `chronometrist-report-week-start-day' before the date specified in

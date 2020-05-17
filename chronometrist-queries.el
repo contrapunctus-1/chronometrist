@@ -75,9 +75,9 @@ which span midnights. (see `chronometrist-events-clean')"
              table)
     count))
 
-(defun chronometrist-task-events-in-day (task date-string)
-  "Get events for TASK on DATE-STRING.
-DATE-STRING must be in the form \"YYYY-MM-DD\".
+(defun chronometrist-task-events-in-day (task ts)
+  "Get events for TASK on TS.
+TS should be a ts struct (see `ts.el').
 
 Returns a list of events, where each event is a property list in
 the form (:name \"NAME\" :start START :stop STOP ...), where
@@ -85,7 +85,7 @@ START and STOP are ISO-8601 time strings.
 
 This will not return correct results if TABLE contains records
 which span midnights. (see `chronometrist-events-clean')"
-  (->> (gethash date-string chronometrist-events)
+  (->> (gethash (ts-format "%F" ts) chronometrist-events)
        (mapcar (lambda (event)
                  (when (equal task (plist-get event :name))
                    event)))
