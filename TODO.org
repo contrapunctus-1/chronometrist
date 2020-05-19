@@ -103,7 +103,7 @@
       * How should we deal with the active event?
         * Earlier, we would add a closing entry and update that on a timer.
    9. [ ] Make docstrings consistent - describe inputs and then the return value, in that order.
-   10. [ ] ~chronometrist-minutes->alert-string~ can probably be replaced by ~org-duration-from-minutes~ - read the format for FMT
+   10. [ ] ~chronometrist-seconds->alert-string~ can probably be replaced by ~org-duration-from-minutes~ - read the format for FMT
    +1. use variables instead of hardcoded numbers to determine spacing+
       * Don't see the benefit
    +6. Timeclock already _has_ hooks! :| Why do we re-implement them?+

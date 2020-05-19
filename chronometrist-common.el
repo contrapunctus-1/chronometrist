@@ -57,7 +57,7 @@ file.")
 
 (cl-defun chronometrist-format-time (seconds &optional (blank "   "))
   "Format SECONDS as a string suitable for display in Chronometrist buffers.
-SECONDS must be an integer.
+SECONDS must be a positive integer.
 
 BLANK is a string to display in place of blank values. If not
 supplied, 3 spaces are used."
