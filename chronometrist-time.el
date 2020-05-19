@@ -92,11 +92,6 @@ SECONDS must be a positive integer."
          (h       (/ seconds 3600)))
     (list h m s)))
 
-(defun chronometrist-iso-date->timestamp (date)
-  "Convert DATE to a complete timestamp by adding a time part (T00:00:00)."
-  ;; potential problem - time zones are ignored
-  (concat date "T00:00:00"))
-
 (defun chronometrist-interval (event)
   "Return the period of time covered by EVENT as a time value.
 EVENT should be a plist (see `chronometrist-file')."

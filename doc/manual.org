@@ -43,18 +43,14 @@
      * Advantage - reduced repetitive post-parsing load.
 
 ** Reference
-   * (?) - of dubious utility, a candidate for deprecation
-   * DEPRECATED - deprecated, slated to be removed in the future
-
 *** Legend of currently-used time formats
-    | 1. | list-date                          | (year month day)                    |
-    | 2. | list-time/list-duration            | (hours minutes seconds)             |
-    | 3. | (Emacs) encode-time AKA UNIX epoch | (sec-high sec-low microsec picosec) |
-    | 4. | seconds                            | seconds as an integer               |
-    | 5. | minutes                            | minutes as an integer               |
-    | 6. | iso-timestamp                      | "YYYY-MM-DDTHH:MM:SSZ"              |
-    | 7. | iso-date                           | "YYYY-MM-DD"                        |
-    | 8. | ts                                 | ts.el struct                        |
+    | 1. | list-duration                      | (hours minutes seconds)             |
+    | 2. | (Emacs) encode-time AKA UNIX epoch | (sec-high sec-low microsec picosec) |
+    | 3. | seconds                            | seconds as an integer               |
+    | 4. | minutes                            | minutes as an integer               |
+    | 5. | iso-timestamp                      | "YYYY-MM-DDTHH:MM:SSZ"              |
+    | 6. | iso-date                           | "YYYY-MM-DD"                        |
+    | 7. | ts                                 | ts.el struct                        |
 
 *** chronometrist-common.el
     1. Variable - chronometrist-empty-time-string
@@ -125,7 +121,8 @@
     32. Command - chronometrist (&optional arg)
 *** chronometrist-events.el
     1. Variable - chronometrist-events
-       * keys - list-date
+       * keys - iso-date
+       * can't use ts for keys, you'd have to make a hash table predicate which uses ts=
     2. Function - chronometrist-list-midnight-spanning-events ()
     3. Function - chronometrist-day-start (timestamp)
     4. Function - chronometrist-file-clean ()
@@ -235,13 +232,11 @@
     2. Function - chronometrist-iso-date->ts (date)
        * iso-date -> ts
     3. Function - chronometrist-date (&optional (ts (ts-now)))
-       * &optional ts -> ts
+       * &optional ts -> ts (with time 00:00:00)
     4. Function - chronometrist-format-time-iso8601 (&optional unix-time)
     5. Function - chronometrist-midnight-spanning-p (start-time stop-time)
     6. Function - chronometrist-seconds-to-hms (seconds)
        * seconds -> list-duration
-    7. Function - chronometrist-iso-date->timestamp (date)
-       * iso-date -> iso-timestamp
 *** chronometrist-timer.el
     1. Internal Variable - chronometrist--timer-object
     2. Function - chronometrist-timer ()
