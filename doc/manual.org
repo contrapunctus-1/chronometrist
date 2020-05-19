@@ -44,13 +44,30 @@
 
 ** Reference
 *** Legend of currently-used time formats
-    | 1. | list-duration                      | (hours minutes seconds)             |
-    | 2. | (Emacs) encode-time AKA UNIX epoch | (sec-high sec-low microsec picosec) |
-    | 3. | seconds                            | seconds as an integer               |
-    | 4. | minutes                            | minutes as an integer               |
-    | 5. | iso-timestamp                      | "YYYY-MM-DDTHH:MM:SSZ"              |
-    | 6. | iso-date                           | "YYYY-MM-DD"                        |
-    | 7. | ts                                 | ts.el struct                        |
+**** 1. ts
+     ts.el struct
+     * Used by nearly all internal functions
+**** 2. iso-timestamp
+     "YYYY-MM-DDTHH:MM:SSZ"
+     * Used in the s-expression file format
+     * Read by chronometrist-sexp-events-populate
+     * Used in the plists in the chronometrist-events hash table values
+**** 3. iso-date
+     "YYYY-MM-DD"
+     * Used as hash table keys in chronometrist-events - can't use ts structs for keys, you'd have to make a hash table predicate which uses ts=
+**** 4. seconds
+     seconds as an integer
+     * Used for most durations -
+     * May be changed to floating point to allow larger durations. Not necessary for daily/weekly calculations, but
+     * Used for update intervals (chronometrist-update-interval, chronometrist-change-update-interval)
+**** 5. minutes
+     minutes as an integer
+     * Used for goals (chronometrist-goals-list, chronometrist-get-goal) - minutes seems like the ideal unit for users to enter
+**** 6. list-duration
+     (hours minute seconds)
+     * Only returned by chronometrist-seconds-to-hms, called by chronometrist-format-time
+**** 7. encode-time/UNIX epoch (Emacs)
+     (sec-high sec-low microsec picosec)
 
 *** chronometrist-common.el
     1. Variable - chronometrist-empty-time-string
@@ -122,7 +139,6 @@
 *** chronometrist-events.el
     1. Variable - chronometrist-events
        * keys - iso-date
-       * can't use ts for keys, you'd have to make a hash table predicate which uses ts=
     2. Function - chronometrist-list-midnight-spanning-events ()
     3. Function - chronometrist-day-start (timestamp)
     4. Function - chronometrist-file-clean ()
