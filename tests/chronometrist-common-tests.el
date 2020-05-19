@@ -38,15 +38,15 @@
 (describe
  "chronometrist-previous-week-start"
  :var ((chronometrist-report-week-start-day "Sunday")
-       (ts (chronometrist-make-ts-date "2018-09-02")))
+       (ts (chronometrist-iso-date->ts "2018-09-02")))
  (it "should work with Sundays"
      (should (ts= (chronometrist-previous-week-start
-                   (chronometrist-make-ts-date "2018-09-01"))
-                  (chronometrist-make-ts-date "2018-08-26")))
-     (should (ts= ts (chronometrist-previous-week-start (chronometrist-make-ts-date "2018-09-02"))))
-     (should (ts= ts (chronometrist-previous-week-start (chronometrist-make-ts-date "2018-09-03"))))
-     (should (ts= ts (chronometrist-previous-week-start (chronometrist-make-ts-date "2018-09-04"))))
-     (should (ts= ts (chronometrist-previous-week-start (chronometrist-make-ts-date "2018-09-05"))))
-     (should (ts= ts (chronometrist-previous-week-start (chronometrist-make-ts-date "2018-09-06"))))
-     (should (ts= ts (chronometrist-previous-week-start (chronometrist-make-ts-date "2018-09-07"))))
-     (should (ts= ts (chronometrist-previous-week-start (chronometrist-make-ts-date "2018-09-08"))))))
+                   (chronometrist-iso-date->ts "2018-09-01"))
+                  (chronometrist-iso-date->ts "2018-08-26")))
+     (should (ts= ts (chronometrist-previous-week-start (chronometrist-iso-date->ts "2018-09-02"))))
+     (should (ts= ts (chronometrist-previous-week-start (chronometrist-iso-date->ts "2018-09-03"))))
+     (should (ts= ts (chronometrist-previous-week-start (chronometrist-iso-date->ts "2018-09-04"))))
+     (should (ts= ts (chronometrist-previous-week-start (chronometrist-iso-date->ts "2018-09-05"))))
+     (should (ts= ts (chronometrist-previous-week-start (chronometrist-iso-date->ts "2018-09-06"))))
+     (should (ts= ts (chronometrist-previous-week-start (chronometrist-iso-date->ts "2018-09-07"))))
+     (should (ts= ts (chronometrist-previous-week-start (chronometrist-iso-date->ts "2018-09-08"))))))
