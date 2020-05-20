@@ -147,13 +147,13 @@ reduced to the desired range using
      (let* ((start (plist-get chronometrist-statistics--ui-state :start))
             (end   (plist-get chronometrist-statistics--ui-state :end))
             (ht    (chronometrist-events-subset start end)))
-       (chronometrist-statistics-entries-internal table)))
+       (chronometrist-statistics-entries-internal ht)))
     (t ;; `chronometrist-statistics--ui-state' is nil, show current week's data
      (let* ((start (chronometrist-previous-week-start (chronometrist-date)))
             (end   (ts-adjust 'day 7 start))
             (ht    (chronometrist-events-subset start end)))
        (setq chronometrist-statistics--ui-state `(:mode week :start ,start :end ,end))
-       (chronometrist-statistics-entries-internal table)))))
+       (chronometrist-statistics-entries-internal ht)))))
 
 (defun chronometrist-statistics-print-keybind (command &optional description firstonly)
   "Insert the keybindings for COMMAND.
