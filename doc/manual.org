@@ -81,8 +81,8 @@
     10. Function - chronometrist-format-keybinds (command map &optional firstonly)
     11. Function - chronometrist-events->ts-pairs (events)
         * (plist ...) -> ((ts . ts) ...)
-    12. Function - chronometrist-time-list->sum-of-intervals (time-value-lists)
-        * ((encode-time encode-time) ...) -> encode-time
+    12. Function - chronometrist-ts-pairs->durations (ts-pairs)
+        * ((ts . ts) ...) -> seconds
     13. Function - chronometrist-previous-week-start (ts)
         * ts -> ts
 *** chronometrist-custom.el
@@ -139,6 +139,7 @@
        * keys - iso-date
     2. Function - chronometrist-list-midnight-spanning-events ()
     3. Function - chronometrist-day-start (timestamp)
+       * iso-timestamp -> encode-time
     4. Function - chronometrist-file-clean ()
        * commented out, unused
     5. Function - chronometrist-events-maybe-split (event)

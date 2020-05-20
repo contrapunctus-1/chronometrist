@@ -123,16 +123,10 @@ For time value format, see (info \"(elisp)Time of Day\")."
      (cons start stop))))
 
 (defun chronometrist-ts-pairs->durations (ts-pairs)
-  "From a list of start/end timestamps TS-PAIRS, get the total time interval.
+  "Return the durations represented by TS-PAIRS.
+TS-PAIRS is a list of pairs, where each element is a ts struct (see `ts.el').
 
-TS-PAIRS is a list in the form
-\((START STOP) ...)
-where START and STOP are time values (see (info \"(elisp)Time of Day\")).
-
-This function obtains the intervals between them, and adds the
-intervals to return a single time value.
-
-If TS-PAIRS is nil, return 0."
+Return seconds as an integer, or 0 if TS-PAIRS is nil."
   (if ts-pairs
       (cl-loop for pair in ts-pairs collect
                (ts-diff (cdr pair) (car pair)))
