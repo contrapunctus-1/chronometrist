@@ -27,7 +27,13 @@
 
 (defun chronometrist-iso-timestamp->ts (timestamp)
   "Return new ts struct, parsing TIMESTAMP with `parse-iso8601-time-string'."
-  (make-ts :unix (parse-iso8601-time-string timestamp)))
+  (-let [(second minute hour day month year dow dst utcoff)
+         (decode-time
+          (parse-iso8601-time-string timestamp))]
+    (ts-update
+     (make-ts :hour hour :minute minute :second second
+              :day day   :month month   :year year
+              :dow dow   :tz-offset utcoff))))
 
 (defun chronometrist-iso-date->ts (date)
   "Return a ts struct (see `ts.el') representing DATE.

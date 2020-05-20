@@ -5,35 +5,25 @@
 (describe
  "chronometrist-format-time"
  (it "works with lists"
-     (expect (chronometrist-format-time '( 0  0  0))
-             :to-be "       -")
-     (expect (chronometrist-format-time '( 0  0  1))
-             :to-be "       1")
-     (expect (chronometrist-format-time '( 0  0 10))
-             :to-be "      10")
-     (expect (chronometrist-format-time '( 0  1 10))
-             :to-be "    1:10")
-     (expect (chronometrist-format-time '( 0 10 10))
-             :to-be "   10:10")
-     (expect (chronometrist-format-time '( 1 10 10))
-             :to-be " 1:10:10")
-     (expect (chronometrist-format-time '(10 10 10))
-             :to-be "10:10:10"))
- (it "also works with vectors"
-     (expect (chronometrist-format-time '[ 0  0  0])
-             :to-be "       -")
-     (expect (chronometrist-format-time '[ 0  0  1])
-             :to-be "       1")
-     (expect (chronometrist-format-time '[ 0  0 10])
-             :to-be "      10")
-     (expect (chronometrist-format-time '[ 0  1 10])
-             :to-be "    1:10")
-     (expect (chronometrist-format-time '[ 0 10 10])
-             :to-be "   10:10")
-     (expect (chronometrist-format-time '[ 1 10 10])
-             :to-be " 1:10:10")
-     (expect (chronometrist-format-time '[10 10 10])
-             :to-be "10:10:10")))
+     (expect (chronometrist-format-time 0)
+             :to-equal "       -")
+     (expect (chronometrist-format-time 1)
+             :to-equal "       1")
+     (expect (chronometrist-format-time 10)
+             :to-equal "      10")
+     (expect (chronometrist-format-time 70)
+             :to-equal "    1:10")
+     (expect (chronometrist-format-time (+ (* 10 60) ;; 10 minutes
+                               10))      ;; 10 seconds
+             :to-equal "   10:10")
+     (expect (chronometrist-format-time (+ (* 1 60 60) ;; 1 hour
+                               (* 10 60)   ;; 10 minutes
+                               10))        ;; 10 seconds
+             :to-equal " 1:10:10")
+     (expect (chronometrist-format-time (+ (* 10 60 60) ;; 10 hours
+                               (* 10 60)    ;; 10 minutes
+                               10))         ;; 10 seconds
+             :to-equal "10:10:10")))
 
 (describe
  "chronometrist-previous-week-start"

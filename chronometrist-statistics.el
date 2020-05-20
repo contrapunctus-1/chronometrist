@@ -86,28 +86,27 @@ displayed. They must be ts structs (see `ts.el').")
 (cl-defun chronometrist-statistics-count-average-time-spent (task &optional (table chronometrist-events))
   "Return the average time the user has spent on TASK from TABLE.
 
-TABLE must be a hash table - if not supplied,
-`chronometrist-events' is used.
-
-This will not return correct results if TABLE contains records
-which span midnights. (see `chronometrist-events-clean')"
+TABLE should be a hash table - if not supplied,
+`chronometrist-events' is used."
+  ;; (cl-loop
+  ;;  for date being the hash-keys of table
+  ;;  (let ((events-in-day  (chronometrist-task-events-in-day task (chronometrist-iso-date->ts key))))
+  ;;    (when events-in-day)))
   (let ((days  0)
         (per-day-time-list))
     (maphash (lambda (key _value)
                (let ((events-in-day (chronometrist-task-events-in-day task (chronometrist-iso-date->ts key))))
                  (when events-in-day
                    (setq days (1+ days))
-                   (->> events-in-day
-                        (chronometrist-events->time-list)
-                        (chronometrist-time-list->sum-of-intervals)
+                   (->> (chronometrist-events->ts-pairs events-in-day)
+                        (chronometrist-ts-pairs->durations)
+                        (-reduce #'+)
                         (list)
                         (append per-day-time-list)
                         (setq per-day-time-list)))))
              table)
     (if per-day-time-list
-        (--> per-day-time-list
-             (-reduce #'time-add it)
-             (cadr it)
+        (--> (-reduce #'+ per-day-time-list)
              (/ it days))
       0)))
 
@@ -147,12 +146,12 @@ reduced to the desired range using
     ('week
      (let* ((start (plist-get chronometrist-statistics--ui-state :start))
             (end   (plist-get chronometrist-statistics--ui-state :end))
-            (table (chronometrist-events-subset start end)))
+            (ht    (chronometrist-events-subset start end)))
        (chronometrist-statistics-entries-internal table)))
     (t ;; `chronometrist-statistics--ui-state' is nil, show current week's data
-     (let* ((start      (chronometrist-previous-week-start (chronometrist-date)))
-            (end        (ts-adjust 'day 7 start))
-            (table      (chronometrist-events-subset start end)))
+     (let* ((start (chronometrist-previous-week-start (chronometrist-date)))
+            (end   (ts-adjust 'day 7 start))
+            (ht    (chronometrist-events-subset start end)))
        (setq chronometrist-statistics--ui-state `(:mode week :start ,start :end ,end))
        (chronometrist-statistics-entries-internal table)))))
 

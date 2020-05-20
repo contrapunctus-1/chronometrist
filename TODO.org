@@ -77,12 +77,14 @@
      Observations
      * This means you can't enter symbols via prompt. Can be added if the demand is there...
      * This also means you can't have multiple atom values for a keyword...but that's irrelevant, because plists can't have multiple values anyway. :)
+
 *** Tags [100%]
     1. [X] generate history from chronometrist-file
        * [X] narrow it down to the :name
     2. [X] write tags to last expression
     3. [X] show task name in prompt
     4. [X] bug - tags being added twice
+
 ** UX
    1. don't suggest nil when asking for first project on first run
    2. when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
@@ -91,24 +93,29 @@
    5. mouse-3 should clock-out without asking for reason.
    6. Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked /before/ clocking out, which adds time to the project.
    7. Allow calling chronometrist-in/out from anywhere-within-Emacs (a la timeclock) as well as from the chronometrist buffer.
-** Code [33%]
-   1. [ ] Decouple storage-related code from rest of the program.
-   2. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
-   3. [X] Use buttercup instead of ert
+
+** Code [28%]
+   1. [ ] Write tests (in buttercup)
+   2. [ ] Rewrite using cl-loop
+      1. [ ] chronometrist-statistics-count-active-days
+      2. [ ] chronometrist-statistics-count-average-time-spent
+   3. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
    4. See if it is possible to store buttons in a variable, so *-print-non-tabular functions can be made shorter and less imperative. (see ~make-text-button~)
    5. Merge all event-querying functions so that they always operate on an entire hash table (so no 'day' variants),
    6. [ ] Use ~substitute-command-keys~ instead of ~chronometrist-format-keybinds~
-   7. [X] See if using iteration constructs (especially ~loop~) can lead to nicer code than nested maps
-   8. [ ] recreate -events-clean, remove splitting code from -events-populate
+   7. [ ] recreate -events-clean, remove splitting code from -events-populate
       * How should we deal with the active event?
         * Earlier, we would add a closing entry and update that on a timer.
-   9. [ ] Make docstrings consistent - describe inputs and then the return value, in that order.
-   10. [ ] ~chronometrist-seconds->alert-string~ can probably be replaced by ~org-duration-from-minutes~ - read the format for FMT
+   8. [ ] Make docstrings consistent - describe inputs and then the return value, in that order.
+   9. [ ] ~chronometrist-seconds->alert-string~ can probably be replaced by ~org-duration-from-minutes~ - read the format for FMT
+   10. [X] Decouple storage-related code from rest of the program.
+   11. [X] See if using iteration constructs (especially ~loop~) can lead to nicer code than nested maps
    +1. use variables instead of hardcoded numbers to determine spacing+
       * Don't see the benefit
    +6. Timeclock already _has_ hooks! :| Why do we re-implement them?+
       - I don't know of a way to know the project being clocked into using timeclock hooks.
       - With v0.2.0 Chronometrist also has a before-project-stop-functions, which runs before the project is stopped, and can control whether the project actually is stopped.
+
 * Optimization
 ** Ideas to make -refresh-file faster
    1. Support multiple files, so we read and process lesser data when one of them changes.

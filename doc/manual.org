@@ -37,7 +37,7 @@
        3. Re-check and update the file when the day-start-time changes.
           - Possible with ~add-variable-watcher~ or ~:custom-set~ in Customize (thanks bpalmer)
 **** 3. Split them at the hash-table-level
-     Handled by ~chronometrist-events-clean~
+     Handled by ~chronometrist-sexp-events-populate~
      * Advantage - simpler data-consuming code.
 **** 4. Split them at the data-consumer level (e.g. when calculating time for one day/getting events for one day)
      * Advantage - reduced repetitive post-parsing load.
@@ -56,18 +56,16 @@
      "YYYY-MM-DD"
      * Used as hash table keys in chronometrist-events - can't use ts structs for keys, you'd have to make a hash table predicate which uses ts=
 **** 4. seconds
-     seconds as an integer
-     * Used for most durations -
-     * May be changed to floating point to allow larger durations. Not necessary for daily/weekly calculations, but
+     integer seconds as duration
+     * Used for most durations
+     * May be changed to floating point to allow larger durations. The minimum range of `most-positive-fixnum` is 536870911, which seems to be enough to represent durations of 17 years.
      * Used for update intervals (chronometrist-update-interval, chronometrist-change-update-interval)
 **** 5. minutes
-     minutes as an integer
+     integer minutes as duration
      * Used for goals (chronometrist-goals-list, chronometrist-get-goal) - minutes seems like the ideal unit for users to enter
 **** 6. list-duration
      (hours minute seconds)
      * Only returned by chronometrist-seconds-to-hms, called by chronometrist-format-time
-**** 7. encode-time/UNIX epoch (Emacs)
-     (sec-high sec-low microsec picosec)
 
 *** chronometrist-common.el
     1. Variable - chronometrist-empty-time-string
@@ -81,8 +79,8 @@
     8. Function - chronometrist-common-file-empty-p (file)
     9. Function - chronometrist-common-clear-buffer (buffer)
     10. Function - chronometrist-format-keybinds (command map &optional firstonly)
-    11. Function - chronometrist-events->time-list (events)
-        * (event ...) -> ((encode-time encode-time) ...)
+    11. Function - chronometrist-events->ts-pairs (events)
+        * (plist ...) -> ((ts . ts) ...)
     12. Function - chronometrist-time-list->sum-of-intervals (time-value-lists)
         * ((encode-time encode-time) ...) -> encode-time
     13. Function - chronometrist-previous-week-start (ts)
@@ -168,8 +166,8 @@
        * -> plist
     2. Function - chronometrist-task-time-one-day (task &optional (date-string (chronometrist-queries-date)))
        * String &optional iso-date -> seconds
-    3. Function - chronometrist-active-time-one-day (&optional date-string)
-       * &optional iso-date -> seconds
+    3. Function - chronometrist-active-time-one-day (&optional ts)
+       * &optional ts -> seconds
     4. Function - chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
     5. Function - chronometrist-task-events-in-day (task date-string)
 *** chronometrist-report-custom.el

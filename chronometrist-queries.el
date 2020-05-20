@@ -24,40 +24,31 @@
   "Return the last entry from `chronometrist-file' as a plist."
   (chronometrist-sexp-last))
 
-(cl-defun chronometrist-task-time-one-day (task &optional (date-string (chronometrist-date)))
-  "Return total time spent on TASK today or (if supplied) on DATE-STRING.
+(cl-defun chronometrist-task-time-one-day (task &optional (ts (ts-now)))
+  "Return total time spent on TASK today or (if supplied) on timestamp TS.
 The data is obtained from `chronometrist-file', via `chronometrist-events'.
 
-DATE-STRING must be in the form \"YYYY-MM-DD\".
+TS should be a ts struct (see `ts.el').
 
 The return value is seconds, as an integer."
-  ;; the most recent event is the last element
-  (let* ((task-events    (chronometrist-task-events-in-day task date-string))
-         ;; we may need it in case it's an ongoing task
-         (last-event     (cl-copy-list (car (last task-events))))
-         (other-events-reversed (-> task-events (reverse) (cdr))))
+  (let ((task-events (chronometrist-task-events-in-day task ts)))
     (if task-events
-        (->> (if (plist-member last-event :stop)
-                 task-events
-               ;; last-event is a currently ongoing task
-               (-> (plist-put last-event :stop (chronometrist-format-time-iso8601))
-                   (list)
-                   (append other-events-reversed)
-                   (reverse)))
-             (chronometrist-events->time-list)
-             (chronometrist-time-list->sum-of-intervals)
-             (cadr))
-      ;; no events for this task on DATE-STRING i.e. no time spent
+        (->> (chronometrist-events->ts-pairs task-events)
+             (chronometrist-ts-pairs->durations)
+             (-reduce #'+)
+             (truncate))
+      ;; no events for this task on TS, i.e. no time spent
       0)))
 
-(defun chronometrist-active-time-one-day (&optional date-string)
-  "Return the total active time on DATE (if non-nil) or today.
-DATE-STRING must be in the form \"YYYY-MM-DD\".
+(defun chronometrist-active-time-one-day (&optional ts)
+  "Return the total active time on TS (if non-nil) or today.
+TS must be a ts struct (see `ts.el')
 
-Return value is a vector in the form [HOURS MINUTES SECONDS]."
+Return value is seconds as an integer."
   (->> chronometrist-task-list
-       (--map (chronometrist-task-time-one-day it date-string))
-       (-reduce #'+)))
+       (--map (chronometrist-task-time-one-day it ts))
+       (-reduce #'+)
+       (truncate)))
 
 (cl-defun chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
   "Return the number of days the user spent any time on TASK.
