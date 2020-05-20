@@ -112,15 +112,14 @@ EVENTS must be a list of valid Chronometrist property lists (see
 For each event, a list of two time values is returned.
 
 For time value format, see (info \"(elisp)Time of Day\")."
-  (cl-loop
-   for plist in events collect
-   (let* ((start (chronometrist-iso-timestamp->ts
-                  (plist-get plist :start)))
-          (stop (plist-get plist :stop))
-          (stop (if stop
-                    (chronometrist-iso-timestamp->ts stop)
-                  (ts-now))))
-     (cons start stop))))
+  (cl-loop for plist in events collect
+           (let* ((start (chronometrist-iso-timestamp->ts
+                          (plist-get plist :start)))
+                  (stop (plist-get plist :stop))
+                  (stop (if stop
+                            (chronometrist-iso-timestamp->ts stop)
+                          (ts-now))))
+             (cons start stop))))
 
 (defun chronometrist-ts-pairs->durations (ts-pairs)
   "Return the durations represented by TS-PAIRS.
@@ -141,12 +140,10 @@ If the day of TS is the same as the
 `chronometrist-report-week-start-day', return TS.
 
 TS must be a ts struct (see `ts.el')."
-  ;; (message "%s" (ts-format ts))
-  (cl-loop
-   until (equal chronometrist-report-week-start-day
-                (ts-day-name ts))
-   do (ts-decf (ts-day ts))
-   finally return ts))
+  (cl-loop until (equal chronometrist-report-week-start-day
+                        (ts-day-name ts))
+           do (ts-decf (ts-day ts))
+           finally return ts))
 
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist-common"
