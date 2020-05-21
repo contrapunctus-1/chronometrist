@@ -14,6 +14,11 @@
 ;; chronometrist-events, chronometrist-events-maybe-split (-events)
 ;; chronometrist-plist-pp (-plist-pp)
 
+(defmacro chronometrist-sexp-in-file (file &rest body)
+  (declare (indent defun))
+  `(with-current-buffer (find-file-noselect ,file)
+     (save-excursion ,@body)))
+
 ;;;; Queries
 (defun chronometrist-sexp-open-log ()
   "Open `chronometrist-file' in another window."
@@ -55,13 +60,11 @@ events returned may span midnights - use
 
 (defun chronometrist-sexp-last ()
   "Return last s-expression from `chronometrist-file'."
-  (let ((buffer (find-file-noselect chronometrist-file)))
-    (with-current-buffer buffer
-      (save-excursion
-        (goto-char (point-max))
-        (backward-list)
-        (ignore-errors
-          (read buffer))))))
+  (chronometrist-sexp-in-file chronometrist-file
+    (goto-char (point-max))
+    (backward-list)
+    (ignore-errors
+      (read buffer))))
 
 (defun chronometrist-sexp-current-task ()
   "Return the name of the currently clocked-in task, or nil if not clocked in."
@@ -76,34 +79,33 @@ The data is acquired from `chronometrist-file'.
 
 Return final number of events read from file, or nil if there
 were none."
-  (with-current-buffer (find-file-noselect chronometrist-file)
-    (save-excursion
-      (goto-char (point-min))
-      (let ((index 0)
-            expr
-            pending-expr)
-        (while (or pending-expr
-                   (setq expr (ignore-errors (read (current-buffer)))))
-          ;; find and split midnight-spanning events during deserialization itself
-          (let* ((split-expr (chronometrist-events-maybe-split expr))
-                 (new-value  (cond (pending-expr
-                                    (prog1 pending-expr
-                                      (setq pending-expr nil)))
-                                   (split-expr
-                                    (setq pending-expr (cl-second split-expr))
-                                    (cl-first split-expr))
-                                   (t expr)))
-                 (new-value-date (->> (plist-get new-value :start)
-                                      (s-left 10)))
-                 (existing-value (gethash new-value-date chronometrist-events)))
-            (unless pending-expr (cl-incf index))
-            (puthash new-value-date
-                     (if existing-value
-                         (append existing-value
-                                 (list new-value))
-                       (list new-value))
-                     chronometrist-events)))
-        (unless (zerop index) index)))))
+  (chronometrist-sexp-in-file chronometrist-file
+    (goto-char (point-min))
+    (let ((index 0)
+          expr
+          pending-expr)
+      (while (or pending-expr
+                 (setq expr (ignore-errors (read (current-buffer)))))
+        ;; find and split midnight-spanning events during deserialization itself
+        (let* ((split-expr (chronometrist-events-maybe-split expr))
+               (new-value  (cond (pending-expr
+                                  (prog1 pending-expr
+                                    (setq pending-expr nil)))
+                                 (split-expr
+                                  (setq pending-expr (cl-second split-expr))
+                                  (cl-first split-expr))
+                                 (t expr)))
+               (new-value-date (->> (plist-get new-value :start)
+                                    (s-left 10)))
+               (existing-value (gethash new-value-date chronometrist-events)))
+          (unless pending-expr (cl-incf index))
+          (puthash new-value-date
+                   (if existing-value
+                       (append existing-value
+                               (list new-value))
+                     (list new-value))
+                   chronometrist-events)))
+      (unless (zerop index) index))))
 
 ;;;; Modifications
 (defun chronometrist-sexp-create-file ()
@@ -132,15 +134,14 @@ BUFFER is the buffer to operate in - default is one accessing `chronometrist-fil
 
 (defun chronometrist-sexp-replace-last (plist)
   "Replace the last s-expression in `chronometrist-file' with PLIST."
-  (let ((buffer (find-file-noselect chronometrist-file)))
-    (with-current-buffer buffer
-      (goto-char (point-max))
-      (unless (and (bobp) (bolp))
-        (insert "\n"))
-      (backward-list 1)
-      (chronometrist-sexp-delete-list)
-      (chronometrist-plist-pp plist buffer)
-      (save-buffer))))
+  (chronometrist-sexp-in-file chronometrist-file
+    (goto-char (point-max))
+    (unless (and (bobp) (bolp))
+      (insert "\n"))
+    (backward-list 1)
+    (chronometrist-sexp-delete-list)
+    (chronometrist-plist-pp plist buffer)
+    (save-buffer)))
 
 (defun chronometrist-sexp-reindent-buffer ()
   "Reindent the current buffer.

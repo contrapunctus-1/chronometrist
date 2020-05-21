@@ -11,6 +11,8 @@
 (depends-on "s" "1.12.0")
 (depends-on "ts" "0.2")
 
+(files "elisp/*.el")
+
 (development
  (depends-on "f")
  (depends-on "ecukes")

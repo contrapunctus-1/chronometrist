@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * Support for time goals via optional package `chronometrist-targets`.
 * New hook - `chronometrist-file-change-hook`
+### Changed
+* Use [ts.el](https://github.com/alphapapa/ts.el) structs to represent date-time, wherever possible. (`chronometrist-events` and `chronometrist-file` being notable exceptions)
 
 ## [0.4.3] - 2020-05-03
 ### Changed
