@@ -52,16 +52,6 @@ Used to prevent more than one watch being added for the same
 file.")
 
 ;;;; Functions
-(defun chronometrist-common-plist-date-match-p (plist date)
-  "Return t if the :start or :stop of PLIST occurs on DATE.
-DATE should be a string in the ISO-8601 format (YYYY-MM-DD)."
-  (let* ((start (chronometrist-timestamp->iso-date
-                 (plist-get plist :start)))
-         (stop  (chronometrist-timestamp->iso-date
-                 (plist-get plist :stop))))
-    (or (equal start date)
-        (equal stop date))))
-
 (defun chronometrist-current-task ()
   "Return the name of the currently clocked-in task, or nil if not clocked in."
   (chronometrist-sexp-current-task))

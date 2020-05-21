@@ -1,10 +1,12 @@
 ;;; chronometrist-sexp.el --- s-expression backend for Chronometrist -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-;;
+;; We use (with-current-buffer ... (save-excursion ...)) very often.
+;; Could be refactored.
 
 (require 'chronometrist-custom)
 (require 'chronometrist-plist-pp)
+(require 'ts)
 
 ;;; Code:
 
@@ -18,21 +20,38 @@
   (find-file-other-window chronometrist-file)
   (goto-char (point-max)))
 
-;; FIXME - broken, will only return event if date = whatever the date
-;; for the latest events is
-(cl-defun chronometrist-sexp-query-till (&optional (date (chronometrist-date)))
-  "Return events from today until DATE (inclusive).
-Events are a list of plists.
-If DATE is not supplied, today is used."
-  (with-current-buffer (find-file-noselect "~/.emacs.d/chronometrist.sexp")
-    (goto-char (point-max))
-    (let (expr)
-      (cl-loop do (backward-list 1)
-               (setq expr (read (current-buffer)))
-               (backward-list 1)
-               while (and expr
-                          (chronometrist-common-plist-date-match-p expr date))
-               collect expr))))
+(cl-defun chronometrist-sexp-between (&optional (ts-beg (chronometrist-date)) (ts-end (ts-adjust 'day +1 (chronometrist-date))))
+  "Return events between TS-BEG and TS-END.
+Events are a list of plists, in reverse chronological order.
+
+If not supplied, TS-BEG is the beginning of today and TS-END is
+the beginning of tomorrow, i.e. the events for today are returned.
+
+An event is considered to be between TS-BEG and TS-END even if
+just the :start or the :stop time occurs between them. Thus,
+events returned may span midnights - use
+`chronometrist-midnight-spanning-p' to check."
+  (with-current-buffer (find-file-noselect chronometrist-file)
+    (save-excursion
+      (goto-char (point-max))
+      (cl-loop
+       with expr with start with stop
+       do (backward-list 1)
+       (setq expr (read (current-buffer)))
+       (backward-list 1)
+       ;; loop till we reach the beginning of the range
+       while
+       (and expr
+            (setq start (chronometrist-iso-timestamp->ts
+                         (plist-get expr :start))
+                  stop  (plist-get expr :stop)
+                  stop  (if stop
+                            (setq stop (chronometrist-iso-timestamp->ts stop))
+                          (ts-now)))
+            (or (ts> start ts-beg) (ts> stop ts-beg)))
+       when (or (ts-in ts-beg ts-end start)
+                (ts-in ts-beg ts-end stop))
+       collect expr))))
 
 (defun chronometrist-sexp-last ()
   "Return last s-expression from `chronometrist-file'."
