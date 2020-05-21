@@ -8,6 +8,8 @@
 
 (depends-on "dash" "2.16.0")
 (depends-on "cl")
+(depends-on "s" "1.12.0")
+(depends-on "ts" "0.2")
 
 (development
  (depends-on "f")

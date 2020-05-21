@@ -118,9 +118,7 @@ See custom variable `chronometrist-activity-indicator'."
                (task-button (list task
                                   'action 'chronometrist-toggle-task-button
                                   'follow-link t))
-               (task-time   (-> (chronometrist-task-time-one-day task)
-                                (chronometrist-seconds-to-hms)
-                                (chronometrist-format-time)))
+               (task-time   (chronometrist-format-time (chronometrist-task-time-one-day task)))
                (indicator   (if (chronometrist-task-active? task)
                                 (chronometrist-activity-indicator)
                               ""))
@@ -174,45 +172,24 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
           (w "\n    ")
           ;; (keybind-start-new (chronometrist-format-keybinds 'chronometrist-add-new-task
           ;;                                      chronometrist-mode-map))
-          (keybind-toggle    (chronometrist-format-keybinds 'chronometrist-toggle-task
-                                               chronometrist-mode-map
-                                               t)))
+          (keybind-toggle    (chronometrist-format-keybinds 'chronometrist-toggle-task chronometrist-mode-map t)))
       (goto-char (point-max))
       (-->
        (chronometrist-active-time-one-day)
        (chronometrist-format-time it)
        (format "%s%- 26s%s" w "Total" it)
        (insert it))
-
       (insert "\n")
-      (insert w (format "% 17s" "Keys")
-              w (format "% 17s" "----"))
-
+      (insert w (format "% 17s" "Keys") w (format "% 17s" "----"))
       (chronometrist-print-keybind 'chronometrist-add-new-task)
-      (insert-text-button "start a new task"
-                          'action #'chronometrist-add-new-task-button
-                          'follow-link t)
-
-      (chronometrist-print-keybind 'chronometrist-toggle-task
-                      "toggle task at point")
-
-      (chronometrist-print-keybind 'chronometrist-toggle-task-no-hooks
-                      "toggle without running hooks")
-
-      (insert "\n " (format "%s %s - %s"
-                            "<numeric argument N>"
-                            keybind-toggle
-                            "toggle <N>th task"))
-
+      (insert-text-button "start a new task" 'action #'chronometrist-add-new-task-button 'follow-link t)
+      (chronometrist-print-keybind 'chronometrist-toggle-task "toggle task at point")
+      (chronometrist-print-keybind 'chronometrist-toggle-task-no-hooks "toggle without running hooks")
+      (insert "\n " (format "%s %s - %s" "<numeric argument N>" keybind-toggle "toggle <N>th task"))
       (chronometrist-print-keybind 'chronometrist-report)
-      (insert-text-button "see weekly report"
-                          'action #'chronometrist-report
-                          'follow-link t)
-
+      (insert-text-button "see weekly report" 'action #'chronometrist-report 'follow-link t)
       (chronometrist-print-keybind 'chronometrist-open-log)
-      (insert-text-button "view/edit log file"
-                          'action #'chronometrist-open-log
-                          'follow-link t)
+      (insert-text-button "view/edit log file" 'action #'chronometrist-open-log 'follow-link t)
       (insert "\n"))))
 
 (defun chronometrist-goto-nth-task (n)
@@ -254,7 +231,6 @@ Argument _FS-EVENT is ignored."
 
 (defun chronometrist-query-stop ()
   "Ask the user if they would like to clock out."
-  (interactive)
   (let ((task (chronometrist-current-task)))
     (and task
          (yes-or-no-p (concat "Stop tracking time for " task "? "))

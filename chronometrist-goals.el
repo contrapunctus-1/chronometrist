@@ -47,33 +47,29 @@ like to spend GOAL time on any one of those tasks."
        (append chronometrist--timers-list)
        (setq chronometrist--timers-list)))
 
-(defun chronometrist-task-minutes-one-day (task)
-  (/ (chronometrist-task-time-one-day task)
-     60))
-
-;; (mapcar #'chronometrist-minutes->alert-string '(0 1 2 59 60 61 62 120 121 122))
-(defun chronometrist-minutes->alert-string (minutes)
-  "Convert MINUTES to a string suitable for displaying in alerts."
-  (let* ((m      (% minutes 60))
-         (h      (/ minutes 60))
-         (h-str  (unless (zerop h)
-                   (number-to-string h)))
-         (m-str  (unless (zerop m)
-                   (number-to-string m)))
-         (h-unit (cl-case h
-                   (0 nil)
-                   (1 " hour")
-                   (t " hours")))
-         (m-unit (cl-case m
-                   (0 nil)
-                   (1 " minute")
-                   (t " minutes")))
-         (and    (if (and h-unit m-unit)
-                     " and "
-                   "")))
-    (concat h-str h-unit
-            and
-            m-str m-unit)))
+;; (mapcar #'chronometrist-seconds->alert-string '(0 1 2 59 60 61 62 120 121 122))
+(defun chronometrist-seconds->alert-string (seconds)
+  "Convert SECONDS to a string suitable for displaying in alerts.
+SECONDS should be a positive integer."
+  (-let [(h m _) (chronometrist-seconds-to-hms seconds)]
+    (let* ((h-str  (unless (zerop h)
+                     (number-to-string h)))
+           (m-str  (unless (zerop m)
+                     (number-to-string m)))
+           (h-unit (cl-case h
+                     (0 nil)
+                     (1 " hour")
+                     (t " hours")))
+           (m-unit (cl-case m
+                     (0 nil)
+                     (1 " minute")
+                     (t " minutes")))
+           (and    (if (and h-unit m-unit)
+                       " and "
+                     "")))
+      (concat h-str h-unit
+              and
+              m-str m-unit))))
 
 (defun chronometrist-approach-alert (task goal spent)
   "Alert the user when they are 5 minutes away from reaching GOAL for TASK.
@@ -123,7 +119,7 @@ TASK is the name of the current task (as a string).
 GOAL is the goal time for that task (minutes as an integer).
 SPENT is the time spent on that task (minutes as an integer)."
   (unless goal
-    (chronometrist-run-at-time (chronometrist-minutes-string 15)
+    (chronometrist-run-at-time (* 15 60) ;; first run after 15 minutes from now
                    (* 15 60) ;; repeat every 15 minutes
                    (lambda (task)
                      ;; We cannot use SPENT here, because that will
@@ -132,8 +128,8 @@ SPENT is the time spent on that task (minutes as an integer)."
                      ;; is run), and we need show the time spent at
                      ;; the time of notification.
                      (alert (format "You have spent %s on %s"
-                                    (chronometrist-minutes->alert-string
-                                     (chronometrist-task-minutes-one-day task))
+                                    (chronometrist-seconds->alert-string
+                                     (chronometrist-task-time-one-day task))
                                     task)))
                    task)))
 
@@ -160,9 +156,8 @@ will do that for you.
 Note - the time spent passed to these functions is calculated
 when `chronometrist-goals-run-alert-timers' is run, i.e. when the
 user clocks in. To obtain the time spent at the time of
-notification, use
-`chronometrist-task-time-one-day'/`chronometrist-task-minutes-one-day'
-within the function passed to `run-at-time'."
+notification, use `chronometrist-task-time-one-day' within the
+function passed to `run-at-time'."
   :group 'chronometrist
   :type 'hook)
 
@@ -170,7 +165,7 @@ within the function passed to `run-at-time'."
 ;; goal (i.e. `(int "task1" "task2" ...)'), and the user has reached
 ;; the goal for one of those tasks, don't display the goal for the
 ;; other associated tasks
-(defun chronometrist-get-goal (task &optional (goals-list chronometrist-goals-list))
+(cl-defun chronometrist-get-goal (task &optional (goals-list chronometrist-goals-list))
   "Return time goal for TASK from GOALS-LIST.
 Return value is minutes as an integer, or nil.
 
@@ -179,16 +174,13 @@ If GOALS-LIST is not supplied, `chronometrist-goals-list' is used."
            when (member task list)
            return (car list)))
 
-(defun chronometrist-minutes-string (minutes)
-  (format "%s minutes" minutes))
-
 (defun chronometrist-goals-run-alert-timers (task)
   "Run timers to alert the user of the time spent on TASK.
 To use, add this to `chronometrist-after-in-functions', and
 `chronometrist-goals-stop-alert-timers' to
 `chronometrist-after-out-functions'."
   (let ((goal    (chronometrist-get-goal task))
-        (spent   (chronometrist-task-minutes-one-day task)))
+        (spent   (chronometrist-task-time-one-day task)))
     (add-hook 'chronometrist-file-change-hook #'chronometrist-goals-on-file-change)
     (mapc (lambda (f)
             (funcall f task goal spent))
