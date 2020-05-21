@@ -166,11 +166,6 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
           " - "
           (if description description "")))
 
-(defun chronometrist-statistics-format-date (date)
-  "Return DATE (YEAR MONTH DAY) as a string in the form \"YYYY-MM-DD\"."
-  (-let [(year month day) date]
-    (format "%04d-%02d-%02d" year month day)))
-
 (defun chronometrist-statistics-print-non-tabular ()
   "Print the non-tabular part of the buffer in `chronometrist-statistics'."
   (let ((w "\n    ")

@@ -98,14 +98,6 @@ SECONDS must be a positive integer."
          (h       (/ seconds 3600)))
     (list h m s)))
 
-(defun chronometrist-interval (event)
-  "Return the period of time covered by EVENT as a time value.
-EVENT should be a plist (see `chronometrist-file')."
-  (let ((start (plist-get event :start))
-        (stop  (plist-get event :stop)))
-    (time-subtract (parse-iso8601-time-string stop)
-                   (parse-iso8601-time-string start))))
-
 (provide 'chronometrist-time)
 
 ;; Local Variables:

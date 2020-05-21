@@ -94,14 +94,6 @@ The first date is the first occurrence of
                             (vector))))))
             chronometrist-task-list)))
 
-(defun chronometrist-report-format-date (format-string time-date)
-  "Extract date from TIME-DATE and format it according to FORMAT-STRING."
-  (->> time-date
-       (-take 6)
-       (-drop 3)
-       (reverse)
-       (apply #'format format-string)))
-
 (defun chronometrist-report-print-keybind (command &optional description firstonly)
   "Insert one or more keybindings for COMMAND into the current buffer.
 DESCRIPTION is a description of the command.
