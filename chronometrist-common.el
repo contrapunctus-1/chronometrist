@@ -16,6 +16,8 @@
 
 (require 'dash)
 (require 'cl-lib)
+(require 'ts)
+
 (require 'chronometrist-custom)
 (require 'chronometrist-report-custom)
 (require 'chronometrist-time)
@@ -53,17 +55,13 @@ file.")
   "Return the name of the currently clocked-in task, or nil if not clocked in."
   (chronometrist-sexp-current-task))
 
-(defun chronometrist-format-time (duration &optional blank)
-  "Format DURATION as a string suitable for display in Chronometrist buffers.
-DURATION must be a vector or a list of the form [HOURS MINUTES
-SECONDS] or (HOURS MINUTES SECONDS).
+(cl-defun chronometrist-format-time (seconds &optional (blank "   "))
+  "Format SECONDS as a string suitable for display in Chronometrist buffers.
+SECONDS must be a positive integer.
 
 BLANK is a string to display in place of blank values. If not
 supplied, 3 spaces are used."
-  (let ((h     (elt duration 0))
-        (m     (elt duration 1))
-        (s     (elt duration 2))
-        (blank (if blank blank "   ")))
+  (-let [(h m s) (chronometrist-seconds-to-hms seconds)]
     (if (and (zerop h) (zerop m) (zerop s))
         "       -"
       (let ((h (if (zerop h)
@@ -105,7 +103,7 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
          (-interpose ", ")
          (apply #'concat))))
 
-(defun chronometrist-events->time-list (events)
+(defun chronometrist-events->ts-pairs (events)
   "Convert EVENTS to a list of time values.
 
 EVENTS must be a list of valid Chronometrist property lists (see
@@ -114,56 +112,38 @@ EVENTS must be a list of valid Chronometrist property lists (see
 For each event, a list of two time values is returned.
 
 For time value format, see (info \"(elisp)Time of Day\")."
-  (let ((index 0)
-        (length (length events))
-        result)
-    (while (not (= index length))
-      (let* ((elt       (elt events index))
-             (start-iso (parse-iso8601-time-string (plist-get elt :start)))
-             (stop      (plist-get elt :stop))
-             (stop-iso  (if stop
-                            (parse-iso8601-time-string stop)
-                          (current-time))))
-        (cl-incf index)
-        (setq result (append result `((,start-iso ,stop-iso))))))
-    result))
+  (cl-loop for plist in events collect
+           (let* ((start (chronometrist-iso-timestamp->ts
+                          (plist-get plist :start)))
+                  (stop (plist-get plist :stop))
+                  (stop (if stop
+                            (chronometrist-iso-timestamp->ts stop)
+                          (ts-now))))
+             (cons start stop))))
 
-(defun chronometrist-time-list->sum-of-intervals (time-value-lists)
-  "From a list of start/end timestamps TIME-VALUES, get the total time interval.
+(defun chronometrist-ts-pairs->durations (ts-pairs)
+  "Return the durations represented by TS-PAIRS.
+TS-PAIRS is a list of pairs, where each element is a ts struct (see `ts.el').
 
-TIME-VALUE-LISTS is a list in the form
-\((START STOP) ...)
-where START and STOP are time values (see (info \"(elisp)Time of Day\")).
+Return seconds as an integer, or 0 if TS-PAIRS is nil."
+  (if ts-pairs
+      (cl-loop for pair in ts-pairs collect
+               (ts-diff (cdr pair) (car pair)))
+    0))
 
-This function obtains the intervals between them, and adds the
-intervals to return a single time value.
+(defun chronometrist-previous-week-start (ts)
+  "Find the previous `chronometrist-report-week-start-day' from TS.
 
-If TIME-VALUES is nil, return '(0 0)."
-  (if time-value-lists
-      (->> time-value-lists
-           (--map (time-subtract (cadr it) (car it)))
-           (-reduce #'time-add))
-    '(0 0)))
+Return a ts struct for said day's beginning.
 
-(defun chronometrist-previous-week-start (date-string)
-  "Find the previous `chronometrist-report-week-start-day' from DATE-STRING.
+If the day of TS is the same as the
+`chronometrist-report-week-start-day', return TS.
 
-Return the time value of said day's beginning.
-
-If the day of DATE is the same as the
-`chronometrist-report-week-start-day', return DATE.
-
-DATE-STRING must be in the form \"YYYY-MM-DD\"."
-  (let* ((date-time  (chronometrist-iso-date->timestamp date-string))
-         (date-unix  (parse-iso8601-time-string date-time))
-         (date-list  (decode-time date-unix))
-         (day        (elt date-list 6)) ;; 0-6, where 0 = Sunday
-         (week-start (chronometrist-day-of-week->number chronometrist-report-week-start-day))
-         (gap        (cond ((> day week-start) (- day week-start))
-                           ((< day week-start) (+ day (- 7 week-start))))))
-    (if gap
-        (time-subtract date-unix `(0 ,(* gap 86400)))
-      date-unix)))
+TS must be a ts struct (see `ts.el')."
+  (cl-loop until (equal chronometrist-report-week-start-day
+                        (ts-day-name ts))
+           do (ts-decf (ts-day ts))
+           finally return ts))
 
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist-common"
