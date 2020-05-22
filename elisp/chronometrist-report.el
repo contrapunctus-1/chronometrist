@@ -78,21 +78,19 @@ The first date is the first occurrence of
   "Create entries to be displayed in the `chronometrist-report' buffer."
   (let* ((week-dates (chronometrist-report-date->week-dates))) ;; uses today if chronometrist-report--ui-date is nil
     (setq chronometrist-report--ui-week-dates week-dates)
-    (mapcar (lambda (task)
-              (let ((task-daily-time-list
-                     (--map (chronometrist-task-time-one-day task (chronometrist-date it))
-                            week-dates)))
-                (list task
-                      (vconcat
-                       (vector task)
-                       (->> task-daily-time-list
-                            (mapcar #'chronometrist-format-time)
-                            (apply #'vector))
-                       (->> task-daily-time-list
-                            (-reduce #'+)
-                            (chronometrist-format-time)
-                            (vector))))))
-            chronometrist-task-list)))
+    (cl-loop for task in chronometrist-task-list collect
+             (let* ((durations        (--map (chronometrist-task-time-one-day task (chronometrist-date it))
+                                             week-dates))
+                    (duration-strings (mapcar #'chronometrist-format-time
+                                              durations))
+                    (total-duration   (->> (-reduce #'+ durations)
+                                           (chronometrist-format-time)
+                                           (vector))))
+               (list task
+                     (vconcat
+                      (vector task)
+                      duration-strings ;; vconcat converts lists to vectors
+                      total-duration))))))
 
 (defun chronometrist-report-print-keybind (command &optional description firstonly)
   "Insert one or more keybindings for COMMAND into the current buffer.
