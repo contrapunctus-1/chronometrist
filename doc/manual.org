@@ -250,6 +250,8 @@
     5. Function - chronometrist-midnight-spanning-p (start-time stop-time)
     6. Function - chronometrist-seconds-to-hms (seconds)
        * seconds -> list-duration
+    7. Function - chronometrist-interval (event)
+       * event -> duration
 *** chronometrist-timer.el
     1. Internal Variable - chronometrist--timer-object
     2. Function - chronometrist-timer ()
