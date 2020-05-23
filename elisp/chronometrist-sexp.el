@@ -15,6 +15,7 @@
 ;; chronometrist-plist-pp (-plist-pp)
 
 (defmacro chronometrist-sexp-in-file (file &rest body)
+  "Run BODY in a buffer visiting FILE, restoring point afterwards."
   (declare (indent defun))
   `(with-current-buffer (find-file-noselect ,file)
      (save-excursion ,@body)))
@@ -63,8 +64,7 @@ events returned may span midnights - use
   (chronometrist-sexp-in-file chronometrist-file
     (goto-char (point-max))
     (backward-list)
-    (ignore-errors
-      (read buffer))))
+    (ignore-errors (read (current-buffer)))))
 
 (defun chronometrist-sexp-current-task ()
   "Return the name of the currently clocked-in task, or nil if not clocked in."
@@ -123,7 +123,7 @@ BUFFER is the buffer to operate in - default is one accessing `chronometrist-fil
     ;; newline before it
     (unless (bobp) (insert "\n"))
     (unless (bolp) (insert "\n"))
-    (chronometrist-plist-pp plist buffer)
+    (chronometrist-plist-pp plist (current-buffer))
     (save-buffer)))
 
 (defun chronometrist-sexp-delete-list (&optional arg)
@@ -140,7 +140,7 @@ BUFFER is the buffer to operate in - default is one accessing `chronometrist-fil
       (insert "\n"))
     (backward-list 1)
     (chronometrist-sexp-delete-list)
-    (chronometrist-plist-pp plist buffer)
+    (chronometrist-plist-pp plist (current-buffer))
     (save-buffer)))
 
 (defun chronometrist-sexp-reindent-buffer ()
