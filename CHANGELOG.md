@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * New hook - `chronometrist-file-change-hook`
 ### Changed
 * Use [ts.el](https://github.com/alphapapa/ts.el) structs to represent date-time, wherever possible. (`chronometrist-events` and `chronometrist-file` being notable exceptions)
+### Fixed
+* Prefix arguments now work with the point on a button, too.
 
 ## [0.4.3] - 2020-05-03
 ### Changed
