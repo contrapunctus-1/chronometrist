@@ -118,17 +118,17 @@ as symbol and/or strings.")
                                  (append existing-tags `(,tags))
                                `(,tags))
                              table))))
-    ;; We can't use `chronometrist-ht-history-prep' here, because it uses
-    ;; `-flatten'; `chronometrist-tags-history' holds tag combinations (as lists),
-    ;; not individual tags.
+    ;; We can't use `chronometrist-ht-history-prep' to do this, because it uses
+    ;; `-flatten'; the values of `chronometrist-tags-history' hold tag combinations
+    ;; (as lists), not individual tags.
     (cl-loop for task being the hash-keys of table
-             using (hash-values list)
+             using (hash-values tag-lists)
              do (puthash task
                          ;; Because remove-duplicates keeps the _last_
                          ;; occurrence, trying to avoid this `reverse' by
                          ;; switching the args in the call to `append'
                          ;; above will not get you the correct behavior!
-                         (-> (cl-remove-duplicates list :test #'equal)
+                         (-> (cl-remove-duplicates tag-lists :test #'equal)
                              (reverse))
                          table))))
 
