@@ -180,7 +180,7 @@ To use, add this to `chronometrist-after-in-functions', and
 `chronometrist-goals-stop-alert-timers' to
 `chronometrist-after-out-functions'."
   (let ((goal    (chronometrist-get-goal task))
-        (spent   (chronometrist-task-time-one-day task)))
+        (spent   (/ (chronometrist-task-time-one-day task) 60)))
     (add-hook 'chronometrist-file-change-hook #'chronometrist-goals-on-file-change)
     (mapc (lambda (f)
             (funcall f task goal spent))
