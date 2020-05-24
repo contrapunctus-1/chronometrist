@@ -105,14 +105,10 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
          (apply #'concat))))
 
 (defun chronometrist-events->ts-pairs (events)
-  "Convert EVENTS to a list of time values.
+  "Convert EVENTS to a list of ts struct pairs (see `ts.el').
 
 EVENTS must be a list of valid Chronometrist property lists (see
-`chronometrist-file').
-
-For each event, a list of two time values is returned.
-
-For time value format, see (info \"(elisp)Time of Day\")."
+`chronometrist-file')."
   (cl-loop for plist in events collect
            (let* ((start (chronometrist-iso-timestamp->ts
                           (plist-get plist :start)))
