@@ -16,7 +16,7 @@
 
 (defmacro chronometrist-sexp-in-file (file &rest body)
   "Run BODY in a buffer visiting FILE, restoring point afterwards."
-  (declare (indent defun))
+  (declare (indent defun) (debug t))
   `(with-current-buffer (find-file-noselect ,file)
      (save-excursion ,@body)))
 
@@ -26,7 +26,7 @@
   (find-file-other-window chronometrist-file)
   (goto-char (point-max)))
 
-(cl-defun chronometrist-sexp-between (&optional (ts-beg (chronometrist-date)) (ts-end (ts-adjust 'day +1 (chronometrist-date))))
+(cl-defun chronometrist-sexp-read (&optional ts-beg ts-end)
   "Return events between TS-BEG and TS-END.
 Events are a list of plists, in reverse chronological order.
 
@@ -37,25 +37,29 @@ An event is considered to be between TS-BEG and TS-END even if
 just the :start or the :stop time occurs between them. Thus,
 events returned may span midnights - use
 `chronometrist-midnight-spanning-p' to check."
-  (with-current-buffer (find-file-noselect chronometrist-file)
-    (save-excursion
+  (let ((no-range-p (and (not ts-beg) (not ts-end))))
+    (chronometrist-sexp-in-file chronometrist-file
       (goto-char (point-max))
       (cl-loop
        with expr with start with stop
-       do (backward-list 1)
-       (setq expr (read (current-buffer)))
-       (backward-list 1)
+       do (if (bobp)
+              (setq expr nil)
+            (backward-list 1)
+            (setq expr (read (current-buffer)))
+            (backward-list 1))
        ;; loop till we reach the beginning of the range
        while
        (and expr
             (setq start (chronometrist-iso-timestamp->ts
                          (plist-get expr :start))
                   stop  (plist-get expr :stop)
-                  stop  (if stop
-                            (setq stop (chronometrist-iso-timestamp->ts stop))
-                          (ts-now)))
-            (or (ts> start ts-beg) (ts> stop ts-beg)))
-       when (or (ts-in ts-beg ts-end start)
+                  stop  (if stop (chronometrist-iso-timestamp->ts stop) (ts-now)))
+            (or no-range-p
+                ;; don't go past TS-BEG
+                (ts> start ts-beg)
+                (ts> stop  ts-beg)))
+       when (or no-range-p
+                (ts-in ts-beg ts-end start)
                 (ts-in ts-beg ts-end stop))
        collect expr))))
 

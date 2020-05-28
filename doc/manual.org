@@ -285,7 +285,7 @@
 *** chronometrist-sexp
     1. Macro - chronometrist-sexp-in-file (file &rest body)
     2. Function - chronometrist-sexp-open-log ()
-    3. Function - chronometrist-sexp-between (&optional (ts-beg (chronometrist-date)) (ts-end (ts-adjust 'day +1 (chronometrist-date))))
+    3. Function - chronometrist-sexp-read (&optional ts-beg ts-end)
     4. Function - chronometrist-sexp-query-till (&optional (date (chronometrist-date)))
     5. Function - chronometrist-sexp-last ()
        * -> plist

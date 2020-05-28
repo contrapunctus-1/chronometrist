@@ -8,17 +8,19 @@
       (expect (consp (chronometrist-sexp-last))
               :to-be t)))
 
-(describe "chronometrist-sexp-between"
+(describe "chronometrist-sexp-read"
   :var ((ts (chronometrist-iso-date->ts "2020-05-10")))
-  (before-all
-   (setq chronometrist-file-old chronometrist-file
-         chronometrist-file     "tests/test.sexp"))
-  (after-all
-   (setq chronometrist-file chronometrist-file-old))
+  (before-all (setq chronometrist-file-old chronometrist-file
+                    chronometrist-file     "tests/test.sexp"))
+  (after-all  (setq chronometrist-file chronometrist-file-old))
+  (it "returns all events if no arguments are given"
+      (expect (length
+               (chronometrist-sexp-read))
+              :to-equal 10))
   (it "returns events between a certain time"
       (expect (length
-               (chronometrist-sexp-between (chronometrist-iso-date->ts "2020-05-10")
-                              (chronometrist-iso-date->ts "2020-05-11")))
+               (chronometrist-sexp-read (chronometrist-iso-date->ts "2020-05-10")
+                           (chronometrist-iso-date->ts "2020-05-11")))
               :to-equal 3)))
 
 ;; Local Variables:
