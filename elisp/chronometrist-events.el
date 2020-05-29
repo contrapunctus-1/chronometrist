@@ -1,4 +1,4 @@
-;;; chronometrist-events.el --- Event management and querying code for Chronometrist -*- lexical-binding: t; -*-
+;;; chronometrist-events.el --- event plist functions for Chronometrist -*- lexical-binding: t; -*-
 
 ;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
 
@@ -32,24 +32,6 @@
 Values are lists containing events, where each event is a list in
 the form (:name \"NAME\" :tags (TAGS) <key value pairs> ...
 :start TIME :stop TIME).")
-
-(defun chronometrist-day-start (timestamp)
-  "Get start of day (according to `chronometrist-day-start-time') for TIMESTAMP.
-
-TIMESTAMP must be a time string in the ISO-8601 format.
-
-Return value is a time value (see `current-time')."
-  (let ((timestamp-date-list (->> timestamp
-                                  (parse-iso8601-time-string)
-                                  (decode-time)
-                                  (-drop 3)
-                                  (-take 3))))
-    (--> chronometrist-day-start-time
-         (split-string it ":")
-         (mapcar #'string-to-number it)
-         (reverse it)
-         (append it timestamp-date-list)
-         (apply #'encode-time it))))
 
 ;; (defun chronometrist-file-clean ()
 ;;   "Clean `chronometrist-file' so that events can be processed accurately.
@@ -90,28 +72,48 @@ Return value is a time value (see `current-time')."
 ;;         (save-buffer)))
 ;;     modified))
 
+;; Note - this assumes that an event never crosses >1 day. This seems
+;; sufficient for all conceivable cases.
+(defun chronometrist-midnight-spanning-p (start-ts stop-ts)
+  "Return non-nil if START-TS and STOP-TS cross a midnight.
+START-TS and STOP-TS should be ts structs (see `ts.el')
+
+Return two events in the form
+\((:start START
+  :stop <`chronometrist-day-start' on initial day>)
+ (:start <`chronometrist-day-start' on second day>
+  :stop STOP))
+Where START and STOP are ISO-8601 timestamps."
+  ;; The time on which the first provided day starts (according to `chronometrist-day-start-time')
+  (let* ((first-day-start (chronometrist-day-start start-ts))
+         (next-day-start  (ts-adjust 'day 1 first-day-start)))
+    ;; Does the event stop time exceed the next day start time?
+    (when (ts< next-day-start stop-ts)
+      (list (cons (chronometrist-ts->iso start-ts)
+                  (chronometrist-ts->iso next-day-start))
+            (cons (chronometrist-ts->iso next-day-start)
+                  (chronometrist-ts->iso stop-ts))))))
+
 (defun chronometrist-events-maybe-split (event)
   "Split EVENT if it spans midnight.
-
-Return a list of two events if EVENT was split, else nil."
+Return a list of two events if EVENT was split, else nil"
   (when (plist-get event :stop)
-    (let ((split-time (chronometrist-midnight-spanning-p (plist-get event :start)
-                                             (plist-get event :stop))))
+    (let ((split-time (chronometrist-midnight-spanning-p (chronometrist-iso-timestamp->ts
+                                              (plist-get event :start))
+                                             (chronometrist-iso-timestamp->ts
+                                              (plist-get event :stop)))))
       (when split-time
-        (let ((first-start  (plist-get (cl-first  split-time) :start))
-              (first-stop   (plist-get (cl-first  split-time) :stop))
-              (second-start (plist-get (cl-second split-time) :start))
-              (second-stop  (plist-get (cl-second split-time) :stop))
-              ;; plist-put modifies lists in-place. The resulting bugs
-              ;; left me puzzled for a while.
-              (event-1      (cl-copy-list event))
-              (event-2      (cl-copy-list event)))
+        (-let ((((start-1 . stop-1) (start-2 . stop-2)) split-time)
+               ;; plist-put modifies lists in-place. The resulting bugs
+               ;; left me puzzled for a while.
+               (event-1      (cl-copy-list event))
+               (event-2      (cl-copy-list event)))
           (list (-> event-1
-                    (plist-put :start first-start)
-                    (plist-put :stop  first-stop))
+                    (plist-put :start start-1)
+                    (plist-put :stop  stop-1))
                 (-> event-2
-                    (plist-put :start second-start)
-                    (plist-put :stop  second-stop))))))))
+                    (plist-put :start start-2)
+                    (plist-put :stop  stop-2))))))))
 
 ;; TODO - Maybe strip dates from values, since they're part of the key
 ;; anyway. Consider using a state machine.

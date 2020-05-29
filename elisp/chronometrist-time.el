@@ -25,6 +25,9 @@
 
 ;;; Code:
 
+(defun chronometrist-ts->iso (ts)
+  (ts-format "%FT%T%z" ts))
+
 (defun chronometrist-iso-timestamp->ts (timestamp)
   "Return new ts struct, parsing TIMESTAMP with `parse-iso8601-time-string'."
   (-let [(second minute hour day month year dow _dst utcoff)
@@ -60,34 +63,13 @@ Optional argument UNIX-TIME should be a time value (see
 `current-time') accepted by `format-time-string'."
   (format-time-string "%FT%T%z" unix-time))
 
-;; Note - this assumes that an event never crosses >1 day. This seems
-;; sufficient for all conceivable cases.
-(defun chronometrist-midnight-spanning-p (start-time stop-time)
-  "Return non-nil if START-TIME and STOP-TIME cross a midnight.
+(defun chronometrist-day-start (ts)
+  "Return the timestamp for `chronometrist-day-start-time' on the date represented by TS.
+TS must be a ts struct (see `ts.el').
 
-Return value is a list in the form
-\((:start START-TIME
-  :stop <day-start time on initial day>)
- (:start <day start time on second day>
-  :stop STOP-TIME))"
-  ;; FIXME - time zones are ignored; may cause issues with
-  ;; time-zone-spanning events
-
-  ;; The time on which the first provided day starts (according to `chronometrist-day-start-time')
-  (let* ((first-day-start (chronometrist-day-start start-time))
-         ;; HACK - won't work with custom day-start time
-         ;; (first-day-end   (parse-iso8601-time-string
-         ;;                   (concat (chronometrist-date (parse-iso8601-time-string start-time))
-         ;;                           "24:00:00")))
-         (next-day-start  (time-add first-day-start
-                                    '(0 . 86400)))
-         (stop-time-unix  (parse-iso8601-time-string stop-time)))
-    ;; Does the event stop time exceed the next day start time?
-    (when (time-less-p next-day-start stop-time-unix)
-      (list `(:start ,start-time
-                     :stop  ,(chronometrist-format-time-iso8601 next-day-start))
-            `(:start ,(chronometrist-format-time-iso8601 next-day-start)
-                     :stop  ,stop-time)))))
+Return value is a TS struct."
+  (-let [(h m s) (mapcar #'string-to-number (split-string chronometrist-day-start-time ":"))]
+    (ts-apply :hour h :minute m :second s ts)))
 
 (defun chronometrist-seconds-to-hms (seconds)
   "Convert SECONDS to a vector in the form [HOURS MINUTES SECONDS].

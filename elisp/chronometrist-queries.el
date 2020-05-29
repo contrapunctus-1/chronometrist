@@ -24,14 +24,16 @@
   "Return the last entry from `chronometrist-file' as a plist."
   (chronometrist-sexp-last))
 
-(cl-defun chronometrist-task-time-one-day (task &optional (ts (ts-now)))
+(cl-defun chronometrist-task-time-one-day (task &optional (ts (chronometrist-date)))
   "Return total time spent on TASK today or (if supplied) on timestamp TS.
 The data is obtained from `chronometrist-file', via `chronometrist-events'.
 
 TS should be a ts struct (see `ts.el').
 
 The return value is seconds, as an integer."
-  (let ((task-events (chronometrist-task-events-in-day task ts)))
+  (let* ((events-today (chronometrist-sexp-read ts (ts-adjust 'day 1 ts)))
+         (task-events  (when events-today
+                         (chronometrist-filter-events-task events-today task))))
     (if task-events
         (->> (chronometrist-events->ts-pairs task-events)
              (chronometrist-ts-pairs->durations)
@@ -40,13 +42,10 @@ The return value is seconds, as an integer."
       ;; no events for this task on TS, i.e. no time spent
       0)))
 
-(defun chronometrist-active-time-one-day (&optional ts)
+(cl-defun chronometrist-active-time-one-day (&optional (ts (chronometrist-date)))
   "Return the total active time on TS (if non-nil) or today.
-TS must be a ts struct (see `ts.el')
-
-Return value is seconds as an integer."
-  (->> chronometrist-task-list
-       (--map (chronometrist-task-time-one-day it ts))
+TS must be a ts struct (see `ts.el')."
+  (->> (--map (chronometrist-task-time-one-day it ts) chronometrist-task-list)
        (-reduce #'+)
        (truncate)))
 
@@ -65,21 +64,15 @@ which span midnights. (see `chronometrist-events-clean')"
              table)
     count))
 
-(defun chronometrist-task-events-in-day (task ts)
-  "Get events for TASK on TS.
-TS should be a ts struct (see `ts.el').
-
-Returns a list of events, where each event is a property list in
-the form (:name \"NAME\" :start START :stop STOP ...), where
-START and STOP are ISO-8601 time strings.
-
-This will not return correct results if TABLE contains records
-which span midnights. (see `chronometrist-events-clean')"
-  (->> (gethash (ts-format "%F" ts) chronometrist-events)
-       (mapcar (lambda (event)
-                 (when (equal task (plist-get event :name))
-                   event)))
-       (seq-filter #'identity)))
+(defun chronometrist-filter-events-task (events task)
+  "Return events for TASK from EVENTS.
+EVENTS should be a list of property lists in the form (:name
+\"NAME\" :start START :stop STOP ...), where START and STOP are
+ISO-8601 time strings."
+  (cl-loop for event in events
+           when (equal (plist-get event :name)
+                       task)
+           collect event))
 
 
 (provide 'chronometrist-queries)

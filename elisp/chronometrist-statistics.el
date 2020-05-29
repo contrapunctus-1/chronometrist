@@ -95,10 +95,13 @@ TABLE should be a hash table - if not supplied,
   (let ((days  0)
         (per-day-time-list))
     (maphash (lambda (key _value)
-               (let ((events-in-day (chronometrist-task-events-in-day task (chronometrist-iso-date->ts key))))
-                 (when events-in-day
+               (let* ((ts            (chronometrist-iso-date->ts key))
+                      (events-in-day (chronometrist-sexp-read ts (ts-adjust 'day 1 ts)))
+                      (task-events   (when events-in-day
+                                       (chronometrist-filter-events-task events-in-day task))))
+                 (when task-events
                    (setq days (1+ days))
-                   (->> (chronometrist-events->ts-pairs events-in-day)
+                   (->> (chronometrist-events->ts-pairs task-events)
                         (chronometrist-ts-pairs->durations)
                         (-reduce #'+)
                         (list)

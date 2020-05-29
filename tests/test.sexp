@@ -22,6 +22,10 @@
  :start "2018-01-02T23:00:00+0530"
  :stop  "2018-01-03T01:00:00+0530")
 
+(:name "Cooking"
+ :start "2018-01-03T23:00:00+0530"
+ :stop  "2018-01-04T01:00:00+0530")
+
 (:name      "Programming"
  :tags      (bug-hunting)
  :project   "Chronometrist"

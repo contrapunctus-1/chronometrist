@@ -138,10 +138,10 @@
 *** chronometrist-events.el
     1. Variable - chronometrist-events
        * keys - iso-date
-    2. Function - chronometrist-day-start (timestamp)
-       * iso-timestamp -> encode-time
-    3. Function - chronometrist-file-clean ()
+    2. Function - chronometrist-file-clean ()
        * commented out, unused
+    3. Function - chronometrist-midnight-spanning-p (start-ts stop-ts)
+       * ts ts -> ((iso . iso) (iso . iso))
     4. Function - chronometrist-events-maybe-split (event)
     5. Function - chronometrist-events-populate ()
     6. Function - chronometrist-tasks-from-table ()
@@ -169,10 +169,10 @@
        * -> plist
     3. Function - chronometrist-task-time-one-day (task &optional (ts (ts-now)))
        * String &optional ts -> seconds
-    4. Function - chronometrist-active-time-one-day (&optional ts)
+    4. Function - chronometrist-active-time-one-day (&optional (ts (chronometrist-date)))
        * &optional ts -> seconds
     5. Function - chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
-    6. Function - chronometrist-task-events-in-day (task ts)
+    6. Function - chronometrist-filter-events-task (events task)
 *** chronometrist-report-custom.el
     1. Custom variable - chronometrist-report-buffer-name
     2. Custom variable - chronometrist-report-week-start-day
@@ -242,17 +242,20 @@
     12. Command - chronometrist-statistics-previous-range (arg)
     13. Command - chronometrist-statistics-next-range (arg)
 *** chronometrist-time.el
-    1. Function - chronometrist-iso-timestamp->ts (timestamp)
+    1. Function - chronometrist-ts->iso (ts)
+       * ts -> iso-timestamp
+    2. Function - chronometrist-iso-timestamp->ts (timestamp)
        * iso-timestamp -> ts
-    2. Function - chronometrist-iso-date->ts (date)
+    3. Function - chronometrist-iso-date->ts (date)
        * iso-date -> ts
-    3. Function - chronometrist-date (&optional (ts (ts-now)))
+    4. Function - chronometrist-date (&optional (ts (ts-now)))
        * &optional ts -> ts (with time 00:00:00)
-    4. Function - chronometrist-format-time-iso8601 (&optional unix-time)
-    5. Function - chronometrist-midnight-spanning-p (start-time stop-time)
-    6. Function - chronometrist-seconds-to-hms (seconds)
+    5. Function - chronometrist-format-time-iso8601 (&optional unix-time)
+    6. Function - chronometrist-day-start (ts)
+       * ts -> ts
+    7. Function - chronometrist-seconds-to-hms (seconds)
        * seconds -> list-duration
-    7. Function - chronometrist-interval (event)
+    8. Function - chronometrist-interval (event)
        * event -> duration
 *** chronometrist-timer.el
     1. Internal Variable - chronometrist--timer-object
