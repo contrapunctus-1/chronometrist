@@ -221,8 +221,13 @@ Argument _FS-EVENT is ignored."
   ;; (chronometrist-file-clean)
   (run-hooks 'chronometrist-file-change-hook)
   ;; REVIEW - can we move most/all of this to the `chronometrist-file-change-hook'?
-  (chronometrist-events-populate)
-  (setq chronometrist-task-list (chronometrist-tasks-from-table))
+  ;; (chronometrist-events-populate)
+  (setq chronometrist-task-list
+        (cl-loop for event in (chronometrist-sexp-read)
+                 collect (plist-get event :name) into names
+                 finally return
+                 (cl-remove-duplicates (sort names #'string-lessp)
+                                       :test #'equal)))
   (chronometrist-tags-history-populate)
   (chronometrist-key-history-populate)
   (chronometrist-value-history-populate)
