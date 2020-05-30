@@ -80,7 +80,7 @@ START-TS and STOP-TS should be ts structs (see `ts.el')
 
 Return two events in the form
 \((:start START
-  :stop <`chronometrist-day-start' on initial day>)
+  :stop <`chronometrist-day-start' on second day>)
  (:start <`chronometrist-day-start' on second day>
   :stop STOP))
 Where START and STOP are ISO-8601 timestamps."

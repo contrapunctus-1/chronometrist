@@ -9,19 +9,20 @@
               :to-be t)))
 
 (describe "chronometrist-sexp-read"
-  :var ((ts (chronometrist-iso-date->ts "2020-05-10")))
   (before-all (setq chronometrist-file-old chronometrist-file
                     chronometrist-file     "tests/test.sexp"))
   (after-all  (setq chronometrist-file chronometrist-file-old))
-  (it "returns all events if no arguments are given"
-    (expect (length
-             (chronometrist-sexp-read))
-            :to-equal 11))
+  (it "returns all events if no arguments are given, splitting ones which span midnights"
+    (expect (length (chronometrist-sexp-read)) :to-equal 13))
   (it "returns events between a certain time"
     (expect (length
              (chronometrist-sexp-read (chronometrist-iso-date->ts "2020-05-10")
                          (chronometrist-iso-date->ts "2020-05-11")))
-            :to-equal 3))
+            :to-equal 3)
+    (expect (length
+             (chronometrist-sexp-read (chronometrist-iso-date->ts "2020-05-02")
+                         (chronometrist-iso-date->ts "2020-05-05")))
+            :to-equal 4))
   (it "splits events if they cross the given times"
     (expect (chronometrist-sexp-read (chronometrist-iso-date->ts "2018-01-03")
                         (chronometrist-iso-date->ts "2018-01-04"))

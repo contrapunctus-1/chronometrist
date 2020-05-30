@@ -37,15 +37,21 @@ event will be included. Thus, events returned will not span
 midnights."
   (chronometrist-sexp-in-file chronometrist-file
     (goto-char (point-max))
+    ;; there is no range - collect everything, maybe split
     (if (and (not ts-beg) (not ts-end))
-        (cl-loop with expr do
+        (cl-loop with expr with split-events with list do
                  (if (bobp)
                      (setq expr nil)
                    (backward-list 1)
-                   (setq expr (read (current-buffer)))
+                   (setq expr (read (current-buffer))
+                         split-events (chronometrist-events-maybe-split expr))
                    (backward-list 1))
-                 while expr collect expr)
-      (cl-loop with expr with start with stop
+                 while expr
+                 when split-events append split-events into list
+                 unless split-events collect expr into list
+                 finally return list)
+      ;; there is a range
+      (cl-loop with expr with start with stop with split-events with list
                do (if (bobp)
                       (setq expr nil)
                     (backward-list 1)
@@ -59,16 +65,18 @@ midnights."
                           stop  (plist-get expr :stop)
                           stop  (if stop (chronometrist-iso-timestamp->ts stop) (ts-now)))
                     ;; don't go past TS-BEG
-                    (or (ts> start ts-beg) (ts> stop ts-beg)))
-               when
-               (or (ts-in ts-beg ts-end start)
-                   (ts-in ts-beg ts-end stop))
-               collect
-               (cond ((ts< start ts-beg)
-                      (cl-second (chronometrist-events-maybe-split expr)))
-                     ((ts< ts-end stop)
-                      (cl-first (chronometrist-events-maybe-split expr)))
-                     (t expr))))))
+                    (or (ts> start ts-beg)
+                        (ts> stop ts-beg)))
+               when (or (ts-in ts-beg ts-end start)
+                        (ts-in ts-beg ts-end stop))
+               ;; expr is within range
+               collect (let ((split-events (chronometrist-events-maybe-split expr)))
+                         (cond ((ts< start ts-beg)
+                                (cl-second split-events))
+                               ((ts< ts-end stop)
+                                (cl-first split-events))
+                               (t expr))) into list
+               finally return list))))
 
 (defun chronometrist-sexp-last ()
   "Return last s-expression from `chronometrist-file'."
