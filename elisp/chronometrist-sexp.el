@@ -32,51 +32,47 @@ If not supplied, TS-BEG is the beginning of today and TS-END is
 the beginning of tomorrow, i.e. the events for today are returned.
 
 If TS-BEG or TS-END is between the :start and :stop time of an
-event, the event will be split into two, and only the matching
-event will be included. Thus, events returned will not span
-midnights."
-  (chronometrist-sexp-in-file chronometrist-file
-    (goto-char (point-max))
-    ;; there is no range - collect everything, maybe split
-    (if (and (not ts-beg) (not ts-end))
-        (cl-loop with expr with split-events with list do
-                 (if (bobp)
-                     (setq expr nil)
-                   (backward-list 1)
-                   (setq expr (read (current-buffer))
-                         split-events (chronometrist-events-maybe-split expr))
-                   (backward-list 1))
-                 while expr
-                 when split-events append split-events into list
-                 unless split-events collect expr into list
-                 finally return list)
-      ;; there is a range
-      (cl-loop with expr with start with stop with split-events with list
-               do (if (bobp)
-                      (setq expr nil)
-                    (backward-list 1)
-                    (setq expr (read (current-buffer)))
-                    (backward-list 1))
-               ;; loop till we reach the beginning of the range
-               while
-               (and expr
-                    (setq start (chronometrist-iso-timestamp->ts
-                                 (plist-get expr :start))
-                          stop  (plist-get expr :stop)
-                          stop  (if stop (chronometrist-iso-timestamp->ts stop) (ts-now)))
-                    ;; don't go past TS-BEG
-                    (or (ts> start ts-beg)
-                        (ts> stop ts-beg)))
-               when (or (ts-in ts-beg ts-end start)
-                        (ts-in ts-beg ts-end stop))
-               ;; expr is within range
-               collect (let ((split-events (chronometrist-events-maybe-split expr)))
-                         (cond ((ts< start ts-beg)
-                                (cl-second split-events))
-                               ((ts< ts-end stop)
-                                (cl-first split-events))
-                               (t expr))) into list
-               finally return list))))
+event, the event will be included. Thus, the first and the last
+events may extend outside the given range.
+
+The events returned may also cross the
+`chronometrist-day-start-time', which can affect duration
+calculations. See `chronometrist-events-maybe-split'.
+
+If the latest (first) event does not have a :stop property, it
+will be added with the current time as the value."
+  (let ((no-range-p (and (not ts-beg) (not ts-end))))
+    (chronometrist-sexp-in-file chronometrist-file
+      (goto-char (point-max))
+      (cl-loop
+       with expr with start with stop
+       do
+       (if (bobp)
+           (setq expr nil)
+         (backward-list 1)
+         (setq expr (read (current-buffer)))
+         (backward-list 1))
+       ;; loop till we reach the beginning of the range
+       while
+       (and expr
+            (setq start (chronometrist-iso-timestamp->ts
+                         (plist-get expr :start))
+                  stop  (plist-get expr :stop)
+                  stop  (if stop
+                            (chronometrist-iso-timestamp->ts stop)
+                          (let ((now (ts-now)))
+                            (plist-put expr :stop (chronometrist-ts->iso now))
+                            now)))
+            ;; don't go past TS-BEG
+            (or no-range-p
+                (ts> start ts-beg)
+                (ts> stop ts-beg)))
+       when
+       (or no-range-p
+           (ts-in ts-beg ts-end start)
+           (ts-in ts-beg ts-end stop))
+       ;; expr is within range
+       collect expr))))
 
 (defun chronometrist-sexp-last ()
   "Return last s-expression from `chronometrist-file'."

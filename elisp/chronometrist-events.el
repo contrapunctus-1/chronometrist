@@ -97,23 +97,22 @@ Where START and STOP are ISO-8601 timestamps."
 (defun chronometrist-events-maybe-split (event)
   "Split EVENT if it spans midnight.
 Return a list of two events if EVENT was split, else nil"
-  (when (plist-get event :stop)
-    (let ((split-time (chronometrist-midnight-spanning-p (chronometrist-iso-timestamp->ts
-                                              (plist-get event :start))
-                                             (chronometrist-iso-timestamp->ts
-                                              (plist-get event :stop)))))
-      (when split-time
-        (-let ((((start-1 . stop-1) (start-2 . stop-2)) split-time)
-               ;; plist-put modifies lists in-place. The resulting bugs
-               ;; left me puzzled for a while.
-               (event-1      (cl-copy-list event))
-               (event-2      (cl-copy-list event)))
-          (list (-> event-1
-                    (plist-put :start start-1)
-                    (plist-put :stop  stop-1))
-                (-> event-2
-                    (plist-put :start start-2)
-                    (plist-put :stop  stop-2))))))))
+  (let ((split-time (chronometrist-midnight-spanning-p (chronometrist-iso-timestamp->ts
+                                            (plist-get event :start))
+                                           (chronometrist-iso-timestamp->ts
+                                            (plist-get event :stop)))))
+    (when split-time
+      (-let ((((start-1 . stop-1) (start-2 . stop-2)) split-time)
+             ;; plist-put modifies lists in-place. The resulting bugs
+             ;; left me puzzled for a while.
+             (event-1      (cl-copy-list event))
+             (event-2      (cl-copy-list event)))
+        (list (-> event-1
+                  (plist-put :start start-1)
+                  (plist-put :stop  stop-1))
+              (-> event-2
+                  (plist-put :start start-2)
+                  (plist-put :stop  stop-2)))))))
 
 ;; TODO - Maybe strip dates from values, since they're part of the key
 ;; anyway. Consider using a state machine.
@@ -143,7 +142,6 @@ were none."
 ;; to be replaced by plist-query
 (defun chronometrist-events-subset (start end)
   "Return a subset of `chronometrist-events'.
-
 The subset will contain values between dates START and END (both
 inclusive).
 

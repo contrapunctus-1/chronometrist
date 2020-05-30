@@ -31,14 +31,23 @@ The data is obtained from `chronometrist-file', via `chronometrist-events'.
 TS should be a ts struct (see `ts.el').
 
 The return value is seconds, as an integer."
-  (let* ((events-today (chronometrist-sexp-read ts (ts-adjust 'day 1 ts)))
+  (let* ((today-start  ts)
+         (today-end    (ts-adjust 'day 1 ts))
+         (events-today (chronometrist-sexp-read today-start today-end))
          (task-events  (when events-today
                          (chronometrist-filter-events-task events-today task))))
     (if task-events
-        (->> (chronometrist-events->ts-pairs task-events)
-             (chronometrist-ts-pairs->durations)
-             (-reduce #'+)
-             (truncate))
+        (--> (cl-loop with new with list
+                      for event in task-events
+                      do (setq new (chronometrist-events-maybe-split event))
+                      if new append new into list
+                      else collect event into list
+                      finally return list)
+             (chronometrist-filter-events-time it today-start today-end)
+             (chronometrist-events->ts-pairs it)
+             (chronometrist-ts-pairs->durations it)
+             (-reduce #'+ it)
+             (truncate it))
       ;; no events for this task on TS, i.e. no time spent
       0)))
 
@@ -70,10 +79,18 @@ EVENTS should be a list of property lists in the form (:name
 \"NAME\" :start START :stop STOP ...), where START and STOP are
 ISO-8601 time strings."
   (cl-loop for event in events
-           when (equal (plist-get event :name)
-                       task)
+           when (equal task (plist-get event :name))
            collect event))
 
+(defun chronometrist-filter-events-time (events begin end)
+  "From EVENTS, return the ones between BEGIN and END."
+  (cl-loop with start with stop
+           for event in events
+           do (setq start (chronometrist-iso-timestamp->ts (plist-get event :start))
+                    stop  (chronometrist-iso-timestamp->ts (plist-get event :stop)))
+           when (or (ts<= begin start)
+                    (ts<= end stop))
+           collect event))
 
 (provide 'chronometrist-queries)
 
