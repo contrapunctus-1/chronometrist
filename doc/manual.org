@@ -206,26 +206,28 @@
     6. Function - chronometrist-append-to-last (tags plist)
     7. Variable - chronometrist-tags-history
     8. Function - chronometrist-tags-history-populate ()
-    9. Function - chronometrist-tags-history-combination-strings (task)
-    10. Function - chronometrist-tags-history-individual-strings (task)
-    11. Function - chronometrist-tags-prompt (task &optional initial-input)
-    12. Function - chronometrist-tags-add (&rest args)
-    13. Custom Variable - chronometrist-kv-buffer-name
-    14. Variable - chronometrist-key-history
-    15. Variable - chronometrist-value-history
-    16. Function - chronometrist-ht-history-prep (table)
-    17. Function - chronometrist-key-history-populate ()
-    18. Function - chronometrist-value-history-populate ()
-    19. Keymap - chronometrist-kv-read-mode-map
-    20. Major Mode - chronometrist-kv-read-mode
-    21. Function - chronometrist-kv-completion-quit-key ()
-    22. Function - chronometrist-string-has-whitespace-p (string)
-    23. Function - chronometrist-key-prompt (used-keys)
-    24. Function - chronometrist-value-prompt (key)
-    25. Function - chronometrist-value-insert (value)
-    26. Function - chronometrist-kv-add (&rest args)
-    27. Command - chronometrist-kv-accept ()
-    28. Command - chronometrist-kv-reject ()
+    9. Function - chronometrist-tags-history-append (plist)
+    10. Function - chronometrist-tags-history-replace-last (plist)
+    11. Function - chronometrist-tags-history-combination-strings (task)
+    12. Function - chronometrist-tags-history-individual-strings (task)
+    13. Function - chronometrist-tags-prompt (task &optional initial-input)
+    14. Function - chronometrist-tags-add (&rest args)
+    15. Custom Variable - chronometrist-kv-buffer-name
+    16. Variable - chronometrist-key-history
+    17. Variable - chronometrist-value-history
+    18. Function - chronometrist-ht-history-prep (table)
+    19. Function - chronometrist-key-history-populate ()
+    20. Function - chronometrist-value-history-populate ()
+    21. Keymap - chronometrist-kv-read-mode-map
+    22. Major Mode - chronometrist-kv-read-mode
+    23. Function - chronometrist-kv-completion-quit-key ()
+    24. Function - chronometrist-string-has-whitespace-p (string)
+    25. Function - chronometrist-key-prompt (used-keys)
+    26. Function - chronometrist-value-prompt (key)
+    27. Function - chronometrist-value-insert (value)
+    28. Function - chronometrist-kv-add (&rest args)
+    29. Command - chronometrist-kv-accept ()
+    30. Command - chronometrist-kv-reject ()
 *** chronometrist-statistics-custom.el
     1. Custom variable - chronometrist-statistics-buffer-name
 *** chronometrist-statistics.el

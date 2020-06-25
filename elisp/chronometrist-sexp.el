@@ -88,9 +88,10 @@ were none."
     (unless (bobp) (insert "\n"))
     (unless (bolp) (insert "\n"))
     (chronometrist-plist-pp plist (current-buffer))
-    ;; update in-memory (`chronometrist-events', `chronometrist-task-list') too...
+    ;; Update in-memory (`chronometrist-events', `chronometrist-task-list') too...
     (chronometrist-events-new plist)
     (chronometrist-task-list-add (plist-get plist :name))
+    (chronometrist-tags-history-append plist)
     ;; ...so we can skip some expensive operations.
     (setq chronometrist--inhibit-read-p t)
     (save-buffer)))
@@ -112,6 +113,7 @@ were none."
     (chronometrist-plist-pp plist (current-buffer))
     (chronometrist-events-replace-last plist)
     ;; We assume here that this function will always be used to replace something with the same :name. At the time of writing, this is indeed the case. The reason for this is that if the replaced plist is the only one in `chronometrist-file' with that :name, the :name should be removed from `chronometrist-task-list', but to ascertain that condition we would have to either read the entire file or map over the hash table, defeating the optimization. Thus, we don't update `chronometrist-task-list' here (unlike `chronometrist-sexp-new')
+    (chronometrist-tags-history-replace-last plist)
     (setq chronometrist--inhibit-read-p t)
     (save-buffer)))
 

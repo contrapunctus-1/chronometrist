@@ -132,6 +132,27 @@ as symbol and/or strings.")
                              (reverse))
                          table))))
 
+(defun chronometrist-tags-history-append (plist)
+  "Add tags from PLIST to `chronometrist-tags-history'."
+  (let* ((table    chronometrist-tags-history)
+         (name     (plist-get plist :name))
+         (tags     (plist-get plist :tags))
+         (old-tags (gethash name table)))
+    (when tags
+      (puthash name (append tags old-tags) table))))
+
+(defun chronometrist-tags-history-replace-last (plist)
+  "Replace the latest tag combination for PLIST's task with tags from PLIST."
+  (let* ((table    chronometrist-tags-history)
+         (name     (plist-get plist :name))
+         (tags     (plist-get plist :tags))
+         (old-tags (gethash name table)))
+    (if old-tags
+        (--> (cdr old-tags)
+             (append tags it)
+             (puthash name it table))
+      (puthash name tags table))))
+
 (defun chronometrist-tags-history-combination-strings (task)
   "Return list of past tag combinations for TASK.
 Each combination is a string, with tags separated by commas.
