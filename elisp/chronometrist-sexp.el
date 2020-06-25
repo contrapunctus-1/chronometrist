@@ -79,16 +79,17 @@ were none."
     (with-current-buffer (find-file-noselect chronometrist-file)
       (write-file chronometrist-file))))
 
-(cl-defun chronometrist-sexp-new (plist &optional (buffer (find-file-noselect chronometrist-file)))
-  "Add new PLIST at the end of `chronometrist-file'.
-BUFFER is the buffer to operate in - default is one accessing `chronometrist-file'."
-  (with-current-buffer buffer
+(cl-defun chronometrist-sexp-new (plist)
+  "Add new PLIST at the end of `chronometrist-file'."
+  (chronometrist-sexp-in-file chronometrist-file
     (goto-char (point-max))
     ;; If we're adding the first s-exp in the file, don't add a
     ;; newline before it
     (unless (bobp) (insert "\n"))
     (unless (bolp) (insert "\n"))
     (chronometrist-plist-pp plist (current-buffer))
+    (chronometrist-events-new plist)
+    (setq chronometrist--inhibit-read-p t)
     (save-buffer)))
 
 (defun chronometrist-sexp-delete-list (&optional arg)
@@ -106,6 +107,8 @@ BUFFER is the buffer to operate in - default is one accessing `chronometrist-fil
     (backward-list 1)
     (chronometrist-sexp-delete-list)
     (chronometrist-plist-pp plist (current-buffer))
+    (chronometrist-events-replace-last plist)
+    (setq chronometrist--inhibit-read-p t)
     (save-buffer)))
 
 (defun chronometrist-sexp-reindent-buffer ()

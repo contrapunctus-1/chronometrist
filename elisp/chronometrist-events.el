@@ -138,6 +138,24 @@ were none."
     (cl-remove-duplicates (sort acc #'string-lessp)
                           :test #'equal)))
 
+(defun chronometrist-events-new (plist)
+  "Add new PLIST at the end of `chronometrist-events'."
+  (let* ((date-today   (format-time-string "%Y-%m-%d"))
+         (events-today (gethash date-today chronometrist-events)))
+    (--> (list plist)
+         (append events-today it)
+         (puthash date-today it chronometrist-events))))
+
+(defun chronometrist-events-replace-last (plist)
+  "Replace the last plist in `chronometrist-events' with PLIST."
+  (let* ((date-today   (format-time-string "%Y-%m-%d"))
+         (events-today (gethash date-today chronometrist-events)))
+    (--> (reverse events-today)
+         (cdr it)
+         (append (list plist) it)
+         (reverse it)
+         (puthash date-today it chronometrist-events))))
+
 ;; to be replaced by plist-query
 (defun chronometrist-events-subset (start end)
   "Return a subset of `chronometrist-events'.
