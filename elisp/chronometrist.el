@@ -344,7 +344,8 @@ is the name of the task to be clocked out of.")
 
 Argument _BUTTON is for the purpose of using this as a button
 action, and is ignored."
-  (chronometrist-goto-nth-task (prefix-numeric-value current-prefix-arg))
+  (when current-prefix-arg
+    (chronometrist-goto-nth-task (prefix-numeric-value current-prefix-arg)))
   (let ((current  (chronometrist-current-task))
         (at-point (chronometrist-task-at-point)))
     ;; clocked in + point on current    = clock out
