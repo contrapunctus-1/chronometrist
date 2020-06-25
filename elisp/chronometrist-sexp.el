@@ -88,7 +88,10 @@ were none."
     (unless (bobp) (insert "\n"))
     (unless (bolp) (insert "\n"))
     (chronometrist-plist-pp plist (current-buffer))
+    ;; update in-memory (`chronometrist-events', `chronometrist-task-list') too...
     (chronometrist-events-new plist)
+    (chronometrist-task-list-add (plist-get plist :name))
+    ;; ...so we can skip some expensive operations.
     (setq chronometrist--inhibit-read-p t)
     (save-buffer)))
 
@@ -108,6 +111,7 @@ were none."
     (chronometrist-sexp-delete-list)
     (chronometrist-plist-pp plist (current-buffer))
     (chronometrist-events-replace-last plist)
+    ;; We make an assumption here - that this function will always be used to replace something with the same :name. Thus, we don't update `chronometrist-task-list' here (unlike `chronometrist-sexp-new')
     (setq chronometrist--inhibit-read-p t)
     (save-buffer)))
 

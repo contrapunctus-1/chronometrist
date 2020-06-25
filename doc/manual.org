@@ -72,18 +72,19 @@
     2. Variable - chronometrist-date-re
     3. Variable - chronometrist-time-re-ui
     4. Variable - chronometrist-task-list
-    5. Internal Variable - chronometrist--fs-watch
-    6. Function - chronometrist-current-task ()
-    7. Function - chronometrist-format-time  (seconds &optional (blank "   "))
+    5. Function - chronometrist-task-list-add (task)
+    6. Internal Variable - chronometrist--fs-watch
+    7. Function - chronometrist-current-task ()
+    8. Function - chronometrist-format-time  (seconds &optional (blank "   "))
        * seconds -> "h:m:s"
-    8. Function - chronometrist-common-file-empty-p (file)
-    9. Function - chronometrist-common-clear-buffer (buffer)
-    10. Function - chronometrist-format-keybinds (command map &optional firstonly)
-    11. Function - chronometrist-events->ts-pairs (events)
+    9. Function - chronometrist-common-file-empty-p (file)
+    10. Function - chronometrist-common-clear-buffer (buffer)
+    11. Function - chronometrist-format-keybinds (command map &optional firstonly)
+    12. Function - chronometrist-events->ts-pairs (events)
         * (plist ...) -> ((ts . ts) ...)
-    12. Function - chronometrist-ts-pairs->durations (ts-pairs)
+    13. Function - chronometrist-ts-pairs->durations (ts-pairs)
         * ((ts . ts) ...) -> seconds
-    13. Function - chronometrist-previous-week-start (ts)
+    14. Function - chronometrist-previous-week-start (ts)
         * ts -> ts
 *** chronometrist-custom.el
     1. Custom variable - chronometrist-file

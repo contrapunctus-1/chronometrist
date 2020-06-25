@@ -225,8 +225,8 @@ Argument _FS-EVENT is ignored."
   ;; REVIEW - can we move most/all of this to the `chronometrist-file-change-hook'?
   (if chronometrist--inhibit-read-p
       (setq chronometrist--inhibit-read-p nil)
-    (chronometrist-events-populate))
-  (setq chronometrist-task-list (chronometrist-tasks-from-table))
+    (chronometrist-events-populate)
+    (setq chronometrist-task-list (chronometrist-tasks-from-table)))
   (chronometrist-tags-history-populate)
   (chronometrist-key-history-populate)
   (chronometrist-value-history-populate)
