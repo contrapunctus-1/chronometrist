@@ -22,6 +22,9 @@ Largely modelled after the Android application, [A Time Tracker](https://github.
 * Has commands to shows useful summaries
 * Has a more useful implementation of hooks (see [Hooks](#Hooks))
 
+## Differences from Org time tracking
+* Chronometrist is tailored towards long-term, rarely-changing, everyday tasks, rather than transient ones. You might think of it as a program to help balance your day, or to help you form habits.
+
 ## Installation
 You can get `chronometrist` from https://framagit.org/contrapunctus/chronometrist/
 
