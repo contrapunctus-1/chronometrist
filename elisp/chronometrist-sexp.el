@@ -89,9 +89,9 @@ were none."
     (unless (bolp) (insert "\n"))
     (chronometrist-plist-pp plist (current-buffer))
     ;; Update in-memory (`chronometrist-events', `chronometrist-task-list') too...
-    (chronometrist-events-new plist)
+    (chronometrist-events-add plist)
     (chronometrist-task-list-add (plist-get plist :name))
-    (chronometrist-tags-history-append plist)
+    (chronometrist-tags-history-add plist)
     ;; ...so we can skip some expensive operations.
     (setq chronometrist--inhibit-read-p t)
     (save-buffer)))

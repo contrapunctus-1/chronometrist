@@ -138,7 +138,7 @@ were none."
     (cl-remove-duplicates (sort acc #'string-lessp)
                           :test #'equal)))
 
-(defun chronometrist-events-new (plist)
+(defun chronometrist-events-add (plist)
   "Add new PLIST at the end of `chronometrist-events'."
   (let* ((date-today   (format-time-string "%Y-%m-%d"))
          (events-today (gethash date-today chronometrist-events)))

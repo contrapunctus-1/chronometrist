@@ -132,7 +132,7 @@ as symbol and/or strings.")
                              (reverse))
                          table))))
 
-(defun chronometrist-tags-history-append (plist)
+(defun chronometrist-tags-history-add (plist)
   "Add tags from PLIST to `chronometrist-tags-history'."
   (let* ((table    chronometrist-tags-history)
          (name     (plist-get plist :name))

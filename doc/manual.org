@@ -147,7 +147,7 @@
     4. Function - chronometrist-events-maybe-split (event)
     5. Function - chronometrist-events-populate ()
     6. Function - chronometrist-tasks-from-table ()
-    7. Function - chronometrist-events-new (plist)
+    7. Function - chronometrist-events-add (plist)
     8. Function - chronometrist-events-replace-last (plist)
     9. Function - chronometrist-events-subset (start end)
        * ts ts -> hash-table
@@ -206,7 +206,7 @@
     6. Function - chronometrist-append-to-last (tags plist)
     7. Variable - chronometrist-tags-history
     8. Function - chronometrist-tags-history-populate ()
-    9. Function - chronometrist-tags-history-append (plist)
+    9. Function - chronometrist-tags-history-add (plist)
     10. Function - chronometrist-tags-history-replace-last (plist)
     11. Function - chronometrist-tags-history-combination-strings (task)
     12. Function - chronometrist-tags-history-individual-strings (task)
