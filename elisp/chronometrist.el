@@ -71,6 +71,7 @@
 
 (defvar chronometrist--task-history nil)
 (defvar chronometrist--point nil)
+(defvar chronometrist--inhibit-read-p nil)
 (defvar chronometrist-mode-map)
 
 ;; ## FUNCTIONS ##
@@ -222,9 +223,11 @@ Argument _FS-EVENT is ignored."
   ;; (chronometrist-file-clean)
   (run-hooks 'chronometrist-file-change-hook)
   ;; REVIEW - can we move most/all of this to the `chronometrist-file-change-hook'?
-  (chronometrist-events-populate)
-  (setq chronometrist-task-list (chronometrist-tasks-from-table))
-  (chronometrist-tags-history-populate)
+  (if chronometrist--inhibit-read-p
+      (setq chronometrist--inhibit-read-p nil)
+    (chronometrist-events-populate)
+    (setq chronometrist-task-list (chronometrist-tasks-from-table))
+    (chronometrist-tags-history-populate))
   (chronometrist-key-history-populate)
   (chronometrist-value-history-populate)
   (chronometrist-refresh))
@@ -243,8 +246,7 @@ TASK is the name of the task, a string.
 
 PREFIX is ignored."
   (interactive "P")
-  (let ((plist `(:name  ,task
-                 :start ,(format-time-string "%FT%T%z"))))
+  (let ((plist `(:name ,task :start ,(chronometrist-format-time-iso8601))))
     (chronometrist-sexp-new plist)
     (chronometrist-refresh)))
 
@@ -252,8 +254,7 @@ PREFIX is ignored."
   "Record current moment as stop time to last s-exp in `chronometrist-file'.
 PREFIX is ignored."
   (interactive "P")
-  (let ((plist (plist-put (chronometrist-last)
-                          :stop
+  (let ((plist (plist-put (chronometrist-last) :stop
                           (chronometrist-format-time-iso8601))))
     (chronometrist-sexp-replace-last plist)))
 

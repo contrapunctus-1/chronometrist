@@ -79,16 +79,21 @@ were none."
     (with-current-buffer (find-file-noselect chronometrist-file)
       (write-file chronometrist-file))))
 
-(cl-defun chronometrist-sexp-new (plist &optional (buffer (find-file-noselect chronometrist-file)))
-  "Add new PLIST at the end of `chronometrist-file'.
-BUFFER is the buffer to operate in - default is one accessing `chronometrist-file'."
-  (with-current-buffer buffer
+(cl-defun chronometrist-sexp-new (plist)
+  "Add new PLIST at the end of `chronometrist-file'."
+  (chronometrist-sexp-in-file chronometrist-file
     (goto-char (point-max))
     ;; If we're adding the first s-exp in the file, don't add a
     ;; newline before it
     (unless (bobp) (insert "\n"))
     (unless (bolp) (insert "\n"))
     (chronometrist-plist-pp plist (current-buffer))
+    ;; Update in-memory (`chronometrist-events', `chronometrist-task-list') too...
+    (chronometrist-events-add plist)
+    (chronometrist-task-list-add (plist-get plist :name))
+    (chronometrist-tags-history-add plist)
+    ;; ...so we can skip some expensive operations.
+    (setq chronometrist--inhibit-read-p t)
     (save-buffer)))
 
 (defun chronometrist-sexp-delete-list (&optional arg)
@@ -106,6 +111,10 @@ BUFFER is the buffer to operate in - default is one accessing `chronometrist-fil
     (backward-list 1)
     (chronometrist-sexp-delete-list)
     (chronometrist-plist-pp plist (current-buffer))
+    (chronometrist-events-replace-last plist)
+    ;; We assume here that this function will always be used to replace something with the same :name. At the time of writing, this is indeed the case. The reason for this is that if the replaced plist is the only one in `chronometrist-file' with that :name, the :name should be removed from `chronometrist-task-list', but to ascertain that condition we would have to either read the entire file or map over the hash table, defeating the optimization. Thus, we don't update `chronometrist-task-list' here (unlike `chronometrist-sexp-new')
+    (chronometrist-tags-history-replace-last plist)
+    (setq chronometrist--inhibit-read-p t)
     (save-buffer)))
 
 (defun chronometrist-sexp-reindent-buffer ()

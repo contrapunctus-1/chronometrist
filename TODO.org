@@ -117,6 +117,16 @@
       - With v0.2.0 Chronometrist also has a before-project-stop-functions, which runs before the project is stopped, and can control whether the project actually is stopped.
 
 * Optimization
+** Cache
+   + Lessons from the parsimonious-reading branch - iterating =read= over the whole file is fast; splitting the events is not.
+   + Things we need to read the whole file for - task list, tag/key/value history.
+   + Fill =chronometrist-events= only as much as the buffer needing split events requires. e.g. for =chronometrist=, just a day; for =chronometrist-report=, a week; etc.
+   + Anything requiring split events will first look in =chronometrist-events=, and if not found, will read from the file and update =chronometrist-events=.
+   + When the file changes, use the file byte length and hash strategy described below to know whether to keep the cache.
+   + Save cache to a file, so that event splitting is avoided by reading from that.
+*** Thoughts
+    + =chronometrist-key-value-cache= would basically be the entire file, if =chronometrist-history-suggestion-limit= is nil.
+    + history generation for tags/keys/values - which involve the most parsing - doesn't actually need the events to be split at midnights. Why not make that a keyword argument to =chronometrist-sexp-read=, so it's faster for that?
 ** Ideas to make -refresh-file faster
    1. Support multiple files, so we read and process lesser data when one of them changes.
    2. Make file writing async

@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 * Prefix arguments now work with the point on a button, too.
 * Bug with missing entries in `chronometrist-key-history`
+* Operations for adding a new s-expression and replacing the last s-expression have been optimized. Notably, commands for clocking in/out are now significantly faster.
 
 ## [0.4.3] - 2020-05-03
 ### Changed
