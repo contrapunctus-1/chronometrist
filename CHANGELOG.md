@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Use [ts.el](https://github.com/alphapapa/ts.el) structs to represent date-time, wherever possible. (`chronometrist-events` and `chronometrist-file` being notable exceptions)
 ### Fixed
 * Prefix arguments now work with the point on a button, too.
-* Commands which add an s-expression or replace the last s-expression - notably those for clocking in/out - are now significantly faster.
+* Operations for adding a new s-expression and replacing the last s-expression have been optimized. Notably, commands for clocking in/out are now significantly faster.
 
 ## [0.4.3] - 2020-05-03
 ### Changed
