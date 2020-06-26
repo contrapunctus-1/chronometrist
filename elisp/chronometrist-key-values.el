@@ -242,27 +242,21 @@ leading \":\" is removed."
         ;; ;; Not necessary, if the only place this is called is `chronometrist-refresh-file'
         ;; (setq chronometrist--task-list (chronometrist-tasks-from-table))
         chronometrist-task-list)
-  (cl-loop
-   for hv being the hash-values of chronometrist-events do
-   (cl-loop
-    for plist in hv do
-    (let* ((name   (plist-get plist :name))
-           (old-hv (gethash name chronometrist-events))
-           (keys   (->> (chronometrist-plist-remove plist
-                                       :name :start
-                                       :stop :tags)
-                        (seq-filter #'keywordp))))
-      (cl-loop
-       for key in keys do
-       (when key
-         (let ((key-string (->> (symbol-name key)
-                                (s-chop-prefix ":")
-                                (list))))
-           (puthash name
-                    (if old-hv
-                        (append old-hv key-string)
-                      key-string)
-                    chronometrist-key-history)))))))
+  (cl-loop for events being the hash-values of chronometrist-events do
+    (cl-loop for plist in events do
+      (let ((name (plist-get plist :name))
+            (keys (->> (chronometrist-plist-remove plist :name :start :stop :tags)
+                       (seq-filter #'keywordp))))
+        (cl-loop for key in keys do
+          (when key
+            (let ((old-keys (gethash name chronometrist-key-history))
+                  (new-key  (->> (symbol-name key)
+                                 (s-chop-prefix ":")
+                                 (list))))
+              (--> (if old-keys
+                       (append old-keys new-key)
+                     new-key)
+                   (puthash name it chronometrist-key-history))))))))
   (chronometrist-ht-history-prep chronometrist-key-history))
 
 (defun chronometrist-value-history-populate ()

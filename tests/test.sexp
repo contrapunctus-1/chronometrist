@@ -22,6 +22,10 @@
  :start "2018-01-02T23:00:00+0530"
  :stop  "2018-01-03T01:00:00+0530")
 
+(:name "Cooking"
+ :start "2018-01-03T23:00:00+0530"
+ :stop  "2018-01-04T01:00:00+0530")
+
 (:name      "Programming"
  :tags      (bug-hunting)
  :project   "Chronometrist"
@@ -40,6 +44,11 @@
  :tags  (classical warm-up)
  :start "2020-05-10T15:41:14+0530"
  :stop  "2020-05-10T15:55:42+0530")
+
+(:name  "Guitar"
+ :tags  (classical solo)
+ :start "2020-05-10T16:00:00+0530"
+ :stop  "2020-05-10T16:30:00+0530")
 
 (:name  "Programming"
  :tags  (reading)
