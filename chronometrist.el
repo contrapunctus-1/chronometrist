@@ -367,7 +367,7 @@ If INHIBIT-HOOKS is non-nil, the hooks
              (funcall in-fn target))))))
 
 (defun chronometrist-toggle-task-no-hooks (&optional prefix)
-  "Like `chronometrist-toggle-task', but don't run
+  "Like `chronometrist-toggle-task', but don't run hooks.
 
 With numeric prefix argument PREFIX, toggle the Nth task. If there
 is no corresponding task, do nothing."
