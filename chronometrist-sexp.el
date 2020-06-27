@@ -499,8 +499,7 @@ PREFIX is ignored."
       (chronometrist-plist-pp `(:name  ,task
                   :start ,(format-time-string "%FT%T%z"))
                 buffer)
-      (save-buffer))
-    (chronometrist-refresh)))
+      (save-buffer))))
 
 (defun chronometrist-out (&optional _prefix)
   "Record current moment as stop time to last s-exp in `chronometrist-file'.
