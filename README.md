@@ -32,35 +32,26 @@ You can get `chronometrist` from https://framagit.org/contrapunctus/chronometris
 
 Add the Chronometrist directory to your load-path, and `(require 'chronometrist)`.
 
-## Commands
+## Usage
+In the buffers created by the following three commands, you can press `l` (`chronometrist-open-log`) to view/edit your `chronometrist-file`, which by default is `~/.emacs.d/chronometrist.sexp`.
+
+All of these commands will kill their buffer when run again with the buffer visible, so the keys you bind them to behave as a toggle.
+
 ### chronometrist
 Run `M-x chronometrist` to see your projects, the time you spent on them today, which one is active, and the total time clocked today.
 
-Hit `RET` on a project to clock in for it. If it's already clocked in, it will be clocked out, and you'll be prompted for an optional reason. Use `M-RET` if you don't want to be asked for a reason.
+Hit `RET` (`chronometrist-toggle-task`) on a project to start tracking time for it. If it's already clocked in, it will be clocked out. This command runs some [hooks](#Hooks), which are useful for a wide range of functionality (see [Attaching key values to time intervals](#Attaching key values to time intervals (experimental))). In some cases, you may want to skip running the hooks - use `M-RET` (`chronometrist-toggle-task-no-hooks`) to do that.
 
-Whenever you call `chronometrist`, the cursor will helpfully be placed on the last activity you clocked out of, or the current activity clocked in.
+You can also hit `<numeric prefix> RET` anywhere in the buffer to toggle the corresponding project, e.g. `C-1 RET` will toggle the project with index 1.
 
-Alternatively, hit `<numeric prefix> RET` anywhere in the buffer to toggle the corresponding project, e.g. `C-1 RET` will toggle the project with index 1.
-
-Press `l` to view your `chronometrist-file` (`~/.emacs.d/chronometrist.sexp` by default). Press `r` to see a weekly report (see `chronometrist-report`)
-
-Running `M-x chronometrist` when the Chronometrist buffer is visible will kill it, so the key you bind it to can function as a toggle.
+Press `r` to see a weekly report (see `chronometrist-report`)
 
 `chronometrist` keeps itself updated via an idle timer - no need to frequently press `g` to update.
-
-#### Attaching key values to time intervals (experimental)
-Add `chronometrist-kv-read` to `chronometrist-before-in-functions` and/or `chronometrist-before-out-functions`, as you like (see [Hooks](#Hooks)).
-
-You will now be prompted to enter key-values when you clock in/out. Leave an entry blank to exit the prompt, edit the resulting key-values by hand if required, then press `C-c C-c` to accept the key-values (or `C-c C-k` to cancel).
 
 ### chronometrist-report
 Run `M-x chronometrist-report` (or `chronometrist` with a prefix argument of 1, or press `r` in the `chronometrist` buffer) to see a weekly report.
 
 Press `b` to look at past weeks, and `f` for future weeks.
-
-Press `l` to view your `chronometrist-file`, `~/.emacs.d/chronometrist.sexp` by default.
-
-Just like `chronometrist`, `chronometrist-report` will also toggle the visibilty of the buffer.
 
 `chronometrist-report` keeps itself updated via an idle timer - no pressing `g` to update.
 
@@ -69,9 +60,22 @@ Run `M-x chronometrist-statistics` (or `chronometrist` with a prefix argument of
 
 Press `b` to look at past time ranges, and `f` for future ones.
 
-Press `l` to view your `chronometrist-file`, `~/.emacs.d/chronometrist.sexp` by default.
+### Attaching tags and key values (experimental)
+Part of the reason Chronometrist stores time intervals as property lists is to allow you to add tags and arbitrary key-values to them.
 
-Just like `chronometrist`, `chronometrist-statistics` will also toggle the visibilty of the buffer.
+#### Tags
+To be prompted for tags, add `chronometrist-tags-add` to any hook except `chronometrist-before-in-functions`, based on your preference (see [Hooks](#Hooks)). The prompt suggests past combinations you used for the current task, which you can browse with `M-p`/`M-n`. You can leave it blank by pressing `RET`, or skip the prompt just this once by pressing `M-RET` (`chronometrist-toggle-task-no-hooks`).
+
+#### Key-value pairs
+Similarly, to be prompted for key-values, add `chronometrist-kv-add` to any hook except `chronometrist-before-in-functions`. To exit the prompt, press the key it indicates for quitting - you can then edit the resulting key-values by hand if required. Press `C-c C-c` to accept the key-values, or `C-c C-k` to cancel.
+
+### Adding more information (experimental)
+Key-value pairs can be added using the `chronometrist-kv-add` function. It can currently be added to any hooks except `chronometrist-before-in-functions`. Keys can be any string except "name", "tags", "start", or "end". Values can be any readable Lisp values.
+
+### Prompt when exiting Emacs
+If you wish to be prompted when you exit Emacs while tracking time, you can use this -
+
+`(add-hook 'kill-emacs-query-functions 'chronometrist-query-stop)`
 
 ## Customization
 See the Customize groups `chronometrist` and `chronometrist-report` for variables intended to be user-customizable.
@@ -85,14 +89,17 @@ Chronometrist currently has four hooks -
 
 As their names suggest, these are 'abnormal' hooks, i.e. the functions they contain must accept arguments. In this case, each function must accept exactly one argument, which is the project which is being started or stopped.
 
-As an example from the author's own init -
+An idea from the author's own init -
 
 ```elisp
-(defun my-start-guitar (project)
-  (when (equal project "Guitar")
-    (find-file-other-window "~/repertoire.org")))
+(defun my-start-project (project)
+  (pcase project
+    ...
+    ("Guitar"
+     (find-file-other-window "~/repertoire.org"))
+    ...))
 
-(add-hook 'chronometrist-before-in-functions 'my-start-guitar)
+(add-hook 'chronometrist-before-in-functions 'my-start-project)
 ```
 
 Another one, prompting the user if they have uncommitted changes in a git repository (assuming they use [Magit](https://magit.vc/)) -
@@ -110,20 +117,6 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
 
 (add-hook 'chronometrist-before-out-functions 'my-commit-prompt)
 ```
-
-### Adding more information
-Since v0.3, Chronometrist supports adding additional information to tracked time, in the form of tags and user-defined key-value pairs.
-
-#### Tags
-Tags can be added using the `chronometrist-tags-add` function. It can currently be added to any hooks except `chronometrist-before-in-functions`.
-
-#### Key-value pairs
-Key-value pairs can be added using the `chronometrist-kv-add` function. It can currently be added to any hooks except `chronometrist-before-in-functions`. Keys can be any string except "name", "tags", "start", or "end". Values can be any readable Lisp values.
-
-### Prompt when exiting Emacs
-If you wish to be prompted when you exit Emacs while tracking time, you can use this -
-
-`(add-hook 'kill-emacs-query-functions 'chronometrist-query-stop)`
 
 ## Roadmap/Ideas
 * Show details for time spent on a project when clicking on a non-zero "time spent" field (in both Chronometrist and Chronometrist-Report buffers).
