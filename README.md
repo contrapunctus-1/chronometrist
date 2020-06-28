@@ -77,6 +77,9 @@ If you wish to be prompted when you exit Emacs while tracking time, you can use 
 
 `(add-hook 'kill-emacs-query-functions 'chronometrist-query-stop)`
 
+### Time goals/targets
+If you wish you could define time goals for some tasks, and have Chronometrist notify you when you're approaching the goal, completing it, or exceeding it, check out the extension [chronometrist-goals.el](https://github.com/contrapunctus-1/chronometrist-goals/).
+
 ## Customization
 See the Customize groups `chronometrist` and `chronometrist-report` for variables intended to be user-customizable.
 
