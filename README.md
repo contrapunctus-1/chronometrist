@@ -122,6 +122,21 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
 (add-hook 'chronometrist-before-out-functions 'my-commit-prompt)
 ```
 
+### Displaying the current time interval in the activity indicator
+```elisp
+(defun my-activity-indicator ()
+  (thread-last (plist-put (chronometrist-last)
+                          :stop (chronometrist-format-time-iso8601))
+    list
+    chronometrist-events->ts-pairs
+    chronometrist-ts-pairs->durations
+    (-reduce #'+)
+    truncate
+    chronometrist-format-time))
+
+(setq chronometrist-activity-indicator 'my-activity-indicator)
+```
+
 ## Roadmap/Ideas
 * Show details for time spent on a project when clicking on a non-zero "time spent" field (in both Chronometrist and Chronometrist-Report buffers).
 
