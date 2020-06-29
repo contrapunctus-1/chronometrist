@@ -11,15 +11,27 @@
 ;;
 ;; For more information, please refer to <https://unlicense.org>
 
-(require 'chronometrist-plist-pp)
+;; (require 'chronometrist-plist-pp)
 (require 'chronometrist-common)
+(require 'chronometrist-sexp)
+(require 'ts)
+
+;; external -
+;; chronometrist-day-start-time (-custom)
+;; chronometrist-midnight-spanning-p (-time)
+;; chronometrist-date-less-p (-time)
 
 ;;; Commentary:
 ;;
 
 ;;; Code:
 
-(defvar chronometrist-events (make-hash-table :test #'equal))
+(defvar chronometrist-events (make-hash-table :test #'equal)
+  "Each key is a date in the form (YEAR MONTH DAY).
+
+Values are lists containing events, where each event is a list in
+the form (:name \"NAME\" :tags (TAGS) <key value pairs> ...
+:start TIME :stop TIME).")
 
 (defun chronometrist-day-start (timestamp)
   "Get start of day (according to `chronometrist-day-start-time') for TIMESTAMP.
@@ -39,43 +51,44 @@ Return value is a time value (see `current-time')."
          (append it timestamp-date-list)
          (apply #'encode-time it))))
 
-(defun chronometrist-file-clean ()
-  "Clean `chronometrist-file' so that events can be processed accurately.
+;; (defun chronometrist-file-clean ()
+;;   "Clean `chronometrist-file' so that events can be processed accurately.
+;; NOTE - currently unused.
 
-This function splits midnight-spanning intervals into two. It
-must be called before running `chronometrist-populate'.
+;; This function splits midnight-spanning intervals into two. It
+;; must be called before running `chronometrist-populate'.
 
-It returns t if the table was modified, else nil."
-  (let ((buffer (find-file-noselect chronometrist-file))
-        modified
-        expr)
-    (with-current-buffer buffer
-      (save-excursion
-        (goto-char (point-min))
-        (while (setq expr (ignore-errors (read (current-buffer))))
-          (when (plist-get expr :stop)
-            (let ((split-time (chronometrist-midnight-spanning-p (plist-get expr :start)
-                                                     (plist-get expr :stop))))
-              (when split-time
-                (let ((first-start  (plist-get (cl-first  split-time) :start))
-                      (first-stop   (plist-get (cl-first  split-time) :stop))
-                      (second-start (plist-get (cl-second split-time) :start))
-                      (second-stop  (plist-get (cl-second split-time) :stop)))
-                  (backward-list 1)
-                  (chronometrist-delete-list)
-                  (-> expr
-                      (plist-put :start first-start)
-                      (plist-put :stop  first-stop)
-                      (chronometrist-plist-pp buffer))
-                  (when (looking-at-p "\n\n")
-                    (delete-char 2))
-                  (-> expr
-                      (plist-put :start second-start)
-                      (plist-put :stop  second-stop)
-                      (chronometrist-plist-pp buffer))
-                  (setq modified t))))))
-        (save-buffer)))
-    modified))
+;; It returns t if the table was modified, else nil."
+;;   (let ((buffer (find-file-noselect chronometrist-file))
+;;         modified
+;;         expr)
+;;     (with-current-buffer buffer
+;;       (save-excursion
+;;         (goto-char (point-min))
+;;         (while (setq expr (ignore-errors (read (current-buffer))))
+;;           (when (plist-get expr :stop)
+;;             (let ((split-time (chronometrist-midnight-spanning-p (plist-get expr :start)
+;;                                                      (plist-get expr :stop))))
+;;               (when split-time
+;;                 (let ((first-start  (plist-get (cl-first  split-time) :start))
+;;                       (first-stop   (plist-get (cl-first  split-time) :stop))
+;;                       (second-start (plist-get (cl-second split-time) :start))
+;;                       (second-stop  (plist-get (cl-second split-time) :stop)))
+;;                   (backward-list 1)
+;;                   (chronometrist-sexp-delete-list)
+;;                   (-> expr
+;;                       (plist-put :start first-start)
+;;                       (plist-put :stop  first-stop)
+;;                       (chronometrist-plist-pp buffer))
+;;                   (when (looking-at-p "\n\n")
+;;                     (delete-char 2))
+;;                   (-> expr
+;;                       (plist-put :start second-start)
+;;                       (plist-put :stop  second-stop)
+;;                       (chronometrist-plist-pp buffer))
+;;                   (setq modified t))))))
+;;         (save-buffer)))
+;;     modified))
 
 (defun chronometrist-events-maybe-split (event)
   "Split EVENT if it spans midnight.
@@ -106,47 +119,13 @@ Return a list of two events if EVENT was split, else nil."
 ;; OPTIMIZE - It should not be necessary to call this unless the file
 ;; has changed. Any other refresh situations should not require this.
 (defun chronometrist-events-populate ()
-  "Clear hash table `chronometrist-events' and populate it.
-
+  "Clear hash table `chronometrist-events' (which see) and populate it.
 The data is acquired from `chronometrist-file'.
-
-Each key is a date in the form (YEAR MONTH DAY).
-
-Values are lists containing events, where each event is a list in
-the form (:name \"NAME\" :tags (TAGS) <key value pairs> ...
-:start TIME :stop TIME).
 
 Return final number of events read from file, or nil if there
 were none."
   (clrhash chronometrist-events)
-  (with-current-buffer (find-file-noselect chronometrist-file)
-    (save-excursion
-      (goto-char (point-min))
-      (let ((index 0)
-            expr
-            pending-expr)
-        (while (or pending-expr
-                   (setq expr (ignore-errors (read (current-buffer)))))
-          ;; find and split midnight-spanning events during deserialization itself
-          (let* ((split-expr (chronometrist-events-maybe-split expr))
-                 (new-value  (cond (pending-expr
-                                    (prog1 pending-expr
-                                      (setq pending-expr nil)))
-                                   (split-expr
-                                    (setq pending-expr (cl-second split-expr))
-                                    (cl-first split-expr))
-                                   (t expr)))
-                 (new-value-date (->> (plist-get new-value :start)
-                                      (s-left 10)))
-                 (existing-value (gethash new-value-date chronometrist-events)))
-            (unless pending-expr (cl-incf index))
-            (puthash new-value-date
-                     (if existing-value
-                         (append existing-value
-                                 (list new-value))
-                       (list new-value))
-                     chronometrist-events)))
-        (unless (zerop index) index)))))
+  (chronometrist-sexp-events-populate))
 
 (defun chronometrist-tasks-from-table ()
   "Return a list of task names from `chronometrist-events'."
@@ -159,18 +138,38 @@ were none."
     (cl-remove-duplicates (sort acc #'string-lessp)
                           :test #'equal)))
 
+(defun chronometrist-events-add (plist)
+  "Add new PLIST at the end of `chronometrist-events'."
+  (let* ((date-today   (format-time-string "%Y-%m-%d"))
+         (events-today (gethash date-today chronometrist-events)))
+    (--> (list plist)
+         (append events-today it)
+         (puthash date-today it chronometrist-events))))
+
+(defun chronometrist-events-replace-last (plist)
+  "Replace the last plist in `chronometrist-events' with PLIST."
+  (let* ((date-today   (format-time-string "%Y-%m-%d"))
+         (events-today (gethash date-today chronometrist-events)))
+    (--> (reverse events-today)
+         (cdr it)
+         (append (list plist) it)
+         (reverse it)
+         (puthash date-today it chronometrist-events))))
+
 ;; to be replaced by plist-query
-(defun chronometrist-events-subset (start-date end-date)
+(defun chronometrist-events-subset (start end)
   "Return a subset of `chronometrist-events'.
 
-The subset will contain values between START-DATE and
-END-DATE (both inclusive).
+The subset will contain values between dates START and END (both
+inclusive).
 
-START-DATE and END-DATE must be dates in the form '(YEAR MONTH DAY)."
-  (let ((subset (make-hash-table :test #'equal)))
+START and END must be ts structs (see `ts.el'). They will be
+treated as though their time is 00:00:00."
+  (let ((subset (make-hash-table :test #'equal))
+        (start  (chronometrist-date start))
+        (end    (chronometrist-date end)))
     (maphash (lambda (key value)
-               (when (and (not (chronometrist-date-less-p key start-date))
-                          (not (chronometrist-date-less-p end-date key)))
+               (when (ts-in start end (chronometrist-iso-date->ts key))
                  (puthash key value subset)))
              chronometrist-events)
     subset))

@@ -1,5 +1,5 @@
 (require 'buttercup)
-(require 'chronometrist-sexp)
+(require 'chronometrist-key-values)
 
 (describe
  "chronometrist-plist-remove"
@@ -33,6 +33,22 @@
      (expect (chronometrist-plist-remove '(:a 1 :b 2 :c 3 :d 4)
                             :d :a)
              :to-equal '(:b 2 :c 3))))
+
+(describe
+ "chronometrist-key-history"
+ (before-all
+  (setq chronometrist-file "tests/test.sexp")
+  (chronometrist-events-populate)
+  (setq chronometrist-task-list (chronometrist-tasks-from-table))
+  (chronometrist-key-history-populate))
+ (it "should have 6 keys"
+     (expect (hash-table-count chronometrist-key-history)
+             :to-be 6))
+ (it "should store multiple values"
+     (expect (length (gethash "Programming" chronometrist-key-history))
+             :to-be 3)
+     (expect (length (gethash "Arrangement/new edition" chronometrist-key-history))
+             :to-be 2)))
 
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"

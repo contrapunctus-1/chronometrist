@@ -12,13 +12,11 @@
 (require 'subr-x)
 
 (require 'chronometrist-common)
-(require 'chronometrist-timer)
 (require 'chronometrist-custom)
-(require 'chronometrist-report)
-(require 'chronometrist-statistics)
-(require 'chronometrist-sexp)
+(require 'chronometrist-key-values)
 (require 'chronometrist-queries)
 (require 'chronometrist-migrate)
+(require 'chronometrist-sexp)
 
 ;; This is free and unencumbered software released into the public domain.
 ;;
@@ -62,14 +60,42 @@
 ;; ## VARIABLES ##
 ;;; Code:
 
+;; `chronometrist-goals' is an optional extension. But even these don't make the
+;; warnings go away :\
+(defvar chronometrist-goals-list)
+(declare-function 'chronometrist-get-goal "chronometrist-goals")
+
+(autoload 'chronometrist-maybe-start-timer "chronometrist-timer" nil t)
+(autoload 'chronometrist-report "chronometrist-report" nil t)
+(autoload 'chronometrist-statistics "chronometrist-statistics" nil t)
+
 (defvar chronometrist--task-history nil)
 (defvar chronometrist--point nil)
+(defvar chronometrist--inhibit-read-p nil)
 (defvar chronometrist-mode-map)
 
 ;; ## FUNCTIONS ##
+(defun chronometrist-open-log (&optional _button)
+  "Open `chronometrist-file' in another window.
+
+Argument _BUTTON is for the purpose of using this command as a
+button action."
+  (interactive)
+  (chronometrist-sexp-open-log))
+
+(defun chronometrist-common-create-file ()
+  "Create `chronometrist-file' if it doesn't already exist."
+  (chronometrist-sexp-create-file))
+
 (defun chronometrist-task-active? (task)
   "Return t if TASK is currently clocked in, else nil."
   (equal (chronometrist-current-task) task))
+
+(defun chronometrist-use-goals? ()
+  "Return t if `chronometrist-goals' is available and
+`chronometrist-goals-list' is bound."
+  (and (featurep 'chronometrist-goals)
+       (bound-and-true-p chronometrist-goals-list)))
 
 (defun chronometrist-activity-indicator ()
   "Return a string to indicate that a task is active.
@@ -88,16 +114,26 @@ See custom variable `chronometrist-activity-indicator'."
   (->> chronometrist-task-list
        (-sort #'string-lessp)
        (--map-indexed
-        (list it
-              (vector (number-to-string (1+ it-index))
-                      (list it
-                            'action 'chronometrist-toggle-task-button
-                            'follow-link t)
-                      (-> (chronometrist-task-time-one-day it)
-                          (chronometrist-format-time))
-                      (if (chronometrist-task-active? it)
-                          (chronometrist-activity-indicator)
-                        ""))))))
+        (let* ((task        it)
+               (index       (number-to-string (1+ it-index)))
+               (task-button (list task
+                                  'action 'chronometrist-toggle-task-button
+                                  'follow-link t))
+               (task-time   (chronometrist-format-time (chronometrist-task-time-one-day task)))
+               (indicator   (if (chronometrist-task-active? task)
+                                (chronometrist-activity-indicator)
+                              ""))
+               (use-goals    (chronometrist-use-goals?))
+               (target      (when use-goals
+                              ;; this can return nil if there is no goal for a task
+                              (chronometrist-get-goal task)))
+               (target-str  (if target
+                                (format "% 4d" target)
+                              "")))
+          (list task
+                (vconcat (vector index task-button task-time indicator)
+                         (when use-goals
+                           (vector target-str))))))))
 
 (defun chronometrist-task-at-point ()
   "Return the task at point in the `chronometrist' buffer, or nil if there is no task at point."
@@ -115,8 +151,7 @@ See custom variable `chronometrist-activity-indicator'."
 (defun chronometrist-goto-last-task ()
   "In the `chronometrist' buffer, move point to the line containing the last active task."
   (goto-char (point-min))
-  ;; FIXME
-  ;; (re-search-forward timeclock-last-project nil t)
+  (re-search-forward (plist-get (chronometrist-last) :name) nil t)
   (beginning-of-line))
 
 (defun chronometrist-print-keybind (command &optional description firstonly)
@@ -138,45 +173,24 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
           (w "\n    ")
           ;; (keybind-start-new (chronometrist-format-keybinds 'chronometrist-add-new-task
           ;;                                      chronometrist-mode-map))
-          (keybind-toggle    (chronometrist-format-keybinds 'chronometrist-toggle-task
-                                               chronometrist-mode-map
-                                               t)))
+          (keybind-toggle    (chronometrist-format-keybinds 'chronometrist-toggle-task chronometrist-mode-map t)))
       (goto-char (point-max))
       (-->
        (chronometrist-active-time-one-day)
        (chronometrist-format-time it)
        (format "%s%- 26s%s" w "Total" it)
        (insert it))
-
       (insert "\n")
-      (insert w (format "% 17s" "Keys")
-              w (format "% 17s" "----"))
-
+      (insert w (format "% 17s" "Keys") w (format "% 17s" "----"))
       (chronometrist-print-keybind 'chronometrist-add-new-task)
-      (insert-text-button "start a new task"
-                          'action #'chronometrist-add-new-task-button
-                          'follow-link t)
-
-      (chronometrist-print-keybind 'chronometrist-toggle-task
-                      "toggle task at point")
-
-      (chronometrist-print-keybind 'chronometrist-toggle-task-no-hooks
-                      "toggle without running hooks")
-
-      (insert "\n " (format "%s %s - %s"
-                            "<numeric argument N>"
-                            keybind-toggle
-                            "toggle <N>th task"))
-
+      (insert-text-button "start a new task" 'action #'chronometrist-add-new-task-button 'follow-link t)
+      (chronometrist-print-keybind 'chronometrist-toggle-task "toggle task at point")
+      (chronometrist-print-keybind 'chronometrist-toggle-task-no-hooks "toggle without running hooks")
+      (insert "\n " (format "%s %s - %s" "<numeric argument N>" keybind-toggle "toggle <N>th task"))
       (chronometrist-print-keybind 'chronometrist-report)
-      (insert-text-button "see weekly report"
-                          'action #'chronometrist-report
-                          'follow-link t)
-
-      (chronometrist-print-keybind 'chronometrist-open-file)
-      (insert-text-button "open log file"
-                          'action #'chronometrist-open-file
-                          'follow-link t)
+      (insert-text-button "see weekly report" 'action #'chronometrist-report 'follow-link t)
+      (chronometrist-print-keybind 'chronometrist-open-log)
+      (insert-text-button "view/edit log file" 'action #'chronometrist-open-log 'follow-link t)
       (insert "\n"))))
 
 (defun chronometrist-goto-nth-task (n)
@@ -207,21 +221,42 @@ value of `revert-buffer-function'."
   "Re-read `chronometrist-file' and refresh the `chronometrist' buffer.
 Argument _FS-EVENT is ignored."
   ;; (chronometrist-file-clean)
-  (chronometrist-events-populate)
-  (setq chronometrist-task-list (chronometrist-tasks-from-table))
-  (chronometrist-tags-history-populate)
+  (run-hooks 'chronometrist-file-change-hook)
+  ;; REVIEW - can we move most/all of this to the `chronometrist-file-change-hook'?
+  (if chronometrist--inhibit-read-p
+      (setq chronometrist--inhibit-read-p nil)
+    (chronometrist-events-populate)
+    (setq chronometrist-task-list (chronometrist-tasks-from-table))
+    (chronometrist-tags-history-populate))
   (chronometrist-key-history-populate)
   (chronometrist-value-history-populate)
   (chronometrist-refresh))
 
 (defun chronometrist-query-stop ()
   "Ask the user if they would like to clock out."
-  (interactive)
   (let ((task (chronometrist-current-task)))
     (and task
          (yes-or-no-p (concat "Stop tracking time for " task "? "))
          (chronometrist-out))
     t))
+
+(defun chronometrist-in (task &optional _prefix)
+  "Clock in to TASK; record current time in `chronometrist-file'.
+TASK is the name of the task, a string.
+
+PREFIX is ignored."
+  (interactive "P")
+  (let ((plist `(:name ,task :start ,(chronometrist-format-time-iso8601))))
+    (chronometrist-sexp-new plist)
+    (chronometrist-refresh)))
+
+(defun chronometrist-out (&optional _prefix)
+  "Record current moment as stop time to last s-exp in `chronometrist-file'.
+PREFIX is ignored."
+  (interactive "P")
+  (let ((plist (plist-put (chronometrist-last) :stop
+                          (chronometrist-format-time-iso8601))))
+    (chronometrist-sexp-replace-last plist)))
 
 ;; ## HOOKS ##
 
@@ -256,6 +291,9 @@ return a non-nil value.")
 Each function in this hook must accept a single argument, which
 is the name of the task to be clocked out of.")
 
+(defvar chronometrist-file-change-hook nil
+  "Functions to be run after `chronometrist-file' is changed on disk.")
+
 (defun chronometrist-run-functions-and-clock-in (task)
   "Run hooks and clock in to TASK."
   (run-hook-with-args 'chronometrist-before-in-functions task)
@@ -273,7 +311,7 @@ is the name of the task to be clocked out of.")
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "RET")   #'chronometrist-toggle-task)
     (define-key map (kbd "M-RET") #'chronometrist-toggle-task-no-hooks)
-    (define-key map (kbd "l")     #'chronometrist-open-file)
+    (define-key map (kbd "l")     #'chronometrist-open-log)
     (define-key map (kbd "r")     #'chronometrist-report)
     (define-key map [mouse-1]     #'chronometrist-toggle-task)
     (define-key map [mouse-3]     #'chronometrist-toggle-task-no-hooks)
@@ -284,10 +322,13 @@ is the name of the task to be clocked out of.")
 (define-derived-mode chronometrist-mode tabulated-list-mode "Chronometrist"
   "Major mode for `chronometrist'."
   (make-local-variable 'tabulated-list-format)
-  (setq tabulated-list-format [("#"       3  t)
-                               ("Task" 25 t)
-                               ("Time"    10 t)
-                               ("Active"  3  t)])
+  (setq tabulated-list-format
+        (vconcat [("#"       3  t)
+                  ("Task"    25 t)
+                  ("Time"    10 t)
+                  ("Active"  10 t)]
+                 (when (chronometrist-use-goals?)
+                   [("Target" 3 t)])))
   (make-local-variable 'tabulated-list-entries)
   (setq tabulated-list-entries 'chronometrist-entries)
   (make-local-variable 'tabulated-list-sort-key)
@@ -303,6 +344,8 @@ is the name of the task to be clocked out of.")
 
 Argument _BUTTON is for the purpose of using this as a button
 action, and is ignored."
+  (when current-prefix-arg
+    (chronometrist-goto-nth-task (prefix-numeric-value current-prefix-arg)))
   (let ((current  (chronometrist-current-task))
         (at-point (chronometrist-task-at-point)))
     ;; clocked in + point on current    = clock out
@@ -391,7 +434,8 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
   (interactive "P")
   (chronometrist-migrate-check)
   (let ((buffer (get-buffer-create chronometrist-buffer-name))
-        (w      (get-buffer-window chronometrist-buffer-name t)))
+        (w      (save-excursion
+                  (get-buffer-window chronometrist-buffer-name t))))
     (cond
      (arg (cl-case arg
             (1 (chronometrist-report))
@@ -403,7 +447,7 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
           (cond ((or (not (file-exists-p chronometrist-file))
                      (chronometrist-common-file-empty-p chronometrist-file))
                  ;; first run
-                 (chronometrist-common-create-chronometrist-file)
+                 (chronometrist-common-create-file)
                  (let ((inhibit-read-only t))
                    (chronometrist-common-clear-buffer buffer)
                    (insert "Welcome to Chronometrist! Hit RET to ")

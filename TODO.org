@@ -37,10 +37,6 @@
    5. [ ] Expandable items - show intervals for task today
       * [ ] Switch between intervals and tag-combination breakdown
    6. Revisit 'no reason' commands - maybe we should ask for tags and key-values with the regular commands, and skip them with the 'no reason' variants?
-   7. Time targets/goals
-      * User defines targets for tasks
-      * Chronometrist displays targets column
-      * Remind user when about to approach target (e.g. -5 minutes)
 *** Key-values [66%]
     1. [X] bug - value-history appears in chronological rather than reverse chronological order
     2. [X] generate history hash table from chronometrist-file.
@@ -81,12 +77,14 @@
      Observations
      * This means you can't enter symbols via prompt. Can be added if the demand is there...
      * This also means you can't have multiple atom values for a keyword...but that's irrelevant, because plists can't have multiple values anyway. :)
+
 *** Tags [100%]
     1. [X] generate history from chronometrist-file
        * [X] narrow it down to the :name
     2. [X] write tags to last expression
     3. [X] show task name in prompt
     4. [X] bug - tags being added twice
+
 ** UX
    1. don't suggest nil when asking for first project on first run
    2. when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
@@ -95,34 +93,51 @@
    5. mouse-3 should clock-out without asking for reason.
    6. Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked /before/ clocking out, which adds time to the project.
    7. Allow calling chronometrist-in/out from anywhere-within-Emacs (a la timeclock) as well as from the chronometrist buffer.
-*** Optimization
-**** Ideas to make -refresh-file faster
-     1. Support multiple files, so we read and process lesser data when one of them changes.
-     2. Make file writing async
-     3. Don't refresh from file when clocking in.
-     4. Only write to the file when Emacs is idle or being killed, and store data in memory (in the events hash table) in the meantime
-     5. What if commands both write to the file /and/ add to the hash table, so we don't have to re-read the file and re-populate the table for commands? The expensive reading+parsing could be avoided for commands, and only take place for the user changing the file.
-        * jonasw - store length and hash of previous file, see if the new file has the same hash until old-length bytes.
-          * Rather than storing and hashing the full length, we could do it until (before) the last s-expression (or last N s-expressions?). That way, we know if the last expression (or last N expressions) have changed.
-            * Or even the first expression of the current date. That way, we just re-read the events for today. Because chronometrist-events uses dates as keys, it's easy to work on the basis of dates.
 
-** Code [25%]
-   1. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
-   2. [X] Use buttercup instead of ert
-   3. See if it is possible to store buttons in a variable, so *-print-non-tabular functions can be made shorter and less imperative. (see ~make-text-button~)
-   4. Merge all event-querying functions so that they always operate on an entire hash table (so no 'day' variants),
-   5. [ ] Use ~substitute-command-keys~ instead of ~chronometrist-format-keybinds~
-   6. [ ] See if using iteration constructs (especially ~loop~) can lead to nicer code than nested maps
+** Code [28%]
+   1. [ ] Write tests (in buttercup)
+   2. [ ] Rewrite using cl-loop
+      1. [ ] chronometrist-statistics-count-active-days
+      2. [ ] chronometrist-statistics-count-average-time-spent
+   3. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
+   4. See if it is possible to store buttons in a variable, so *-print-non-tabular functions can be made shorter and less imperative. (see ~make-text-button~)
+   5. Merge all event-querying functions so that they always operate on an entire hash table (so no 'day' variants),
+   6. [ ] Use ~substitute-command-keys~ instead of ~chronometrist-format-keybinds~
    7. [ ] recreate -events-clean, remove splitting code from -events-populate
       * How should we deal with the active event?
         * Earlier, we would add a closing entry and update that on a timer.
    8. [ ] Make docstrings consistent - describe inputs and then the return value, in that order.
+   9. [ ] ~chronometrist-seconds->alert-string~ can probably be replaced by ~org-duration-from-minutes~ - read the format for FMT
+   10. [X] Decouple storage-related code from rest of the program.
+   11. [X] See if using iteration constructs (especially ~loop~) can lead to nicer code than nested maps
    +1. use variables instead of hardcoded numbers to determine spacing+
       * Don't see the benefit
    +6. Timeclock already _has_ hooks! :| Why do we re-implement them?+
       - I don't know of a way to know the project being clocked into using timeclock hooks.
       - With v0.2.0 Chronometrist also has a before-project-stop-functions, which runs before the project is stopped, and can control whether the project actually is stopped.
 
+* Optimization
+** Cache
+   + Lessons from the parsimonious-reading branch - iterating =read= over the whole file is fast; splitting the events is not.
+   + Things we need to read the whole file for - task list, tag/key/value history.
+   + Fill =chronometrist-events= only as much as the buffer needing split events requires. e.g. for =chronometrist=, just a day; for =chronometrist-report=, a week; etc.
+   + Anything requiring split events will first look in =chronometrist-events=, and if not found, will read from the file and update =chronometrist-events=.
+   + When the file changes, use the file byte length and hash strategy described below to know whether to keep the cache.
+   + Save cache to a file, so that event splitting is avoided by reading from that.
+*** Thoughts
+    + =chronometrist-key-value-cache= would basically be the entire file, if =chronometrist-history-suggestion-limit= is nil.
+    + history generation for tags/keys/values - which involve the most parsing - doesn't actually need the events to be split at midnights. Why not make that a keyword argument to =chronometrist-sexp-read=, so it's faster for that?
+** Ideas to make -refresh-file faster
+   1. Support multiple files, so we read and process lesser data when one of them changes.
+   2. Make file writing async
+   3. Don't refresh from file when clocking in.
+   4. Only write to the file when Emacs is idle or being killed, and store data in memory (in the events hash table) in the meantime
+   5. What if commands both write to the file /and/ add to the hash table, so we don't have to re-read the file and re-populate the table for commands? The expensive reading+parsing could be avoided for commands, and only take place for the user changing the file.
+      * [ ] jonasw - store length and hash of previous file, see if the new file has the same hash until old-length bytes.
+        * Rather than storing and hashing the full length, we could do it until (before) the last s-expression (or last N s-expressions?). That way, we know if the last expression (or last N expressions) have changed.
+          * Or even the first expression of the current date. That way, we just re-read the events for today. Because chronometrist-events uses dates as keys, it's easy to work on the basis of dates.
+   6. [ ] Don't generate tag/keyword/value history from the entire log, just from the last N days (where N is user-customizable).
+   7. [ ] Just why are we reading the whole file? ~chronometrist~ should not read more than a day; ~chronometrist-report~ should not read more than a week at a time, and so on. Make a branch which works on this logic, see if it is faster.
 * chronometrist-report
 ** Features
    1. [ ] Expandable items - show tag-combination-based breakdown
@@ -136,3 +151,23 @@
 
 * Documentation [0%]
   1. [ ] Make Texinfo documentation
+* Time targets/goals [50%]
+  1. [X] User defines targets for tasks
+  2. [X] Chronometrist displays targets column
+  3. [-] Notify user when
+     + approaching target (e.g. -5 minutes)
+     + target completed
+     + exceeding target (target+5)
+     + [X] More flexible way to define alerts.
+     + [ ] If time goals are defined and there is a task without a goal, just remind the user every 15 minutes of the time they've spent on it
+       - [ ] Needs an even more flexible way to define alerts...
+     + [-] Handle manual file changes; on file change -
+       - [ ] clearing existing notifications
+       - [X] if last expression has a :stop value, stop alert timers
+     + [ ] Also take time spent so far into account (e.g. don't start approach or complete alerts again if time has been exceeded and we're starting the task again despite that)
+  4. [ ] Colorize times in Chronometrist buffer
+     - untouched project with target defined - red
+     - target ±5 minutes - green
+     - target*2 and above - red
+* Backend abstraction [0%]
+  1. [ ] Add checks to ~chronometrist-sexp-reindent-buffer~ to ensure it only runs on an s-expression buffer

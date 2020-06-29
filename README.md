@@ -181,7 +181,7 @@ Chronometrist is released under your choice of [Unlicense](https://unlicense.org
 (See files [LICENSE](LICENSE) and [LICENSE.1](LICENSE.1)).
 
 ## Thanks
-wasamasa, bpalmer and #emacs for all their help and support
+wasamasa, bpalmer, aidalgol, and the rest of #emacs for their tireless help and support
 
 jwiegley for timeclock.el, which we used as a backend in earlier versions
 

@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] 2020-06-30
+### Added
+* Support for time goals via optional package `chronometrist-targets`.
+* New hook - `chronometrist-file-change-hook`
+### Changed
+* Use [ts.el](https://github.com/alphapapa/ts.el) structs to represent date-time, wherever possible. (`chronometrist-events` and `chronometrist-file` being notable exceptions)
+### Fixed
+* Prefix arguments now work with the point on a button, too.
+* Bug with missing entries in `chronometrist-key-history`
+* Operations for adding a new s-expression and replacing the last s-expression have been optimized. Notably, commands for clocking in/out are now significantly faster.
+
 ## [0.4.4]
 ### Fixed
 * Error when adding a task for the first time.

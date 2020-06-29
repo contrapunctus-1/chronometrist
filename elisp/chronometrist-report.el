@@ -57,20 +57,15 @@ information (see (info \"(elisp)Time Conversion\"))."
 
 (defun chronometrist-report-date->dates-in-week (first-date-in-week)
   "Return a list of dates in a week, starting from FIRST-DATE-IN-WEEK.
-Each day is a time value (see (info \"(elisp)Time of Day\")).
+Each date is a ts struct (see `ts.el').
 
-FIRST-DATE-IN-WEEK must be a time value representing the first date."
-  (--> '(0 1 2 3 4 5 6)
-       ;; 1 day = 86400 seconds
-       (--map (* 86400 it) it)
-       (--map (list
-               (car first-date-in-week)
-               (+ (cadr first-date-in-week) it))
-              it)))
+FIRST-DATE-IN-WEEK must be a ts struct representing the first date."
+  (cl-loop for i from 0 to 6 collect
+           (ts-adjust 'day i first-date-in-week)))
 
 (defun chronometrist-report-date->week-dates ()
   "Return dates in week as a list.
-Each element is calendrical information (see (info \"(elisp)Time Conversion\")).
+Each element is a ts struct (see `ts.el').
 
 The first date is the first occurrence of
 `chronometrist-report-week-start-day' before the date specified in
@@ -81,32 +76,21 @@ The first date is the first occurrence of
 
 (defun chronometrist-report-entries ()
   "Create entries to be displayed in the `chronometrist-report' buffer."
-  (let* ((week-dates        (chronometrist-report-date->week-dates))) ;; uses today if chronometrist-report--ui-date is nil
+  (let* ((week-dates (chronometrist-report-date->week-dates))) ;; uses today if chronometrist-report--ui-date is nil
     (setq chronometrist-report--ui-week-dates week-dates)
-    (mapcar (lambda (task)
-              (let ((task-daily-time-list
-                     (--map (chronometrist-task-time-one-day task
-                                                 (chronometrist-date it))
-                            week-dates)))
-                (list task
-                      (vconcat
-                       (vector task)
-                       (->> task-daily-time-list
-                            (mapcar #'chronometrist-format-time)
-                            (apply #'vector))
-                       (->> task-daily-time-list
-                            (-reduce #'chronometrist-time-add)
-                            (chronometrist-format-time)
-                            (vector))))))
-            chronometrist-task-list)))
-
-(defun chronometrist-report-format-date (format-string time-date)
-  "Extract date from TIME-DATE and format it according to FORMAT-STRING."
-  (->> time-date
-       (-take 6)
-       (-drop 3)
-       (reverse)
-       (apply #'format format-string)))
+    (cl-loop for task in chronometrist-task-list collect
+             (let* ((durations        (--map (chronometrist-task-time-one-day task (chronometrist-date it))
+                                             week-dates))
+                    (duration-strings (mapcar #'chronometrist-format-time
+                                              durations))
+                    (total-duration   (->> (-reduce #'+ durations)
+                                           (chronometrist-format-time)
+                                           (vector))))
+               (list task
+                     (vconcat
+                      (vector task)
+                      duration-strings ;; vconcat converts lists to vectors
+                      total-duration))))))
 
 (defun chronometrist-report-print-keybind (command &optional description firstonly)
   "Insert one or more keybindings for COMMAND into the current buffer.
@@ -122,50 +106,39 @@ If FIRSTONLY is non-nil, insert only the first keybinding found."
 (defun chronometrist-report-print-non-tabular ()
   "Print the non-tabular part of the buffer in `chronometrist-report'."
   (let ((inhibit-read-only t)
-        (w "\n    "))
+        (w                 "\n    ")
+        (total-time-daily  (->> chronometrist-report--ui-week-dates
+                                (mapcar #'chronometrist-date)
+                                (mapcar #'chronometrist-active-time-one-day))))
     (goto-char (point-min))
     (insert "                         ")
-    (insert (mapconcat #'chronometrist-date
+    (insert (mapconcat (lambda (ts)
+                         (ts-format "%F" ts))
                        (chronometrist-report-date->week-dates)
                        " "))
     (insert "\n")
     (goto-char (point-max))
     (insert w (format "%- 21s" "Total"))
-    (let ((total-time-daily (->> chronometrist-report--ui-week-dates
-                                 (mapcar #'chronometrist-date)
-                                 (mapcar #'chronometrist-active-time-one-day))))
-      (->> total-time-daily
-           (mapcar #'chronometrist-format-time)
-           (--map (format "% 9s  " it))
-           (apply #'insert))
-      (->> total-time-daily
-           (-reduce #'chronometrist-time-add)
-           (chronometrist-format-time)
-           (format "% 13s")
-           (insert)))
-
+    (->> total-time-daily
+         (mapcar #'chronometrist-format-time)
+         (--map (format "% 9s  " it))
+         (apply #'insert))
+    (->> total-time-daily
+         (-reduce #'+)
+         (chronometrist-format-time)
+         (format "% 13s")
+         (insert))
     (insert "\n" w)
-    (insert-text-button "<<"
-                        'action #'chronometrist-report-previous-week
-                        'follow-link t)
+    (insert-text-button "<<" 'action #'chronometrist-report-previous-week 'follow-link t)
     (insert (format "% 4s" " "))
-    (insert-text-button ">>"
-                        'action #'chronometrist-report-next-week
-                        'follow-link t)
-
+    (insert-text-button ">>" 'action #'chronometrist-report-next-week 'follow-link t)
     (insert "\n")
     (chronometrist-report-print-keybind 'chronometrist-report-previous-week)
-    (insert-text-button "previous week"
-                        'action #'chronometrist-report-previous-week
-                        'follow-link t)
+    (insert-text-button "previous week" 'action #'chronometrist-report-previous-week 'follow-link t)
     (chronometrist-report-print-keybind 'chronometrist-report-next-week)
-    (insert-text-button "next week"
-                        'action #'chronometrist-report-next-week
-                        'follow-link t)
-    (chronometrist-report-print-keybind 'chronometrist-open-file)
-    (insert-text-button "open log file"
-                        'action #'chronometrist-open-file
-                        'follow-link t)))
+    (insert-text-button "next week" 'action #'chronometrist-report-next-week 'follow-link t)
+    (chronometrist-report-print-keybind 'chronometrist-open-log)
+    (insert-text-button "open log file" 'action #'chronometrist-open-log 'follow-link t)))
 
 (defun chronometrist-report-refresh (&optional _ignore-auto _noconfirm)
   "Refresh the `chronometrist-report' buffer, without re-reading `chronometrist-file'."
@@ -189,7 +162,7 @@ Argument _FS-EVENT is ignored."
 
 (defvar chronometrist-report-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "l") #'chronometrist-open-file)
+    (define-key map (kbd "l") #'chronometrist-open-log)
     (define-key map (kbd "b") #'chronometrist-report-previous-week)
     (define-key map (kbd "f") #'chronometrist-report-next-week)
     ;; Works when number of tasks < screen length; after that, you
@@ -255,7 +228,7 @@ current week. Otherwise, display data from the week specified by
             (t (delete-other-windows)
                (unless keep-date
                  (setq chronometrist-report--ui-date nil))
-               (chronometrist-common-create-chronometrist-file)
+               (chronometrist-common-create-file)
                (chronometrist-report-mode)
                (switch-to-buffer buffer)
                (chronometrist-report-refresh-file nil)
@@ -269,12 +242,10 @@ With prefix argument ARG, move back ARG weeks."
                  (abs arg)
                1)))
     (setq chronometrist-report--ui-date
-          (thread-first (if chronometrist-report--ui-date
-                            (parse-iso8601-time-string
-                             (chronometrist-iso-date->timestamp chronometrist-report--ui-date))
-                          (current-time))
-            (time-subtract `(0 ,(* 7 arg 86400)))
-            (chronometrist-date))))
+          (ts-adjust 'day (- (* arg 7))
+                     (if chronometrist-report--ui-date
+                         chronometrist-report--ui-date
+                       (ts-now)))))
   (setq chronometrist-report--point (point))
   (kill-buffer)
   (chronometrist-report t))
@@ -287,12 +258,10 @@ With prefix argument ARG, move forward ARG weeks."
                  (abs arg)
                1)))
     (setq chronometrist-report--ui-date
-          (thread-first (if chronometrist-report--ui-date
-                            (parse-iso8601-time-string
-                             (chronometrist-iso-date->timestamp chronometrist-report--ui-date))
-                          (current-time))
-            (time-add `(0 ,(* 7 arg 86400)))
-            (chronometrist-date)))
+          (ts-adjust 'day (* arg 7)
+                     (if chronometrist-report--ui-date
+                         chronometrist-report--ui-date
+                       (ts-now))))
     (setq chronometrist-report--point (point))
     (kill-buffer)
     (chronometrist-report t)))
