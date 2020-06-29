@@ -90,19 +90,22 @@ Chronometrist currently has four hooks -
 
 As their names suggest, these are 'abnormal' hooks, i.e. the functions they contain must accept arguments. In this case, each function must accept exactly one argument, which is the project which is being started or stopped.
 
+### Opening certain files when you start a task
 An idea from the author's own init -
 
 ```elisp
 (defun my-start-project (project)
   (pcase project
-    ...
+    ;; ...
     ("Guitar"
      (find-file-other-window "~/repertoire.org"))
-    ...))
+    ;; ...
+    ))
 
 (add-hook 'chronometrist-before-in-functions 'my-start-project)
 ```
 
+### Reminding you to commit your changes
 Another one, prompting the user if they have uncommitted changes in a git repository (assuming they use [Magit](https://magit.vc/)) -
 
 ```elisp
@@ -127,7 +130,7 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
 2. Some way to update buffers every second without making Emacs unusable. (impossible?)
 3. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
 
-### Chronometrist-report
+### chronometrist-report
 1. Show week counter and max weeks; don't scroll past first/last weeks
 2. Highlight column of current day
 3. Add support for other locale weeks/weekday names
