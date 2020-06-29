@@ -41,7 +41,7 @@ All of these commands will kill their buffer when run again with the buffer visi
 ### chronometrist
 Run `M-x chronometrist` to see your projects, the time you spent on them today, which one is active, and the total time clocked today.
 
-Hit `RET` (`chronometrist-toggle-task`) on a project to start tracking time for it. If it's already clocked in, it will be clocked out. This command runs some [hooks](#Hooks), which are useful for a wide range of functionality (see [Attaching key values to time intervals](#Attaching key values to time intervals (experimental))). In some cases, you may want to skip running the hooks - use `M-RET` (`chronometrist-toggle-task-no-hooks`) to do that.
+Hit `RET` (`chronometrist-toggle-task`) on a project to start tracking time for it. If it's already clocked in, it will be clocked out. This command runs some [hooks](#Hooks), which are useful for a wide range of functionality (see [Adding more information](#adding-more-information-experimental) below). In some cases, you may want to skip running the hooks - use `M-RET` (`chronometrist-toggle-task-no-hooks`) to do that.
 
 You can also hit `<numeric prefix> RET` anywhere in the buffer to toggle the corresponding project, e.g. `C-1 RET` will toggle the project with index 1.
 
@@ -61,7 +61,7 @@ Run `M-x chronometrist-statistics` (or `chronometrist` with a prefix argument of
 
 Press `b` to look at past time ranges, and `f` for future ones.
 
-### Attaching tags and key values (experimental)
+### Attaching tags and key values
 Part of the reason Chronometrist stores time intervals as property lists is to allow you to add tags and arbitrary key-values to them.
 
 #### Tags
