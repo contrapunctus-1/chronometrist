@@ -149,12 +149,16 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
 ## Contributions and contact
 Feedback and MRs very welcome. 🙂 [doc/hacking.md](doc/hacking.md) contains an introduction to the codebase.
 
-Contact the creator and other Emacs users in the Emacs room on the Jabber network - [xmpp:emacs@salas.suchat.org?join](https://conversations.im/j/emacs@salas.suchat.org) ([web chat](https://inverse.chat/#converse/room?jid=emacs@salas.suchat.org))
+If you use Chronometrist, I'd love to hear your experiences! Get in touch with the author and other Emacs users in the Emacs channel on the Jabber network - [xmpp:emacs@salas.suchat.org?join](https://conversations.im/j/emacs@salas.suchat.org) ([web chat](https://inverse.chat/#converse/room?jid=emacs@salas.suchat.org))
 
 (For help in getting started with Jabber, [click here](https://xmpp.org/getting-started/))
 
 ## License
-Chronometrist is released under your choice of [Unlicense](https://unlicense.org/) and the [WTFPL](http://www.wtfpl.net/).
+I dream of a world where all software is liberated - transparent, trustable, and accessible for anyone to use or improve. But I don't want to use demands or threats (e.g. legal conditions) to get there.
+
+I'd rather make a request - please do everything you can to help that dream come true.
+
+Chronometrist is released under your choice of [Unlicense](https://unlicense.org/) or the [WTFPL](http://www.wtfpl.net/).
 
 (See files [LICENSE](LICENSE) and [LICENSE.1](LICENSE.1)).
 
