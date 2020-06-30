@@ -6,10 +6,11 @@
  "0.4.4"
  "A time tracker for Emacs with a nice interface")
 
-(depends-on "dash" "2.16.0")
 (depends-on "cl")
-(depends-on "s" "1.12.0")
-(depends-on "ts" "0.2")
+(depends-on "dash" "2.16.0")
+(depends-on "seq"  "2.20")
+(depends-on "s"    "1.12.0")
+(depends-on "ts"   "0.2")
 
 (files "elisp/*.el")
 
