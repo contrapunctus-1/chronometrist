@@ -172,9 +172,9 @@ If you use Chronometrist, I'd love to hear your experiences! Get in touch with t
 (For help in getting started with Jabber, [click here](https://xmpp.org/getting-started/))
 
 ## License
-I dream of a world where all software is liberated - transparent, trustable, and accessible for anyone to use or improve. But I don't want to use demands or threats (e.g. legal conditions) to get there.
+I dream of a world where all software is liberated - transparent, trustable, and accessible for anyone to use or improve. But I don't want to make demands or threats (e.g. via legal conditions) to get there.
 
-I'd rather make a request - please do everything you can to help that dream come true.
+I'd rather make a request - please do everything you can to help that dream come true. Please Unlicense as much software as you can.
 
 Chronometrist is released under your choice of [Unlicense](https://unlicense.org/) or the [WTFPL](http://www.wtfpl.net/).
 
