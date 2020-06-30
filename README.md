@@ -178,7 +178,7 @@ I'd rather make a request - please do everything you can to help that dream come
 
 Chronometrist is released under your choice of [Unlicense](https://unlicense.org/) or the [WTFPL](http://www.wtfpl.net/).
 
-(See files [LICENSE](LICENSE) and [LICENSE.1](LICENSE.1)).
+(See files [UNLICENSE](UNLICENSE) and [WTFPL](WTFPL)).
 
 ## Thanks
 wasamasa, bpalmer, aidalgol, and the rest of #emacs for their tireless help and support
