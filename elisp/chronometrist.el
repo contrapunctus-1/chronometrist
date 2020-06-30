@@ -5,7 +5,7 @@
 ;; Keywords: calendar
 ;; Homepage: https://framagit.org/contrapunctus/chronometrist
 ;; Package-Requires: ((emacs "25.1") (dash "2.16.0") (seq "2.20") (s "1.12.0") (ts "0.2"))
-;; Version: 0.5.0
+;; Version: 0.5.1
 
 (require 'filenotify)
 (require 'cl-lib)
