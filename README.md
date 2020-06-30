@@ -167,7 +167,7 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
 ## Contributions and contact
 Feedback and MRs very welcome. 🙂 [doc/hacking.md](doc/hacking.md) contains an introduction to the codebase.
 
-If you use Chronometrist, I'd love to hear your experiences! Get in touch with the author and other Emacs users in the Emacs channel on the Jabber network - [xmpp:emacs@salas.suchat.org?join](https://conversations.im/j/emacs@salas.suchat.org) ([web chat](https://inverse.chat/#converse/room?jid=emacs@salas.suchat.org))
+If you have tried using Chronometrist, I'd love to hear your experiences! Get in touch with the author and other Emacs users in the Emacs channel on the Jabber network - [xmpp:emacs@salas.suchat.org?join](https://conversations.im/j/emacs@salas.suchat.org) ([web chat](https://inverse.chat/#converse/room?jid=emacs@salas.suchat.org))
 
 (For help in getting started with Jabber, [click here](https://xmpp.org/getting-started/))
 
