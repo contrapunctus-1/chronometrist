@@ -1,3 +1,5 @@
+[![MELPA](https://melpa.org/packages/chronometrist-badge.svg)](https://melpa.org/#/chronometrist)
+
 # chronometrist
 A time tracker in Emacs with a nice interface
 
