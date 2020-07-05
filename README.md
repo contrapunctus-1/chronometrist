@@ -27,11 +27,15 @@ Largely modelled after the Android application, [A Time Tracker](https://github.
 * Chronometrist is tailored towards long-term, rarely-changing, everyday tasks, rather than transient ones. You might think of it as a program to help balance your day, or to help you form habits.
 
 ## Installation
-You can get `chronometrist` from https://framagit.org/contrapunctus/chronometrist/
+You can get `chronometrist` from https://github.com/contrapunctus-1/chronometrist
 
-`chronometrist` requires [dash.el](https://github.com/magnars/dash.el)
+`chronometrist` requires
+* Emacs v26 or higher
+* [dash.el](https://github.com/magnars/dash.el)
+* [s.el](https://github.com/magnars/s.el)
+* [ts.el](https://github.com/alphapapa/ts.el)
 
-Add the Chronometrist directory to your load-path, and `(require 'chronometrist)`.
+Add the "elisp/" subdirectory to your load-path, and `(require 'chronometrist)`.
 
 ## Usage
 In the buffers created by the following three commands, you can press `l` (`chronometrist-open-log`) to view/edit your `chronometrist-file`, which by default is `~/.emacs.d/chronometrist.sexp`.
