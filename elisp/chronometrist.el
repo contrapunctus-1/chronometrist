@@ -29,33 +29,32 @@
 
 ;;; Commentary:
 ;;
+;; A time tracker in Emacs with a nice interface
 
-;; modifiers to toggling -
-;; Nth task
-;; reason (ask on start/ask on end/don't ask on end)
-;; run/don't run hooks (maybe there should be a function to toggle this)
+;; Largely modelled after the Android application, [A Time Tracker](https://github.com/netmackan/ATimeTracker)
 
-;; Style issues
-;; 1. Uses Scheme-style ? and x->y naming conventions instead of
-;;    Elisp/CL-style "-p" and "x-to-y"
-;;    - ido uses ? for 'completion help', so you can't type ? unless
-;;      you unset that o\
-;; 2. Should use *earmuffs* for global variables for clarity
-;; 3. Should names of major modes (chronometrist-mode,
-;;    chronometrist-report-mode) end with -major-mode ?
+;; * Benefits
+;;   1. Extremely simple and efficient to use
+;;   2. Displays useful information about your time usage
+;;   3. Support for both mouse and keyboard
+;;   4. Human errors in tracking are easily fixed by editing a plain text file
+;;   5. Hooks to let you perform arbitrary actions when starting/stopping tasks
 
-;; Limitations of tabulated-list-mode
-;; 1. Can't mix tabulated and non-tabulated data!!! What if I want
-;;    some buttons, separate from the data but part of the same
-;;    buffer?!
-;;    - adding non-tabular data after calling `tabulated-list-print' -
-;;      as we do - works, but is hacky and doesn't always print (e.g.
-;;      it vanishes when you sort). Then, you have to ensure you call
-;;      it after each time you call `tabulated-list-print' :\
-;;    - a post-print hook could help
-;;    - maybe use advice?
-;; 2. Can't have multi-line headers
-;; 3. Can't have multiple tables in a buffer
+;; * Limitations
+;;   1. No support (yet) for adding a task without clocking into it.
+;;   2. No support for concurrent tasks.
+
+;; ## Comparisons
+;; ### timeclock.el
+;; * Stores data in an s-expression format rather than a line-based one
+;; * Supports attaching tags and arbitrary key-values to time intervals
+;; * Has commands to shows useful summaries
+;; * Has a more useful implementation of hooks (see [Hooks](#Hooks))
+
+;; ### Org time tracking
+;; * Chronometrist is tailored towards long-term, rarely-changing, everyday tasks, rather than transient ones. You might think of it as a program to help balance your day, or to help you form habits.
+
+;; For information on usage and customization, see https://github.com/contrapunctus-1/chronometrist/blob/master/README.md
 
 ;; ## VARIABLES ##
 ;;; Code:
