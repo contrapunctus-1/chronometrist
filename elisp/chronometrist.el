@@ -5,7 +5,7 @@
 ;; Keywords: calendar
 ;; Homepage: https://framagit.org/contrapunctus/chronometrist
 ;; Package-Requires: ((emacs "25.1") (dash "2.16.0") (seq "2.20") (s "1.12.0") (ts "0.2"))
-;; Version: 0.5.2
+;; Version: 0.5.3
 
 (require 'filenotify)
 (require 'cl-lib)
@@ -59,10 +59,10 @@
 ;; ## VARIABLES ##
 ;;; Code:
 
-;; `chronometrist-goals' is an optional extension. But even these don't make the
+;; `chronometrist-goal' is an optional extension. But even these don't make the
 ;; warnings go away :\
-(defvar chronometrist-goals-list)
-(declare-function 'chronometrist-get-goal "chronometrist-goals")
+(defvar chronometrist-goal-list)
+(declare-function 'chronometrist-goal-get "chronometrist-goal")
 
 (autoload 'chronometrist-maybe-start-timer "chronometrist-timer" nil t)
 (autoload 'chronometrist-report "chronometrist-report" nil t)
@@ -91,10 +91,10 @@ button action."
   (equal (chronometrist-current-task) task))
 
 (defun chronometrist-use-goals? ()
-  "Return t if `chronometrist-goals' is available and
-`chronometrist-goals-list' is bound."
-  (and (featurep 'chronometrist-goals)
-       (bound-and-true-p chronometrist-goals-list)))
+  "Return t if `chronometrist-goal' is available and
+`chronometrist-goal-list' is bound."
+  (and (featurep 'chronometrist-goal)
+       (bound-and-true-p chronometrist-goal-list)))
 
 (defun chronometrist-activity-indicator ()
   "Return a string to indicate that a task is active.

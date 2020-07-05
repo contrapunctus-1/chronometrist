@@ -265,27 +265,27 @@
     4. Command - chronometrist-maybe-start-timer (&optional interactive-test)
     5. Command - chronometrist-force-restart-timer ()
     6. Command - chronometrist-change-update-interval (arg)
-*** chronometrist-goals
-    1. Internal Variable - chronometrist--timers-list
-    2. Custom Variable - chronometrist-goals-list nil
-    3. Function - chronometrist-run-at-time (time repeat function &rest args)
-    4. Function - chronometrist-seconds->alert-string (seconds)
+*** chronometrist-goal
+    1. Internal Variable - chronometrist-goal--timers-list
+    2. Custom Variable - chronometrist-goal-list nil
+    3. Function - chronometrist-goal-run-at-time (time repeat function &rest args)
+    4. Function - chronometrist-goal-seconds->alert-string (seconds)
        * seconds -> string
-    5. Function - chronometrist-approach-alert (task goal spent)
+    5. Function - chronometrist-goal-approach-alert (task goal spent)
        * string minutes minutes
-    6. Function - chronometrist-complete-alert (task goal spent)
+    6. Function - chronometrist-goal-complete-alert (task goal spent)
        * string minutes minutes
-    7. Function - chronometrist-exceed-alert (task goal spent)
+    7. Function - chronometrist-goal-exceed-alert (task goal spent)
        * string minutes minutes
-    8. Function - chronometrist-no-goal-alert (task goal spent)
+    8. Function - chronometrist-goal-no-goal-alert (task goal spent)
        * string minutes minutes
-    9. Custom Variable - chronometrist-goals-alert-functions
+    9. Custom Variable - chronometrist-goal-alert-functions
        * each function is passed - string minutes minutes
-    10. Function - chronometrist-get-goal (task &optional (goals-list chronometrist-goals-list))
+    10. Function - chronometrist-goal-get (task &optional (goal-list chronometrist-goal-list))
         * String &optional List -> minutes
-    11. Function - chronometrist-goals-run-alert-timers (task)
-    12. Function - chronometrist-goals-stop-alert-timers (&optional _task)
-    13. Function - chronometrist-goals-on-file-change ()
+    11. Function - chronometrist-goal-run-alert-timers (task)
+    12. Function - chronometrist-goal-stop-alert-timers (&optional _task)
+    13. Function - chronometrist-goal-on-file-change ()
 *** chronometrist-sexp
     1. Macro - chronometrist-sexp-in-file (file &rest body)
     2. Function - chronometrist-sexp-open-log ()
