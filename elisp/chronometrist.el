@@ -125,7 +125,7 @@ See custom variable `chronometrist-activity-indicator'."
                (use-goals    (chronometrist-use-goals?))
                (target      (when use-goals
                               ;; this can return nil if there is no goal for a task
-                              (chronometrist-get-goal task)))
+                              (chronometrist-goal-get task)))
                (target-str  (if target
                                 (format "% 4d" target)
                               "")))
