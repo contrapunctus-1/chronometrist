@@ -30,11 +30,13 @@ After hacking, always test for and ensure the following -
 4. The next/previous week keys and buttons should preserve point.
 
 ## chronometrist-report date range logic
-A quick description -
-1. We get the current date in calendrical form using `(decode-time)`.
+A quick description, starting from the first time `chronometrist-report` is run in an Emacs session -
+1. We get the current date as a ts struct `(chronometrist-date)`.
 2. The variable `chronometrist-report-week-start-day` stores the day we consider the week to start with. The default is "Sunday".
 
-   We check if we're on the week start day, else decrement the current date till we are, using `(chronometrist-report-previous-week-start)`.
-3. We store that date in the global variable `chronometrist-report--ui-date`.
-4. By counting up from `chronometrist-report--ui-date`, we get the dates for the week using `(chronometrist-report-date->dates-in-week)`. We store them in `chronometrist-report--ui-week-dates`.
-5. We decrement/increment the global date by 7 and repeat the above process to get the previous/next week's dates (using `(chronometrist-report-previous-week)` and `(chronometrist-report-next-week)`).
+   We check if the date from #2 is on the week start day, else decrement it till we are, using `(chronometrist-report-previous-week-start)`.
+3. We store the date from #3 in the global variable `chronometrist-report--ui-date`.
+4. By counting up from `chronometrist-report--ui-date`, we get dates for the days in the next 7 days using `(chronometrist-report-date->dates-in-week)`. We store them in `chronometrist-report--ui-week-dates`.
+
+   The dates in `chronometrist-report--ui-week-dates` are what is finally used to query the data displayed in the buffer.
+5. To get data for the previous/next weeks, we decrement/increment the date in `chronometrist-report--ui-date` by 7 days and repeat the above process (via `(chronometrist-report-previous-week)`/`(chronometrist-report-next-week)`).
