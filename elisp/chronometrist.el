@@ -56,7 +56,6 @@
 
 ;; For information on usage and customization, see https://github.com/contrapunctus-1/chronometrist/blob/master/README.md
 
-;; ## VARIABLES ##
 ;;; Code:
 
 ;; `chronometrist-goal' is an optional extension. But even these don't make the
@@ -68,6 +67,7 @@
 (autoload 'chronometrist-report "chronometrist-report" nil t)
 (autoload 'chronometrist-statistics "chronometrist-statistics" nil t)
 
+;; ## VARIABLES ##
 (defvar chronometrist--task-history nil)
 (defvar chronometrist--point nil)
 (defvar chronometrist--inhibit-read-p nil)
