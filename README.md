@@ -171,7 +171,7 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
 5. [inflatable raptor](https://github.com/MichaelMure/git-bug/#planned-features)
 
 ## Contributions and contact
-Feedback and MRs very welcome. 🙂 [doc/hacking.md](doc/hacking.md) contains an introduction to the codebase.
+Feedback and MRs very welcome. 🙂 [doc/manual.org](doc/manual.org) contains an overview of the codebase, and explains various mechanisms and decisions.
 
 If you have tried using Chronometrist, I'd love to hear your experiences! Get in touch with the author and other Emacs users in the Emacs channel on the Jabber network - [xmpp:emacs@salas.suchat.org?join](https://conversations.im/j/emacs@salas.suchat.org) ([web chat](https://inverse.chat/#converse/room?jid=emacs@salas.suchat.org))
 

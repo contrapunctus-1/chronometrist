@@ -5,6 +5,8 @@
   1. [X] +Release or+ bundle plist-pp.el
   2. [X] -report - error opening when clocked in
 * Chronometrist
+1. implement point restore for =chronometrist=/=chronometrist-report=/=chronometrist-statistics= in a kill-buffer-hook, so it works whenever the buffer is killed, not just when we call the command.
+
 ** Bugs [57%]
    1. [X] fix -current-task to return correct results if the last one crosses a midnight
    2. [ ] Clocking-in/out doesn't result in updated display, sometimes (2019-09-12)
