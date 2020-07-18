@@ -98,10 +98,6 @@ ISO-8601 date string (\"YYYY-MM-DD\")."
   (chronometrist-diary-view-mode)
   (chronometrist-diary-refresh nil nil date))
 
-;; Local Variables:
-;; nameless-current-name: "chronometrist-diary"
-;; End:
-
 (provide 'chronometrist-diary-view)
 
 ;;; chronometrist-diary-view.el ends here

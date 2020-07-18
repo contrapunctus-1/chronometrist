@@ -457,8 +457,4 @@ used in `chronometrist-before-out-functions'."
 
 (provide 'chronometrist-key-values)
 
-;; Local Variables:
-;; nameless-current-name: "chronometrist"
-;; End:
-
 ;;; chronometrist-key-values.el ends here

@@ -81,7 +81,6 @@ which span midnights. (see `chronometrist-events-clean')"
                    event)))
        (seq-filter #'identity)))
 
-
 (provide 'chronometrist-queries)
 
 ;;; chronometrist-queries.el ends here

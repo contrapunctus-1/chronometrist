@@ -252,8 +252,4 @@ EXCEPT will be excluded from the return value."
 
 (provide 'chronometrist-events)
 
-;; Local Variables:
-;; nameless-current-name: "chronometrist-events"
-;; End:
-
 ;;; chronometrist-events.el ends here

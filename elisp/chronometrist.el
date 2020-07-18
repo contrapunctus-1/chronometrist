@@ -475,8 +475,4 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
 
 (provide 'chronometrist)
 
-;; Local Variables:
-;; nameless-current-name: "chronometrist"
-;; End:
-
 ;;; chronometrist.el ends here

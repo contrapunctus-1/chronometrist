@@ -108,8 +108,4 @@ EVENT should be a plist (see `chronometrist-file')."
 
 (provide 'chronometrist-time)
 
-;; Local Variables:
-;; nameless-current-name: "chronometrist"
-;; End:
-
 ;;; chronometrist-time.el ends here

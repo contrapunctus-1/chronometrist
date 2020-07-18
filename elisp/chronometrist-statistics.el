@@ -305,8 +305,4 @@ If ARG is a numeric argument, go forward that many times."
 
 (provide 'chronometrist-statistics)
 
-;; Local Variables:
-;; nameless-current-name: "chronometrist-statistics"
-;; End:
-
 ;;; chronometrist-statistics.el ends here

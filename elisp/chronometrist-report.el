@@ -268,8 +268,4 @@ With prefix argument ARG, move forward ARG weeks."
 
 (provide 'chronometrist-report)
 
-;; Local Variables:
-;; nameless-current-name: "chronometrist-report"
-;; End:
-
 ;;; chronometrist-report.el ends here

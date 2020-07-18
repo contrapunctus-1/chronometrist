@@ -149,10 +149,6 @@ TS must be a ts struct (see `ts.el')."
            do (ts-decf (ts-day ts))
            finally return ts))
 
-;; Local Variables:
-;; nameless-current-name: "chronometrist-common"
-;; End:
-
 (provide 'chronometrist-common)
 
 ;;; chronometrist-common.el ends here

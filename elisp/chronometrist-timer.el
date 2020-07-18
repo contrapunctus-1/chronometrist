@@ -81,8 +81,4 @@ ARG should be the new update interval, in seconds."
 
 (provide 'chronometrist-timer)
 
-;; Local Variables:
-;; nameless-current-name: "chronometrist"
-;; End:
-
 ;;; chronometrist-timer.el ends here

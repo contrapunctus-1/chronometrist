@@ -26,8 +26,4 @@
 
 (provide 'chronometrist-statistics-custom)
 
-;; Local Variables:
-;; nameless-current-name: "chronometrist-statistics"
-;; End:
-
 ;;; chronometrist-statistics-custom.el ends here

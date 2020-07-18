@@ -96,8 +96,4 @@ This assumes there is a single plist in the current buffer."
 
 (provide 'chronometrist-plist-pp)
 
-;; Local Variables:
-;; nameless-current-name: "chronometrist-plist-pp"
-;; End:
-
 ;;; chronometrist-plist-pp.el ends here

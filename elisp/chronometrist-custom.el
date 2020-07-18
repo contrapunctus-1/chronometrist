@@ -73,10 +73,6 @@ The default is \"*\""
 The default is midnight, i.e. \"00:00:00\"."
   :type 'string)
 
-;; Local Variables:
-;; nameless-current-name: "chronometrist"
-;; End:
-
 (provide 'chronometrist-custom)
 
 ;;; chronometrist-custom.el ends here
