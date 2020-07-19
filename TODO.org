@@ -118,6 +118,9 @@
       - I don't know of a way to know the project being clocked into using timeclock hooks.
       - With v0.2.0 Chronometrist also has a before-project-stop-functions, which runs before the project is stopped, and can control whether the project actually is stopped.
 
+** Maybe
+1. Add a new kind of plist - =(:name "NAME" :time "TIME" ...)=
+   To record events for which the time interval is not relevant. These won't be shown in =chronometrist= - perhaps in a different buffer.
 * Optimization
 ** Cache
    + Lessons from the parsimonious-reading branch - iterating =read= over the whole file is fast; splitting the events is not.
@@ -153,6 +156,7 @@
 
 * Documentation [0%]
   1. [ ] Make Texinfo documentation
+     + [ ] setup auto-export of Org to texinfo
 * Time targets/goals [50%]
   1. [X] User defines targets for tasks
   2. [X] Chronometrist displays targets column
