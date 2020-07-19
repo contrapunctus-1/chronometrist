@@ -4,6 +4,7 @@
 (require 'subr-x)
 (require 'dash)
 (require 'seq)
+(require 'anaphora)
 
 (require 'chronometrist-migrate)
 (require 'chronometrist-events)
@@ -11,6 +12,7 @@
 (require 'chronometrist-common)
 
 (declare-function chronometrist-refresh "chronometrist.el")
+(declare-function chronometrist-last "chronometrist-queries.el")
 
 ;; This is free and unencumbered software released into the public domain.
 ;;
@@ -136,22 +138,24 @@ as symbol and/or strings.")
   "Add tags from PLIST to `chronometrist-tags-history'."
   (let* ((table    chronometrist-tags-history)
          (name     (plist-get plist :name))
-         (tags     (plist-get plist :tags))
+         (tags     (awhen (plist-get plist :tags) (list it)))
          (old-tags (gethash name table)))
     (when tags
-      (puthash name (append tags old-tags) table))))
+      (--> (append tags old-tags)
+           (puthash name it table)))))
 
 (defun chronometrist-tags-history-replace-last (plist)
   "Replace the latest tag combination for PLIST's task with tags from PLIST."
   (let* ((table    chronometrist-tags-history)
          (name     (plist-get plist :name))
-         (tags     (plist-get plist :tags))
+         (tags     (awhen (plist-get plist :tags) (list it)))
          (old-tags (gethash name table)))
-    (if old-tags
-        (--> (cdr old-tags)
-             (append tags it)
-             (puthash name it table))
-      (puthash name tags table))))
+    (when tags
+      (if old-tags
+          (--> (cdr old-tags)
+               (append tags it)
+               (puthash name it table))
+        (puthash name tags table)))))
 
 (defun chronometrist-tags-history-combination-strings (task)
   "Return list of past tag combinations for TASK.
