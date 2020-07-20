@@ -3,11 +3,10 @@
 
 The structure of this manual was inspired by https://documentation.divio.com/
 * How to...
-** Setup Emacs to browse the project and contribute
-I recommend using
-1. [[https://github.com/Malabarba/Nameless][nameless-mode]] for easier reading of Emacs Lisp code, and
-2. [[https://github.com/joostkremers/visual-fill-column][visual-fill-column-mode]] to soft-wrap lines in Org/Markdown files.
-
+** Set up Emacs to browse the project and contribute
+All of these are optional, but recommended for the best experience.
+1. Use [[https://github.com/Malabarba/Nameless][nameless-mode]] for easier reading of Emacs Lisp code, and
+2. Use [[https://github.com/joostkremers/visual-fill-column][visual-fill-column-mode]] to soft-wrap lines in Org/Markdown files.
    =org-indent-mode= (for Org files) and [[https://elpa.gnu.org/packages/adaptive-wrap.html][adaptive-prefix-mode]] (for Markdown and other files) will further enhance the experience.
 3. Get the sources from https://github.com/contrapunctus-1/chronometrist and read this manual in the Org format (doc/manual.org), so links to identifiers can take you to their location in the source.
 
