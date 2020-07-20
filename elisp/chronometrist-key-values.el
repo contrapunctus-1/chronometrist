@@ -223,7 +223,7 @@ used in `chronometrist-before-out-functions'."
   :group 'chronometrist)
 
 (defcustom chronometrist-kv-buffer-name "*Chronometrist-Key-Values*"
-  "Buffer name to read key-values from."
+  "Name of buffer in which key-values are entered."
   :group 'chronometrist-key-values
   :type 'string)
 

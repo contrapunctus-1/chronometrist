@@ -80,7 +80,7 @@ After hacking, always test for and ensure the following -
 4. The next/previous week keys and buttons should preserve point.
 
 ** chronometrist-report date range logic
-A quick description, starting from the first time =chronometrist-report= is run in an Emacs session -
+A quick description, starting from the first time [[file:../elisp/chronometrist-report.el::defun chronometrist-report (][=chronometrist-report=]] is run in an Emacs session -
 1. We get the current date as a ts struct =(chronometrist-date)=.
 2. The variable =chronometrist-report-week-start-day= stores the day we consider the week to start with. The default is "Sunday".
 
@@ -98,13 +98,26 @@ Key-values are stored as plist keywords and values. The user can add any keyword
 
 Similarly, tags are stored using a =:tags (<tag>*)= keyword-value pair. The tags themselves (the elements of the list) can be any readable Lisp value.
 
-The entry points are =chronometrist-kv-add= and =chronometrist-tags-add=. The user adds these to the desired hooks, and they prompt the user for tags/key-values.
+*** User input
+The entry points are [[file:../elisp/chronometrist-key-values.el::defun%20chronometrist-kv-add (][=chronometrist-kv-add=]] and [[file:../elisp/chronometrist-key-values.el::defun%20chronometrist-tags-add (][=chronometrist-tags-add=]]. The user adds these to the desired hooks, and they prompt the user for tags/key-values.
 
-Both have corresponding functions to create a prompt - =chronometrist-key-prompt=, =chronometrist-value-prompt=, and =chronometrist-tags-prompt=.
+Both have corresponding functions to create a prompt -
++ [[file:../elisp/chronometrist-key-values.el::defun chronometrist-key-prompt (][=chronometrist-key-prompt=]],
++ [[file:../elisp/chronometrist-key-values.el::defun chronometrist-value-prompt (][=chronometrist-value-prompt=]], and
++ [[file:../elisp/chronometrist-key-values.el::defun chronometrist-tags-prompt (][=chronometrist-tags-prompt=]].
 
-The key-value prompt is somewhat different from most Emacs prompts - it creates a new buffer, and uses the minibuffer to alternatingly ask for keys and values in a loop. Key-values are inserted into the buffer as the user enters/selects them. The user can break out of this loop with an empty input (the keys to accept an empty input differ between completion systems, so we try to let the user know about them using =chronometrist-kv-completion-quit-key=). After exiting the loop, they can use =chronometrist-kv-accept= to accept the key-values (using =chronometrist-append-to-last= to add them to the last plist in =chronometrist-file=) or =chronometrist-kv-reject= to discard them.
+[[file:../elisp/chronometrist-key-values.el::defun%20chronometrist-kv-add (][=chronometrist-kv-add=]]'s way of reading key-values from the user is somewhat different from most Emacs prompts - it creates a new buffer, and uses the minibuffer to alternatingly ask for keys and values in a loop. Key-values are inserted into the buffer as the user enters/selects them. The user can break out of this loop with an empty input (the keys to accept an empty input differ between completion systems, so we try to let the user know about them using [[file:../elisp/chronometrist-key-values.el::defun chronometrist-kv-completion-quit-key (][=chronometrist-kv-completion-quit-key=]]). After exiting the loop, they can edit the key-values in the buffer, and use the commands [[file:../elisp/chronometrist-key-values.el::defun chronometrist-kv-accept (][=chronometrist-kv-accept=]] to accept the key-values (which uses [[file:../elisp/chronometrist-key-values.el::defun chronometrist-append-to-last (][=chronometrist-append-to-last=]] to add them to the last plist in =chronometrist-file=) or [[file:../elisp/chronometrist-key-values.el::defun chronometrist-kv-reject (][=chronometrist-kv-reject=]] to discard them.
 
-All prompts suggest past user inputs. These are queried from three history hash tables -, =chronometrist-key-history=, =chronometrist-value-history=, and =chronometrist-tags-history=.
+*** History
+All prompts suggest past user inputs. These are queried from three history hash tables -
++ [[file:../elisp/chronometrist-key-values.el::defvar%20chronometrist-key-history%20(][=chronometrist-key-history=]],
++ [[file:../elisp/chronometrist-key-values.el::defvar%20chronometrist-value-history%20(][=chronometrist-value-history=]], and
++ [[file:../elisp/chronometrist-key-values.el::defvar%20chronometrist-tags-history%20(][=chronometrist-tags-history=]].
+
+Each of these has a corresponding function to clear it and fill it with values -
++ [[file:../elisp/chronometrist-key-values.el::defun chronometrist-key-history-populate (][=chronometrist-key-history-populate=]]
++ [[file:../elisp/chronometrist-key-values.el::defun chronometrist-value-history-populate (][=chronometrist-value-history-populate=]], and
++ [[file:../elisp/chronometrist-key-values.el::defun chronometrist-tags-history-populate (][=chronometrist-tags-history-populate=]].
 
 [fn:1] To remove this restriction, I had briefly considered making a keyword called =:user=, whose value would be another plist containing all user-defined keyword-values. But in practice, this hasn't been a big enough issue yet to justify the work.
 * Reference
@@ -365,3 +378,7 @@ All prompts suggest past user inputs. These are queried from three history hash 
     10. Function - chronometrist-sexp-delete-list (&optional arg)
     11. Function - chronometrist-sexp-replace-last (plist)
     12. Command - chronometrist-sexp-reindent-buffer ()
+
+# Local Variables:
+# org-link-file-path-type: relative
+# End:

@@ -183,4 +183,7 @@
 2. [ ] Make Texinfo documentation
    + [ ] setup auto-export of Org to texinfo
 3. [ ] Link identifiers in manual.org to the source.
-   Preferably finding some automatic way to do it.
+   * Currently using file: links with text search - =[file:../elisp/file.el::defun identifier (]=, =[file:../elisp/file.el::defvar identifier (]=, etc.
+   * If we can just hit helpful-at-point in the exported info manual, that might be a near-perfect solution (only improved by clickable links)
+   * There's also the alternative of storing the commentary in the docstrings instead. This is ugly because the manual isn't unified anymore, but on the flipside, it lets you link to identifiers in an Emacs-idiomatic way, =`using-this'=. I'm not sure how useful Info is, either, now that isearch doesn't work across pages anymore.
+   * For HTML documents, since one already has a web browser open, linking to GitHub using line number anchors could be a passable solution.
