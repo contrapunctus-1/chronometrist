@@ -28,20 +28,20 @@ I recommend using
 For lack of a better term, events are how we refer to time intervals. They are stored as plists; each contains at least a =:name "<name>"=, a =:start "<iso-timestamp>"=, and (except in case of an ongoing task) a =:stop "<iso-timestamp>"=.
 *** Project overview
 Chronometrist has three components, and each has a file containing major mode definitions and user-facing commands.
-1. [[file:chronometrist.el][chronometrist.el]]
-2. [[file:chronometrist-report.el][chronometrist-report.el]]
-3. [[file:chronometrist-statistics.el][chronometrist-statistics.el]]
+1. [[file:../elisp/chronometrist.el][chronometrist.el]]
+2. [[file:../elisp/chronometrist-report.el][chronometrist-report.el]]
+3. [[file:../elisp/chronometrist-statistics.el][chronometrist-statistics.el]]
 
 All three of these use =(info "(elisp)Tabulated List Mode")=. Each of them also contains a "-print-non-tabular" function, which prints the non-tabular parts of the buffer.
 
 Each of them has a corresponding =-custom= file, which contain the Customize group and custom variable definitions for user-facing variables -
-- [[file:chronometrist-custom.el][chronometrist-custom.el]]
-- [[file:chronometrist-report-custom.el][chronometrist-report-custom.el]]
-- [[file:chronometrist-statistics-custom.el][chronometrist-statistics-custom.el]]
+- [[file:../elisp/chronometrist-custom.el][chronometrist-custom.el]]
+- [[file:../elisp/chronometrist-report-custom.el][chronometrist-report-custom.el]]
+- [[file:../elisp/chronometrist-statistics-custom.el][chronometrist-statistics-custom.el]]
 
-[[file:chronometrist-common.el][chronometrist-common.el]] contains definitions common to all components.
+[[file:../elisp/chronometrist-common.el][chronometrist-common.el]] contains definitions common to all components.
 
-All three components use timers to keep their buffers updated. [[file:chronometrist-timer.el][chronometrist-timer.el]] contains all timer-related code.
+All three components use timers to keep their buffers updated. [[file:../elisp/chronometrist-timer.el][chronometrist-timer.el]] contains all timer-related code.
 
 Note - sometimes, when hacking or dealing with errors, timers may result in subtle bugs which are very hard to debug. Using =chronometrist-force-restart-timer= or restarting Emacs can fix them, so try that as a first sanity check.
 
@@ -86,7 +86,7 @@ A quick description, starting from the first time =chronometrist-report= is run 
 5. To get data for the previous/next weeks, we decrement/increment the date in =chronometrist-report--ui-date= by 7 days and repeat the above process (via =(chronometrist-report-previous-week)=/=(chronometrist-report-next-week)=).
 
 *** Tags and Key-Values
-[[file:~/.emacs.d/contrapunctus/chronometrist/elisp/chronometrist-key-values.el][chronometrist-key-values.el]] deals with adding additional information to events, in the form of key-values and tags.
+[[file:../elisp/chronometrist-key-values.el][chronometrist-key-values.el]] deals with adding additional information to events, in the form of key-values and tags.
 
 Key-values are stored as plist keywords and values. The user can add any keywords except =:name=, =:tags=, =:start=, and =:stop=. [fn:1] Values can be any readable Lisp values.
 
