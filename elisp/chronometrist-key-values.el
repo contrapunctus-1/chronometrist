@@ -64,7 +64,6 @@ Used as history by `chronometrist--value-suggestions'.")
 
 (defun chronometrist-append-to-last (tags plist)
   "Add TAGS and PLIST to the last entry in `chronometrist-file'.
-
 TAGS should be a list of symbols and/or strings.
 
 PLIST should be a property list. Properties reserved by
@@ -332,7 +331,6 @@ The values are stored in `chronometrist-value-history'."
 
 (defun chronometrist-kv-completion-quit-key ()
   "Return appropriate keybinding (as a string) to quit from `completing-read'.
-
 It currently supports ido, ido-ubiquitous, ivy, and helm."
   (substitute-command-keys
    (cond ((or (bound-and-true-p ido-mode)
@@ -394,7 +392,6 @@ KEY should be a string for the just-entered key."
 
 (defun chronometrist-kv-add (&rest _args)
   "Read key-values from user, adding them to a temporary buffer for review.
-
 In the resulting buffer, users can run `chronometrist-kv-accept'
 to add them to the last s-expression in `chronometrist-file', or
 `chronometrist-kv-reject' to cancel.

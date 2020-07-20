@@ -24,6 +24,8 @@ I recommend using
 
     [1] I still have doubts about this. Having SQL as a query language would be very useful in perusing the stored data. Maybe we should have tried to create a companion mode to edit SQL databases interactively?
 
+*** Terminology
+For lack of a better term, events are how we refer to time intervals. They are stored as plists; each contains at least a =:name "<name>"=, a =:start "<iso-timestamp>"=, and (except in case of an ongoing task) a =:stop "<iso-timestamp>"=.
 *** Project overview
 Chronometrist has three components, and each has a file containing major mode definitions and user-facing commands.
 1. [[file:chronometrist.el][chronometrist.el]]
@@ -83,6 +85,22 @@ A quick description, starting from the first time =chronometrist-report= is run 
    The dates in =chronometrist-report--ui-week-dates= are what is finally used to query the data displayed in the buffer.
 5. To get data for the previous/next weeks, we decrement/increment the date in =chronometrist-report--ui-date= by 7 days and repeat the above process (via =(chronometrist-report-previous-week)=/=(chronometrist-report-next-week)=).
 
+*** Tags and Key-Values
+[[file:~/.emacs.d/contrapunctus/chronometrist/elisp/chronometrist-key-values.el][chronometrist-key-values.el]] deals with adding additional information to events, in the form of key-values and tags.
+
+Key-values are stored as plist keywords and values. The user can add any keywords except =:name=, =:tags=, =:start=, and =:stop=. [fn:1] Values can be any readable Lisp values.
+
+Similarly, tags are stored using a =:tags (<tag>*)= keyword-value pair. The tags themselves (the elements of the list) can be any readable Lisp value.
+
+The entry points are =chronometrist-kv-add= and =chronometrist-tags-add=. The user adds these to the desired hooks, and they prompt the user for tags/key-values.
+
+Both have corresponding functions to create a prompt - =chronometrist-key-prompt=, =chronometrist-value-prompt=, and =chronometrist-tags-prompt=.
+
+The key-value prompt is somewhat different from most Emacs prompts - it creates a new buffer, and uses the minibuffer to alternatingly ask for keys and values in a loop. Key-values are inserted into the buffer as the user enters/selects them. The user can break out of this loop with an empty input (the keys to accept an empty input differ between completion systems, so we try to let the user know about them using =chronometrist-kv-completion-quit-key=). After exiting the loop, they can use =chronometrist-kv-accept= to accept the key-values (using =chronometrist-append-to-last= to add them to the last plist in =chronometrist-file=) or =chronometrist-kv-reject= to discard them.
+
+All prompts suggest past user inputs. These are queried from three history hash tables -, =chronometrist-key-history=, =chronometrist-value-history=, and =chronometrist-tags-history=.
+
+[fn:1] To remove this restriction, I had briefly considered making a keyword called =:user=, whose value would be another plist containing all user-defined keyword-values. But in practice, this hasn't been a big enough issue yet to justify the work.
 ** Reference
 *** Legend of currently-used time formats
 **** ts
