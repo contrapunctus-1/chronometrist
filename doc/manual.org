@@ -9,6 +9,10 @@ All of these are optional, but recommended for the best experience.
 2. Use [[https://github.com/joostkremers/visual-fill-column][visual-fill-column-mode]] to soft-wrap lines in Org/Markdown files.
    =org-indent-mode= (for Org files) and [[https://elpa.gnu.org/packages/adaptive-wrap.html][adaptive-prefix-mode]] (for Markdown and other files) will further enhance the experience.
 3. Get the sources from https://github.com/contrapunctus-1/chronometrist and read this manual in the Org format (doc/manual.org), so links to identifiers can take you to their location in the source.
+4. Install [[https://github.com/cask/cask][Cask]] to easily byte-compile and test the project.
+   From the project root, you can now run
+   1. =cask= to install the project dependencies in a sandbox
+   2. =cask exec buttercup -L . --traceback pretty= to run tests.
 
 * Explanation
 ** Design goals
