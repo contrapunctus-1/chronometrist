@@ -154,9 +154,6 @@
    1. Active days
    2. % of days active
 
-* Documentation [0%]
-  1. [ ] Make Texinfo documentation
-     + [ ] setup auto-export of Org to texinfo
 * Time targets/goals [50%]
   1. [X] User defines targets for tasks
   2. [X] Chronometrist displays targets column
@@ -177,3 +174,13 @@
      - target*2 and above - red
 * Backend abstraction [0%]
   1. [ ] Add checks to ~chronometrist-sexp-reindent-buffer~ to ensure it only runs on an s-expression buffer
+* Certain [0%]
+** Documentation [0%]
+1. [ ] Move usage and customization sections to manual.org
+   (The user may not see the README, if they are installing from MELPA.)
+   1. [ ] convert README to Org
+   2. [ ] transclude these sections from the manual to the readme
+2. [ ] Make Texinfo documentation
+   + [ ] setup auto-export of Org to texinfo
+3. [ ] Link identifiers in manual.org to the source.
+   Preferably finding some automatic way to do it.
