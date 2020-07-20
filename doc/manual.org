@@ -98,6 +98,7 @@ Key-values are stored as plist keywords and values. The user can add any keyword
 
 Similarly, tags are stored using a =:tags (<tag>*)= keyword-value pair. The tags themselves (the elements of the list) can be any readable Lisp value.
 
+[fn:1] To remove this restriction, I had briefly considered making a keyword called =:user=, whose value would be another plist containing all user-defined keyword-values. But in practice, this hasn't been a big enough issue yet to justify the work.
 *** User input
 The entry points are [[file:../elisp/chronometrist-key-values.el::defun%20chronometrist-kv-add (][=chronometrist-kv-add=]] and [[file:../elisp/chronometrist-key-values.el::defun%20chronometrist-tags-add (][=chronometrist-tags-add=]]. The user adds these to the desired hooks, and they prompt the user for tags/key-values.
 
@@ -119,7 +120,6 @@ Each of these has a corresponding function to clear it and fill it with values -
 + [[file:../elisp/chronometrist-key-values.el::defun chronometrist-value-history-populate (][=chronometrist-value-history-populate=]], and
 + [[file:../elisp/chronometrist-key-values.el::defun chronometrist-tags-history-populate (][=chronometrist-tags-history-populate=]].
 
-[fn:1] To remove this restriction, I had briefly considered making a keyword called =:user=, whose value would be another plist containing all user-defined keyword-values. But in practice, this hasn't been a big enough issue yet to justify the work.
 * Reference
 ** Legend of currently-used time formats
 *** ts
