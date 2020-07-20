@@ -9,6 +9,7 @@ I recommend using
 2. [[https://github.com/joostkremers/visual-fill-column][visual-fill-column-mode]] to soft-wrap lines in Org/Markdown files.
 
    =org-indent-mode= (for Org files) and [[https://elpa.gnu.org/packages/adaptive-wrap.html][adaptive-prefix-mode]] (for Markdown and other files) will further enhance the experience.
+3. Get the sources from https://github.com/contrapunctus-1/chronometrist and read this manual in the Org format (doc/manual.org), so links to identifiers can take you to their location in the source.
 
 * Explanation
 ** Design goals
