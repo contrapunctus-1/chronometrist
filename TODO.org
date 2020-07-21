@@ -87,20 +87,17 @@
     3. [X] show task name in prompt
     4. [X] bug - tags being added twice
 
-** UX
-   1. don't suggest nil when asking for first project on first run
-   2. when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
-   3. Mouse commands should work only on buttons.
-   4. Button actions should accept prefix arguments and behave exactly like their keyboard counterparts.
-   5. mouse-3 should clock-out without asking for reason.
-   6. Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked /before/ clocking out, which adds time to the project.
-   7. Allow calling chronometrist-in/out from anywhere-within-Emacs (a la timeclock) as well as from the chronometrist buffer.
+** UX [14%]
+   1. [ ] don't suggest nil when asking for first project on first run
+   2. [ ] when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
+   3. [ ] Mouse commands should work only on buttons.
+   4. [X] Button actions should accept prefix arguments and behave exactly like their keyboard counterparts.
+   5. [ ] mouse-3 should clock-out without asking for reason.
+   6. [ ] Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked /before/ clocking out, which adds time to the project.
+   7. [ ] Allow calling chronometrist-in/out from anywhere-within-Emacs (a la timeclock) as well as from the chronometrist buffer.
 
 ** Code [28%]
    1. [ ] Write tests (in buttercup)
-   2. [ ] Rewrite using cl-loop
-      1. [ ] chronometrist-statistics-count-active-days
-      2. [ ] chronometrist-statistics-count-average-time-spent
    3. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
    4. See if it is possible to store buttons in a variable, so *-print-non-tabular functions can be made shorter and less imperative. (see ~make-text-button~)
    5. Merge all event-querying functions so that they always operate on an entire hash table (so no 'day' variants),
@@ -154,7 +151,10 @@
    1. Active days
    2. % of days active
 
-* Time targets/goals [50%]
+* Backend abstraction [0%]
+  1. [ ] Add checks to ~chronometrist-sexp-reindent-buffer~ to ensure it only runs on an s-expression buffer
+* Certain [0%]
+** Time targets/goals [50%]
   1. [X] User defines targets for tasks
   2. [X] Chronometrist displays targets column
   3. [-] Notify user when
@@ -162,21 +162,19 @@
      + target completed
      + exceeding target (target+5)
      + [X] More flexible way to define alerts.
-     + [ ] If time goals are defined and there is a task without a goal, just remind the user every 15 minutes of the time they've spent on it
-       - [ ] Needs an even more flexible way to define alerts...
+     + [X] If time goals are defined and there is a task without a goal, just remind the user every 15 minutes of the time they've spent on it
+       - [X] Needs an even more flexible way to define alerts...
      + [-] Handle manual file changes; on file change -
        - [ ] clearing existing notifications
        - [X] if last expression has a :stop value, stop alert timers
      + [ ] Also take time spent so far into account (e.g. don't start approach or complete alerts again if time has been exceeded and we're starting the task again despite that)
-  4. [ ] Colorize times in Chronometrist buffer
-     - untouched project with target defined - red
-     - target ±5 minutes - green
-     - target*2 and above - red
-* Backend abstraction [0%]
-  1. [ ] Add checks to ~chronometrist-sexp-reindent-buffer~ to ensure it only runs on an s-expression buffer
-* Certain [0%]
 ** Code quality [0%]
 1. [ ] Make functions more test-friendly. Quite a few can get away with returning values instead of writing to a file - this will make it easier to test them. Other functions can handle the file operations for them.
+2. [ ] Rewrite using cl-loop
+   1. [ ] chronometrist-statistics-entries-internal
+   2. [ ] chronometrist-statistics-count-active-days
+3. [ ] Write integration tests using ecukes.
+   1. Some feature definitions already exist in features/, write step definitions for them.
 ** Documentation [0%]
 1. [ ] Move usage and customization sections to manual.org
    (The user may not see the README, if they are installing from MELPA.)
@@ -189,3 +187,9 @@
    * If we can just hit helpful-at-point in the exported info manual, that might be a near-perfect solution (only improved by clickable links)
    * There's also the alternative of storing the commentary in the docstrings instead. This is ugly because the manual isn't unified anymore, but on the flipside, it lets you link to identifiers in an Emacs-idiomatic way, =`using-this'=. I'm not sure how useful Info is, either, now that isearch doesn't work across pages anymore.
    * For HTML documents, since one already has a web browser open, linking to GitHub using line number anchors could be a passable solution.
+* Maybe
+** chronometrist-goals
+1. [ ] Colorize times in Chronometrist buffer
+   - untouched project with target defined - red
+   - target ±5 minutes - green
+   - target*2 and above - red
