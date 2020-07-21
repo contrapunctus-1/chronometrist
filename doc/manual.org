@@ -3,6 +3,9 @@
 
 The structure of this manual was inspired by https://documentation.divio.com/
 * How to...
+:PROPERTIES:
+:DESCRIPTION: Step-by-step guides to achieve specific tasks
+:END:
 ** Set up Emacs to browse the project and contribute
 All of these are optional, but recommended for the best experience.
 1. Use [[https://github.com/Malabarba/Nameless][nameless-mode]] for easier reading of Emacs Lisp code, and
@@ -15,7 +18,13 @@ All of these are optional, but recommended for the best experience.
    2. =cask exec buttercup -L . --traceback pretty= to run tests.
 
 * Explanation
+:PROPERTIES:
+:DESCRIPTION: Descriptions of the design, implementation, and history
+:END:
 ** Design goals
+:PROPERTIES:
+:DESCRIPTION: Some vague ideas which guided the project
+:END:
     1. Don't make assumptions about the user's profession
        - e.g. timeclock seems to assume you're using it for a 9-to-5/contractor job
     2. Incentivize use
@@ -31,8 +40,14 @@ All of these are optional, but recommended for the best experience.
     [1] I still have doubts about this. Having SQL as a query language would be very useful in perusing the stored data. Maybe we should have tried to create a companion mode to edit SQL databases interactively?
 
 ** Terminology
+:PROPERTIES:
+:DESCRIPTION: Explanation of some terms used later
+:END:
 For lack of a better term, events are how we refer to time intervals. They are stored as plists; each contains at least a =:name "<name>"=, a =:start "<iso-timestamp>"=, and (except in case of an ongoing task) a =:stop "<iso-timestamp>"=.
 ** Project overview
+:PROPERTIES:
+:DESCRIPTION: A broad overview of the code
+:END:
 Chronometrist has three components, and each has a file containing major mode definitions and user-facing commands.
 1. [[file:../elisp/chronometrist.el][chronometrist.el]]
 2. [[file:../elisp/chronometrist-report.el][chronometrist-report.el]]
@@ -52,6 +67,9 @@ All three components use timers to keep their buffers updated. [[file:../elisp/c
 Note - sometimes, when hacking or dealing with errors, timers may result in subtle bugs which are very hard to debug. Using =chronometrist-force-restart-timer= or restarting Emacs can fix them, so try that as a first sanity check.
 
 ** Midnight-spanning events
+:PROPERTIES:
+:DESCRIPTION: Events starting on one day and ending on another
+:END:
 A unique problem in working with Chronometrist, one I had never foreseen, was tasks which start on one day and end on another. These mess up data consumption (especially interval calculations and acquiring data for a specific date) in all sorts of unforeseen ways.
 
 There are a few different approaches of dealing with them. (Currently, Chronometrist uses #3.)
@@ -73,6 +91,9 @@ There are a few different approaches of dealing with them. (Currently, Chronomet
      + Advantage - reduced repetitive post-parsing load.
 
 ** Point restore behaviour
+:PROPERTIES:
+:DESCRIPTION: The desired behaviour of point in Chronometrist
+:END:
 After hacking, always test for and ensure the following -
 1. Toggling the buffer via =chronometrist=/=chronometrist-report=/=chronometrist-statistics= should preserve point
 2. The timer function should preserve point when the buffer is current
@@ -80,6 +101,9 @@ After hacking, always test for and ensure the following -
 4. The next/previous week keys and buttons should preserve point.
 
 ** chronometrist-report date range logic
+:PROPERTIES:
+:DESCRIPTION: Deriving dates in the current week
+:END:
 A quick description, starting from the first time [[file:../elisp/chronometrist-report.el::defun chronometrist-report (][=chronometrist-report=]] is run in an Emacs session -
 1. We get the current date as a ts struct =(chronometrist-date)=.
 2. The variable =chronometrist-report-week-start-day= stores the day we consider the week to start with. The default is "Sunday".
@@ -92,6 +116,9 @@ A quick description, starting from the first time [[file:../elisp/chronometrist-
 5. To get data for the previous/next weeks, we decrement/increment the date in =chronometrist-report--ui-date= by 7 days and repeat the above process (via =(chronometrist-report-previous-week)=/=(chronometrist-report-next-week)=).
 
 ** Tags and Key-Values
+:PROPERTIES:
+:DESCRIPTION: How tags and key-values are implemented
+:END:
 [[file:../elisp/chronometrist-key-values.el][chronometrist-key-values.el]] deals with adding additional information to events, in the form of key-values and tags.
 
 Key-values are stored as plist keywords and values. The user can add any keywords except =:name=, =:tags=, =:start=, and =:stop=. [fn:1] Values can be any readable Lisp values.
@@ -121,6 +148,9 @@ Each of these has a corresponding function to clear it and fill it with values -
 + [[file:../elisp/chronometrist-key-values.el::defun chronometrist-tags-history-populate (][=chronometrist-tags-history-populate=]].
 
 * Reference
+:PROPERTIES:
+:DESCRIPTION: A list of definitions, with some type information
+:END:
 ** Legend of currently-used time formats
 *** ts
      ts.el struct
