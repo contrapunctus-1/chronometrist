@@ -87,15 +87,6 @@
     3. [X] show task name in prompt
     4. [X] bug - tags being added twice
 
-** UX [14%]
-   1. [ ] don't suggest nil when asking for first project on first run
-   2. [ ] when starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
-   3. [ ] Mouse commands should work only on buttons.
-   4. [X] Button actions should accept prefix arguments and behave exactly like their keyboard counterparts.
-   5. [ ] mouse-3 should clock-out without asking for reason.
-   6. [ ] Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked /before/ clocking out, which adds time to the project.
-   7. [ ] Allow calling chronometrist-in/out from anywhere-within-Emacs (a la timeclock) as well as from the chronometrist buffer.
-
 ** Code [28%]
    1. [ ] Write tests (in buttercup)
    3. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
@@ -187,6 +178,16 @@
    * If we can just hit helpful-at-point in the exported info manual, that might be a near-perfect solution (only improved by clickable links)
    * There's also the alternative of storing the commentary in the docstrings instead. This is ugly because the manual isn't unified anymore, but on the flipside, it lets you link to identifiers in an Emacs-idiomatic way, =`using-this'=. I'm not sure how useful Info is, either, now that isearch doesn't work across pages anymore.
    * For HTML documents, since one already has a web browser open, linking to GitHub using line number anchors could be a passable solution.
+
+** UX [12%]
+   1. [ ] Don't suggest nil when asking for first project on first run
+   2. [ ] When starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
+   3. [ ] Mouse commands should work only on buttons.
+   4. [X] Button actions should accept prefix arguments and behave exactly like their keyboard counterparts.
+   5. [ ] mouse-3 should clock-out without asking for reason.
+   6. [ ] Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked /before/ clocking out, which adds time to the project.
+   7. [ ] Allow calling chronometrist-in/out from anywhere-within-Emacs (a la timeclock) as well as from the chronometrist buffer.
+   8. [ ] =chronometrist-timer= - if =chronometrist-file= is being edited (buffer exists and modified), don't refresh - this will (hopefully) prevent Emacs from going crazy with errors in trying to parse malformed data.
 * Maybe
 ** chronometrist-goals
 1. [ ] Colorize times in Chronometrist buffer
