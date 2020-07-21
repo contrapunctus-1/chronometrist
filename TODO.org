@@ -175,6 +175,8 @@
 * Backend abstraction [0%]
   1. [ ] Add checks to ~chronometrist-sexp-reindent-buffer~ to ensure it only runs on an s-expression buffer
 * Certain [0%]
+** Code quality [0%]
+1. [ ] Make functions more test-friendly. Quite a few can get away with returning values instead of writing to a file - this will make it easier to test them. Other functions can handle the file operations for them.
 ** Documentation [0%]
 1. [ ] Move usage and customization sections to manual.org
    (The user may not see the README, if they are installing from MELPA.)
