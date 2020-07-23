@@ -22,20 +22,20 @@
    7. [X] regression - no value history
    8. [ ] Possible to add the same key-value twice
       * Clock in, clock out, add key-value and accept, delete :stop time and save, clock out again, accept the already-inserted key-value - duplicate!
-** Features
-   1. Create chronometrist-unused-projects-list + chronometrist-projects-list.
-   2. New commands
-      * *Kill/discard* (bind to 'k') - which will delete the interval currently being recorded.
-        - Most conservative option - it will only operate on the project at point, and will only kill for a clocked-in project.
-        - Somewhat less conservative option - it will operate on the currently clocked-in project, no matter where point is.
-        - It _should_ ask for confirmation.
-        - Alternatively, or as a complement - an *undo command*, which will undo your last action (clock in or clock out).
-          - Undo and redo seem like the best bets.
-      * *Convert* - change the currently clocked-in project to a different task. Tags and key-values may be re-queried. Clock-in hook functions will be run again with the new task as the argument.
-      * *Rename* a project (updating all records)
-      * *Delete* a project (erasing all records)
-      * *Hide* a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
-   3. Hook enhancement - can we supply the whole plist (including tags and key-values) to the task-start hooks, so users can have even smarter hook functions?
+** Features [16%]
+   1. [ ] Create chronometrist-unused-projects-list + chronometrist-projects-list.
+   2. [ ] New commands
+      1. [ ] *Kill/discard* (bind to 'k') - which will delete the interval currently being recorded.
+         - Most conservative option - it will only operate on the project at point, and will only kill for a clocked-in project.
+         - Somewhat less conservative option - it will operate on the currently clocked-in project, no matter where point is.
+         - It _should_ ask for confirmation.
+         - Alternatively, or as a complement - an *undo command*, which will undo your last action (clock in or clock out).
+           - Undo and redo seem like the best bets.
+      2. [ ] *Convert* - change the currently clocked-in project to a different task. Tags and key-values may be re-queried. Clock-in hook functions will be run again with the new task as the argument.
+      3. [ ] *Rename* a project (updating all records)
+      4. [ ] *Delete* a project (erasing all records)
+      5. [ ] *Hide* a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
+   3. [ ] Hook enhancement - can we supply the whole plist (including tags and key-values) to the task-start hooks, so users can have even smarter hook functions?
       * That would mean ensuring that -kv-read runs before other hooks.
       * Actually, it should be trivial to access the last expression in the file, so maybe this is unnecessary.
    4. [ ] key-values and tags should work regardless of what hook they're called from, to give users the option to modify behaviour (does clock in start after you've finished adding details, or before?)
