@@ -1,0 +1,1009 @@
+This is manual.info, produced by makeinfo version 6.7 from manual.texi.
+
+
+File: manual.info,  Node: Top,  Next: How to...,  Up: (dir)
+
+The Chronometrist Manual
+************************
+
+The structure of this manual was inspired by
+<https://documentation.divio.com/>
+
+* Menu:
+
+* How to...::                Step-by-step guides to achieve specific tasks
+* Explanation::                  The design, the implementation, and a little history
+* Reference::                    A list of definitions, with some type information
+
+— The Detailed Node Listing —
+
+How to...
+
+* Set up Emacs to browse the project and contribute::
+
+Explanation
+
+* Design goals::                 Some vague objectives which guided the project
+* Terminology::                  Explanation of some terms used later
+* Project overview::             A broad overview of the code
+* Chronometrist::                The primary command and its associated buffer.
+* Midnight-spanning events::     Events starting on one day and ending on another
+* Point restore behaviour::      The desired behaviour of point in Chronometrist
+* chronometrist-report date range logic:: Deriving dates in the current week
+* Tags and Key-Values::          How tags and key-values are implemented
+
+Chronometrist
+
+* Optimization::
+
+Midnight-spanning events
+
+* Check the code of the first event of the day (timeclock format):: When the code of the first event in the day is "o", it’s a midnight-spanning event.
+* Split them at the file level::
+* Split them at the hash-table-level::
+* Split them at the data-consumer level (e.g. when calculating time for one day/getting events for one day): Split them at the data-consumer level (eg when calculating time for one day/getting events for one day).
+
+Tags and Key-Values
+
+* User input::
+* History::
+
+Reference
+
+* Legend of currently-used time formats::
+* chronometrist-common.el: chronometrist-commonel.
+* chronometrist-custom.el: chronometrist-customel.
+* chronometrist-diary-view.el: chronometrist-diary-viewel.
+* chronometrist.el: chronometristel.
+* chronometrist-events.el: chronometrist-eventsel.
+* chronometrist-migrate.el: chronometrist-migrateel.
+* chronometrist-plist-pp.el: chronometrist-plist-ppel.
+* chronometrist-queries.el: chronometrist-queriesel.
+* chronometrist-report-custom.el: chronometrist-report-customel.
+* chronometrist-report.el: chronometrist-reportel.
+* chronometrist-key-values.el: chronometrist-key-valuesel.
+* chronometrist-statistics-custom.el: chronometrist-statistics-customel.
+* chronometrist-statistics.el: chronometrist-statisticsel.
+* chronometrist-time.el: chronometrist-timeel.
+* chronometrist-timer.el: chronometrist-timerel.
+* chronometrist-goal::
+* chronometrist-sexp::
+
+Legend of currently-used time formats
+
+* ts::
+* iso-timestamp::
+* iso-date::
+* seconds::
+* minutes::
+* list-duration::
+
+
+
+File: manual.info,  Node: How to...,  Next: Explanation,  Prev: Top,  Up: Top
+
+1 How to...
+***********
+
+* Menu:
+
+* Set up Emacs to browse the project and contribute::
+
+
+File: manual.info,  Node: Set up Emacs to browse the project and contribute,  Up: How to...
+
+1.1 Set up Emacs to browse the project and contribute
+=====================================================
+
+All of these are optional, but recommended for the best experience.
+  1. Use nameless-mode (https://github.com/Malabarba/Nameless) for
+     easier reading of Emacs Lisp code, and
+  2. Use visual-fill-column-mode
+     (https://github.com/joostkremers/visual-fill-column) to soft-wrap
+     lines in Org/Markdown files.  ‘org-indent-mode’ (for Org files) and
+     adaptive-prefix-mode
+     (https://elpa.gnu.org/packages/adaptive-wrap.html) (for Markdown
+     and other files) will further enhance the experience.
+  3. Get the sources from
+     <https://github.com/contrapunctus-1/chronometrist> and read this
+     manual in the Org format (doc/manual.org), so links to identifiers
+     can take you to their location in the source.
+  4. Install Cask (https://github.com/cask/cask) to easily byte-compile
+     and test the project.  From the project root, you can now run
+       1. ‘cask’ to install the project dependencies in a sandbox
+       2. ‘cask exec buttercup -L . --traceback pretty’ to run tests.
+
+
+File: manual.info,  Node: Explanation,  Next: Reference,  Prev: How to...,  Up: Top
+
+2 Explanation
+*************
+
+* Menu:
+
+* Design goals::                 Some vague objectives which guided the project
+* Terminology::                  Explanation of some terms used later
+* Project overview::             A broad overview of the code
+* Chronometrist::                The primary command and its associated buffer.
+* Midnight-spanning events::     Events starting on one day and ending on another
+* Point restore behaviour::      The desired behaviour of point in Chronometrist
+* chronometrist-report date range logic:: Deriving dates in the current week
+* Tags and Key-Values::          How tags and key-values are implemented
+
+
+File: manual.info,  Node: Design goals,  Next: Terminology,  Up: Explanation
+
+2.1 Design goals
+================
+
+  1. Don’t make assumptions about the user’s profession
+        • e.g.  timeclock seems to assume you’re using it for a
+          9-to-5/contractor job
+  2. Incentivize use
+        • Hooks allow the time tracker to automate tasks and become a
+          useful part of your workflow
+  3. Make it easy to edit data using existing, familiar tools
+        • We don’t use an SQL database, where changing a single field is
+          tricky [1]
+        • We use a text file containing s-expressions (easy for humans
+          to read and write)
+        • We use ISO-8601 for timestamps (easy for humans to read and
+          write) rather than UNIX epoch time
+  4. Reduce human errors in tracking
+  5. Have a useful, informative, interactive interface
+  6. Support mouse and keyboard use equally
+
+   [1] I still have doubts about this.  Having SQL as a query language
+would be very useful in perusing the stored data.  Maybe we should have
+tried to create a companion mode to edit SQL databases interactively?
+
+
+File: manual.info,  Node: Terminology,  Next: Project overview,  Prev: Design goals,  Up: Explanation
+
+2.2 Terminology
+===============
+
+For lack of a better term, events are how we refer to time intervals.
+They are stored as plists; each contains at least a ‘:name "<name>"’, a
+‘:start "<iso-timestamp>"’, and (except in case of an ongoing task) a
+‘:stop "<iso-timestamp>"’.
+
+
+File: manual.info,  Node: Project overview,  Next: Chronometrist,  Prev: Terminology,  Up: Explanation
+
+2.3 Project overview
+====================
+
+Chronometrist has three components, and each has a file containing major
+mode definitions and user-facing commands.
+  1. chronometrist.el (../elisp/chronometrist.el)
+  2. chronometrist-report.el (../elisp/chronometrist-report.el)
+  3. chronometrist-statistics.el (../elisp/chronometrist-statistics.el)
+
+   All three of these use ‘(info "(elisp)Tabulated List Mode")’.  Each
+of them also contains a "-print-non-tabular" function, which prints the
+non-tabular parts of the buffer.
+
+   Each of them has a corresponding ‘-custom’ file, which contain the
+Customize group and custom variable definitions for user-facing
+variables -
+   • chronometrist-custom.el (../elisp/chronometrist-custom.el)
+   • chronometrist-report-custom.el
+     (../elisp/chronometrist-report-custom.el)
+   • chronometrist-statistics-custom.el
+     (../elisp/chronometrist-statistics-custom.el)
+
+   chronometrist-common.el (../elisp/chronometrist-common.el) contains
+definitions common to all components.
+
+   All three components use timers to keep their buffers updated.
+chronometrist-timer.el (../elisp/chronometrist-timer.el) contains all
+timer-related code.
+
+   Note - sometimes, when hacking or dealing with errors, timers may
+result in subtle bugs which are very hard to debug.  Using
+‘chronometrist-force-restart-timer’ or restarting Emacs can fix them, so
+try that as a first sanity check.
+
+
+File: manual.info,  Node: Chronometrist,  Next: Midnight-spanning events,  Prev: Project overview,  Up: Explanation
+
+2.4 Chronometrist
+=================
+
+* Menu:
+
+* Optimization::
+
+
+File: manual.info,  Node: Optimization,  Up: Chronometrist
+
+2.4.1 Optimization
+------------------
+
+It is of great importance that Chronometrist be responsive -
+   • A responsive program is more likely to be used; recall our design
+     goal of ’incentivizing use’.
+   • Being an Emacs program, freezing the UI for any human-noticeable
+     length of time is unacceptable - it prevents the user from working
+     on anything in their environment.
+   Thus, I have considered various optimization strategies, and so far
+implemented two.
+
+  1. Prevent excess creation of file watchers
+
+     One of the earliest ’optimizations’ of great importance turned out
+     to simply be a bug - turns out, if you run an identical call to
+     ‘file-notify-add-watch’ ((describe-function
+     'file-notify-add-watch)) twice, you create _two_ file watchers and
+     your callback will be called _twice._  We were creating a file
+     watcher _each time the chronometrist command was run._ 🤦 This was
+     causing humongous slowdowns each time the file changed. 😅
+        • It was fixed in v0.2.2 by making the watch creation
+          conditional, using ‘chronometrist--fs-watch’
+          (../elisp/chronometrist-common.el) to store the watch object.
+
+  2. Preserve state
+
+     The next one was released in v0.5.  Till then, any time the
+     ‘chronometrist-file’ (../elisp/chronometrist-custom.el) was
+     modified, we’d clear the ‘chronometrist-events’
+     (../elisp/chronometrist-events.el) hash table and read data into it
+     again.  The reading itself is nearly-instant, even with ~2 years’
+     worth of data (1) (it uses Emacs’ ‘read’ ((describe-function
+     'read)), after all), but the splitting of *note midnight-spanning
+     events: Midnight-spanning events. is the real performance killer.
+
+     After the optimization...
+       1. Two backend functions (‘chronometrist-sexp-new’
+          (../elisp/chronometrist-sexp.el) and
+          ‘chronometrist-sexp-replace-last’
+          (../elisp/chronometrist-sexp.el)) were modified to set a flag
+          (‘chronometrist--inhibit-read-p’ (../elisp/chronometrist.el))
+          before saving the file.
+       2. If this flag is non-nil, ‘chronometrist-refresh-file’
+          (../elisp/chronometrist.el) skips the expensive calls to
+          ‘chronometrist-events-populate’,
+          ‘chronometrist-tasks-from-table’, and
+          ‘chronometrist-tags-history-populate’, and resets the flag.
+       3. Instead, the aforementioned backend functions modify the
+          relevant variables - ‘chronometrist-events’,
+          ‘chronometrist-task-list’, and ‘chronometrist-tags-history’ -
+          via...
+             • ‘chronometrist-events-add’ /
+               ‘chronometrist-events-replace-last’
+             • ‘chronometrist-task-list-add’, and
+             • ‘chronometrist-tags-history-add’ /
+               ‘chronometrist-tags-history-replace-last’, respectively.
+
+     There are still some operations which ‘chronometrist-refresh-file’
+     (../elisp/chronometrist.el) runs unconditionally - which is to say
+     there is scope for further optimization, if or when required.
+
+   ---------- Footnotes ----------
+
+   (1) As indicated by exploratory work in the ‘parsimonious-reading’
+branch, where I made a loop to only ‘read’ and collect s-expressions
+from the file.  It was near-instant...until I added event splitting to
+it.
+
+
+File: manual.info,  Node: Midnight-spanning events,  Next: Point restore behaviour,  Prev: Chronometrist,  Up: Explanation
+
+2.5 Midnight-spanning events
+============================
+
+A unique problem in working with Chronometrist, one I had never
+foreseen, was tasks which start on one day and end on another.  These
+mess up data consumption (especially interval calculations and acquiring
+data for a specific date) in all sorts of unforeseen ways.
+
+   There are a few different approaches of dealing with them.
+(Currently, Chronometrist uses #3.)
+
+* Menu:
+
+* Check the code of the first event of the day (timeclock format):: When the code of the first event in the day is "o", it’s a midnight-spanning event.
+* Split them at the file level::
+* Split them at the hash-table-level::
+* Split them at the data-consumer level (e.g. when calculating time for one day/getting events for one day): Split them at the data-consumer level (eg when calculating time for one day/getting events for one day).
+
+
+File: manual.info,  Node: Check the code of the first event of the day (timeclock format),  Next: Split them at the file level,  Up: Midnight-spanning events
+
+2.5.1 Check the code of the first event of the day (timeclock format)
+---------------------------------------------------------------------
+
+   • Advantage - very simple to detect
+   • Disadvantage - "in" and "out" events must be represented separately
+
+
+File: manual.info,  Node: Split them at the file level,  Next: Split them at the hash-table-level,  Prev: Check the code of the first event of the day (timeclock format),  Up: Midnight-spanning events
+
+2.5.2 Split them at the file level
+----------------------------------
+
+   • Advantage - operation is performed only once for each such event +
+     simpler data-consuming code + reduced post-parsing load.
+   • What happens when the user changes their day-start-time?  The
+     split-up events are now split wrongly, and the second event may get
+     split _again._  Possible solutions -
+       1. Add function to check if, for two events A and B, the :stop of
+          A is the same as the :start of B, and that all their other
+          tags are identical.  Then we can re-split them according to
+          the new day-start-time.
+       2. Add a :split tag to split events.  It can denote that the next
+          event was originally a part of this one.
+       3. Re-check and update the file when the day-start-time changes.
+             • Possible with ‘add-variable-watcher’ or ‘:custom-set’ in
+               Customize (thanks bpalmer)
+
+
+File: manual.info,  Node: Split them at the hash-table-level,  Next: Split them at the data-consumer level (eg when calculating time for one day/getting events for one day),  Prev: Split them at the file level,  Up: Midnight-spanning events
+
+2.5.3 Split them at the hash-table-level
+----------------------------------------
+
+Handled by ‘chronometrist-sexp-events-populate’
+   • Advantage - simpler data-consuming code.
+
+
+File: manual.info,  Node: Split them at the data-consumer level (eg when calculating time for one day/getting events for one day),  Prev: Split them at the hash-table-level,  Up: Midnight-spanning events
+
+2.5.4 Split them at the data-consumer level (e.g. when calculating time for one day/getting events for one day)
+---------------------------------------------------------------------------------------------------------------
+
+   • Advantage - reduced repetitive post-parsing load.
+
+
+File: manual.info,  Node: Point restore behaviour,  Next: chronometrist-report date range logic,  Prev: Midnight-spanning events,  Up: Explanation
+
+2.6 Point restore behaviour
+===========================
+
+After hacking, always test for and ensure the following -
+  1. Toggling the buffer via
+     ‘chronometrist=/=chronometrist-report=/=chronometrist-statistics’
+     should preserve point
+  2. The timer function should preserve point when the buffer is current
+  3. The timer function should preserve point when the buffer is not
+     current, but is visible in another window
+  4. The next/previous week keys and buttons should preserve point.
+
+
+File: manual.info,  Node: chronometrist-report date range logic,  Next: Tags and Key-Values,  Prev: Point restore behaviour,  Up: Explanation
+
+2.7 chronometrist-report date range logic
+=========================================
+
+A quick description, starting from the first time ‘chronometrist-report’
+(../elisp/chronometrist-report.el) is run in an Emacs session -
+  1. We get the current date as a ts struct ‘(chronometrist-date)’.
+  2. The variable ‘chronometrist-report-week-start-day’ stores the day
+     we consider the week to start with.  The default is "Sunday".
+
+     We check if the date from #2 is on the week start day, else
+     decrement it till we are, using
+     ‘(chronometrist-report-previous-week-start)’.
+  3. We store the date from #3 in the global variable
+     ‘chronometrist-report--ui-date’.
+  4. By counting up from ‘chronometrist-report--ui-date’, we get dates
+     for the days in the next 7 days using
+     ‘(chronometrist-report-date->dates-in-week)’.  We store them in
+     ‘chronometrist-report--ui-week-dates’.
+
+     The dates in ‘chronometrist-report--ui-week-dates’ are what is
+     finally used to query the data displayed in the buffer.
+  5. To get data for the previous/next weeks, we decrement/increment the
+     date in ‘chronometrist-report--ui-date’ by 7 days and repeat the
+     above process (via
+     ‘(chronometrist-report-previous-week)=/=(chronometrist-report-next-week)’).
+
+
+File: manual.info,  Node: Tags and Key-Values,  Prev: chronometrist-report date range logic,  Up: Explanation
+
+2.8 Tags and Key-Values
+=======================
+
+chronometrist-key-values.el (../elisp/chronometrist-key-values.el) deals
+with adding additional information to events, in the form of key-values
+and tags.
+
+   Key-values are stored as plist keywords and values.  The user can add
+any keywords except ‘:name’, ‘:tags’, ‘:start’, and ‘:stop’.  (1) Values
+can be any readable Lisp values.
+
+   Similarly, tags are stored using a ‘:tags (<tag>*)’ keyword-value
+pair.  The tags themselves (the elements of the list) can be any
+readable Lisp value.
+
+* Menu:
+
+* User input::
+* History::
+
+   ---------- Footnotes ----------
+
+   (1) To remove this restriction, I had briefly considered making a
+keyword called ‘:user’, whose value would be another plist containing
+all user-defined keyword-values.  But in practice, this hasn’t been a
+big enough issue yet to justify the work.
+
+
+File: manual.info,  Node: User input,  Next: History,  Up: Tags and Key-Values
+
+2.8.1 User input
+----------------
+
+The entry points are ‘chronometrist-kv-add’
+(../elisp/chronometrist-key-values.el) and ‘chronometrist-tags-add’
+(../elisp/chronometrist-key-values.el).  The user adds these to the
+desired hooks, and they prompt the user for tags/key-values.
+
+   Both have corresponding functions to create a prompt -
+   • ‘chronometrist-key-prompt’ (../elisp/chronometrist-key-values.el),
+   • ‘chronometrist-value-prompt’
+     (../elisp/chronometrist-key-values.el), and
+   • ‘chronometrist-tags-prompt’ (../elisp/chronometrist-key-values.el).
+
+   ‘chronometrist-kv-add’ (../elisp/chronometrist-key-values.el)’s way
+of reading key-values from the user is somewhat different from most
+Emacs prompts - it creates a new buffer, and uses the minibuffer to
+alternatingly ask for keys and values in a loop.  Key-values are
+inserted into the buffer as the user enters/selects them.  The user can
+break out of this loop with an empty input (the keys to accept an empty
+input differ between completion systems, so we try to let the user know
+about them using ‘chronometrist-kv-completion-quit-key’
+(../elisp/chronometrist-key-values.el)).  After exiting the loop, they
+can edit the key-values in the buffer, and use the commands
+‘chronometrist-kv-accept’ (../elisp/chronometrist-key-values.el) to
+accept the key-values (which uses ‘chronometrist-append-to-last’
+(../elisp/chronometrist-key-values.el) to add them to the last plist in
+‘chronometrist-file’) or ‘chronometrist-kv-reject’
+(../elisp/chronometrist-key-values.el) to discard them.
+
+
+File: manual.info,  Node: History,  Prev: User input,  Up: Tags and Key-Values
+
+2.8.2 History
+-------------
+
+All prompts suggest past user inputs.  These are queried from three
+history hash tables -
+   • ‘chronometrist-key-history’ (../elisp/chronometrist-key-values.el),
+   • ‘chronometrist-value-history’
+     (../elisp/chronometrist-key-values.el), and
+   • ‘chronometrist-tags-history’
+     (../elisp/chronometrist-key-values.el).
+
+   Each of these has a corresponding function to clear it and fill it
+with values -
+   • ‘chronometrist-key-history-populate’
+     (../elisp/chronometrist-key-values.el)
+   • ‘chronometrist-value-history-populate’
+     (../elisp/chronometrist-key-values.el), and
+   • ‘chronometrist-tags-history-populate’
+     (../elisp/chronometrist-key-values.el).
+
+
+File: manual.info,  Node: Reference,  Prev: Explanation,  Up: Top
+
+3 Reference
+***********
+
+* Menu:
+
+* Legend of currently-used time formats::
+* chronometrist-common.el: chronometrist-commonel.
+* chronometrist-custom.el: chronometrist-customel.
+* chronometrist-diary-view.el: chronometrist-diary-viewel.
+* chronometrist.el: chronometristel.
+* chronometrist-events.el: chronometrist-eventsel.
+* chronometrist-migrate.el: chronometrist-migrateel.
+* chronometrist-plist-pp.el: chronometrist-plist-ppel.
+* chronometrist-queries.el: chronometrist-queriesel.
+* chronometrist-report-custom.el: chronometrist-report-customel.
+* chronometrist-report.el: chronometrist-reportel.
+* chronometrist-key-values.el: chronometrist-key-valuesel.
+* chronometrist-statistics-custom.el: chronometrist-statistics-customel.
+* chronometrist-statistics.el: chronometrist-statisticsel.
+* chronometrist-time.el: chronometrist-timeel.
+* chronometrist-timer.el: chronometrist-timerel.
+* chronometrist-goal::
+* chronometrist-sexp::
+
+
+File: manual.info,  Node: Legend of currently-used time formats,  Next: chronometrist-commonel,  Up: Reference
+
+3.1 Legend of currently-used time formats
+=========================================
+
+* Menu:
+
+* ts::
+* iso-timestamp::
+* iso-date::
+* seconds::
+* minutes::
+* list-duration::
+
+
+File: manual.info,  Node: ts,  Next: iso-timestamp,  Up: Legend of currently-used time formats
+
+3.1.1 ts
+--------
+
+ts.el struct
+   • Used by nearly all internal functions
+
+
+File: manual.info,  Node: iso-timestamp,  Next: iso-date,  Prev: ts,  Up: Legend of currently-used time formats
+
+3.1.2 iso-timestamp
+-------------------
+
+"YYYY-MM-DDTHH:MM:SSZ"
+   • Used in the s-expression file format
+   • Read by chronometrist-sexp-events-populate
+   • Used in the plists in the chronometrist-events hash table values
+
+
+File: manual.info,  Node: iso-date,  Next: seconds,  Prev: iso-timestamp,  Up: Legend of currently-used time formats
+
+3.1.3 iso-date
+--------------
+
+"YYYY-MM-DD"
+   • Used as hash table keys in chronometrist-events - can’t use ts
+     structs for keys, you’d have to make a hash table predicate which
+     uses ts=
+
+
+File: manual.info,  Node: seconds,  Next: minutes,  Prev: iso-date,  Up: Legend of currently-used time formats
+
+3.1.4 seconds
+-------------
+
+integer seconds as duration
+   • Used for most durations
+   • May be changed to floating point to allow larger durations.  The
+     minimum range of ‘most-positive-fixnum‘ is 536870911, which seems
+     to be enough to represent durations of 17 years.
+   • Used for update intervals (chronometrist-update-interval,
+     chronometrist-change-update-interval)
+
+
+File: manual.info,  Node: minutes,  Next: list-duration,  Prev: seconds,  Up: Legend of currently-used time formats
+
+3.1.5 minutes
+-------------
+
+integer minutes as duration
+   • Used for goals (chronometrist-goals-list, chronometrist-get-goal) -
+     minutes seems like the ideal unit for users to enter
+
+
+File: manual.info,  Node: list-duration,  Prev: minutes,  Up: Legend of currently-used time formats
+
+3.1.6 list-duration
+-------------------
+
+(hours minute seconds)
+   • Only returned by chronometrist-seconds-to-hms, called by
+     chronometrist-format-time
+
+
+File: manual.info,  Node: chronometrist-commonel,  Next: chronometrist-customel,  Prev: Legend of currently-used time formats,  Up: Reference
+
+3.2 chronometrist-common.el
+===========================
+
+  1. Variable - chronometrist-empty-time-string
+  2. Variable - chronometrist-date-re
+  3. Variable - chronometrist-time-re-ui
+  4. Variable - chronometrist-task-list
+  5. Function - chronometrist-task-list-add (task)
+  6. Internal Variable - chronometrist–fs-watch
+  7. Function - chronometrist-current-task ()
+  8. Function - chronometrist-format-time (seconds &optional (blank "
+     "))
+        • seconds -> "h:m:s"
+  9. Function - chronometrist-common-file-empty-p (file)
+  10. Function - chronometrist-common-clear-buffer (buffer)
+  11. Function - chronometrist-format-keybinds (command map &optional
+     firstonly)
+  12. Function - chronometrist-events->ts-pairs (events)
+        • (plist ...) -> ((ts .  ts) ...)
+  13. Function - chronometrist-ts-pairs->durations (ts-pairs)
+        • ((ts .  ts) ...) -> seconds
+  14. Function - chronometrist-previous-week-start (ts)
+        • ts -> ts
+
+
+File: manual.info,  Node: chronometrist-customel,  Next: chronometrist-diary-viewel,  Prev: chronometrist-commonel,  Up: Reference
+
+3.3 chronometrist-custom.el
+===========================
+
+  1. Custom variable - chronometrist-file
+  2. Custom variable - chronometrist-buffer-name
+  3. Custom variable - chronometrist-hide-cursor
+  4. Custom variable - chronometrist-update-interval
+  5. Custom variable - chronometrist-activity-indicator
+  6. Custom variable - chronometrist-day-start-time
+
+
+File: manual.info,  Node: chronometrist-diary-viewel,  Next: chronometristel,  Prev: chronometrist-customel,  Up: Reference
+
+3.4 chronometrist-diary-view.el
+===============================
+
+  1. Variable - chronometrist-diary-buffer-name
+  2. Internal Variable - chronometrist-diary–current-date
+  3. Function - chronometrist-intervals-on (date)
+  4. Function - chronometrist-diary-tasks-reasons-on (date)
+  5. Function - chronometrist-diary-refresh (&optional ignore-auto
+     noconfirm date)
+  6. Major Mode - chronometrist-diary-view-mode
+  7. Command - chronometrist-diary-view (&optional date)
+
+
+File: manual.info,  Node: chronometristel,  Next: chronometrist-eventsel,  Prev: chronometrist-diary-viewel,  Up: Reference
+
+3.5 chronometrist.el
+====================
+
+  1. Internal Variable - chronometrist–task-history
+  2. Internal Variable - chronometrist–point
+  3. Internal Variable - chronometrist–inhibit-read-p
+  4. Keymap - chronometrist-mode-map
+  5. Command - chronometrist-open-log (&optional button)
+  6. Function - chronometrist-common-create-file ()
+  7. Function - chronometrist-task-active?  (task)
+        • String -> Boolean
+  8. Function - chronometrist-use-goals?  ()
+  9. Function - chronometrist-activity-indicator ()
+  10. Function - chronometrist-entries ()
+  11. Function - chronometrist-task-at-point ()
+  12. Function - chronometrist-goto-last-task ()
+  13. Function - chronometrist-print-keybind (command &optional
+     description firstonly)
+  14. Function - chronometrist-print-non-tabular ()
+  15. Function - chronometrist-goto-nth-task (n)
+  16. Function - chronometrist-refresh (&optional ignore-auto noconfirm)
+  17. Function - chronometrist-refresh-file (fs-event)
+  18. Command - chronometrist-query-stop ()
+  19. Command - chronometrist-in (task &optional _prefix)
+  20. Command - chronometrist-out (&optional _prefix)
+  21. Variable - chronometrist-before-in-functions
+  22. Variable - chronometrist-after-in-functions
+  23. Variable - chronometrist-before-out-functions
+  24. Variable - chronometrist-after-out-functions
+  25. Function - chronometrist-run-functions-and-clock-in (task)
+  26. Function - chronometrist-run-functions-and-clock-out (task)
+  27. Keymap - chronometrist-mode-map
+  28. Major Mode - chronometrist-mode
+  29. Function - chronometrist-toggle-task-button (button)
+  30. Function - chronometrist-add-new-task-button (button)
+  31. Command - chronometrist-toggle-task (&optional prefix
+     inhibit-hooks)
+  32. Command - chronometrist-toggle-task-no-hooks (&optional prefix)
+  33. Command - chronometrist-add-new-task ()
+  34. Command - chronometrist (&optional arg)
+
+
+File: manual.info,  Node: chronometrist-eventsel,  Next: chronometrist-migrateel,  Prev: chronometristel,  Up: Reference
+
+3.6 chronometrist-events.el
+===========================
+
+  1. Variable - chronometrist-events
+        • keys - iso-date
+  2. Function - chronometrist-day-start (timestamp)
+        • iso-timestamp -> encode-time
+  3. Function - chronometrist-file-clean ()
+        • commented out, unused
+  4. Function - chronometrist-events-maybe-split (event)
+  5. Function - chronometrist-events-populate ()
+  6. Function - chronometrist-tasks-from-table ()
+  7. Function - chronometrist-events-add (plist)
+  8. Function - chronometrist-events-replace-last (plist)
+  9. Function - chronometrist-events-subset (start end)
+        • ts ts -> hash-table
+  10. Function - chronometrist-events-query-spec-match-p (plist
+     specifiers)
+  11. Function - chronometrist-events-query (table &key get specifiers
+     except)
+
+
+File: manual.info,  Node: chronometrist-migrateel,  Next: chronometrist-plist-ppel,  Prev: chronometrist-eventsel,  Up: Reference
+
+3.7 chronometrist-migrate.el
+============================
+
+  1. Variable - chronometrist-migrate-table
+  2. Function - chronometrist-migrate-populate (in-file)
+  3. Function - chronometrist-migrate-timelog-file->sexp-file (&optional
+     in-file out-file)
+  4. Function - chronometrist-migrate-check ()
+
+
+File: manual.info,  Node: chronometrist-plist-ppel,  Next: chronometrist-queriesel,  Prev: chronometrist-migrateel,  Up: Reference
+
+3.8 chronometrist-plist-pp.el
+=============================
+
+  1. Variable - chronometrist-plist-pp-keyword-re
+  2. Variable - chronometrist-plist-pp-whitespace-re
+  3. Function - chronometrist-plist-pp-longest-keyword-length ()
+  4. Function - chronometrist-plist-pp-buffer-keyword-helper ()
+  5. Function - chronometrist-plist-pp-buffer ()
+  6. Function - chronometrist-plist-pp-to-string (object)
+  7. Function - chronometrist-plist-pp (object &optional stream)
+
+
+File: manual.info,  Node: chronometrist-queriesel,  Next: chronometrist-report-customel,  Prev: chronometrist-plist-ppel,  Up: Reference
+
+3.9 chronometrist-queries.el
+============================
+
+  1. Function - chronometrist-last ()
+        • -> plist
+  2. Function - chronometrist-task-time-one-day (task &optional (ts
+     (ts-now)))
+        • String &optional ts -> seconds
+  3. Function - chronometrist-active-time-one-day (&optional ts)
+        • &optional ts -> seconds
+  4. Function - chronometrist-statistics-count-active-days (task
+     &optional (table chronometrist-events))
+  5. Function - chronometrist-task-events-in-day (task ts)
+
+
+File: manual.info,  Node: chronometrist-report-customel,  Next: chronometrist-reportel,  Prev: chronometrist-queriesel,  Up: Reference
+
+3.10 chronometrist-report-custom.el
+===================================
+
+  1. Custom variable - chronometrist-report-buffer-name
+  2. Custom variable - chronometrist-report-week-start-day
+  3. Custom variable - chronometrist-report-weekday-number-alist
+
+
+File: manual.info,  Node: chronometrist-reportel,  Next: chronometrist-key-valuesel,  Prev: chronometrist-report-customel,  Up: Reference
+
+3.11 chronometrist-report.el
+============================
+
+  1. Internal Variable - chronometrist-report–ui-date
+  2. Internal Variable - chronometrist-report–ui-week-dates
+  3. Internal Variable - chronometrist-report–point
+  4. Function - chronometrist-report-date ()
+  5. Function - chronometrist-report-date->dates-in-week
+     (first-date-in-week)
+        • ts-1 -> (ts-1 ... ts-7)
+  6. Function - chronometrist-report-date->week-dates ()
+  7. Function - chronometrist-report-entries ()
+  8. Function - chronometrist-report-print-keybind (command &optional
+     description firstonly)
+  9. Function - chronometrist-report-print-non-tabular ()
+  10. Function - chronometrist-report-refresh (&optional _ignore-auto
+     _noconfirm)
+  11. Function - chronometrist-report-refresh-file (_fs-event)
+  12. Keymap - chronometrist-report-mode-map
+  13. Major Mode - chronometrist-report-mode
+  14. Function - chronometrist-report (&optional keep-date)
+  15. Function - chronometrist-report-previous-week (arg)
+  16. Function - chronometrist-report-next-week (arg)
+
+
+File: manual.info,  Node: chronometrist-key-valuesel,  Next: chronometrist-statistics-customel,  Prev: chronometrist-reportel,  Up: Reference
+
+3.12 chronometrist-key-values.el
+================================
+
+  1. Internal Variable - chronometrist–tag-suggestions
+  2. Internal Variable - chronometrist–value-suggestions
+  3. Function - chronometrist-plist-remove (plist &rest keys)
+  4. Function - chronometrist-maybe-string-to-symbol (list)
+  5. Function - chronometrist-maybe-symbol-to-string (list)
+  6. Function - chronometrist-append-to-last (tags plist)
+  7. Variable - chronometrist-tags-history
+  8. Function - chronometrist-tags-history-populate ()
+  9. Function - chronometrist-tags-history-add (plist)
+  10. Function - chronometrist-tags-history-replace-last (plist)
+  11. Function - chronometrist-tags-history-combination-strings (task)
+  12. Function - chronometrist-tags-history-individual-strings (task)
+  13. Function - chronometrist-tags-prompt (task &optional
+     initial-input)
+  14. Function - chronometrist-tags-add (&rest args)
+  15. Custom Variable - chronometrist-kv-buffer-name
+  16. Variable - chronometrist-key-history
+  17. Variable - chronometrist-value-history
+  18. Function - chronometrist-ht-history-prep (table)
+  19. Function - chronometrist-key-history-populate ()
+  20. Function - chronometrist-value-history-populate ()
+  21. Keymap - chronometrist-kv-read-mode-map
+  22. Major Mode - chronometrist-kv-read-mode
+  23. Function - chronometrist-kv-completion-quit-key ()
+  24. Function - chronometrist-string-has-whitespace-p (string)
+  25. Function - chronometrist-key-prompt (used-keys)
+  26. Function - chronometrist-value-prompt (key)
+  27. Function - chronometrist-value-insert (value)
+  28. Function - chronometrist-kv-add (&rest args)
+  29. Command - chronometrist-kv-accept ()
+  30. Command - chronometrist-kv-reject ()
+
+
+File: manual.info,  Node: chronometrist-statistics-customel,  Next: chronometrist-statisticsel,  Prev: chronometrist-key-valuesel,  Up: Reference
+
+3.13 chronometrist-statistics-custom.el
+=======================================
+
+  1. Custom variable - chronometrist-statistics-buffer-name
+
+
+File: manual.info,  Node: chronometrist-statisticsel,  Next: chronometrist-timeel,  Prev: chronometrist-statistics-customel,  Up: Reference
+
+3.14 chronometrist-statistics.el
+================================
+
+  1. Internal Variable - chronometrist-statistics–ui-state
+  2. Internal Variable - chronometrist-statistics–point
+  3. Function - chronometrist-statistics-count-average-time-spent (task
+     &optional (table chronometrist-events))
+        • string &optional hash-table -> seconds
+  4. Function - chronometrist-statistics-entries-internal (table)
+  5. Function - chronometrist-statistics-entries ()
+  6. Function - chronometrist-statistics-print-keybind (command
+     &optional description firstonly)
+  7. Function - chronometrist-statistics-print-non-tabular ()
+  8. Function - chronometrist-statistics-refresh (&optional ignore-auto
+     noconfirm)
+  9. Keymap - chronometrist-statistics-mode-map
+  10. Major Mode - chronometrist-statistics-mode
+  11. Command - chronometrist-statistics (&optional preserve-state)
+  12. Command - chronometrist-statistics-previous-range (arg)
+  13. Command - chronometrist-statistics-next-range (arg)
+
+
+File: manual.info,  Node: chronometrist-timeel,  Next: chronometrist-timerel,  Prev: chronometrist-statisticsel,  Up: Reference
+
+3.15 chronometrist-time.el
+==========================
+
+  1. Function - chronometrist-iso-timestamp->ts (timestamp)
+        • iso-timestamp -> ts
+  2. Function - chronometrist-iso-date->ts (date)
+        • iso-date -> ts
+  3. Function - chronometrist-date (&optional (ts (ts-now)))
+        • &optional ts -> ts (with time 00:00:00)
+  4. Function - chronometrist-format-time-iso8601 (&optional unix-time)
+  5. Function - chronometrist-midnight-spanning-p (start-time stop-time)
+  6. Function - chronometrist-seconds-to-hms (seconds)
+        • seconds -> list-duration
+  7. Function - chronometrist-interval (event)
+        • event -> duration
+
+
+File: manual.info,  Node: chronometrist-timerel,  Next: chronometrist-goal,  Prev: chronometrist-timeel,  Up: Reference
+
+3.16 chronometrist-timer.el
+===========================
+
+  1. Internal Variable - chronometrist–timer-object
+  2. Function - chronometrist-timer ()
+  3. Command - chronometrist-stop-timer ()
+  4. Command - chronometrist-maybe-start-timer (&optional
+     interactive-test)
+  5. Command - chronometrist-force-restart-timer ()
+  6. Command - chronometrist-change-update-interval (arg)
+
+
+File: manual.info,  Node: chronometrist-goal,  Next: chronometrist-sexp,  Prev: chronometrist-timerel,  Up: Reference
+
+3.17 chronometrist-goal
+=======================
+
+  1. Internal Variable - chronometrist-goal–timers-list
+  2. Custom Variable - chronometrist-goal-list nil
+  3. Function - chronometrist-goal-run-at-time (time repeat function
+     &rest args)
+  4. Function - chronometrist-goal-seconds->alert-string (seconds)
+        • seconds -> string
+  5. Function - chronometrist-goal-approach-alert (task goal spent)
+        • string minutes minutes
+  6. Function - chronometrist-goal-complete-alert (task goal spent)
+        • string minutes minutes
+  7. Function - chronometrist-goal-exceed-alert (task goal spent)
+        • string minutes minutes
+  8. Function - chronometrist-goal-no-goal-alert (task goal spent)
+        • string minutes minutes
+  9. Custom Variable - chronometrist-goal-alert-functions
+        • each function is passed - string minutes minutes
+  10. Function - chronometrist-goal-get (task &optional (goal-list
+     chronometrist-goal-list))
+        • String &optional List -> minutes
+  11. Function - chronometrist-goal-run-alert-timers (task)
+  12. Function - chronometrist-goal-stop-alert-timers (&optional _task)
+  13. Function - chronometrist-goal-on-file-change ()
+
+
+File: manual.info,  Node: chronometrist-sexp,  Prev: chronometrist-goal,  Up: Reference
+
+3.18 chronometrist-sexp
+=======================
+
+  1. Macro - chronometrist-sexp-in-file (file &rest body)
+  2. Function - chronometrist-sexp-open-log ()
+  3. Function - chronometrist-sexp-between (&optional (ts-beg
+     (chronometrist-date)) (ts-end (ts-adjust ’day +1
+     (chronometrist-date))))
+  4. Function - chronometrist-sexp-query-till (&optional (date
+     (chronometrist-date)))
+  5. Function - chronometrist-sexp-last ()
+        • -> plist
+  6. Function - chronometrist-sexp-current-task ()
+  7. Function - chronometrist-sexp-events-populate ()
+  8. Function - chronometrist-sexp-create-file ()
+  9. Function - chronometrist-sexp-new (plist &optional (buffer
+     (find-file-noselect chronometrist-file)))
+  10. Function - chronometrist-sexp-delete-list (&optional arg)
+  11. Function - chronometrist-sexp-replace-last (plist)
+  12. Command - chronometrist-sexp-reindent-buffer ()
+
+
+
+Tag Table:
+Node: Top73
+Node: How to...2825
+Node: Set up Emacs to browse the project and contribute2995
+Node: Explanation4217
+Node: Design goals4948
+Node: Terminology6085
+Node: Project overview6475
+Node: Chronometrist8010
+Node: Optimization8193
+Ref: Optimization-Footnote-111481
+Node: Midnight-spanning events11704
+Node: Check the code of the first event of the day (timeclock format)12705
+Node: Split them at the file level13124
+Node: Split them at the hash-table-level14286
+Node: Split them at the data-consumer level (eg when calculating time for one day/getting events for one day)14714
+Node: Point restore behaviour15204
+Node: chronometrist-report date range logic15858
+Node: Tags and Key-Values17327
+Ref: Tags and Key-Values-Footnote-118074
+Node: User input18332
+Node: History20018
+Node: Reference20844
+Node: Legend of currently-used time formats21849
+Node: ts22138
+Node: iso-timestamp22314
+Node: iso-date22660
+Node: seconds22984
+Node: minutes23496
+Node: list-duration23806
+Node: chronometrist-commonel24069
+Node: chronometrist-customel25179
+Node: chronometrist-diary-viewel25672
+Node: chronometristel26276
+Node: chronometrist-eventsel28316
+Node: chronometrist-migrateel29250
+Node: chronometrist-plist-ppel29687
+Node: chronometrist-queriesel30287
+Node: chronometrist-report-customel30943
+Node: chronometrist-reportel31335
+Node: chronometrist-key-valuesel32545
+Node: chronometrist-statistics-customel34419
+Node: chronometrist-statisticsel34710
+Node: chronometrist-timeel35863
+Node: chronometrist-timerel36646
+Node: chronometrist-goal37154
+Node: chronometrist-sexp38474
+
+End Tag Table
+
+
+Local Variables:
+coding: utf-8
+End:
