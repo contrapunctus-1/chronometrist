@@ -20,10 +20,11 @@ Largely modelled after the Android application, [A Time Tracker](https://github.
 
 ## Comparisons
 ### timeclock.el
-* Stores data in an s-expression format rather than a line-based one
-* Supports attaching tags and arbitrary key-values to time intervals
-* Has commands to shows useful summaries
-* Has a more useful implementation of hooks (see [Hooks](#Hooks))
+Compared to timeclock.el, Chronometrist
+* stores data in an s-expression format rather than a line-based one
+* supports attaching tags and arbitrary key-values to time intervals
+* has commands to shows useful summaries
+* has more hooks (see [Hooks](#Hooks))
 
 ### Org time tracking
 Chronometrist and Org time tracking seem to be equivalent in terms of capabilities, approaching the same ends through different means.
