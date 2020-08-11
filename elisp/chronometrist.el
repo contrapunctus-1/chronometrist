@@ -391,28 +391,30 @@ If INHIBIT-HOOKS is non-nil, the hooks
 `chronometrist-before-out-functions', and
 `chronometrist-after-out-functions' will not be run."
   (interactive "P")
-  (let* ((empty-file (chronometrist-common-file-empty-p chronometrist-file))
-         (nth        (when prefix (chronometrist-goto-nth-task prefix)))
-         (at-point   (chronometrist-task-at-point))
-         (target     (or nth at-point))
-         (current    (chronometrist-current-task))
-         (in-fn      (if inhibit-hooks
-                         #'chronometrist-in
-                       #'chronometrist-run-functions-and-clock-in))
-         (out-fn     (if inhibit-hooks
-                         #'chronometrist-out
-                       #'chronometrist-run-functions-and-clock-out)))
-    (cond (empty-file (chronometrist-add-new-task)) ;; do not run hooks - chronometrist-add-new-task will do it
-          ;; What should we do if the user provides an invalid argument? Currently - nothing.
+  (let* ((empty-file   (chronometrist-common-file-empty-p chronometrist-file))
+         (nth          (when prefix (chronometrist-goto-nth-task prefix)))
+         (at-point     (chronometrist-task-at-point))
+         (target       (or nth at-point))
+         (current      (chronometrist-current-task))
+         (in-function  (if inhibit-hooks
+                           #'chronometrist-in
+                         #'chronometrist-run-functions-and-clock-in))
+         (out-function (if inhibit-hooks
+                           #'chronometrist-out
+                         #'chronometrist-run-functions-and-clock-out)))
+    ;; do not run hooks - chronometrist-add-new-task will do it
+    (cond (empty-file (chronometrist-add-new-task))
+          ;; What should we do if the user provides an invalid
+          ;; argument? Currently - nothing.
           ((and prefix (not nth)))
           (target ;; do nothing if there's no task at point
            ;; clocked in + target is current = clock out
            ;; clocked in + target is some other task = clock out, clock in to task
            ;; clocked out = clock in
            (when current
-             (funcall out-fn current))
+             (funcall out-function current))
            (unless (equal target current)
-             (funcall in-fn target))))))
+             (funcall in-function target))))))
 
 (defun chronometrist-toggle-task-no-hooks (&optional prefix)
   "Like `chronometrist-toggle-task', but don't run hooks.
