@@ -46,13 +46,20 @@
 
 ;; ## Comparisons
 ;; ### timeclock.el
-;; * Stores data in an s-expression format rather than a line-based one
-;; * Supports attaching tags and arbitrary key-values to time intervals
-;; * Has commands to shows useful summaries
-;; * Has a more useful implementation of hooks (see [Hooks](#Hooks))
+;; Compared to timeclock.el, Chronometrist
+;; * stores data in an s-expression format rather than a line-based one
+;; * supports attaching tags and arbitrary key-values to time intervals
+;; * has commands to shows useful summaries
+;; * has more hooks
 
 ;; ### Org time tracking
-;; * Chronometrist is tailored towards long-term, rarely-changing, everyday tasks, rather than transient ones. You might think of it as a program to help balance your day, or to help you form habits.
+;; Chronometrist and Org time tracking seem to be equivalent in terms of capabilities, approaching the same ends through different means.
+;; * Chronometrist doesn't have a mode line indicator at the moment. (planned)
+;; * Chronometrist doesn't have Org's sophisticated querying facilities. (an SQLite backend is planned)
+;; * Org does so many things that keybindings seem to necessarily get longer. Chronometrist has far fewer commands than Org, so most of the keybindings are single keys, without modifiers.
+;; * Chronometrist's UI makes keybindings discoverable - they are displayed in the buffers themselves.
+;; * Chronometrist's UI is cleaner, since the storage is separate from the display. It doesn't show tasks as trees like Org, but it uses tags and key-values to achieve that. Additionally, navigating a flat list takes fewer user operations than navigating a tree.
+;; * Chronometrist data is just s-expressions (plists), and may be easier to parse than a complex text format with numerous use-cases.
 
 ;; For information on usage and customization, see https://github.com/contrapunctus-1/chronometrist/blob/master/README.md
 
