@@ -67,7 +67,10 @@
 
 ;; `chronometrist-goal' is an optional extension. But even these don't make the
 ;; warnings go away :\
-(defvar chronometrist-goal-list)
+(eval-when-compile
+  (defvar chronometrist-goal-list)
+  (defvar chronometrist-mode-map))
+
 (declare-function 'chronometrist-goal-get "chronometrist-goal")
 
 (autoload 'chronometrist-maybe-start-timer "chronometrist-timer" nil t)
@@ -78,7 +81,6 @@
 (defvar chronometrist--task-history nil)
 (defvar chronometrist--point nil)
 (defvar chronometrist--inhibit-read-p nil)
-(defvar chronometrist-mode-map)
 
 ;; ## FUNCTIONS ##
 (defun chronometrist-open-log (&optional _button)
@@ -344,7 +346,6 @@ is the name of the task to be clocked out of.")
 
 ;; ## BUTTONS ##
 
-;; FIXME - there is duplication between this function and `chronometrist-toggle-task's logic
 (defun chronometrist-toggle-task-button (_button)
   "Button action to toggle a task.
 
@@ -376,8 +377,6 @@ action, and is ignored."
 ;; ## COMMANDS ##
 
 ;; TODO - if clocked in and point not on a task, just clock out
-;; PROFILE
-;; TODO - implement `chronometrist-ask-tags-p' and `chronometrist-ask-key-values-p' (don't prompt for them if nil)
 (defun chronometrist-toggle-task (&optional prefix inhibit-hooks)
   "Start or stop the task at point.
 
