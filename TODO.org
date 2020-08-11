@@ -88,17 +88,17 @@
 
 ** Code [28%]
    1. [ ] Write tests (in buttercup)
-   3. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
-   4. See if it is possible to store buttons in a variable, so *-print-non-tabular functions can be made shorter and less imperative. (see ~make-text-button~)
-   5. Merge all event-querying functions so that they always operate on an entire hash table (so no 'day' variants),
-   6. [ ] Use ~substitute-command-keys~ instead of ~chronometrist-format-keybinds~
-   7. [ ] recreate -events-clean, remove splitting code from -events-populate
+   2. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
+   3. See if it is possible to store buttons in a variable, so *-print-non-tabular functions can be made shorter and less imperative. (see ~make-text-button~)
+   4. Merge all event-querying functions so that they always operate on an entire hash table (so no 'day' variants),
+   5. [ ] Use ~substitute-command-keys~ instead of ~chronometrist-format-keybinds~
+   6. [ ] recreate -events-clean, remove splitting code from -events-populate
       * How should we deal with the active event?
         * Earlier, we would add a closing entry and update that on a timer.
-   8. [ ] Make docstrings consistent - describe inputs and then the return value, in that order.
-   9. [ ] ~chronometrist-seconds->alert-string~ can probably be replaced by ~org-duration-from-minutes~ - read the format for FMT
-   10. [X] Decouple storage-related code from rest of the program.
-   11. [X] See if using iteration constructs (especially ~loop~) can lead to nicer code than nested maps
+   7. [ ] Make docstrings consistent - describe inputs and then the return value, in that order.
+   8. [ ] ~chronometrist-seconds->alert-string~ can probably be replaced by ~org-duration-from-minutes~ - read the format for FMT
+   9. [X] Decouple storage-related code from rest of the program.
+   10. [X] See if using iteration constructs (especially ~loop~) can lead to nicer code than nested maps
    +1. use variables instead of hardcoded numbers to determine spacing+
       * Don't see the benefit
    +6. Timeclock already _has_ hooks! :| Why do we re-implement them?+
@@ -136,28 +136,7 @@
 ** Migration [100%]
    1. [X] next/previous weeks
 
-* chronometrist-statistics
-** Migration [0%]
-   1. Active days
-   2. % of days active
-
-* Backend abstraction [0%]
-  1. [ ] Add checks to ~chronometrist-sexp-reindent-buffer~ to ensure it only runs on an s-expression buffer
 * Certain [0%]
-** Time targets/goals [50%]
-  1. [X] User defines targets for tasks
-  2. [X] Chronometrist displays targets column
-  3. [-] Notify user when
-     + approaching target (e.g. -5 minutes)
-     + target completed
-     + exceeding target (target+5)
-     + [X] More flexible way to define alerts.
-     + [X] If time goals are defined and there is a task without a goal, just remind the user every 15 minutes of the time they've spent on it
-       - [X] Needs an even more flexible way to define alerts...
-     + [-] Handle manual file changes; on file change -
-       - [ ] clearing existing notifications
-       - [X] if last expression has a :stop value, stop alert timers
-     + [ ] Also take time spent so far into account (e.g. don't start approach or complete alerts again if time has been exceeded and we're starting the task again despite that)
 ** chronometrist [0%]
 1. [ ] Implement undo/redo by running undo-tree commands on chronometrist.sexp
 2. [ ] *Convert* command
@@ -207,6 +186,7 @@
 * Maybe
 ** UX [0%]
 1. [ ] Provide a command which tries to auto-configure Chronometrist keys in a way which is consistent with the user's other keymaps.
+
 ** chronometrist-goals [%]
 1. [ ] Colorize times in Chronometrist buffer
    - untouched project with target defined - red
