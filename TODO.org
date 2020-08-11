@@ -182,12 +182,18 @@
    1. [ ] convert README to Org
    2. [ ] transclude these sections from the manual to the readme
 2. [ ] Make Texinfo documentation
-   + [ ] setup auto-export of Org to texinfo
+   + [ ] setup auto-export of Org to texinfo - git pre-commit hook?
 3. [ ] Link identifiers in manual.org to the source.
+   * [ ] For HTML export, link to GitHub using line number anchors.
+   * [ ] Try to make describe-function/helpful-at-point work with Org ~inline~ =code= syntax. Then we won't need to make links.
+     * Incidentally, a link like =[[elisp:(describe-function 'file-notify-add-watch)][file-notify-add-watch]]=...
+       1. if opened from an Org buffer, shows the return value in the echo area, which is ugly
+       2. is exported to Info as
+          : ‘file-notify-add-watch’ ((describe-function 'file-notify-add-watch))
+          ...yuck :\
    * Currently using file: links with text search - =[file:../elisp/file.el::defun identifier (]=, =[file:../elisp/file.el::defvar identifier (]=, etc.
-   * If we can just hit helpful-at-point in the exported info manual, that might be a near-perfect solution (only improved by clickable links)
-   * There's also the alternative of storing the commentary in the docstrings instead. This is ugly because the manual isn't unified anymore, but on the flipside, it lets you link to identifiers in an Emacs-idiomatic way, =`using-this'=. I'm not sure how useful Info is, either, now that isearch doesn't work across pages anymore.
-   * For HTML documents, since one already has a web browser open, linking to GitHub using line number anchors could be a passable solution.
+4. [ ] Fix heading link to "midnight-spanning events" - jumps to the correct heading in HTML export, but jumps to its own self in Org mode.
+5. [ ] Figure out some way to hide package prefixes in identifiers in Org mode (without actually affecting the contents, a la nameless-mode)
 
 ** UX [12%]
    1. [ ] Don't suggest nil when asking for first project on first run
