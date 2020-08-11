@@ -168,12 +168,14 @@
 6. BUG - with tags and key-value query functions in before-out-functions, clock in Task A -> clock in Task B -> prompted for tags and key values for Task A, add some -> they get added to Task B 😱
 
 ** Code quality [0%]
-1. [ ] Make functions more test-friendly. Quite a few can get away with returning values instead of writing to a file - this will make it easier to test them. Other functions can handle the file operations for them.
-2. [ ] Rewrite using cl-loop
+1. [ ] Remove duplication between =chronometrist-toggle-task= and =chronometrist-toggle-task-button=
+2. [ ] Make functions more test-friendly. Quite a few can get away with returning values instead of writing to a file - this will make it easier to test them. Other functions can handle the file operations for them.
+3. [ ] Rewrite using cl-loop
    1. [ ] chronometrist-statistics-entries-internal
    2. [ ] chronometrist-statistics-count-active-days
-3. [ ] Write integration tests using ecukes.
+4. [ ] Write integration tests using ecukes.
    1. Some feature definitions already exist in features/, write step definitions for them.
+
 ** Documentation [0%]
 1. [ ] Move usage and customization sections to manual.org
    (The user may not see the README, if they are installing from MELPA.)
