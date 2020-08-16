@@ -184,9 +184,14 @@
    6. [ ] Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked /before/ clocking out, which adds time to the project.
    7. [ ] Allow calling chronometrist-in/out from anywhere-within-Emacs (a la timeclock) as well as from the chronometrist buffer.
    8. [ ] =chronometrist-timer= - if =chronometrist-file= is being edited (buffer exists and modified), don't refresh - this will (hopefully) prevent Emacs from going crazy with errors in trying to parse malformed data.
-* Maybe
+* Maybe [0%]
 ** UX [0%]
 1. [ ] Provide a command which tries to auto-configure Chronometrist keys in a way which is consistent with the user's other keymaps.
+2. [ ] Do basic checks on values of all customizable variables when they are changed by the user, and provide meaningful errors if they can't be used by the program.
+3. [ ] Task-sensitive value suggestions - if you use the key :comment for two different tasks, and don't want the values for :comment in one task being suggested for :comment in another...
+   * The problem is that sometimes you /do/ want that, and changing it can lead to duplication of user effort.
+   * Maybe make it a switch, enabled by default.
+   * ...or a list of keys to exclude from the context-sensitivity?
 
 ** chronometrist-goals [%]
 1. [ ] Colorize times in Chronometrist buffer
