@@ -14,7 +14,7 @@
 
 (defmacro chronometrist-sexp-in-file (file &rest body)
   "Run BODY in a buffer visiting FILE, restoring point afterwards."
-  (declare (indent defun))
+  (declare (indent defun) (debug t))
   `(with-current-buffer (find-file-noselect ,file)
      (save-excursion ,@body)))
 
