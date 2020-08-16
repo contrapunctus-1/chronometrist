@@ -139,12 +139,13 @@
 * Certain [0%]
 ** chronometrist [0%]
 1. [ ] Implement undo/redo by running undo-tree commands on chronometrist.sexp
-2. [ ] *Convert* command
-   Change the currently clocked-in project to a different task. Tags and key-values may be re-queried. Clock-in hook functions will be run again with the new task as the argument.
+   * [ ] Possibly show what changes would be made, and prompt the user to confirm it.
+2. [ ] *Convert* current interval - change the :name of the currently clocked-in interval. Tags and key-values may be re-queried. Clock-in hook functions will be run again with the new task as the argument.
 3. [ ] *Rename* a project (updating all records)
 4. [ ] *Delete* a project (erasing all records)
 5. [ ] *Hide* a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
-6. BUG - with tags and key-value query functions in before-out-functions, clock in Task A -> clock in Task B -> prompted for tags and key values for Task A, add some -> they get added to Task B 😱
+6. [ ] *Reset* current interval - update the :start time to now.
+7. [ ] BUG - with tags and key-value query functions in before-out-functions, clock in Task A -> clock in Task B -> prompted for tags and key values for Task A, add some -> they get added to Task B 😱
 
 ** Code quality [0%]
 1. [ ] Remove duplication between =chronometrist-toggle-task= and =chronometrist-toggle-task-button=
