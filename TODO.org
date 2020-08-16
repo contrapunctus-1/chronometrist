@@ -137,6 +137,34 @@
    1. [X] next/previous weeks
 
 * Certain [0%]
+** Bugs [0%]
+1. [ ] With tags and key-value query functions in before-out-functions, clock in Task A -> clock in Task B -> prompted for tags and key values for Task A, add some -> they get added to Task B 😱
+2. [ ] I clocked into a task -
+   #+BEGIN_SRC
+   (:name  "Arrangement/new edition"
+    :tags  (new edition)
+    :start "2020-08-17T00:33:24+0530")
+   #+END_SRC
+   I added some key values to it. What it should have looked like -
+   #+BEGIN_SRC
+   (:name     "Arrangement/new edition"
+    :tags     (new edition)
+    :composer "Schubert, Franz"
+    :song     "Die schöne Müllerin"
+    :start    "2020-08-17T00:33:24+0530"
+    :stop     "2020-08-17T01:22:40+0530")
+   #+END_SRC
+   What it actually looked like -
+   #+BEGIN_SRC
+   (:name     "Arrangement/new edition"
+    :tags     (new edition)
+    :composer "Schubert, Franz"
+    :song     "Die schöne Müllerin"
+    :start    "2020-08-17T00:33:24+0530"
+   ...)
+   #+END_SRC
+   And of course, that results in an error trying to process it.
+
 ** chronometrist [0%]
 1. [ ] Implement undo/redo by running undo-tree commands on chronometrist.sexp
    * [ ] Possibly show what changes would be made, and prompt the user to confirm it.
@@ -145,7 +173,6 @@
 4. [ ] *Delete* a project (erasing all records)
 5. [ ] *Hide* a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
 6. [ ] *Reset* current interval - update the :start time to now.
-7. [ ] BUG - with tags and key-value query functions in before-out-functions, clock in Task A -> clock in Task B -> prompted for tags and key values for Task A, add some -> they get added to Task B 😱
 
 ** Code quality [0%]
 1. [ ] Remove duplication between =chronometrist-toggle-task= and =chronometrist-toggle-task-button=
