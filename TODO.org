@@ -216,10 +216,15 @@
 ** UX [0%]
 1. [ ] Provide a command which tries to auto-configure Chronometrist keys in a way which is consistent with the user's other keymaps.
 2. [ ] Do basic checks on values of all customizable variables when they are changed by the user, and provide meaningful errors if they can't be used by the program.
-3. [ ] Task-sensitive value suggestions - if you use the key :comment for two different tasks, and don't want the values for :comment in one task being suggested for :comment in another...
+3. [ ] Task-sensitive value suggestions - if you use the key =:key= for two different tasks, and don't want the values for =:key= in one task being suggested for =:key= in another...
    * The problem is that sometimes you /do/ want that, and changing it can lead to duplication of user effort.
    * Maybe make it a switch, enabled by default.
-   * ...or a list of keys to exclude from the context-sensitivity?
+   * ...or a list of keys to exclude from task-sensitivity?
+     + So =chronometrist-value-history= will have =("task" . "key")= as hash key and =("value" ...)= as hash value. Keys which are present in the 'blacklist' are stored the same way as now - ="key"= as hash key, =("value" ...)= as hash value.
+   * Can we figure it out automatically, without requiring configuration? 🤔
+4. [ ] Tag-sensitive key suggestions, tag-sensitive value suggestions...?
+   * Might complicate things quite a bit.
+   * Lack of task-sensitive value suggestions (#3) is an inconsistency, because tags and keys are already task-sensitive. Tag-sensitive key and value suggestions are a whole different beast, in that regard.
 
 ** chronometrist-goals [%]
 1. [ ] Colorize times in Chronometrist buffer
