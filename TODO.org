@@ -166,13 +166,14 @@
    And of course, that results in an error trying to process it.
 
 ** chronometrist [0%]
-1. [ ] Implement undo/redo by running undo-tree commands on chronometrist.sexp
+1. [ ] Add =:stop= time when we call =chronometrist-kv-accept=, not when we quit the key-value prompt.
+2. [ ] Implement undo/redo by running undo-tree commands on chronometrist.sexp
    * [ ] Possibly show what changes would be made, and prompt the user to confirm it.
-2. [ ] *Convert* current interval - change the :name of the currently clocked-in interval. Tags and key-values may be re-queried. Clock-in hook functions will be run again with the new task as the argument.
-3. [ ] *Rename* a project (updating all records)
-4. [ ] *Delete* a project (erasing all records)
-5. [ ] *Hide* a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
-6. [ ] *Reset* current interval - update the :start time to now.
+3. [ ] *Convert* current interval - change the =:name= of the currently clocked-in interval. Tags and key-values may be re-queried. Clock-in hook functions will be run again with the new task as the argument.
+4. [ ] *Rename* a project (updating all records)
+5. [ ] *Delete* a project (erasing all records)
+6. [ ] *Hide* a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
+7. [ ] *Reset* current interval - update the =:start= time to the current time.
 
 ** Code quality [0%]
 1. [ ] Remove duplication between =chronometrist-toggle-task= and =chronometrist-toggle-task-button=
