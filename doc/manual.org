@@ -365,7 +365,7 @@ Each of these has a corresponding function to clear it and fill it with values -
 17. Variable - chronometrist-value-history
 18. Function - chronometrist-ht-history-prep (table)
 19. Function - chronometrist-key-history-populate ()
-20. Function - chronometrist-value-history-populate ()
+20. Function - chronometrist-value-history-populate (events-table history-table)
 21. Keymap - chronometrist-kv-read-mode-map
 22. Major Mode - chronometrist-kv-read-mode
 23. Function - chronometrist-kv-completion-quit-key ()

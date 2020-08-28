@@ -69,6 +69,19 @@
      (expect (length (gethash "Arrangement/new edition" chronometrist-key-history))
              :to-be 2)))
 
+(describe
+ "chronometrist-value-history"
+ (before-all
+  (setq chronometrist-file "tests/test.sexp")
+  (chronometrist-events-populate)
+  (chronometrist-value-history-populate chronometrist-events chronometrist-value-history))
+ (it "should have 5 hash keys"
+     (expect (hash-table-count chronometrist-value-history)
+             :to-be 5)
+     (expect (cl-loop for task being the hash-keys of chronometrist-value-history
+               always (stringp task))
+             :to-be t)))
+
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"
 ;; End:

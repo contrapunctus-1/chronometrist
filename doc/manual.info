@@ -883,7 +883,7 @@ Function - chronometrist-ht-history-prep (table)
 @item
 Function - chronometrist-key-history-populate ()
 @item
-Function - chronometrist-value-history-populate ()
+Function - chronometrist-value-history-populate (events-table history-table)
 @item
 Keymap - chronometrist-kv-read-mode-map
 @item
