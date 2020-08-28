@@ -183,6 +183,7 @@
    2. [ ] chronometrist-statistics-count-active-days
 4. [ ] Write integration tests using ecukes.
    1. Some feature definitions already exist in features/, write step definitions for them.
+5. [ ] Remove duplication - the three =chronometrist-*-history-populate= functions seem to have a common pattern of iterating over each hash value (a list of plists) in =chronometrist-events=, and over each element of that list.
 
 ** Documentation [0%]
 1. [ ] Move usage and customization sections to manual.org
@@ -224,7 +225,7 @@
    * Can we figure it out automatically, without requiring configuration? 🤔
 4. [ ] Tag-sensitive key suggestions, tag-sensitive value suggestions...?
    * Might complicate things quite a bit.
-   * Lack of task-sensitive value suggestions (#3) is an inconsistency, because tags and keys are already task-sensitive. Tag-sensitive key and value suggestions are a whole different beast, in that regard.
+   * Lack of task-sensitive value suggestions (#3) is an inconsistency, because tags and keys are already task-sensitive. From that perspective, tag-sensitive key and value suggestions are a whole new can of worms.
 
 ** chronometrist-goals [%]
 1. [ ] Colorize times in Chronometrist buffer
