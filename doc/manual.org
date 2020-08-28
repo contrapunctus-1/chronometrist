@@ -443,4 +443,5 @@ Each of these has a corresponding function to clear it and fill it with values -
 
 # Local Variables:
 # org-link-file-path-type: relative
+# eval: (progn (make-local-variable (quote after-save-hook)) (add-hook (quote after-save-hook) (lambda () (org-export-to-file 'texinfo "manual.info"))))
 # End:
