@@ -722,10 +722,6 @@ Function - chronometrist-events-subset (start end)
 @item
 ts ts -> hash-table
 @end itemize
-@item
-Function - chronometrist-events-query-spec-match-p (plist specifiers)
-@item
-Function - chronometrist-events-query (table &key get specifiers except)
 @end enumerate
 
 @node chronometrist-migrateel

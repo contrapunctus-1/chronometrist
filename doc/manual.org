@@ -295,8 +295,6 @@ Each of these has a corresponding function to clear it and fill it with values -
 8.  Function - chronometrist-events-replace-last (plist)
 9.  Function - chronometrist-events-subset (start end)
     * ts ts -> hash-table
-10. Function - chronometrist-events-query-spec-match-p (plist specifiers)
-11. Function - chronometrist-events-query (table &key get specifiers except)
 
 ** chronometrist-migrate.el
 1. Variable - chronometrist-migrate-table
