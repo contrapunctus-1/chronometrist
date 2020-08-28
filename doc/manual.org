@@ -6,7 +6,7 @@ The structure of this manual was inspired by https://documentation.divio.com/
 :PROPERTIES:
 :DESCRIPTION: Step-by-step guides to achieve specific tasks
 :END:
-** Set up Emacs to browse the project and contribute
+** How to set up Emacs to contribute
 All of these are optional, but recommended for the best experience.
 1. Use [[https://github.com/Malabarba/Nameless][nameless-mode]] for easier reading of Emacs Lisp code, and
 2. Use [[https://github.com/joostkremers/visual-fill-column][visual-fill-column-mode]] to soft-wrap lines in Org/Markdown files.
