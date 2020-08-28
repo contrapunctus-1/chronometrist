@@ -863,7 +863,7 @@ Function - chronometrist-append-to-last (tags plist)
 @item
 Variable - chronometrist-tags-history
 @item
-Function - chronometrist-tags-history-populate ()
+Function - chronometrist-tags-history-populate (events history)
 @item
 Function - chronometrist-tags-history-add (plist)
 @item

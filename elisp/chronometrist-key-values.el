@@ -105,33 +105,35 @@ Each value is a list of tag combinations, in reverse
 chronological order. Each combination is a list containing tags
 as symbol and/or strings.")
 
-(defun chronometrist-tags-history-populate ()
-  "Add keys and values to `chronometrist-tags-history' by querying `chronometrist-events'."
-  (let ((table chronometrist-tags-history))
-    (clrhash table)
-    (cl-loop for plist in (chronometrist-events-query chronometrist-events :get '(:name :tags))
-             do (let* ((name          (plist-get plist :name))
-                       (tags          (plist-get plist :tags))
-                       (existing-tags (gethash name table)))
-                  (when tags
-                    (puthash name
-                             (if existing-tags
-                                 (append existing-tags `(,tags))
-                               `(,tags))
-                             table))))
-    ;; We can't use `chronometrist-ht-history-prep' to do this, because it uses
-    ;; `-flatten'; the values of `chronometrist-tags-history' hold tag combinations
-    ;; (as lists), not individual tags.
-    (cl-loop for task being the hash-keys of table
-             using (hash-values tag-lists)
-             do (puthash task
-                         ;; Because remove-duplicates keeps the _last_
-                         ;; occurrence, trying to avoid this `reverse' by
-                         ;; switching the args in the call to `append'
-                         ;; above will not get you the correct behavior!
-                         (-> (cl-remove-duplicates tag-lists :test #'equal)
-                             (reverse))
-                         table))))
+(defun chronometrist-tags-history-populate (events history)
+  "Clear HISTORY and add keys and values to it using EVENTS.
+Return the new value of HISTORY.
+HISTORY and EVENTS must be hash tables. (see `chronometrist-tags-history' and `chronometrist-events')"
+  (clrhash history)
+  (cl-loop for plist in (chronometrist-events-query events :get '(:name :tags))
+    do (let* ((name          (plist-get plist :name))
+              (tags          (plist-get plist :tags))
+              (existing-tags (gethash name history)))
+         (when tags
+           (puthash name
+                    (if existing-tags
+                        (append existing-tags `(,tags))
+                      `(,tags))
+                    history))))
+  ;; We can't use `chronometrist-ht-history-prep' to do this, because it uses
+  ;; `-flatten'; the values of `chronometrist-tags-history' hold tag combinations
+  ;; (as lists), not individual tags.
+  (cl-loop for task being the hash-keys of history
+    using (hash-values tag-lists)
+    do (puthash task
+                ;; Because remove-duplicates keeps the _last_
+                ;; occurrence, trying to avoid this `reverse' by
+                ;; switching the args in the call to `append'
+                ;; above will not get you the correct behavior!
+                (-> (cl-remove-duplicates tag-lists :test #'equal)
+                    (reverse))
+                history)
+    finally return history))
 
 (defun chronometrist-tags-history-add (plist)
   "Add tags from PLIST to `chronometrist-tags-history'."
