@@ -353,7 +353,7 @@ Each of these has a corresponding function to clear it and fill it with values -
 5.  Function - chronometrist-maybe-symbol-to-string (list)
 6.  Function - chronometrist-append-to-last (tags plist)
 7.  Variable - chronometrist-tags-history
-8.  Function - chronometrist-tags-history-populate (events history)
+8.  Function - chronometrist-tags-history-populate (events-table history-table)
 9.  Function - chronometrist-tags-history-add (plist)
 10. Function - chronometrist-tags-history-replace-last (plist)
 11. Function - chronometrist-tags-history-combination-strings (task)
