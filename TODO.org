@@ -162,6 +162,7 @@
 1. [ ] Add =:stop= time when we call =chronometrist-kv-accept=, not when we quit the key-value prompt.
 2. [ ] Implement undo/redo by running undo-tree commands on chronometrist.sexp
    * [ ] Possibly show what changes would be made, and prompt the user to confirm it.
+   * How will this work with the SQLite backend?
 3. [ ] *Convert* current interval - change the =:name= of the currently clocked-in interval. Tags and key-values may be re-queried. Clock-in hook functions will be run again with the new task as the argument.
 4. [ ] *Rename* a project (updating all records)
 5. [ ] *Delete* a project (erasing all records)
@@ -185,6 +186,7 @@
 4. [ ] Write integration tests using ecukes.
    1. Some feature definitions already exist in features/, write step definitions for them.
 5. [ ] Remove duplication - the three =chronometrist-*-history-populate= functions seem to have a common pattern of iterating over each hash value (a list of plists) in =chronometrist-events=, and over each element of that list.
+6. [ ] Remove duplication - extracting user key-values from a plist seems to be a common operation.
 
 ** Documentation [0%]
 1. [ ] Move usage and customization sections to manual.org
@@ -215,6 +217,7 @@
    7. [ ] Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked /before/ clocking out, which adds time to the project.
    8. [ ] Allow calling chronometrist-in/out from anywhere-within-Emacs (a la timeclock) as well as from the chronometrist buffer.
    9. [ ] =chronometrist-timer= - if =chronometrist-file= is being edited (buffer exists and modified), don't refresh - this will (hopefully) prevent Emacs from going crazy with errors in trying to parse malformed data.
+
 * Maybe [0%]
 ** UX [0%]
 1. [ ] Provide a command which tries to auto-configure Chronometrist keys in a way which is consistent with the user's other keymaps.
@@ -225,6 +228,7 @@
    * ...or a list of keys to exclude from task-sensitivity?
      + So =chronometrist-value-history= will have =("task" . "key")= as hash key and =("value" ...)= as hash value. Keys which are present in the 'blacklist' are stored the same way as now - ="key"= as hash key, =("value" ...)= as hash value.
    * Can we figure it out automatically, without requiring configuration? 🤔
+   * Maybe suggest values for the current task first, and only after that for other tasks?
 4. [ ] Tag-sensitive key suggestions, tag-sensitive value suggestions...?
    * Might complicate things quite a bit.
    * Lack of task-sensitive value suggestions (#3) is an inconsistency, because tags and keys are already task-sensitive. From that perspective, tag-sensitive key and value suggestions are a whole new can of worms.
