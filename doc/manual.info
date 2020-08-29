@@ -881,7 +881,7 @@ Variable - chronometrist-value-history
 @item
 Function - chronometrist-ht-history-prep (table)
 @item
-Function - chronometrist-key-history-populate ()
+Function - chronometrist-key-history-populate (events-table history-table)
 @item
 Function - chronometrist-value-history-populate (events-table history-table)
 @item

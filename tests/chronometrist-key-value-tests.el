@@ -59,7 +59,7 @@
   (setq chronometrist-file "tests/test.sexp")
   (chronometrist-events-populate)
   (setq chronometrist-task-list (chronometrist-tasks-from-table))
-  (chronometrist-key-history-populate))
+  (chronometrist-key-history-populate chronometrist-events chronometrist-key-history))
  (it "should have 6 hash keys"
      (expect (hash-table-count chronometrist-key-history)
              :to-be 6))

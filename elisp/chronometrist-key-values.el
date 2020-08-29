@@ -106,7 +106,7 @@ chronological order. Each combination is a list containing tags
 as symbol and/or strings.")
 
 (defun chronometrist-tags-history-populate (events-table history-table)
-  "Clear HISTORY-TABLE and fill it with tag combination data from EVENTS-TABLE.
+  "Clear HISTORY-TABLE and store tag history in it, using EVENTS-TABLE.
 Return the new value of HISTORY-TABLE.
 
 HISTORY-TABLE and EVENTS-TABLE must be hash tables. (see
@@ -202,7 +202,7 @@ INITIAL-INPUT is as used in `completing-read'."
                             'chronometrist--tag-suggestions))
 
 (defun chronometrist-tags-add (&rest _args)
-  "Read tags from the user and add them to the last entry in `chronometrist-file'.
+  "Read tags from the user; add them to the last entry in `chronometrist-file'.
 _ARGS are ignored. This function always returns t, so it can be
 used in `chronometrist-before-out-functions'."
   (let* ((last-expr (chronometrist-last))
@@ -235,8 +235,10 @@ used in `chronometrist-before-out-functions'."
 (defvar chronometrist-key-history
   (make-hash-table :test #'equal)
   "Hash table to store previously-used user-keys.
-The hash table keys are task names (as strings), and the values
-are lists containing user-key names (as strings).")
+Each hash key is the name of a task. Each hash value is a list
+containing keywords used with that task, in reverse chronological
+order. The keywords are stored as strings and their leading \":\"
+is removed.")
 
 (defvar chronometrist-value-history
   (make-hash-table :test #'equal)
@@ -259,38 +261,37 @@ reversed and will have duplicate elements removed."
              table)
     finally returning table))
 
-(defun chronometrist-key-history-populate ()
-  "Populate `chronometrist-key-history' from `chronometrist-file'.
-Each hash table key is the name of a task. Each hash table value
-is a list containing keywords used with that task, in reverse
-chronological order. The keywords are stored as strings and their
-leading \":\" is removed."
-  (clrhash chronometrist-key-history)
+(defun chronometrist-key-history-populate (events-table history-table)
+  "Clear HISTORY-TABLE and store key history in it, using EVENTS-TABLE.
+Return the new value of HISTORY-TABLE.
+
+EVENTS-TABLE and HISTORY-TABLE must be hash tables (see `chronometrist-events' and `chronometrist-key-history')."
+  (clrhash history-table)
   ;; add each task as a key
   (mapc (lambda (task)
-          (puthash task nil chronometrist-key-history))
+          (puthash task nil history-table))
         ;; ;; Not necessary, if the only place this is called is `chronometrist-refresh-file'
         ;; (setq chronometrist--task-list (chronometrist-tasks-from-table))
         chronometrist-task-list)
-  (cl-loop for events being the hash-values of chronometrist-events do
-    (cl-loop for plist in events do
-      (let ((name (plist-get plist :name))
-            (keys (->> (chronometrist-plist-remove plist :name :start :stop :tags)
+  (cl-loop for events being the hash-values of events-table do
+    (cl-loop for event in events do
+      (let ((name (plist-get event :name))
+            (keys (->> (chronometrist-plist-remove event :name :start :stop :tags)
                        (seq-filter #'keywordp))))
         (cl-loop for key in keys do
           (when key
-            (let ((old-keys (gethash name chronometrist-key-history))
+            (let ((old-keys (gethash name history-table))
                   (new-key  (->> (symbol-name key)
                                  (s-chop-prefix ":")
                                  (list))))
               (--> (if old-keys
                        (append old-keys new-key)
                      new-key)
-                   (puthash name it chronometrist-key-history))))))))
-  (chronometrist-ht-history-prep chronometrist-key-history))
+                   (puthash name it history-table))))))))
+  (chronometrist-ht-history-prep history-table))
 
 (defun chronometrist-value-history-populate (events-table history-table)
-  "Clear HISTORY-TABLE and fill it with values for user-keys from EVENTS-TABLE.
+  "Clear HISTORY-TABLE and store value history in it, using EVENTS-TABLE.
 Return the new value of HISTORY-TABLE.
 
 EVENTS-TABLE and HISTORY-TABLE must be hash tables. (see

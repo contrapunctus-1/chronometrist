@@ -236,8 +236,8 @@ Argument _FS-EVENT is ignored."
     (chronometrist-events-populate)
     (setq chronometrist-task-list (chronometrist-tasks-from-table))
     (chronometrist-tags-history-populate chronometrist-events chronometrist-tags-history))
-  (chronometrist-key-history-populate)
-  (chronometrist-value-history-populate)
+  (chronometrist-key-history-populate   chronometrist-events chronometrist-key-history)
+  (chronometrist-value-history-populate chronometrist-events chronometrist-value-history)
   (chronometrist-refresh))
 
 (defun chronometrist-query-stop ()
