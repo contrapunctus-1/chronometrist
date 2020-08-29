@@ -376,6 +376,9 @@ Each of these has a corresponding function to clear it and fill it with values -
 28. Function - chronometrist-kv-add (&rest args)
 29. Command - chronometrist-kv-accept ()
 30. Command - chronometrist-kv-reject ()
+31. Internal Variable - chronometrist--skip-detail-prompts
+32. Function - chronometrist-skip-query-prompt (task)
+33. Function - chronometrist-skip-query-reset (_task)
 
 ** chronometrist-statistics-custom.el
 1. Custom variable - chronometrist-statistics-buffer-name

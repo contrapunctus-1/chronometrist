@@ -904,6 +904,12 @@ Function - chronometrist-kv-add (&rest args)
 Command - chronometrist-kv-accept ()
 @item
 Command - chronometrist-kv-reject ()
+@item
+Internal Variable - chronometrist--skip-detail-prompts
+@item
+Function - chronometrist-skip-query-prompt (task)
+@item
+Function - chronometrist-skip-query-reset (@math{_task})
 @end enumerate
 
 @node chronometrist-statistics-customel

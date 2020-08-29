@@ -205,22 +205,23 @@ INITIAL-INPUT is as used in `completing-read'."
   "Read tags from the user; add them to the last entry in `chronometrist-file'.
 _ARGS are ignored. This function always returns t, so it can be
 used in `chronometrist-before-out-functions'."
-  (let* ((last-expr (chronometrist-last))
-         (last-name (plist-get last-expr :name))
-         (last-tags (plist-get last-expr :tags))
-         (input     (->> last-tags
-                         (chronometrist-maybe-symbol-to-string)
-                         (-interpose ",")
-                         (apply #'concat)
-                         (chronometrist-tags-prompt last-name)
-                         (chronometrist-maybe-string-to-symbol))))
-    (when input
-      (--> (append last-tags input)
-           (reverse it)
-           (cl-remove-duplicates it :test #'equal)
-           (reverse it)
-           (chronometrist-append-to-last it nil)))
-    t))
+  (unless chronometrist--skip-detail-prompts
+    (let* ((last-expr (chronometrist-last))
+           (last-name (plist-get last-expr :name))
+           (last-tags (plist-get last-expr :tags))
+           (input     (->> last-tags
+                           (chronometrist-maybe-symbol-to-string)
+                           (-interpose ",")
+                           (apply #'concat)
+                           (chronometrist-tags-prompt last-name)
+                           (chronometrist-maybe-string-to-symbol))))
+      (when input
+        (--> (append last-tags input)
+             (reverse it)
+             (cl-remove-duplicates it :test #'equal)
+             (reverse it)
+             (chronometrist-append-to-last it nil)))))
+  t)
 
 ;;;; KEY-VALUES ;;;;
 (defgroup chronometrist-key-values nil
@@ -400,43 +401,44 @@ to add them to the last s-expression in `chronometrist-file', or
 
 _ARGS are ignored. This function always returns t, so it can be
 used in `chronometrist-before-out-functions'."
-  (let* ((buffer      (get-buffer-create chronometrist-kv-buffer-name))
-         (first-key-p t)
-         (last-kvs    (chronometrist-plist-remove (chronometrist-last)
-                                     :name :tags :start :stop))
-         (used-keys   (->> (seq-filter #'keywordp last-kvs)
-                           (mapcar #'symbol-name)
-                           (--map (s-chop-prefix ":" it)))))
-    (switch-to-buffer buffer)
-    (with-current-buffer buffer
-      (chronometrist-common-clear-buffer buffer)
-      (chronometrist-kv-read-mode)
-      (if (and (chronometrist-current-task) last-kvs)
-          (progn
-            (chronometrist-plist-pp last-kvs buffer)
-            (down-list -1)
-            (insert "\n "))
-        (insert "()")
-        (down-list -1))
-      (catch 'empty-input
-        (let (input key value)
-          (while t
-            (setq key (chronometrist-key-prompt used-keys)
-                  input key
-                  used-keys (append used-keys
-                                    (list key)))
-            (if (string-empty-p input)
-                (throw 'empty-input nil)
-              (unless first-key-p
-                (insert " "))
-              (insert ":" key)
-              (setq first-key-p nil))
-            (setq value (chronometrist-value-prompt key)
-                  input value)
-            (if (string-empty-p input)
-                (throw 'empty-input nil)
-              (chronometrist-value-insert value)))))
-      (chronometrist-sexp-reindent-buffer)))
+  (unless chronometrist--skip-detail-prompts
+    (let* ((buffer      (get-buffer-create chronometrist-kv-buffer-name))
+           (first-key-p t)
+           (last-kvs    (chronometrist-plist-remove (chronometrist-last)
+                                        :name :tags :start :stop))
+           (used-keys   (->> (seq-filter #'keywordp last-kvs)
+                             (mapcar #'symbol-name)
+                             (--map (s-chop-prefix ":" it)))))
+      (switch-to-buffer buffer)
+      (with-current-buffer buffer
+        (chronometrist-common-clear-buffer buffer)
+        (chronometrist-kv-read-mode)
+        (if (and (chronometrist-current-task) last-kvs)
+            (progn
+              (chronometrist-plist-pp last-kvs buffer)
+              (down-list -1)
+              (insert "\n "))
+          (insert "()")
+          (down-list -1))
+        (catch 'empty-input
+          (let (input key value)
+            (while t
+              (setq key (chronometrist-key-prompt used-keys)
+                    input key
+                    used-keys (append used-keys
+                                      (list key)))
+              (if (string-empty-p input)
+                  (throw 'empty-input nil)
+                (unless first-key-p
+                  (insert " "))
+                (insert ":" key)
+                (setq first-key-p nil))
+              (setq value (chronometrist-value-prompt key)
+                    input value)
+              (if (string-empty-p input)
+                  (throw 'empty-input nil)
+                (chronometrist-value-insert value)))))
+        (chronometrist-sexp-reindent-buffer))))
   t)
 
 ;;;; COMMANDS ;;;;
@@ -457,6 +459,34 @@ used in `chronometrist-before-out-functions'."
   (interactive)
   (kill-buffer chronometrist-kv-buffer-name)
   (chronometrist-refresh))
+
+;;;; SKIPPING QUERIES ;;;;
+(defvar chronometrist--skip-detail-prompts nil)
+
+(defun chronometrist-skip-query-prompt (task)
+  "Offer to skip tag/key-value prompts and reuse last-used details.
+This function always returns t, so it can be used in `chronometrist-before-out-functions'."
+  ;; find latest interval for TASK; if it has tags or key-values, prompt
+  ;; iterate over events in reverse
+  (let (plist)
+    (cl-loop for key in (reverse (hash-table-keys chronometrist-events)) do
+      (cl-loop for event in (reverse (gethash key chronometrist-events))
+        when (and (equal task (plist-get event :name))
+                  (setq plist (chronometrist-plist-remove event :name :start :stop)))
+        return nil)
+      when plist return nil)
+    (when plist
+      (when (yes-or-no-p
+             (format "Skip prompt and use last-used tags/key-values? %s " plist))
+        (setq chronometrist--skip-detail-prompts t)
+        (chronometrist-append-to-last (plist-get plist :tags) plist)))
+    t))
+
+(defun chronometrist-skip-query-reset (_task)
+  "Enable prompting for tags and key-values.
+This function always returns t, so it can be used in `chronometrist-before-out-functions'."
+  (setq chronometrist--skip-detail-prompts nil)
+  t)
 
 (provide 'chronometrist-key-values)
 
