@@ -85,7 +85,7 @@
     4. [X] bug - tags being added twice
 
 ** Code [28%]
-   1. [ ] Write tests (in buttercup)
+   1. [-] Write tests (in buttercup)
    2. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
    3. See if it is possible to store buttons in a variable, so *-print-non-tabular functions can be made shorter and less imperative. (see ~make-text-button~)
    4. Merge all event-querying functions so that they always operate on an entire hash table (so no 'day' variants),
@@ -174,8 +174,11 @@
    * [ ] Switch between intervals and tag-combination breakdown
 
 ** chronometrist-report [0%]
-1. [ ] Jump to beginning/end of data (keys B/F)
-2. [ ] Expandable items - show tag-combination-based breakdown
+1. [ ] Show week counter and max weeks; don't scroll past first/last weeks
+2. [ ] Highlight column of current day
+3. [ ] Command to narrow report to specific project(s)
+4. [ ] Jump to beginning/end of data (keys B/F)
+5. [ ] Expandable items - show tag-combination-based breakdown
 
 ** Code quality [0%]
 1. [ ] Remove duplication between =chronometrist-toggle-task= and =chronometrist-toggle-task-button=
@@ -233,7 +236,10 @@
    * Might complicate things quite a bit.
    * Lack of task-sensitive value suggestions (#3) is an inconsistency, because tags and keys are already task-sensitive. From that perspective, tag-sensitive key and value suggestions are a whole new can of worms.
 
-** chronometrist-goals [%]
+** chronometrist-report [0%]
+1. [ ] Add support for other locale weeks/weekday names
+
+** chronometrist-goals [0%]
 1. [ ] Colorize times in Chronometrist buffer
    - untouched project with target defined - red
    - target ±5 minutes - green

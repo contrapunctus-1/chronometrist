@@ -172,12 +172,6 @@ Return nil (and run `magit-status') if the user answers no."
 2. Some way to update buffers every second without making Emacs unusable. (impossible?)
 3. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
 
-### chronometrist-report
-1. Show week counter and max weeks; don't scroll past first/last weeks
-2. Highlight column of current day
-3. Add support for other locale weeks/weekday names
-4. Show only certain projects
-
 ### chronometrist-statistics
 1. Show range counter and max ranges; don't scroll past first/last time ranges
 2. activity-specific - average time spent in $TIMEPERIOD, average days worked on in $TIMEPERIOD, current/longest/last streak, % of $TIMEPERIOD, % of active (tracked) time in $TIMEPERIOD, ...
