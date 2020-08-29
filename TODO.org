@@ -174,6 +174,7 @@
 5. [ ] *Delete* a project (erasing all records)
 6. [ ] *Hide* a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
 7. [ ] *Reset* current interval - update the =:start= time to the current time.
+8. [ ] Enhanced tag/key-value prompt - before asking for tags/key-values, if the last occurence of task had tags/key-values, ask if they should be reused. y - yes, n - no (continue to usual prompts).
 
 ** Code quality [0%]
 1. [ ] Remove duplication between =chronometrist-toggle-task= and =chronometrist-toggle-task-button=
