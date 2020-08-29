@@ -130,11 +130,6 @@
           * Or even the first expression of the current date. That way, we just re-read the events for today. Because chronometrist-events uses dates as keys, it's easy to work on the basis of dates.
    6. [ ] Don't generate tag/keyword/value history from the entire log, just from the last N days (where N is user-customizable).
    7. [ ] Just why are we reading the whole file? ~chronometrist~ should not read more than a day; ~chronometrist-report~ should not read more than a week at a time, and so on. Make a branch which works on this logic, see if it is faster.
-* chronometrist-report
-** Features
-   1. [ ] Expandable items - show tag-combination-based breakdown
-** Migration [100%]
-   1. [X] next/previous weeks
 
 * Certain [0%]
 ** Bugs [0%]
@@ -175,6 +170,10 @@
 6. [ ] *Hide* a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
 7. [ ] *Reset* current interval - update the =:start= time to the current time.
 8. [ ] Enhanced tag/key-value prompt - before asking for tags/key-values, if the last occurence of task had tags/key-values, ask if they should be reused. y - yes, n - no (continue to usual prompts).
+
+** chronometrist-report
+1. [ ] Jump to beginning/end of data (keys B/F)
+2. [ ] Expandable items - show tag-combination-based breakdown
 
 ** Code quality [0%]
 1. [ ] Remove duplication between =chronometrist-toggle-task= and =chronometrist-toggle-task-button=
