@@ -83,6 +83,15 @@ To be prompted for tags, add `chronometrist-tags-add` to any hook except `chrono
 #### Key-value pairs
 Similarly, to be prompted for key-values, add `chronometrist-kv-add` to any hook except `chronometrist-before-in-functions`. To exit the prompt, press the key it indicates for quitting - you can then edit the resulting key-values by hand if required. Press `C-c C-c` to accept the key-values, or `C-c C-k` to cancel.
 
+#### Quick re-use of last-used tags and/or key-values
+Add `chronometrist-skip-query-prompt` to the hook(s) containing `chronometrist-tags-add`/`chronometrist-kv-add`, _before_ these functions, and `chronometrist-skip-query-reset` _after_ them -
+```elisp
+(setq chronometrist-before-out-functions '(chronometrist-skip-query-prompt
+                                           chronometrist-tags-add
+                                           chronometrist-kv-add
+                                           chronometrist-skip-query-reset))
+```
+
 ### Prompt when exiting Emacs
 If you wish to be prompted when you exit Emacs while tracking time, you can use this -
 
@@ -101,7 +110,9 @@ Chronometrist currently has four hooks -
 3. `chronometrist-before-out-functions`
 4. `chronometrist-after-out-functions`
 
-As their names suggest, these are 'abnormal' hooks, i.e. the functions they contain must accept arguments. In this case, each function must accept exactly one argument, which is the project which is being started or stopped.
+As their names suggest, these are 'abnormal' hooks, i.e. the functions they contain must accept arguments. In this case, each function must accept exactly one argument - the name of the project which is being started or stopped, as a string.
+
+`chronometrist-before-out-functions` is different from the others in that it runs until failure - the task will be clocked out only if all functions in this hook return `t`.
 
 ### Opening certain files when you start a task
 An idea from the author's own init -
