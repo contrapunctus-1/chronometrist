@@ -120,7 +120,6 @@ An idea from the author's own init -
 ```elisp
 (defun my-start-project (project)
   (pcase project
-    ;; ...
     ("Guitar"
      (find-file-other-window "~/repertoire.org"))
     ;; ...
@@ -136,12 +135,16 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
 (autoload 'magit-anything-modified-p "magit")
 
 (defun my-commit-prompt ()
-  (if (magit-anything-modified-p)
-      (if (yes-or-no-p "You have uncommitted changes. Really clock out? ")
-          t
-        (magit-status)
-        nil)
-        t))
+  "Prompt user if `default-directory' is a dirty Git repository.
+Return t if the user answers yes, if the repository is clean, or
+if there is no Git repository.
+
+Return nil (and run `magit-status') if the user answers no."
+  (cond ((not (magit-anything-modified-p)) t)
+        ((yes-or-no-p
+          (format "You have uncommitted changes in %S. Really clock out? "
+                  default-directory)) t)
+        (t (magit-status) nil)))
 
 (add-hook 'chronometrist-before-out-functions 'my-commit-prompt)
 ```
@@ -207,7 +210,7 @@ Chronometrist is released under your choice of [Unlicense](https://unlicense.org
 (See files [UNLICENSE](UNLICENSE) and [WTFPL](WTFPL)).
 
 ## Thanks
-wasamasa, bpalmer, aidalgol, and the rest of #emacs for their tireless help and support
+wasamasa, bpalmer, aidalgol, pjb and the rest of #emacs for their tireless help and support
 
 jwiegley for timeclock.el, which we used as a backend in earlier versions
 
