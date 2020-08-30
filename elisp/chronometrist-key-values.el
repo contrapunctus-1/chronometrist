@@ -260,7 +260,7 @@ reversed and will have duplicate elements removed."
                  (cl-remove-duplicates :test #'equal)
                  (reverse))
              table)
-    finally returning table))
+    finally return table))
 
 (defun chronometrist-key-history-populate (events-table history-table)
   "Clear HISTORY-TABLE and store key history in it, using EVENTS-TABLE.
