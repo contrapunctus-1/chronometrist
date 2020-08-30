@@ -244,15 +244,13 @@ Argument _FS-EVENT is ignored."
   "Ask the user if they would like to clock out."
   (let ((task (chronometrist-current-task)))
     (and task
-         (yes-or-no-p (concat "Stop tracking time for " task "? "))
+         (yes-or-no-p (format "Stop tracking time for %s? " task))
          (chronometrist-out))
     t))
 
 (defun chronometrist-in (task &optional _prefix)
   "Clock in to TASK; record current time in `chronometrist-file'.
-TASK is the name of the task, a string.
-
-PREFIX is ignored."
+TASK is the name of the task, a string. PREFIX is ignored."
   (interactive "P")
   (let ((plist `(:name ,task :start ,(chronometrist-format-time-iso8601))))
     (chronometrist-sexp-new plist)
@@ -262,8 +260,7 @@ PREFIX is ignored."
   "Record current moment as stop time to last s-exp in `chronometrist-file'.
 PREFIX is ignored."
   (interactive "P")
-  (let ((plist (plist-put (chronometrist-last) :stop
-                          (chronometrist-format-time-iso8601))))
+  (let ((plist (plist-put (chronometrist-last) :stop (chronometrist-format-time-iso8601))))
     (chronometrist-sexp-replace-last plist)))
 
 ;; ## HOOKS ##
@@ -477,9 +474,7 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
                      (chronometrist-goto-last-task))))
           (unless chronometrist--fs-watch
             (setq chronometrist--fs-watch
-                  (file-notify-add-watch chronometrist-file
-                                         '(change)
-                                         #'chronometrist-refresh-file))))))))
+                  (file-notify-add-watch chronometrist-file '(change) #'chronometrist-refresh-file))))))))
 
 (provide 'chronometrist)
 
