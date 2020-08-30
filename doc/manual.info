@@ -615,8 +615,6 @@ Internal Variable - chronometrist--task-history
 @item
 Internal Variable - chronometrist--point
 @item
-Internal Variable - chronometrist--inhibit-read-p
-@item
 Keymap - chronometrist-mode-map
 @item
 Command - chronometrist-open-log (&optional button)
@@ -646,6 +644,14 @@ Function - chronometrist-print-non-tabular ()
 Function - chronometrist-goto-nth-task (n)
 @item
 Function - chronometrist-refresh (&optional ignore-auto noconfirm)
+@item
+Internal Variable - chronometrist--inhibit-read-p
+@item
+Internal Variable - chronometrist--file-hashes
+@item
+Function - chronometrist-file-hash-length (&optional start end)
+@item
+Function - chronometrist-file-change-type (hashes)
 @item
 Function - chronometrist-refresh-file (fs-event)
 @item

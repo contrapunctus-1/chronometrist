@@ -80,7 +80,6 @@
 ;; ## VARIABLES ##
 (defvar chronometrist--task-history nil)
 (defvar chronometrist--point nil)
-(defvar chronometrist--inhibit-read-p nil)
 
 ;; ## FUNCTIONS ##
 (defun chronometrist-open-log (&optional _button)
@@ -225,11 +224,98 @@ value of `revert-buffer-function'."
         (chronometrist-maybe-start-timer)
         (set-window-point window point)))))
 
+(defvar chronometrist--inhibit-read-p nil)
+
+(defvar chronometrist--file-hashes nil
+  "List of hashes of `chronometrist-file'.
+`chronometrist-refresh-file' sets this to a plist in the form
+
+\(:last HASH-1 :rest HASH-2)
+
+where HASH-1 and HASH-2 are lists in the form
+
+\(START END HASH)
+
+\(see `chronometrist-file-hash-length')
+
+HASH-1 represents the text between the start of the last
+s-expression to the end of the file, and
+
+HASH-2 represents the text between the start of the file and the
+position before the last s-expression.")
+
+(defun chronometrist-file-hash-length (&optional start end)
+  "Calculate hash of `chronometrist-file' between START and END.
+START can be
+a number or marker,
+:before-last - the position at the start of the last s-expression
+nil or any other value - the value of `point-min'.
+
+END can be
+a number or marker,
+:before-last - the position at the start of the last s-expression,
+nil or any other value - the value of `point-max'.
+
+Return a list in the form (A B HASH), where A and B are markers
+in `chronometrist-file' describing the region for which HASH was calculated."
+  (chronometrist-sexp-in-file chronometrist-file
+    (let* ((start (cond ((eq :before-last start)
+                         (progn (goto-char (point-max))
+                                (backward-sexp)
+                                (point)))
+                        ((number-or-marker-p start) start)
+                        (t (point-min))))
+           (end   (cond ((eq :before-last end)
+                         (progn (goto-char (point-max))
+                                (backward-sexp)
+                                (point)))
+                        ((number-or-marker-p end) end)
+                        (t (point-max)))))
+      (--> (buffer-substring-no-properties start end)
+           (secure-hash 'sha1 it)
+           (list start end it)))))
+
+(defun chronometrist-file-change-type (hashes)
+  "Determine the type of change made to `chronometrist-file'.
+HASHES must be a plist. (see `chronometrist--file-hashes')
+
+Return
+:append  if a new s-expression was added to the end,
+  :last  if the last s-expression was modified,
+    nil  if the contents didn't change, and
+      t  for any other change."
+  (let* ((last (plist-get hashes :last))
+         (rest (plist-get hashes :rest))
+         (last-start (first last))
+         (last-end   (second last))
+         (last-hash  (third last))
+         (rest-start (first rest))
+         (rest-end   (second rest))
+         (rest-hash  (third rest))
+         (new-last-hash (third (chronometrist-file-hash-length last-start last-end)))
+         (last-same-p   (equal last-hash new-last-hash))
+         (new-rest-hash (third (chronometrist-file-hash-length rest-start rest-end)))
+         (rest-same-p   (equal rest-hash new-rest-hash)))
+    ;; if old length = new length, file has not changed, return nil
+    (cond ((and rest-same-p last-same-p)
+           (--> (chronometrist-sexp-in-file chronometrist-file (point-max))
+                (= last-end it)
+                (not it)))
+          ((not rest-same-p) t)
+          ((not last-same-p) :last)
+          (last-same-p :append))))
+
 (defun chronometrist-refresh-file (_fs-event)
   "Re-read `chronometrist-file' and refresh the `chronometrist' buffer.
 Argument _FS-EVENT is ignored."
   ;; (chronometrist-file-clean)
   (run-hooks 'chronometrist-file-change-hook)
+  (awhen chronometrist--file-hashes
+    (message "chronometrist - file change type is %s"
+             (chronometrist-file-change-type it)))
+  (setq chronometrist--file-hashes
+        (list :last (chronometrist-file-hash-length :before-last nil)
+              :rest (chronometrist-file-hash-length nil :before-last)))
   ;; REVIEW - can we move most/all of this to the `chronometrist-file-change-hook'?
   (if chronometrist--inhibit-read-p
       (setq chronometrist--inhibit-read-p nil)
