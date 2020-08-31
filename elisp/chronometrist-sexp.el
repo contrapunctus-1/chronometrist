@@ -106,8 +106,7 @@ were none."
   "Replace the last s-expression in `chronometrist-file' with PLIST."
   (chronometrist-sexp-in-file chronometrist-file
     (goto-char (point-max))
-    (unless (and (bobp) (bolp))
-      (insert "\n"))
+    (unless (and (bobp) (bolp)) (insert "\n"))
     (backward-list 1)
     (chronometrist-sexp-delete-list)
     (chronometrist-plist-pp plist (current-buffer))
@@ -134,12 +133,10 @@ This is meant to be run in `chronometrist-file' when using the s-expression back
       (backward-list)
       (chronometrist-sexp-delete-list)
       (when (looking-at "\n*")
-        (delete-region (match-beginning 0)
-                       (match-end 0)))
+        (delete-region (match-beginning 0) (match-end 0)))
       (chronometrist-plist-pp expr (current-buffer))
       (insert "\n")
-      (unless (eobp)
-        (insert "\n")))))
+      (unless (eobp) (insert "\n")))))
 
 (provide 'chronometrist-sexp)
 
