@@ -285,21 +285,15 @@ Return
     nil  if the contents didn't change, and
       t  for any other change."
   (catch 'quit
-    (let* ((last (plist-get hashes :last))
-           (rest (plist-get hashes :rest))
-           (last-start (first last))
-           (last-end   (second last))
-           (last-hash  (third last))
-           (rest-start (first rest))
-           (rest-end   (second rest))
-           (rest-hash  (third rest))
-           (new-file-length (chronometrist-sexp-in-file chronometrist-file (point-max)))
-           ;; if old length = new length, file has not changed, return nil
-           (file-shrunk-p (when (< new-file-length last-end) (throw 'quit t)))
-           (new-last-hash (third (chronometrist-file-hash-length last-start last-end)))
-           (last-same-p   (equal last-hash new-last-hash))
-           (new-rest-hash (third (chronometrist-file-hash-length rest-start rest-end)))
-           (rest-same-p   (equal rest-hash new-rest-hash)))
+    (-let* (((last-start last-end last-hash) (plist-get hashes :last))
+            ((rest-start rest-end rest-hash) (plist-get hashes :rest))
+            (new-file-length (chronometrist-sexp-in-file chronometrist-file (point-max)))
+            ;; if old length = new length, file has not changed, return nil
+            (file-shrunk-p (when (< new-file-length last-end) (throw 'quit t)))
+            (new-last-hash (third (chronometrist-file-hash-length last-start last-end)))
+            (last-same-p   (equal last-hash new-last-hash))
+            (new-rest-hash (third (chronometrist-file-hash-length rest-start rest-end)))
+            (rest-same-p   (equal rest-hash new-rest-hash)))
       (cond ((not rest-same-p) t)
             ((not last-same-p) :last)
             (t (unless (= last-end new-file-length) :append))))))
