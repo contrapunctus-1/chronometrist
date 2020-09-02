@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.5] - 2020-09-02
+### Added
+* `chronometrist-skip-query-prompt` to re-use last-used tags/key-values with a single key. (...assuming you use `y-or-n-p`)
+### Changed
+* Prompts for keys and values now use `completing-read`, making the interface and the controls more consistent.
+
 ## [0.5.4] - 2020-07-19
 ### Fixed
 * Bug resulting in only the last tag combination being suggested
