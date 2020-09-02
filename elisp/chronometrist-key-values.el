@@ -372,12 +372,8 @@ of `chronometrist-kv-add'."
 KEY should be a string for the just-entered key."
   (setq chronometrist--value-suggestions
         (gethash key chronometrist-value-history))
-  (read-from-minibuffer
-   "Value (RET to quit): "
-   ;; (2019-09-20T11:54:51+0530) this is more troublesome than helpful...
-   ;; (car (gethash key chronometrist-value-history))
-   nil nil nil
-   'chronometrist--value-suggestions))
+  (completing-read (format "Value (%S to quit): " (chronometrist-kv-completion-quit-key))
+                   chronometrist--value-suggestions nil nil nil 'chronometrist--value-suggestions))
 
 (defun chronometrist-value-insert (value)
   "Insert VALUE into the key-value entry buffer."
