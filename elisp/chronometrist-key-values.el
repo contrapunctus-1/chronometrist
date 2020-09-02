@@ -369,8 +369,7 @@ of `chronometrist-kv-add'."
 (defun chronometrist-value-prompt (key)
   "Prompt the user to enter values.
 KEY should be a string for the just-entered key."
-  (setq chronometrist--value-suggestions
-        (gethash key chronometrist-value-history))
+  (setq chronometrist--value-suggestions (gethash key chronometrist-value-history))
   (completing-read (format "Value (%S to quit): " (chronometrist-kv-completion-quit-key))
                    chronometrist--value-suggestions nil nil nil 'chronometrist--value-suggestions))
 
@@ -384,8 +383,7 @@ KEY should be a string for the just-entered key."
           ;; int or float
           (string-match-p "^[0-9]*\\.?[0-9]*$" value))
          (insert value))
-        (t
-         (insert "\"" value "\"")))
+        (t (insert "\"" value "\"")))
   (insert "\n"))
 
 (defun chronometrist-kv-add (&rest _args)
@@ -399,8 +397,7 @@ used in `chronometrist-before-out-functions'."
   (unless chronometrist--skip-detail-prompts
     (let* ((buffer      (get-buffer-create chronometrist-kv-buffer-name))
            (first-key-p t)
-           (last-kvs    (chronometrist-plist-remove (chronometrist-last)
-                                        :name :tags :start :stop))
+           (last-kvs    (chronometrist-plist-remove (chronometrist-last) :name :tags :start :stop))
            (used-keys   (->> (seq-filter #'keywordp last-kvs)
                              (mapcar #'symbol-name)
                              (--map (s-chop-prefix ":" it)))))
@@ -462,8 +459,8 @@ used in `chronometrist-before-out-functions'."
   "Offer to skip tag/key-value prompts and reuse last-used details.
 This function always returns t, so it can be used in `chronometrist-before-out-functions'."
   ;; find latest interval for TASK; if it has tags or key-values, prompt
-  ;; iterate over events in reverse
   (let (plist)
+    ;; iterate over events in reverse
     (cl-loop for key in (reverse (hash-table-keys chronometrist-events)) do
       (cl-loop for event in (reverse (gethash key chronometrist-events))
         when (and (equal task (plist-get event :name))
@@ -480,8 +477,7 @@ This function always returns t, so it can be used in `chronometrist-before-out-f
 (defun chronometrist-skip-query-reset (_task)
   "Enable prompting for tags and key-values.
 This function always returns t, so it can be used in `chronometrist-before-out-functions'."
-  (setq chronometrist--skip-detail-prompts nil)
-  t)
+  (setq chronometrist--skip-detail-prompts nil) t)
 
 (provide 'chronometrist-key-values)
 

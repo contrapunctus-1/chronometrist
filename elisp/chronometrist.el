@@ -100,10 +100,8 @@ button action."
   (equal (chronometrist-current-task) task))
 
 (defun chronometrist-use-goals? ()
-  "Return t if `chronometrist-goal' is available and
-`chronometrist-goal-list' is bound."
-  (and (featurep 'chronometrist-goal)
-       (bound-and-true-p chronometrist-goal-list)))
+  "Return t if `chronometrist-goal' is available and `chronometrist-goal-list' is bound."
+  (and (featurep 'chronometrist-goal) (bound-and-true-p chronometrist-goal-list)))
 
 (defun chronometrist-activity-indicator ()
   "Return a string to indicate that a task is active.
@@ -124,9 +122,7 @@ See custom variable `chronometrist-activity-indicator'."
        (--map-indexed
         (let* ((task        it)
                (index       (number-to-string (1+ it-index)))
-               (task-button (list task
-                                  'action 'chronometrist-toggle-task-button
-                                  'follow-link t))
+               (task-button `(,task action chronometrist-toggle-task-button follow-link t))
                (task-time   (chronometrist-format-time (chronometrist-task-time-one-day task)))
                (indicator   (if (chronometrist-task-active? task)
                                 (chronometrist-activity-indicator)
@@ -167,11 +163,8 @@ See custom variable `chronometrist-activity-indicator'."
 If DESCRIPTION is non-nil, insert that too.
 If FIRSTONLY is non-nil, return only the first keybinding found."
   (insert
-   "\n"
-   (format "% 18s - %s"
-           (chronometrist-format-keybinds command
-                             chronometrist-mode-map
-                             firstonly)
+   (format "\n% 18s - %s"
+           (chronometrist-format-keybinds command chronometrist-mode-map firstonly)
            (if description description ""))))
 
 (defun chronometrist-print-non-tabular ()
@@ -183,11 +176,10 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
           ;;                                      chronometrist-mode-map))
           (keybind-toggle    (chronometrist-format-keybinds 'chronometrist-toggle-task chronometrist-mode-map t)))
       (goto-char (point-max))
-      (-->
-       (chronometrist-active-time-one-day)
-       (chronometrist-format-time it)
-       (format "%s%- 26s%s" w "Total" it)
-       (insert it))
+      (--> (chronometrist-active-time-one-day)
+           (chronometrist-format-time it)
+           (format "%s%- 26s%s" w "Total" it)
+           (insert it))
       (insert "\n")
       (insert w (format "% 17s" "Keys") w (format "% 17s" "----"))
       (chronometrist-print-keybind 'chronometrist-add-new-task)
