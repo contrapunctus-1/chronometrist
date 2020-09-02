@@ -467,11 +467,11 @@ This function always returns t, so it can be used in `chronometrist-before-out-f
                   (setq plist (chronometrist-plist-remove event :name :start :stop)))
         return nil)
       when plist return nil)
-    (when plist
-      (when (yes-or-no-p
-             (format "Skip prompt and use last-used tags/key-values? %s " plist))
-        (setq chronometrist--skip-detail-prompts t)
-        (chronometrist-append-to-last (plist-get plist :tags) plist)))
+    (and plist
+         (yes-or-no-p
+          (format "Skip prompt and use last-used tags/key-values? %s " plist))
+         (setq chronometrist--skip-detail-prompts t)
+         (chronometrist-append-to-last (plist-get plist :tags) plist))
     t))
 
 (defun chronometrist-skip-query-reset (_task)
