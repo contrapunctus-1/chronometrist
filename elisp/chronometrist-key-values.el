@@ -356,16 +356,15 @@ of `chronometrist-kv-add'."
   (let ((key-suggestions (--> (chronometrist-last)
                               (plist-get it :name)
                               (gethash it chronometrist-key-history))))
-    (completing-read (concat "Key ("
-                             (chronometrist-kv-completion-quit-key)
-                             " to quit): ")
+    (completing-read (format "Key (%S to quit): " (chronometrist-kv-completion-quit-key))
                      ;; don't suggest keys which have already been used
-                     (cl-loop for used-key in used-keys
-                              do (->> key-suggestions
-                                      (seq-remove (lambda (key)
-                                                    (equal key used-key)))
-                                      (setq key-suggestions))
-                              finally return key-suggestions))))
+                     (cl-loop for used-key in used-keys do
+                       (->> key-suggestions
+                            (seq-remove (lambda (key)
+                                          (equal key used-key)))
+                            (setq key-suggestions))
+                       finally return key-suggestions)
+                     nil nil nil 'key-suggestions)))
 
 (defun chronometrist-value-prompt (key)
   "Prompt the user to enter values.
