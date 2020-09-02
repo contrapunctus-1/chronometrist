@@ -46,9 +46,7 @@ Return final number of events read from file, or nil if there
 were none."
   (chronometrist-sexp-in-file chronometrist-file
     (goto-char (point-min))
-    (let ((index 0)
-          expr
-          pending-expr)
+    (let ((index 0) expr pending-expr)
       (while (or pending-expr
                  (setq expr (ignore-errors (read (current-buffer)))))
         ;; find and split midnight-spanning events during deserialization itself

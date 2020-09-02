@@ -83,6 +83,15 @@ To be prompted for tags, add `chronometrist-tags-add` to any hook except `chrono
 #### Key-value pairs
 Similarly, to be prompted for key-values, add `chronometrist-kv-add` to any hook except `chronometrist-before-in-functions`. To exit the prompt, press the key it indicates for quitting - you can then edit the resulting key-values by hand if required. Press `C-c C-c` to accept the key-values, or `C-c C-k` to cancel.
 
+#### Quick re-use of last-used tags and/or key-values
+Add `chronometrist-skip-query-prompt` to the hook(s) containing `chronometrist-tags-add`/`chronometrist-kv-add`, _before_ these functions, and `chronometrist-skip-query-reset` _after_ them -
+```elisp
+(setq chronometrist-before-out-functions '(chronometrist-skip-query-prompt
+                                           chronometrist-tags-add
+                                           chronometrist-kv-add
+                                           chronometrist-skip-query-reset))
+```
+
 ### Prompt when exiting Emacs
 If you wish to be prompted when you exit Emacs while tracking time, you can use this -
 
@@ -101,7 +110,9 @@ Chronometrist currently has four hooks -
 3. `chronometrist-before-out-functions`
 4. `chronometrist-after-out-functions`
 
-As their names suggest, these are 'abnormal' hooks, i.e. the functions they contain must accept arguments. In this case, each function must accept exactly one argument, which is the project which is being started or stopped.
+As their names suggest, these are 'abnormal' hooks, i.e. the functions they contain must accept arguments. In this case, each function must accept exactly one argument - the name of the project which is being started or stopped, as a string.
+
+`chronometrist-before-out-functions` is different from the others in that it runs until failure - the task will be clocked out only if all functions in this hook return `t`.
 
 ### Opening certain files when you start a task
 An idea from the author's own init -
@@ -160,12 +171,6 @@ Return nil (and run `magit-status') if the user answers no."
 1. Use `make-thread` in v26 or the emacs-async library for `chronometrist-entries`/`chronometrist-report-entries`
 2. Some way to update buffers every second without making Emacs unusable. (impossible?)
 3. "Day summary" - for users who use the "reason" feature to note the specifics of their actual work. Combine the reasons together to create a descriptive overview of the work done in the day.
-
-### chronometrist-report
-1. Show week counter and max weeks; don't scroll past first/last weeks
-2. Highlight column of current day
-3. Add support for other locale weeks/weekday names
-4. Show only certain projects
 
 ### chronometrist-statistics
 1. Show range counter and max ranges; don't scroll past first/last time ranges

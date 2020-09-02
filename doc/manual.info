@@ -722,10 +722,6 @@ Function - chronometrist-events-subset (start end)
 @item
 ts ts -> hash-table
 @end itemize
-@item
-Function - chronometrist-events-query-spec-match-p (plist specifiers)
-@item
-Function - chronometrist-events-query (table &key get specifiers except)
 @end enumerate
 
 @node chronometrist-migrateel
@@ -863,7 +859,7 @@ Function - chronometrist-append-to-last (tags plist)
 @item
 Variable - chronometrist-tags-history
 @item
-Function - chronometrist-tags-history-populate ()
+Function - chronometrist-tags-history-populate (events-table history-table)
 @item
 Function - chronometrist-tags-history-add (plist)
 @item
@@ -885,9 +881,9 @@ Variable - chronometrist-value-history
 @item
 Function - chronometrist-ht-history-prep (table)
 @item
-Function - chronometrist-key-history-populate ()
+Function - chronometrist-key-history-populate (events-table history-table)
 @item
-Function - chronometrist-value-history-populate ()
+Function - chronometrist-value-history-populate (events-table history-table)
 @item
 Keymap - chronometrist-kv-read-mode-map
 @item
@@ -908,6 +904,12 @@ Function - chronometrist-kv-add (&rest args)
 Command - chronometrist-kv-accept ()
 @item
 Command - chronometrist-kv-reject ()
+@item
+Internal Variable - chronometrist--skip-detail-prompts
+@item
+Function - chronometrist-skip-query-prompt (task)
+@item
+Function - chronometrist-skip-query-reset (@math{_task})
 @end enumerate
 
 @node chronometrist-statistics-customel

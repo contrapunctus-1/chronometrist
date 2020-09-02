@@ -22,7 +22,7 @@
    7. [X] regression - no value history
    8. [ ] Possible to add the same key-value twice
       * Clock in, clock out, add key-value and accept, delete :stop time and save, clock out again, accept the already-inserted key-value - duplicate!
-** Features [16%]
+** Features [20%]
    1. [ ] Create chronometrist-unused-projects-list + chronometrist-projects-list.
    2. [ ] New commands
       1. [ ] *Kill/discard* (bind to 'k') - which will delete the interval currently being recorded.
@@ -35,9 +35,7 @@
       * That would mean ensuring that -kv-read runs before other hooks.
       * Actually, it should be trivial to access the last expression in the file, so maybe this is unnecessary.
    4. [ ] key-values and tags should work regardless of what hook they're called from, to give users the option to modify behaviour (does clock in start after you've finished adding details, or before?)
-   5. [ ] Expandable items - show intervals for task today
-      * [ ] Switch between intervals and tag-combination breakdown
-   6. [X] Revisit 'no reason' commands - maybe we should ask for tags and key-values with the regular commands, and skip them with the 'no reason' variants?
+   5. [X] Revisit 'no reason' commands - maybe we should ask for tags and key-values with the regular commands, and skip them with the 'no reason' variants?
 *** Key-values [66%]
     1. [X] bug - value-history appears in chronological rather than reverse chronological order
     2. [X] generate history hash table from chronometrist-file.
@@ -87,7 +85,7 @@
     4. [X] bug - tags being added twice
 
 ** Code [28%]
-   1. [ ] Write tests (in buttercup)
+   1. [-] Write tests (in buttercup)
    2. refactor repetitive calls to (format "%04d-%02d-%02d" (elt seq a) (elt seq b) (elt seq c))
    3. See if it is possible to store buttons in a variable, so *-print-non-tabular functions can be made shorter and less imperative. (see ~make-text-button~)
    4. Merge all event-querying functions so that they always operate on an entire hash table (so no 'day' variants),
@@ -130,11 +128,6 @@
           * Or even the first expression of the current date. That way, we just re-read the events for today. Because chronometrist-events uses dates as keys, it's easy to work on the basis of dates.
    6. [ ] Don't generate tag/keyword/value history from the entire log, just from the last N days (where N is user-customizable).
    7. [ ] Just why are we reading the whole file? ~chronometrist~ should not read more than a day; ~chronometrist-report~ should not read more than a week at a time, and so on. Make a branch which works on this logic, see if it is faster.
-* chronometrist-report
-** Features
-   1. [ ] Expandable items - show tag-combination-based breakdown
-** Migration [100%]
-   1. [X] next/previous weeks
 
 * Certain [0%]
 ** Bugs [0%]
@@ -165,15 +158,27 @@
    #+END_SRC
    And of course, that results in an error trying to process it.
 
-** chronometrist [0%]
+** chronometrist [11%]
 1. [ ] Add =:stop= time when we call =chronometrist-kv-accept=, not when we quit the key-value prompt.
 2. [ ] Implement undo/redo by running undo-tree commands on chronometrist.sexp
    * [ ] Possibly show what changes would be made, and prompt the user to confirm it.
+   * How will this work with the SQLite backend?
 3. [ ] *Convert* current interval - change the =:name= of the currently clocked-in interval. Tags and key-values may be re-queried. Clock-in hook functions will be run again with the new task as the argument.
 4. [ ] *Rename* a project (updating all records)
 5. [ ] *Delete* a project (erasing all records)
 6. [ ] *Hide* a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
 7. [ ] *Reset* current interval - update the =:start= time to the current time.
+8. [X] Enhanced tag/key-value prompt - before asking for tags/key-values, if the last occurence of task had tags/key-values, ask if they should be reused. y - yes, n - no (continue to usual prompts).
+   * [X] Show what those tags/key-values are, so the user knows what will be added.
+9. [ ] Expandable items - show intervals for task today
+   * [ ] Switch between intervals and tag-combination breakdown
+
+** chronometrist-report [0%]
+1. [ ] Show week counter and max weeks; don't scroll past first/last weeks
+2. [ ] Highlight column of current day
+3. [ ] Command to narrow report to specific project(s)
+4. [ ] Jump to beginning/end of data (keys B/F)
+5. [ ] Expandable items - show tag-combination-based breakdown
 
 ** Code quality [0%]
 1. [ ] Remove duplication between =chronometrist-toggle-task= and =chronometrist-toggle-task-button=
@@ -183,6 +188,8 @@
    2. [ ] chronometrist-statistics-count-active-days
 4. [ ] Write integration tests using ecukes.
    1. Some feature definitions already exist in features/, write step definitions for them.
+5. [ ] Remove duplication - the three =chronometrist-*-history-populate= functions seem to have a common pattern of iterating over each hash value (a list of plists) in =chronometrist-events=, and over each element of that list.
+6. [ ] Remove duplication - extracting user key-values from a plist seems to be a common operation.
 
 ** Documentation [0%]
 1. [ ] Move usage and customization sections to manual.org
@@ -204,14 +211,16 @@
 5. [ ] Figure out some way to hide package prefixes in identifiers in Org mode (without actually affecting the contents, a la nameless-mode)
 
 ** UX [12%]
-   1. [ ] Don't suggest nil when asking for first project on first run
-   2. [ ] When starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
-   3. [ ] Mouse commands should work only on buttons.
-   4. [X] Button actions should accept prefix arguments and behave exactly like their keyboard counterparts.
-   5. [ ] mouse-3 should clock-out without asking for reason.
-   6. [ ] Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked /before/ clocking out, which adds time to the project.
-   7. [ ] Allow calling chronometrist-in/out from anywhere-within-Emacs (a la timeclock) as well as from the chronometrist buffer.
-   8. [ ] =chronometrist-timer= - if =chronometrist-file= is being edited (buffer exists and modified), don't refresh - this will (hopefully) prevent Emacs from going crazy with errors in trying to parse malformed data.
+   1. [ ] Optimization - (jonasw) store length and hash of previous file, see if the new file has the same hash until old-length bytes.
+   2. [ ] Don't suggest nil when asking for first project on first run
+   3. [ ] When starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
+   4. [ ] Mouse commands should work only on buttons.
+   5. [X] Button actions should accept prefix arguments and behave exactly like their keyboard counterparts.
+   6. [ ] mouse-3 should clock-out without asking for reason.
+   7. [ ] Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked /before/ clocking out, which adds time to the project.
+   8. [ ] Allow calling chronometrist-in/out from anywhere-within-Emacs (a la timeclock) as well as from the chronometrist buffer.
+   9. [ ] =chronometrist-timer= - if =chronometrist-file= is being edited (buffer exists and modified), don't refresh - this will (hopefully) prevent Emacs from going crazy with errors in trying to parse malformed data.
+
 * Maybe [0%]
 ** UX [0%]
 1. [ ] Provide a command which tries to auto-configure Chronometrist keys in a way which is consistent with the user's other keymaps.
@@ -222,11 +231,15 @@
    * ...or a list of keys to exclude from task-sensitivity?
      + So =chronometrist-value-history= will have =("task" . "key")= as hash key and =("value" ...)= as hash value. Keys which are present in the 'blacklist' are stored the same way as now - ="key"= as hash key, =("value" ...)= as hash value.
    * Can we figure it out automatically, without requiring configuration? 🤔
+   * Maybe suggest values for the current task first, and only after that for other tasks?
 4. [ ] Tag-sensitive key suggestions, tag-sensitive value suggestions...?
    * Might complicate things quite a bit.
-   * Lack of task-sensitive value suggestions (#3) is an inconsistency, because tags and keys are already task-sensitive. Tag-sensitive key and value suggestions are a whole different beast, in that regard.
+   * Lack of task-sensitive value suggestions (#3) is an inconsistency, because tags and keys are already task-sensitive. From that perspective, tag-sensitive key and value suggestions are a whole new can of worms.
 
-** chronometrist-goals [%]
+** chronometrist-report [0%]
+1. [ ] Add support for other locale weeks/weekday names
+
+** chronometrist-goals [0%]
 1. [ ] Colorize times in Chronometrist buffer
    - untouched project with target defined - red
    - target ±5 minutes - green

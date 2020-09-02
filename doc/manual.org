@@ -208,238 +208,255 @@ Each of these has a corresponding function to clear it and fill it with values -
      * Only returned by chronometrist-seconds-to-hms, called by chronometrist-format-time
 
 ** chronometrist-common.el
-    1. Variable - chronometrist-empty-time-string
-    2. Variable - chronometrist-date-re
-    3. Variable - chronometrist-time-re-ui
-    4. Variable - chronometrist-task-list
-    5. Function - chronometrist-task-list-add (task)
-    6. Internal Variable - chronometrist--fs-watch
-    7. Function - chronometrist-current-task ()
-    8. Function - chronometrist-format-time  (seconds &optional (blank "   "))
-       * seconds -> "h:m:s"
-    9. Function - chronometrist-common-file-empty-p (file)
-    10. Function - chronometrist-common-clear-buffer (buffer)
-    11. Function - chronometrist-format-keybinds (command map &optional firstonly)
-    12. Function - chronometrist-events->ts-pairs (events)
-        * (plist ...) -> ((ts . ts) ...)
-    13. Function - chronometrist-ts-pairs->durations (ts-pairs)
-        * ((ts . ts) ...) -> seconds
-    14. Function - chronometrist-previous-week-start (ts)
-        * ts -> ts
+1.  Variable - chronometrist-empty-time-string
+2.  Variable - chronometrist-date-re
+3.  Variable - chronometrist-time-re-ui
+4.  Variable - chronometrist-task-list
+5.  Function - chronometrist-task-list-add (task)
+6.  Internal Variable - chronometrist--fs-watch
+7.  Function - chronometrist-current-task ()
+8.  Function - chronometrist-format-time  (seconds &optional (blank "   "))
+    * seconds -> "h:m:s"
+9.  Function - chronometrist-common-file-empty-p (file)
+10. Function - chronometrist-common-clear-buffer (buffer)
+11. Function - chronometrist-format-keybinds (command map &optional firstonly)
+12. Function - chronometrist-events->ts-pairs (events)
+    * (plist ...) -> ((ts . ts) ...)
+13. Function - chronometrist-ts-pairs->durations (ts-pairs)
+    * ((ts . ts) ...) -> seconds
+14. Function - chronometrist-previous-week-start (ts)
+    * ts -> ts
+
 ** chronometrist-custom.el
-    1. Custom variable - chronometrist-file
-    2. Custom variable - chronometrist-buffer-name
-    3. Custom variable - chronometrist-hide-cursor
-    4. Custom variable - chronometrist-update-interval
-    5. Custom variable - chronometrist-activity-indicator
-    6. Custom variable - chronometrist-day-start-time
+1. Custom variable - chronometrist-file
+2. Custom variable - chronometrist-buffer-name
+3. Custom variable - chronometrist-hide-cursor
+4. Custom variable - chronometrist-update-interval
+5. Custom variable - chronometrist-activity-indicator
+6. Custom variable - chronometrist-day-start-time
+
 ** chronometrist-diary-view.el
-    1. Variable - chronometrist-diary-buffer-name
-    2. Internal Variable - chronometrist-diary--current-date
-    3. Function - chronometrist-intervals-on (date)
-    4. Function - chronometrist-diary-tasks-reasons-on (date)
-    5. Function - chronometrist-diary-refresh (&optional ignore-auto noconfirm date)
-    6. Major Mode - chronometrist-diary-view-mode
-    7. Command - chronometrist-diary-view (&optional date)
+1. Variable - chronometrist-diary-buffer-name
+2. Internal Variable - chronometrist-diary--current-date
+3. Function - chronometrist-intervals-on (date)
+4. Function - chronometrist-diary-tasks-reasons-on (date)
+5. Function - chronometrist-diary-refresh (&optional ignore-auto noconfirm date)
+6. Major Mode - chronometrist-diary-view-mode
+7. Command - chronometrist-diary-view (&optional date)
+
 ** chronometrist.el
-    1. Internal Variable - chronometrist--task-history
-    2. Internal Variable - chronometrist--point
-    3. Internal Variable - chronometrist--inhibit-read-p
-    4. Keymap - chronometrist-mode-map
-    5. Command - chronometrist-open-log (&optional button)
-    6. Function - chronometrist-common-create-file ()
-    7. Function - chronometrist-task-active? (task)
-       * String -> Boolean
-    8. Function - chronometrist-use-goals? ()
-    9. Function - chronometrist-activity-indicator ()
-    10. Function - chronometrist-entries ()
-    11. Function - chronometrist-task-at-point ()
-    12. Function - chronometrist-goto-last-task ()
-    13. Function - chronometrist-print-keybind (command &optional description firstonly)
-    14. Function - chronometrist-print-non-tabular ()
-    15. Function - chronometrist-goto-nth-task (n)
-    16. Function - chronometrist-refresh (&optional ignore-auto noconfirm)
-    17. Function - chronometrist-refresh-file (fs-event)
-    18. Command - chronometrist-query-stop ()
-    19. Command - chronometrist-in (task &optional _prefix)
-    20. Command - chronometrist-out (&optional _prefix)
-    21. Variable - chronometrist-before-in-functions
-    22. Variable - chronometrist-after-in-functions
-    23. Variable - chronometrist-before-out-functions
-    24. Variable - chronometrist-after-out-functions
-    25. Function - chronometrist-run-functions-and-clock-in (task)
-    26. Function - chronometrist-run-functions-and-clock-out (task)
-    27. Keymap - chronometrist-mode-map
-    28. Major Mode - chronometrist-mode
-    29. Function - chronometrist-toggle-task-button (button)
-    30. Function - chronometrist-add-new-task-button (button)
-    31. Command - chronometrist-toggle-task (&optional prefix inhibit-hooks)
-    32. Command - chronometrist-toggle-task-no-hooks (&optional prefix)
-    33. Command - chronometrist-add-new-task ()
-    34. Command - chronometrist (&optional arg)
+1.  Internal Variable - chronometrist--task-history
+2.  Internal Variable - chronometrist--point
+3.  Internal Variable - chronometrist--inhibit-read-p
+4.  Keymap - chronometrist-mode-map
+5.  Command - chronometrist-open-log (&optional button)
+6.  Function - chronometrist-common-create-file ()
+7.  Function - chronometrist-task-active? (task)
+    * String -> Boolean
+8.  Function - chronometrist-use-goals? ()
+9.  Function - chronometrist-activity-indicator ()
+10. Function - chronometrist-entries ()
+11. Function - chronometrist-task-at-point ()
+12. Function - chronometrist-goto-last-task ()
+13. Function - chronometrist-print-keybind (command &optional description firstonly)
+14. Function - chronometrist-print-non-tabular ()
+15. Function - chronometrist-goto-nth-task (n)
+16. Function - chronometrist-refresh (&optional ignore-auto noconfirm)
+17. Function - chronometrist-refresh-file (fs-event)
+18. Command - chronometrist-query-stop ()
+19. Command - chronometrist-in (task &optional _prefix)
+20. Command - chronometrist-out (&optional _prefix)
+21. Variable - chronometrist-before-in-functions
+22. Variable - chronometrist-after-in-functions
+23. Variable - chronometrist-before-out-functions
+24. Variable - chronometrist-after-out-functions
+25. Function - chronometrist-run-functions-and-clock-in (task)
+26. Function - chronometrist-run-functions-and-clock-out (task)
+27. Keymap - chronometrist-mode-map
+28. Major Mode - chronometrist-mode
+29. Function - chronometrist-toggle-task-button (button)
+30. Function - chronometrist-add-new-task-button (button)
+31. Command - chronometrist-toggle-task (&optional prefix inhibit-hooks)
+32. Command - chronometrist-toggle-task-no-hooks (&optional prefix)
+33. Command - chronometrist-add-new-task ()
+34. Command - chronometrist (&optional arg)
+
 ** chronometrist-events.el
-    1. Variable - chronometrist-events
-       * keys - iso-date
-    2. Function - chronometrist-day-start (timestamp)
-       * iso-timestamp -> encode-time
-    3. Function - chronometrist-file-clean ()
-       * commented out, unused
-    4. Function - chronometrist-events-maybe-split (event)
-    5. Function - chronometrist-events-populate ()
-    6. Function - chronometrist-tasks-from-table ()
-    7. Function - chronometrist-events-add (plist)
-    8. Function - chronometrist-events-replace-last (plist)
-    9. Function - chronometrist-events-subset (start end)
-       * ts ts -> hash-table
-    10. Function - chronometrist-events-query-spec-match-p (plist specifiers)
-    11. Function - chronometrist-events-query (table &key get specifiers except)
+1.  Variable - chronometrist-events
+    * keys - iso-date
+2.  Function - chronometrist-day-start (timestamp)
+    * iso-timestamp -> encode-time
+3.  Function - chronometrist-file-clean ()
+    * commented out, unused
+4.  Function - chronometrist-events-maybe-split (event)
+5.  Function - chronometrist-events-populate ()
+6.  Function - chronometrist-tasks-from-table ()
+7.  Function - chronometrist-events-add (plist)
+8.  Function - chronometrist-events-replace-last (plist)
+9.  Function - chronometrist-events-subset (start end)
+    * ts ts -> hash-table
+
 ** chronometrist-migrate.el
-    1. Variable - chronometrist-migrate-table
-    2. Function - chronometrist-migrate-populate (in-file)
-    3. Function - chronometrist-migrate-timelog-file->sexp-file (&optional in-file out-file)
-    4. Function - chronometrist-migrate-check ()
+1. Variable - chronometrist-migrate-table
+2. Function - chronometrist-migrate-populate (in-file)
+3. Function - chronometrist-migrate-timelog-file->sexp-file (&optional in-file out-file)
+4. Function - chronometrist-migrate-check ()
+
 ** chronometrist-plist-pp.el
-    1. Variable - chronometrist-plist-pp-keyword-re
-    2. Variable - chronometrist-plist-pp-whitespace-re
-    3. Function - chronometrist-plist-pp-longest-keyword-length ()
-    4. Function - chronometrist-plist-pp-buffer-keyword-helper ()
-    5. Function - chronometrist-plist-pp-buffer ()
-    6. Function - chronometrist-plist-pp-to-string (object)
-    7. Function - chronometrist-plist-pp (object &optional stream)
+1. Variable - chronometrist-plist-pp-keyword-re
+2. Variable - chronometrist-plist-pp-whitespace-re
+3. Function - chronometrist-plist-pp-longest-keyword-length ()
+4. Function - chronometrist-plist-pp-buffer-keyword-helper ()
+5. Function - chronometrist-plist-pp-buffer ()
+6. Function - chronometrist-plist-pp-to-string (object)
+7. Function - chronometrist-plist-pp (object &optional stream)
+
 ** chronometrist-queries.el
-    1. Function - chronometrist-last ()
-       * -> plist
-    2. Function - chronometrist-task-time-one-day (task &optional (ts (ts-now)))
-       * String &optional ts -> seconds
-    3. Function - chronometrist-active-time-one-day (&optional ts)
-       * &optional ts -> seconds
-    4. Function - chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
-    5. Function - chronometrist-task-events-in-day (task ts)
+1. Function - chronometrist-last ()
+   * -> plist
+2. Function - chronometrist-task-time-one-day (task &optional (ts (ts-now)))
+   * String &optional ts -> seconds
+3. Function - chronometrist-active-time-one-day (&optional ts)
+   * &optional ts -> seconds
+4. Function - chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
+5. Function - chronometrist-task-events-in-day (task ts)
+
 ** chronometrist-report-custom.el
-    1. Custom variable - chronometrist-report-buffer-name
-    2. Custom variable - chronometrist-report-week-start-day
-    3. Custom variable - chronometrist-report-weekday-number-alist
+1. Custom variable - chronometrist-report-buffer-name
+2. Custom variable - chronometrist-report-week-start-day
+3. Custom variable - chronometrist-report-weekday-number-alist
+
 ** chronometrist-report.el
-    1. Internal Variable - chronometrist-report--ui-date
-    2. Internal Variable - chronometrist-report--ui-week-dates
-    3. Internal Variable - chronometrist-report--point
-    4. Function - chronometrist-report-date ()
-    5. Function - chronometrist-report-date->dates-in-week (first-date-in-week)
-       * ts-1 -> (ts-1 ... ts-7)
-    6. Function - chronometrist-report-date->week-dates ()
-    7. Function - chronometrist-report-entries ()
-    8. Function - chronometrist-report-print-keybind (command &optional description firstonly)
-    9. Function - chronometrist-report-print-non-tabular ()
-    10. Function - chronometrist-report-refresh (&optional _ignore-auto _noconfirm)
-    11. Function - chronometrist-report-refresh-file (_fs-event)
-    12. Keymap - chronometrist-report-mode-map
-    13. Major Mode - chronometrist-report-mode
-    14. Function - chronometrist-report (&optional keep-date)
-    15. Function - chronometrist-report-previous-week (arg)
-    16. Function - chronometrist-report-next-week (arg)
+1.  Internal Variable - chronometrist-report--ui-date
+2.  Internal Variable - chronometrist-report--ui-week-dates
+3.  Internal Variable - chronometrist-report--point
+4.  Function - chronometrist-report-date ()
+5.  Function - chronometrist-report-date->dates-in-week (first-date-in-week)
+    * ts-1 -> (ts-1 ... ts-7)
+6.  Function - chronometrist-report-date->week-dates ()
+7.  Function - chronometrist-report-entries ()
+8.  Function - chronometrist-report-print-keybind (command &optional description firstonly)
+9.  Function - chronometrist-report-print-non-tabular ()
+10. Function - chronometrist-report-refresh (&optional _ignore-auto _noconfirm)
+11. Function - chronometrist-report-refresh-file (_fs-event)
+12. Keymap - chronometrist-report-mode-map
+13. Major Mode - chronometrist-report-mode
+14. Function - chronometrist-report (&optional keep-date)
+15. Function - chronometrist-report-previous-week (arg)
+16. Function - chronometrist-report-next-week (arg)
+
 ** chronometrist-key-values.el
-    1. Internal Variable - chronometrist--tag-suggestions
-    2. Internal Variable - chronometrist--value-suggestions
-    3. Function - chronometrist-plist-remove (plist &rest keys)
-    4. Function - chronometrist-maybe-string-to-symbol (list)
-    5. Function - chronometrist-maybe-symbol-to-string (list)
-    6. Function - chronometrist-append-to-last (tags plist)
-    7. Variable - chronometrist-tags-history
-    8. Function - chronometrist-tags-history-populate ()
-    9. Function - chronometrist-tags-history-add (plist)
-    10. Function - chronometrist-tags-history-replace-last (plist)
-    11. Function - chronometrist-tags-history-combination-strings (task)
-    12. Function - chronometrist-tags-history-individual-strings (task)
-    13. Function - chronometrist-tags-prompt (task &optional initial-input)
-    14. Function - chronometrist-tags-add (&rest args)
-    15. Custom Variable - chronometrist-kv-buffer-name
-    16. Variable - chronometrist-key-history
-    17. Variable - chronometrist-value-history
-    18. Function - chronometrist-ht-history-prep (table)
-    19. Function - chronometrist-key-history-populate ()
-    20. Function - chronometrist-value-history-populate ()
-    21. Keymap - chronometrist-kv-read-mode-map
-    22. Major Mode - chronometrist-kv-read-mode
-    23. Function - chronometrist-kv-completion-quit-key ()
-    24. Function - chronometrist-string-has-whitespace-p (string)
-    25. Function - chronometrist-key-prompt (used-keys)
-    26. Function - chronometrist-value-prompt (key)
-    27. Function - chronometrist-value-insert (value)
-    28. Function - chronometrist-kv-add (&rest args)
-    29. Command - chronometrist-kv-accept ()
-    30. Command - chronometrist-kv-reject ()
+1.  Internal Variable - chronometrist--tag-suggestions
+2.  Internal Variable - chronometrist--value-suggestions
+3.  Function - chronometrist-plist-remove (plist &rest keys)
+4.  Function - chronometrist-maybe-string-to-symbol (list)
+5.  Function - chronometrist-maybe-symbol-to-string (list)
+6.  Function - chronometrist-append-to-last (tags plist)
+7.  Variable - chronometrist-tags-history
+8.  Function - chronometrist-tags-history-populate (events-table history-table)
+9.  Function - chronometrist-tags-history-add (plist)
+10. Function - chronometrist-tags-history-replace-last (plist)
+11. Function - chronometrist-tags-history-combination-strings (task)
+12. Function - chronometrist-tags-history-individual-strings (task)
+13. Function - chronometrist-tags-prompt (task &optional initial-input)
+14. Function - chronometrist-tags-add (&rest args)
+15. Custom Variable - chronometrist-kv-buffer-name
+16. Variable - chronometrist-key-history
+17. Variable - chronometrist-value-history
+18. Function - chronometrist-ht-history-prep (table)
+19. Function - chronometrist-key-history-populate (events-table history-table)
+20. Function - chronometrist-value-history-populate (events-table history-table)
+21. Keymap - chronometrist-kv-read-mode-map
+22. Major Mode - chronometrist-kv-read-mode
+23. Function - chronometrist-kv-completion-quit-key ()
+24. Function - chronometrist-string-has-whitespace-p (string)
+25. Function - chronometrist-key-prompt (used-keys)
+26. Function - chronometrist-value-prompt (key)
+27. Function - chronometrist-value-insert (value)
+28. Function - chronometrist-kv-add (&rest args)
+29. Command - chronometrist-kv-accept ()
+30. Command - chronometrist-kv-reject ()
+31. Internal Variable - chronometrist--skip-detail-prompts
+32. Function - chronometrist-skip-query-prompt (task)
+33. Function - chronometrist-skip-query-reset (_task)
+
 ** chronometrist-statistics-custom.el
-    1. Custom variable - chronometrist-statistics-buffer-name
+1. Custom variable - chronometrist-statistics-buffer-name
+
 ** chronometrist-statistics.el
-    1. Internal Variable - chronometrist-statistics--ui-state
-    2. Internal Variable - chronometrist-statistics--point
-    3. Function - chronometrist-statistics-count-average-time-spent (task &optional (table chronometrist-events))
-       * string &optional hash-table -> seconds
-    4. Function - chronometrist-statistics-entries-internal (table)
-    5. Function - chronometrist-statistics-entries ()
-    6. Function - chronometrist-statistics-print-keybind (command &optional description firstonly)
-    7. Function - chronometrist-statistics-print-non-tabular ()
-    8. Function - chronometrist-statistics-refresh (&optional ignore-auto noconfirm)
-    9. Keymap - chronometrist-statistics-mode-map
-    10. Major Mode - chronometrist-statistics-mode
-    11. Command - chronometrist-statistics (&optional preserve-state)
-    12. Command - chronometrist-statistics-previous-range (arg)
-    13. Command - chronometrist-statistics-next-range (arg)
+1.  Internal Variable - chronometrist-statistics--ui-state
+2.  Internal Variable - chronometrist-statistics--point
+3.  Function - chronometrist-statistics-count-average-time-spent (task &optional (table chronometrist-events))
+    * string &optional hash-table -> seconds
+4.  Function - chronometrist-statistics-entries-internal (table)
+5.  Function - chronometrist-statistics-entries ()
+6.  Function - chronometrist-statistics-print-keybind (command &optional description firstonly)
+7.  Function - chronometrist-statistics-print-non-tabular ()
+8.  Function - chronometrist-statistics-refresh (&optional ignore-auto noconfirm)
+9.  Keymap - chronometrist-statistics-mode-map
+10. Major Mode - chronometrist-statistics-mode
+11. Command - chronometrist-statistics (&optional preserve-state)
+12. Command - chronometrist-statistics-previous-range (arg)
+13. Command - chronometrist-statistics-next-range (arg)
+
 ** chronometrist-time.el
-    1. Function - chronometrist-iso-timestamp->ts (timestamp)
-       * iso-timestamp -> ts
-    2. Function - chronometrist-iso-date->ts (date)
-       * iso-date -> ts
-    3. Function - chronometrist-date (&optional (ts (ts-now)))
-       * &optional ts -> ts (with time 00:00:00)
-    4. Function - chronometrist-format-time-iso8601 (&optional unix-time)
-    5. Function - chronometrist-midnight-spanning-p (start-time stop-time)
-    6. Function - chronometrist-seconds-to-hms (seconds)
-       * seconds -> list-duration
-    7. Function - chronometrist-interval (event)
-       * event -> duration
+1. Function - chronometrist-iso-timestamp->ts (timestamp)
+   * iso-timestamp -> ts
+2. Function - chronometrist-iso-date->ts (date)
+   * iso-date -> ts
+3. Function - chronometrist-date (&optional (ts (ts-now)))
+   * &optional ts -> ts (with time 00:00:00)
+4. Function - chronometrist-format-time-iso8601 (&optional unix-time)
+5. Function - chronometrist-midnight-spanning-p (start-time stop-time)
+6. Function - chronometrist-seconds-to-hms (seconds)
+   * seconds -> list-duration
+7. Function - chronometrist-interval (event)
+   * event -> duration
+
 ** chronometrist-timer.el
-    1. Internal Variable - chronometrist--timer-object
-    2. Function - chronometrist-timer ()
-    3. Command - chronometrist-stop-timer ()
-    4. Command - chronometrist-maybe-start-timer (&optional interactive-test)
-    5. Command - chronometrist-force-restart-timer ()
-    6. Command - chronometrist-change-update-interval (arg)
+1. Internal Variable - chronometrist--timer-object
+2. Function - chronometrist-timer ()
+3. Command - chronometrist-stop-timer ()
+4. Command - chronometrist-maybe-start-timer (&optional interactive-test)
+5. Command - chronometrist-force-restart-timer ()
+6. Command - chronometrist-change-update-interval (arg)
+
 ** chronometrist-goal
-    1. Internal Variable - chronometrist-goal--timers-list
-    2. Custom Variable - chronometrist-goal-list nil
-    3. Function - chronometrist-goal-run-at-time (time repeat function &rest args)
-    4. Function - chronometrist-goal-seconds->alert-string (seconds)
-       * seconds -> string
-    5. Function - chronometrist-goal-approach-alert (task goal spent)
-       * string minutes minutes
-    6. Function - chronometrist-goal-complete-alert (task goal spent)
-       * string minutes minutes
-    7. Function - chronometrist-goal-exceed-alert (task goal spent)
-       * string minutes minutes
-    8. Function - chronometrist-goal-no-goal-alert (task goal spent)
-       * string minutes minutes
-    9. Custom Variable - chronometrist-goal-alert-functions
-       * each function is passed - string minutes minutes
-    10. Function - chronometrist-goal-get (task &optional (goal-list chronometrist-goal-list))
-        * String &optional List -> minutes
-    11. Function - chronometrist-goal-run-alert-timers (task)
-    12. Function - chronometrist-goal-stop-alert-timers (&optional _task)
-    13. Function - chronometrist-goal-on-file-change ()
+1.  Internal Variable - chronometrist-goal--timers-list
+2.  Custom Variable - chronometrist-goal-list nil
+3.  Function - chronometrist-goal-run-at-time (time repeat function &rest args)
+4.  Function - chronometrist-goal-seconds->alert-string (seconds)
+    * seconds -> string
+5.  Function - chronometrist-goal-approach-alert (task goal spent)
+    * string minutes minutes
+6.  Function - chronometrist-goal-complete-alert (task goal spent)
+    * string minutes minutes
+7.  Function - chronometrist-goal-exceed-alert (task goal spent)
+    * string minutes minutes
+8.  Function - chronometrist-goal-no-goal-alert (task goal spent)
+    * string minutes minutes
+9.  Custom Variable - chronometrist-goal-alert-functions
+    * each function is passed - string minutes minutes
+10. Function - chronometrist-goal-get (task &optional (goal-list chronometrist-goal-list))
+    * String &optional List -> minutes
+11. Function - chronometrist-goal-run-alert-timers (task)
+12. Function - chronometrist-goal-stop-alert-timers (&optional _task)
+13. Function - chronometrist-goal-on-file-change ()
+
 ** chronometrist-sexp
-    1. Macro - chronometrist-sexp-in-file (file &rest body)
-    2. Function - chronometrist-sexp-open-log ()
-    3. Function - chronometrist-sexp-between (&optional (ts-beg (chronometrist-date)) (ts-end (ts-adjust 'day +1 (chronometrist-date))))
-    4. Function - chronometrist-sexp-query-till (&optional (date (chronometrist-date)))
-    5. Function - chronometrist-sexp-last ()
-       * -> plist
-    6. Function - chronometrist-sexp-current-task ()
-    7. Function - chronometrist-sexp-events-populate ()
-    8. Function - chronometrist-sexp-create-file ()
-    9. Function - chronometrist-sexp-new (plist &optional (buffer (find-file-noselect chronometrist-file)))
-    10. Function - chronometrist-sexp-delete-list (&optional arg)
-    11. Function - chronometrist-sexp-replace-last (plist)
-    12. Command - chronometrist-sexp-reindent-buffer ()
+1.  Macro - chronometrist-sexp-in-file (file &rest body)
+2.  Function - chronometrist-sexp-open-log ()
+3.  Function - chronometrist-sexp-between (&optional (ts-beg (chronometrist-date)) (ts-end (ts-adjust 'day +1 (chronometrist-date))))
+4.  Function - chronometrist-sexp-query-till (&optional (date (chronometrist-date)))
+5.  Function - chronometrist-sexp-last ()
+    * -> plist
+6.  Function - chronometrist-sexp-current-task ()
+7.  Function - chronometrist-sexp-events-populate ()
+8.  Function - chronometrist-sexp-create-file ()
+9.  Function - chronometrist-sexp-new (plist &optional (buffer (find-file-noselect chronometrist-file)))
+10. Function - chronometrist-sexp-delete-list (&optional arg)
+11. Function - chronometrist-sexp-replace-last (plist)
+12. Command - chronometrist-sexp-reindent-buffer ()
 
 # Local Variables:
 # org-link-file-path-type: relative
