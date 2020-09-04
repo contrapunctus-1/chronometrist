@@ -163,6 +163,7 @@
 2. [ ] Implement undo/redo by running undo-tree commands on chronometrist.sexp
    * [ ] Possibly show what changes would be made, and prompt the user to confirm it.
    * How will this work with the SQLite backend?
+   * It might be easier to just have a 'remove last interval' (the operation I use undo for most often), so we don't reimplement an undo for SQLite.
 3. [ ] *Convert* current interval - change the =:name= of the currently clocked-in interval. Tags and key-values may be re-queried. Clock-in hook functions will be run again with the new task as the argument.
 4. [ ] *Rename* a project (updating all records)
 5. [ ] *Delete* a project (erasing all records)
@@ -231,7 +232,7 @@
    * ...or a list of keys to exclude from task-sensitivity?
      + So =chronometrist-value-history= will have =("task" . "key")= as hash key and =("value" ...)= as hash value. Keys which are present in the 'blacklist' are stored the same way as now - ="key"= as hash key, =("value" ...)= as hash value.
    * Can we figure it out automatically, without requiring configuration? 🤔
-   * Maybe suggest values for the current task first, and only after that for other tasks?
+   * Maybe suggest values for the current task first, and only after that for other tasks? Solves the problem of 'mixed up' value histories, removes the need for a switch to turn it off/have the user configure a blacklist of keys...
 4. [ ] Tag-sensitive key suggestions, tag-sensitive value suggestions...?
    * Might complicate things quite a bit.
    * Lack of task-sensitive value suggestions (#3) is an inconsistency, because tags and keys are already task-sensitive. From that perspective, tag-sensitive key and value suggestions are a whole new can of worms.
