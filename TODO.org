@@ -196,6 +196,8 @@
    1. Some feature definitions already exist in features/, write step definitions for them.
 5. [ ] Remove duplication - the three =chronometrist-*-history-populate= functions seem to have a common pattern of iterating over each hash value (a list of plists) in =chronometrist-events=, and over each element of that list.
 6. [ ] Remove duplication - extracting user key-values from a plist seems to be a common operation.
+7. [ ] Extensions - redesign =chronometrist= such that it does not need to check for the availability of extensions (such as =chronometrist-goals=)
+8. [ ] Ugly code - =chronometrist-print-non-tabular=; =insert-text-button= can be replaced with =make-text-button=
 
 ** Documentation [0%]
 1. [ ] Move usage and customization sections to manual.org
