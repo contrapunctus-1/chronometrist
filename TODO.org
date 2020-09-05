@@ -158,7 +158,7 @@
    #+END_SRC
    And of course, that results in an error trying to process it.
 
-** chronometrist [11%]
+** chronometrist [10%]
 1. [ ] Add =:stop= time when we call =chronometrist-kv-accept=, not when we quit the key-value prompt.
 2. [ ] Implement undo/redo by running undo-tree commands on chronometrist.sexp
    * [ ] Possibly show what changes would be made, and prompt the user to confirm it.
@@ -172,6 +172,12 @@
    * [X] Show what those tags/key-values are, so the user knows what will be added.
 9. [ ] Expandable items - show intervals for task today
    * [ ] Switch between intervals and tag-combination breakdown
+10. [ ] Magit integration
+    * [ ] Add support for using key-values to point to a commit (commit hash + repo path?)
+      + Need some way to extend the key-value prompt, so we can provide completion for commit hashes + commit messages...
+    * [ ] Add command to open the commit associated with the interval in Magit
+    * [ ] Make a user-customizable alist of project names and repo locations (local or remote), so shorter project names can be used instead of repo locations, saving space and reducing duplication.
+11. [ ] Pretty printer - add support for alists as values
 
 ** chronometrist-report [0%]
 1. [ ] Show week counter and max weeks; don't scroll past first/last weeks

@@ -172,8 +172,7 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
   (with-current-buffer chronometrist-buffer-name
     (let ((inhibit-read-only t)
           (w "\n    ")
-          ;; (keybind-start-new (chronometrist-format-keybinds 'chronometrist-add-new-task
-          ;;                                      chronometrist-mode-map))
+          ;; (keybind-start-new (chronometrist-format-keybinds 'chronometrist-add-new-task chronometrist-mode-map))
           (keybind-toggle    (chronometrist-format-keybinds 'chronometrist-toggle-task chronometrist-mode-map t)))
       (goto-char (point-max))
       (--> (chronometrist-active-time-one-day)
