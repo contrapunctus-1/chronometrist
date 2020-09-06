@@ -4,12 +4,19 @@
 ;; Maintainer: contrapunctus <xmpp:contrapunctus@jabber.fr>
 ;; Keywords: calendar
 ;; Homepage: https://github.com/contrapunctus-1/chronometrist
-;; Package-Requires: ((emacs "25.1") (dash "2.16.0") (seq "2.20") (s "1.12.0") (ts "0.2") (anaphora "1.0.4"))
+;; Package-Requires: ((emacs "25.1")
+;;                    (dash "2.16.0")
+;;                    (seq "2.20")
+;;                    (s "1.12.0")
+;;                    (ts "0.2")
+;;                    (anaphora "1.0.4")
+;;                    (call-transformers "0.0.1"))
 ;; Version: 0.5.4
 
 (require 'filenotify)
 (require 'cl-lib)
 (require 'subr-x)
+(require 'call-transformers)
 
 (require 'chronometrist-common)
 (require 'chronometrist-custom)
@@ -248,6 +255,23 @@ PREFIX is ignored."
     (chronometrist-sexp-replace-last plist)))
 
 ;; ## HOOKS ##
+(defvar chronometrist-list-format-transformers nil
+  "List of functions to transform `tabulated-list-format' (which see).
+This is called with `call-transformers' in `chronometrist-mode', which see.
+
+Extensions using `chronometrist-list-format-transformers' to
+increase the number of columns will also need to modify the value
+of `tabulated-list-entries' by using
+`chronometrist-entry-transformers'.")
+
+(defvar chronometrist-entry-transformers nil
+  "List of functions to transform each entry of `tabulated-list-entries'.
+This is called with `call-transformers' in `chronometrist-entries', which see.
+
+Extensions using `chronometrist-entry-transformers' to increase
+the number of columns will also need to modify the value of
+`tabulated-list-format' by using
+`chronometrist-list-format-transformers'.")
 
 (defvar chronometrist-before-in-functions nil
   "Functions to run before a task is clocked in.
