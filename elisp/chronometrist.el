@@ -117,23 +117,17 @@ See custom variable `chronometrist-activity-indicator'."
   ;; latter should refresh from a file.
   ;; (chronometrist-events-populate)
   ;; (chronometrist-events-clean)
-  (->> chronometrist-task-list
-       (-sort #'string-lessp)
+  (->> (-sort #'string-lessp chronometrist-task-list)
        (--map-indexed
         (let* ((task        it)
                (index       (number-to-string (1+ it-index)))
                (task-button `(,task action chronometrist-toggle-task-button follow-link t))
                (task-time   (chronometrist-format-time (chronometrist-task-time-one-day task)))
-               (indicator   (if (chronometrist-task-active? task)
-                                (chronometrist-activity-indicator)
-                              ""))
-               (use-goals    (chronometrist-use-goals?))
-               (target      (when use-goals
-                              ;; this can return nil if there is no goal for a task
+               (indicator   (if (chronometrist-task-active? task) (chronometrist-activity-indicator) ""))
+               (use-goals   (chronometrist-use-goals?))
+               (target      (when use-goals ;; this can return nil if there is no goal for a task
                               (chronometrist-goal-get task)))
-               (target-str  (if target
-                                (format "% 4d" target)
-                              "")))
+               (target-str  (aif target (format "% 4d" it) "")))
           (list task
                 (vconcat (vector index task-button task-time indicator)
                          (when use-goals
@@ -146,9 +140,8 @@ See custom variable `chronometrist-activity-indicator'."
     (if (re-search-forward "[0-9]+ +" nil t)
         (--> (buffer-substring-no-properties
               (point)
-              (progn
-                (re-search-forward chronometrist-time-re-ui nil t)
-                (match-beginning 0)))
+              (progn (re-search-forward chronometrist-time-re-ui nil t)
+                     (match-beginning 0)))
              (replace-regexp-in-string "[ \t]*$" "" it))
       nil)))
 
