@@ -130,7 +130,7 @@
    7. [ ] Just why are we reading the whole file? ~chronometrist~ should not read more than a day; ~chronometrist-report~ should not read more than a week at a time, and so on. Make a branch which works on this logic, see if it is faster.
 
 * Certain [0%]
-** Bugs [0%]
+** Bugs [33%]
 1. [ ] With tags and key-value query functions in before-out-functions, clock in Task A -> clock in Task B -> prompted for tags and key values for Task A, add some -> they get added to Task B 😱
 2. [ ] I clocked into a task -
    #+BEGIN_SRC
@@ -157,6 +157,11 @@
    ...)
    #+END_SRC
    And of course, that results in an error trying to process it.
+3. [X] When you enter a list containing a string - e.g.
+: ("foo" (1 . "bar"))
+as a value, when suggested in the history it is presented rather differently -
+: (foo (1 . bar))
+Yikes!
 
 ** chronometrist [9%]
 1. [ ] Add =:stop= time when we call =chronometrist-kv-accept=, not when we quit the key-value prompt with a blank input.

@@ -310,7 +310,7 @@ EVENTS-TABLE and HISTORY-TABLE must be hash tables. (see
         (let* ((key-string (->> (symbol-name key) (s-chop-prefix ":")))
                (old-values (gethash key-string history-table))
                (value      (if (not (stringp value))
-                               (list (format "%s" value))
+                               (list (format "%S" value))
                              (list value))))
           (puthash key-string
                    (if old-values
