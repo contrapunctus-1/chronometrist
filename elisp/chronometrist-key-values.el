@@ -469,7 +469,7 @@ This function always returns t, so it can be used in `chronometrist-before-out-f
       when plist return nil)
     (and plist
          (yes-or-no-p
-          (format "Skip prompt and use last-used tags/key-values? %s " plist))
+          (format "Skip prompt and use last-used tags/key-values? %S " plist))
          (setq chronometrist--skip-detail-prompts t)
          (chronometrist-append-to-last (plist-get plist :tags) plist))
     t))
