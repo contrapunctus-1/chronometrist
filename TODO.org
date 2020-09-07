@@ -158,8 +158,12 @@
    #+END_SRC
    And of course, that results in an error trying to process it.
 
-** chronometrist [10%]
-1. [ ] Add =:stop= time when we call =chronometrist-kv-accept=, not when we quit the key-value prompt.
+** chronometrist [9%]
+1. [ ] Add =:stop= time when we call =chronometrist-kv-accept=, not when we quit the key-value prompt (e.g. with =C-g=).
+   * =C-g= stops execution of =chronometrist-run-functions-and-clock-in=/=chronometrist-run-functions-and-clock-out=, so they can't reach the calls for =chronometrist-in=/=chronometrist-out=.
+
+     We can make the clock-in/out happen in an =unwind-protect=, but that means clock-in/out /always/ takes place, e.g.
+     + What if we change the behaviour of =chronometrist-before-out-functions= (which also happens to be inconsistent with the other hooks) so it always runs completely, and any function wishing to stop execution can use a non-local exit?
 2. [ ] Implement undo/redo by running undo-tree commands on chronometrist.sexp
    * [ ] Possibly show what changes would be made, and prompt the user to confirm it.
    * How will this work with the SQLite backend?
