@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * New hooks - `chronometrist-mode-hook`, `chronometrist-list-format-transformers`, `chronometrist-entry-transformers`. chronometrist no longer needs to know about extensions.
 ### Fixed
 * Remove quotes from key-value prompt in quit keybindings
+* Lisp objects being stored as un`read`able strings in `chronometrist-value-history`, resulting in value suggestions not matching user input.
 
 ## [0.5.5] - 2020-09-02
 ### Added

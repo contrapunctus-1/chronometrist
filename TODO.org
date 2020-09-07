@@ -158,10 +158,10 @@
    #+END_SRC
    And of course, that results in an error trying to process it.
 3. [X] When you enter a list containing a string - e.g.
-: ("foo" (1 . "bar"))
-as a value, when suggested in the history it is presented rather differently -
-: (foo (1 . bar))
-Yikes!
+   : ("foo" (1 . "bar"))
+   as a value, when suggested in the history it is presented rather differently -
+   : (foo (1 . bar))
+   Yikes!
 
 ** chronometrist [9%]
 1. [ ] Add =:stop= time when we call =chronometrist-kv-accept=, not when we quit the key-value prompt with a blank input.
