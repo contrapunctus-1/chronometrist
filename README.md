@@ -18,6 +18,8 @@ Largely modelled after the Android application, [A Time Tracker](https://github.
 
 **IMPORTANT: with version v0.3, chronometrist no longer uses timeclock as a dependency and will use its own s-expression-based backend. A command to migrate the timeclock-file, `chronometrist-migrate-timelog-file->sexp-file`, is provided.**
 
+**IMPORTANT: `chronometrist-before-out-functions` now behaves just like other hooks - it runs all of its functions unconditionally, instead of stopping when one of them returns nil.**
+
 ## Comparisons
 ### timeclock.el
 Compared to timeclock.el, Chronometrist
@@ -136,15 +138,13 @@ Another one, prompting the user if they have uncommitted changes in a git reposi
 
 (defun my-commit-prompt ()
   "Prompt user if `default-directory' is a dirty Git repository.
-Return t if the user answers yes, if the repository is clean, or
-if there is no Git repository.
-
-Return nil (and run `magit-status') if the user answers no."
-  (cond ((not (magit-anything-modified-p)) t)
-        ((yes-or-no-p
-          (format "You have uncommitted changes in %S. Really clock out? "
-                  default-directory)) t)
-        (t (magit-status) nil)))
+If the user answers \"no\", cancel clocking out and run
+`magit-status'."
+  (or (not (magit-anything-modified-p))
+      (yes-or-no-p
+       (format "You have uncommitted changes in %S. Really clock out? "
+               default-directory))
+      (throw 'chronometrist-hook-quit (magit-status))))
 
 (add-hook 'chronometrist-before-out-functions 'my-commit-prompt)
 ```

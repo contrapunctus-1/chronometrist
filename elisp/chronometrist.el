@@ -295,13 +295,15 @@ is the name of the task to be clocked out of.")
 
 (defun chronometrist-run-functions-and-clock-in (task)
   "Run hooks and clock in to TASK."
-  (run-hook-with-args 'chronometrist-before-in-functions task)
-  (chronometrist-in task)
-  (run-hook-with-args 'chronometrist-after-in-functions task))
+  (catch 'chronometrist-hook-quit
+    (run-hook-with-args 'chronometrist-before-in-functions task)
+    (chronometrist-in task)
+    (run-hook-with-args 'chronometrist-after-in-functions task)))
 
 (defun chronometrist-run-functions-and-clock-out (task)
   "Run hooks and clock out of TASK."
-  (when (run-hook-with-args-until-failure 'chronometrist-before-out-functions task)
+  (catch 'chronometrist-hook-quit
+    (run-hook-with-args 'chronometrist-before-out-functions task)
     (chronometrist-out)
     (run-hook-with-args 'chronometrist-after-out-functions task)))
 

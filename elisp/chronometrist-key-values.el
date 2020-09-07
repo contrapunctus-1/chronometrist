@@ -203,8 +203,7 @@ INITIAL-INPUT is as used in `completing-read'."
 
 (defun chronometrist-tags-add (&rest _args)
   "Read tags from the user; add them to the last entry in `chronometrist-file'.
-_ARGS are ignored. This function always returns t, so it can be
-used in `chronometrist-before-out-functions'."
+_ARGS are ignored."
   (unless chronometrist--skip-detail-prompts
     (let* ((last-expr (chronometrist-last))
            (last-name (plist-get last-expr :name))
@@ -220,8 +219,7 @@ used in `chronometrist-before-out-functions'."
              (reverse it)
              (cl-remove-duplicates it :test #'equal)
              (reverse it)
-             (chronometrist-append-to-last it nil)))))
-  t)
+             (chronometrist-append-to-last it nil))))))
 
 ;;;; KEY-VALUES ;;;;
 (defgroup chronometrist-key-values nil
@@ -392,8 +390,7 @@ In the resulting buffer, users can run `chronometrist-kv-accept'
 to add them to the last s-expression in `chronometrist-file', or
 `chronometrist-kv-reject' to cancel.
 
-_ARGS are ignored. This function always returns t, so it can be
-used in `chronometrist-before-out-functions'."
+_ARGS are ignored."
   (unless chronometrist--skip-detail-prompts
     (let* ((buffer      (get-buffer-create chronometrist-kv-buffer-name))
            (first-key-p t)
@@ -430,8 +427,7 @@ used in `chronometrist-before-out-functions'."
               (if (string-empty-p input)
                   (throw 'empty-input nil)
                 (chronometrist-value-insert value)))))
-        (chronometrist-sexp-reindent-buffer))))
-  t)
+        (chronometrist-sexp-reindent-buffer)))))
 
 ;;;; COMMANDS ;;;;
 (defun chronometrist-kv-accept ()
@@ -456,8 +452,7 @@ used in `chronometrist-before-out-functions'."
 (defvar chronometrist--skip-detail-prompts nil)
 
 (defun chronometrist-skip-query-prompt (task)
-  "Offer to skip tag/key-value prompts and reuse last-used details.
-This function always returns t, so it can be used in `chronometrist-before-out-functions'."
+  "Offer to skip tag/key-value prompts and reuse last-used details."
   ;; find latest interval for TASK; if it has tags or key-values, prompt
   (let (plist)
     ;; iterate over events in reverse
@@ -471,8 +466,7 @@ This function always returns t, so it can be used in `chronometrist-before-out-f
          (yes-or-no-p
           (format "Skip prompt and use last-used tags/key-values? %S " plist))
          (setq chronometrist--skip-detail-prompts t)
-         (chronometrist-append-to-last (plist-get plist :tags) plist))
-    t))
+         (chronometrist-append-to-last (plist-get plist :tags) plist))))
 
 (defun chronometrist-skip-query-reset (_task)
   "Enable prompting for tags and key-values.
