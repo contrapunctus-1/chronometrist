@@ -163,7 +163,7 @@
    : (foo (1 . bar))
    Yikes!
 
-** chronometrist [9%]
+** chronometrist [8%]
 1. [ ] Add =:stop= time when we call =chronometrist-kv-accept=, not when we quit the key-value prompt with a blank input.
    * It might be nice to be able to quit =chronometrist-kv-add= with C-g instead, actually.
      + =C-g= stops execution of =chronometrist-run-functions-and-clock-in=/=chronometrist-run-functions-and-clock-out=, so they can't reach the calls for =chronometrist-in=/=chronometrist-out=.
@@ -191,6 +191,8 @@
     * [ ] Add command to open the commit associated with the interval in Magit
     * [ ] Make a user-customizable alist of project names and repo locations (local or remote), so shorter project names can be used instead of repo locations, saving space and reducing duplication.
 11. [ ] Pretty printer - add support for alists as values
+12. [ ] key-values - make detection of Lisp values more robust.
+    * If the input string can be read in a single call to =read=, treat it as an s-expression; else, use the current heuristics.
 
 ** chronometrist-report [0%]
 1. [ ] Show week counter and max weeks; don't scroll past first/last weeks
