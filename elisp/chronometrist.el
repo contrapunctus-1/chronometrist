@@ -71,15 +71,7 @@
 ;; For information on usage and customization, see https://github.com/contrapunctus-1/chronometrist/blob/master/README.md
 
 ;;; Code:
-
-;; `chronometrist-goal' is an optional extension. But even these don't make the
-;; warnings go away :\
-(eval-when-compile
-  (defvar chronometrist-goal-list)
-  (defvar chronometrist-mode-map))
-
-(declare-function 'chronometrist-goal-get "chronometrist-goal")
-
+(eval-when-compile (defvar chronometrist-mode-map))
 (autoload 'chronometrist-maybe-start-timer "chronometrist-timer" nil t)
 (autoload 'chronometrist-report "chronometrist-report" nil t)
 (autoload 'chronometrist-statistics "chronometrist-statistics" nil t)
@@ -106,10 +98,6 @@ button action."
   "Return t if TASK is currently clocked in, else nil."
   (equal (chronometrist-current-task) task))
 
-(defun chronometrist-use-goals? ()
-  "Return t if `chronometrist-goal' is available and `chronometrist-goal-list' is bound."
-  (and (featurep 'chronometrist-goal) (bound-and-true-p chronometrist-goal-list)))
-
 (defun chronometrist-activity-indicator ()
   "Return a string to indicate that a task is active.
 See custom variable `chronometrist-activity-indicator'."
@@ -130,15 +118,10 @@ See custom variable `chronometrist-activity-indicator'."
                (index       (number-to-string (1+ it-index)))
                (task-button `(,task action chronometrist-toggle-task-button follow-link t))
                (task-time   (chronometrist-format-time (chronometrist-task-time-one-day task)))
-               (indicator   (if (chronometrist-task-active? task) (chronometrist-activity-indicator) ""))
-               (use-goals   (chronometrist-use-goals?))
-               (target      (when use-goals ;; this can return nil if there is no goal for a task
-                              (chronometrist-goal-get task)))
-               (target-str  (aif target (format "% 4d" it) "")))
-          (list task
-                (vconcat (vector index task-button task-time indicator)
-                         (when use-goals
-                           (vector target-str))))))))
+               (indicator   (if (chronometrist-task-active? task) (chronometrist-activity-indicator) "")))
+          (--> (vector index task-button task-time indicator)
+               (list task it)
+               (call-transformers chronometrist-entry-transformers it))))))
 
 (defun chronometrist-task-at-point ()
   "Return the task at point in the `chronometrist' buffer, or nil if there is no task at point."
@@ -255,6 +238,9 @@ PREFIX is ignored."
     (chronometrist-sexp-replace-last plist)))
 
 ;; ## HOOKS ##
+(defvar chronometrist-mode-hook nil
+  "Normal hook run at the very end of `chronometrist-mode'.")
+
 (defvar chronometrist-list-format-transformers nil
   "List of functions to transform `tabulated-list-format' (which see).
 This is called with `call-transformers' in `chronometrist-mode', which see.
@@ -335,19 +321,16 @@ is the name of the task to be clocked out of.")
 (define-derived-mode chronometrist-mode tabulated-list-mode "Chronometrist"
   "Major mode for `chronometrist'."
   (make-local-variable 'tabulated-list-format)
-  (setq tabulated-list-format
-        (vconcat [("#"       3  t)
-                  ("Task"    25 t)
-                  ("Time"    10 t)
-                  ("Active"  10 t)]
-                 (when (chronometrist-use-goals?)
-                   [("Target" 3 t)])))
+  (--> [("#" 3 t) ("Task" 25 t) ("Time" 10 t) ("Active" 10 t)]
+        (call-transformers chronometrist-list-format-transformers it)
+        (setq tabulated-list-format it))
   (make-local-variable 'tabulated-list-entries)
   (setq tabulated-list-entries 'chronometrist-entries)
   (make-local-variable 'tabulated-list-sort-key)
   (setq tabulated-list-sort-key '("Task" . nil))
   (tabulated-list-init-header)
-  (setq revert-buffer-function #'chronometrist-refresh))
+  (setq revert-buffer-function #'chronometrist-refresh)
+  (run-hooks 'chronometrist-mode-hook))
 
 ;; ## BUTTONS ##
 
