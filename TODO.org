@@ -204,6 +204,7 @@
 
      =chronometrist-goal= will simply added a function to each of those.
    * Actually, are transformers really necessary? It could be done with a function inserted by =chronometrist-goal= into =chronometrist-mode-hook=. The function itself would become a little more complex, but it would remove the two transformer lists + the =call-transformers= dependency from the code. =chronometrist-mode-hook= is required either way, to set up =chronometrist-goal=.
+     + Turns out, they are. We set =tabulated-list-entries= to a function. To modify the value, we must hook into that function in some way. =tabulated-list-format= could be modified in a regular hook, but it feels more consistent to make it a transformer too 🤔
 8. [ ] Ugly code - =chronometrist-print-non-tabular=; =insert-text-button= can be replaced with =make-text-button=
 
 ** Documentation [0%]
