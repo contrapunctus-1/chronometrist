@@ -159,11 +159,14 @@
    And of course, that results in an error trying to process it.
 
 ** chronometrist [9%]
-1. [ ] Add =:stop= time when we call =chronometrist-kv-accept=, not when we quit the key-value prompt (e.g. with =C-g=).
-   * =C-g= stops execution of =chronometrist-run-functions-and-clock-in=/=chronometrist-run-functions-and-clock-out=, so they can't reach the calls for =chronometrist-in=/=chronometrist-out=.
+1. [ ] Add =:stop= time when we call =chronometrist-kv-accept=, not when we quit the key-value prompt with a blank input.
+   * It might be nice to be able to quit =chronometrist-kv-add= with C-g instead, actually.
+     + =C-g= stops execution of =chronometrist-run-functions-and-clock-in=/=chronometrist-run-functions-and-clock-out=, so they can't reach the calls for =chronometrist-in=/=chronometrist-out=.
 
-     We can make the clock-in/out happen in an =unwind-protect=, but that means clock-in/out /always/ takes place, e.g.
-     + What if we change the behaviour of =chronometrist-before-out-functions= (which also happens to be inconsistent with the other hooks) so it always runs completely, and any function wishing to stop execution can use a non-local exit?
+       We can make the clock-in/out happen in an =unwind-protect=, but that means clock-in/out /always/ takes place, e.g. even when a function asks if you'd really like to clock out (like the Magit commit prompt example does), and you respond with "no".
+       - What if we call =chronometrist-before-out-functions= with =run-hook-with-args= like all other hooks, so it runs all functions unconditionally and any function wishing to abort clocking in/out can use catch/throw?
+
+         =chronometrist-kv-add= could quit nonlocally when the user enters a blank input (or hits C-g? Maybe by using =unwind-protect=?), cancelling the clock in/out, and thereby letting =chronometrist-kv-accept= resume clock in/out. (It can determine whether to clock in or out using =chronometrist-current-task=)
 2. [ ] Implement undo/redo by running undo-tree commands on chronometrist.sexp
    * [ ] Possibly show what changes would be made, and prompt the user to confirm it.
    * How will this work with the SQLite backend?
