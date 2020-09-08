@@ -130,6 +130,10 @@
    7. [ ] Just why are we reading the whole file? ~chronometrist~ should not read more than a day; ~chronometrist-report~ should not read more than a week at a time, and so on. Make a branch which works on this logic, see if it is faster.
 
 * Certain [0%]
+1. [ ] plist-pp - work recursively for plist/alist values
+2. [ ] Fix alignment of alist dots
+   * While also handling alist members which are proper lists
+
 ** Bugs [33%]
 1. [ ] With tags and key-value query functions in before-out-functions, clock in Task A -> clock in Task B -> prompted for tags and key values for Task A, add some -> they get added to Task B 😱
 2. [ ] I clocked into a task -
