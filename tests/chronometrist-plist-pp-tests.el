@@ -8,7 +8,7 @@
     (expect
      (with-current-buffer buffer
        (chronometrist-plist-pp-buffer)
-       (buffer-substring (point-min) (point-max)))
+       (buffer-string))
      :to-equal
      (concat
       "(:name    \"Task\"\n"
