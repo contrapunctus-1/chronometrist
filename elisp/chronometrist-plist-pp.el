@@ -24,42 +24,52 @@
 
 (defvar chronometrist-plist-pp-whitespace-re "[\t\s]+?")
 
-(defun chronometrist-plist-pp-longest-keyword-length ()
-  "Find the length of the longest keyword.
-
-This assumes there is a single plist in the current buffer."
+(defun chronometrist-plist-pp-longest-key-length ()
+  "Find the length of the longest key in the alist at point."
   (save-excursion
-    (let ((keyword-lengths-list)
-          (sexp))
-      (goto-char (point-min))
+    (let (keyword-lengths-list sexp (key t))
       (ignore-errors (down-list 1))
-      (while (setq sexp (ignore-errors
-                          (read (current-buffer))))
-        (when (symbolp sexp)
-          (setq keyword-lengths-list (append keyword-lengths-list
-                                             `(,(length (symbol-name sexp)))))))
-      (-> keyword-lengths-list
-          (sort #'>)
-          (car)))))
+      (while (setq sexp (ignore-errors (read (current-buffer))))
+        (if (or (consp sexp) key)
+            (setq keyword-lengths-list
+                  (thread-last (if (consp sexp) (car sexp) sexp)
+                    (format "%s") length list
+                    (append keyword-lengths-list))
+                  key nil)
+          (setq key t)))
+      ;; get the longest length
+      (car (sort keyword-lengths-list #'>)))))
+
+(defun chronometrist-plist-pp-longest-keyword-length ()
+  "Find the length of the longest keyword in the plist at point."
+  (save-excursion
+    (let (keyword-lengths-list sexp (key t))
+      (ignore-errors (down-list 1))
+      (while (setq sexp (ignore-errors (read (current-buffer))))
+        (if key
+            (setq keyword-lengths-list
+                  (thread-last (format "%s" sexp)
+                    length list (append keyword-lengths-list))
+                  key nil)
+          (setq key t)))
+      ;; get the longest length
+      (car (sort keyword-lengths-list #'>)))))
 
 (defun chronometrist-plist-pp-buffer-keyword-helper (indent)
-  "Indent the keyword after point by INDENT spaces."
+  "Right-indent plist keyword/alist key at point, by INDENT spaces."
   (looking-at chronometrist-plist-pp-keyword-re)
-  (let ((keyword (buffer-substring-no-properties (match-beginning 0)
-                                                 (match-end 0))))
-    (delete-region (match-beginning 0)
-                   (match-end 0))
+  (let ((key (buffer-substring (match-beginning 0) (match-end 0))))
+    (delete-region (match-beginning 0) (match-end 0))
     (format (concat "% -" (number-to-string indent) "s")
-            keyword)))
+            key)))
 
 (defun chronometrist-plist-pp-buffer ()
-  "Naive pretty-printer for plists."
+  "Pretty-prints plist or alist at point."
   (let ((indent (chronometrist-plist-pp-longest-keyword-length)))
-    (goto-char (point-min))
     (while (not (eobp))
       (cond
        ;; opening paren + first keyword
-       ((looking-at-p (concat "(" chronometrist-plist-pp-keyword-re chronometrist-plist-pp-whitespace-re))
+       ((looking-at-p "(")
         (ignore-errors (down-list 1))
         (insert (chronometrist-plist-pp-buffer-keyword-helper indent))
         (forward-sexp 1)
@@ -72,15 +82,10 @@ This assumes there is a single plist in the current buffer."
         (insert " " (chronometrist-plist-pp-buffer-keyword-helper indent))
         (forward-sexp)
         (backward-sexp)
-        ;; an alist as a value
+        ;; an alist as a plist value
         (if (looking-at "((")
-            (progn
-              (ignore-errors (down-list 1))
-              (let (expr)
-                (while (setq expr (ignore-errors (read (current-buffer))))
-                  ;; end of alist
-                  (unless (looking-at-p ")")
-                    (insert "\n " (make-string (1+ indent) ?\s))))))
+            (chronometrist-plist-pp-buffer)
+          ;; any other plist value
           (forward-sexp 1))
         (unless (looking-at-p ")")
           (insert "\n")))
@@ -97,6 +102,7 @@ This assumes there is a single plist in the current buffer."
     (let ((print-quoted t))
       (prin1 object (current-buffer)))
     (when (> (length object) 2)
+      (goto-char (point-min))
       (chronometrist-plist-pp-buffer))
     (buffer-string)))
 
