@@ -10,13 +10,13 @@
 ;;                    (s "1.12.0")
 ;;                    (ts "0.2")
 ;;                    (anaphora "1.0.4")
-;;                    (call-transformers "0.0.1"))
+;;                    (run-transformers "0.0.1"))
 ;; Version: 0.5.4
 
 (require 'filenotify)
 (require 'cl-lib)
 (require 'subr-x)
-(require 'call-transformers)
+(require 'run-transformers)
 
 (require 'chronometrist-common)
 (require 'chronometrist-custom)
@@ -121,7 +121,7 @@ See custom variable `chronometrist-activity-indicator'."
                (indicator   (if (chronometrist-task-active? task) (chronometrist-activity-indicator) "")))
           (--> (vector index task-button task-time indicator)
                (list task it)
-               (call-transformers chronometrist-entry-transformers it))))))
+               (run-transformers chronometrist-entry-transformers it))))))
 
 (defun chronometrist-task-at-point ()
   "Return the task at point in the `chronometrist' buffer, or nil if there is no task at point."
@@ -243,7 +243,7 @@ PREFIX is ignored."
 
 (defvar chronometrist-list-format-transformers nil
   "List of functions to transform `tabulated-list-format' (which see).
-This is called with `call-transformers' in `chronometrist-mode', which see.
+This is called with `run-transformers' in `chronometrist-mode', which see.
 
 Extensions using `chronometrist-list-format-transformers' to
 increase the number of columns will also need to modify the value
@@ -252,7 +252,7 @@ of `tabulated-list-entries' by using
 
 (defvar chronometrist-entry-transformers nil
   "List of functions to transform each entry of `tabulated-list-entries'.
-This is called with `call-transformers' in `chronometrist-entries', which see.
+This is called with `run-transformers' in `chronometrist-entries', which see.
 
 Extensions using `chronometrist-entry-transformers' to increase
 the number of columns will also need to modify the value of
@@ -322,7 +322,7 @@ is the name of the task to be clocked out of.")
   "Major mode for `chronometrist'."
   (make-local-variable 'tabulated-list-format)
   (--> [("#" 3 t) ("Task" 25 t) ("Time" 10 t) ("Active" 10 t)]
-        (call-transformers chronometrist-list-format-transformers it)
+        (run-transformers chronometrist-list-format-transformers it)
         (setq tabulated-list-format it))
   (make-local-variable 'tabulated-list-entries)
   (setq tabulated-list-entries 'chronometrist-entries)
