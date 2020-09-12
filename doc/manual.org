@@ -444,19 +444,20 @@ Each of these has a corresponding function to clear it and fill it with values -
 13. Function - chronometrist-goal-on-file-change ()
 
 ** chronometrist-sexp
-1.  Macro - chronometrist-sexp-in-file (file &rest body)
-2.  Function - chronometrist-sexp-open-log ()
-3.  Function - chronometrist-sexp-between (&optional (ts-beg (chronometrist-date)) (ts-end (ts-adjust 'day +1 (chronometrist-date))))
-4.  Function - chronometrist-sexp-query-till (&optional (date (chronometrist-date)))
-5.  Function - chronometrist-sexp-last ()
+1.  Custom variable - chronometrist-sexp-pretty-print-function
+2.  Macro - chronometrist-sexp-in-file (file &rest body)
+3.  Function - chronometrist-sexp-open-log ()
+4.  Function - chronometrist-sexp-between (&optional (ts-beg (chronometrist-date)) (ts-end (ts-adjust 'day +1 (chronometrist-date))))
+5.  Function - chronometrist-sexp-query-till (&optional (date (chronometrist-date)))
+6.  Function - chronometrist-sexp-last ()
     * -> plist
-6.  Function - chronometrist-sexp-current-task ()
-7.  Function - chronometrist-sexp-events-populate ()
-8.  Function - chronometrist-sexp-create-file ()
-9.  Function - chronometrist-sexp-new (plist &optional (buffer (find-file-noselect chronometrist-file)))
-10. Function - chronometrist-sexp-delete-list (&optional arg)
-11. Function - chronometrist-sexp-replace-last (plist)
-12. Command - chronometrist-sexp-reindent-buffer ()
+7.  Function - chronometrist-sexp-current-task ()
+8.  Function - chronometrist-sexp-events-populate ()
+9.  Function - chronometrist-sexp-create-file ()
+10. Function - chronometrist-sexp-new (plist &optional (buffer (find-file-noselect chronometrist-file)))
+11. Function - chronometrist-sexp-delete-list (&optional arg)
+12. Function - chronometrist-sexp-replace-last (plist)
+13. Command - chronometrist-sexp-reindent-buffer ()
 
 # Local Variables:
 # org-link-file-path-type: relative

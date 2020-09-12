@@ -4,13 +4,24 @@
 ;;
 
 (require 'chronometrist-custom)
-(require 'chronometrist-plist-pp)
 
 ;;; Code:
 
 ;; chronometrist-file (-custom)
 ;; chronometrist-events, chronometrist-events-maybe-split (-events)
-;; chronometrist-plist-pp (-plist-pp)
+
+(defcustom chronometrist-sexp-pretty-print-function
+  (if (featurep 'ppp)
+      (lambda (object &optional _stream)
+        (insert (ppp-plist-to-string object)))
+    #'pp)
+  "Function used to pretty print plists in `chronometrist-file'.
+Like `pp', it must accept an OBJECT and optionally a
+STREAM (which is the value of `current-buffer').
+
+Uses `ppp' if it is available (which displays plists more
+neatly), or falls back to `pp' if it isn't."
+  :type 'function)
 
 (defmacro chronometrist-sexp-in-file (file &rest body)
   "Run BODY in a buffer visiting FILE, restoring point afterwards."
@@ -85,7 +96,7 @@ were none."
     ;; newline before it
     (unless (bobp) (insert "\n"))
     (unless (bolp) (insert "\n"))
-    (chronometrist-plist-pp plist (current-buffer))
+    (funcall chronometrist-sexp-pretty-print-function plist (current-buffer))
     ;; Update in-memory (`chronometrist-events', `chronometrist-task-list') too...
     (chronometrist-events-add plist)
     (chronometrist-task-list-add (plist-get plist :name))
@@ -108,7 +119,7 @@ were none."
       (insert "\n"))
     (backward-list 1)
     (chronometrist-sexp-delete-list)
-    (chronometrist-plist-pp plist (current-buffer))
+    (funcall chronometrist-sexp-pretty-print-function plist (current-buffer))
     (chronometrist-events-replace-last plist)
     ;; We assume here that this function will always be used to
     ;; replace something with the same :name. At the time of writing,
@@ -134,7 +145,7 @@ This is meant to be run in `chronometrist-file' when using the s-expression back
       (when (looking-at "\n*")
         (delete-region (match-beginning 0)
                        (match-end 0)))
-      (chronometrist-plist-pp expr (current-buffer))
+      (funcall chronometrist-sexp-pretty-print-function expr (current-buffer))
       (insert "\n")
       (unless (eobp)
         (insert "\n")))))
