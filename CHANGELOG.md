@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 * Remove quotes from key-value prompt in quit keybindings
 * Lisp objects being stored as un`read`able strings in `chronometrist-value-history`, resulting in value suggestions not matching user input.
+* `chronometrist-report` no longer calls `delete-other-windows`; use `chronometrist-report-mode-hook` if it is desired.
 
 ## [0.5.5] - 2020-09-02
 ### Added
