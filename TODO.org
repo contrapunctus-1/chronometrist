@@ -292,6 +292,8 @@ Useful for
 4. [ ] Tag-sensitive key suggestions, tag-sensitive value suggestions...?
    * Might complicate things quite a bit.
    * Lack of task-sensitive value suggestions (#3) is an inconsistency, because tags and keys are already task-sensitive. From that perspective, tag-sensitive key and value suggestions are a whole new can of worms.
+5. If the value of a user keyword-value pair is a plist (heuristic - list with keyword as first element), can we reuse the keyword-value prompt for it? Currently such sub-plists don't get any completion 🤔
+   * Maybe generate the completion hash table when the plist is created, since this is likely to be less-used.
 
 ** chronometrist-report [0%]
 1. [ ] Add support for other locale weeks/weekday names
