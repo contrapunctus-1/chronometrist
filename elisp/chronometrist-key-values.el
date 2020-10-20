@@ -407,7 +407,7 @@ used in `chronometrist-before-out-functions'."
         (chronometrist-kv-read-mode)
         (if (and (chronometrist-current-task) last-kvs)
             (progn
-              (chronometrist-plist-pp last-kvs buffer)
+              (funcall chronometrist-sexp-pretty-print-function last-kvs buffer)
               (down-list -1)
               (insert "\n "))
           (insert "()")
