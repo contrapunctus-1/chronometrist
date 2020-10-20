@@ -70,7 +70,18 @@ This assumes there is a single plist in the current buffer."
        ;; any other keyword
        ((looking-at chronometrist-plist-pp-keyword-re)
         (insert " " (chronometrist-plist-pp-buffer-keyword-helper indent))
-        (forward-sexp 1)
+        (forward-sexp)
+        (backward-sexp)
+        ;; an alist as a value
+        (if (looking-at "((")
+            (progn
+              (ignore-errors (down-list 1))
+              (let (expr)
+                (while (setq expr (ignore-errors (read (current-buffer))))
+                  ;; end of alist
+                  (unless (looking-at-p ")")
+                    (insert "\n " (make-string (1+ indent) ?\s))))))
+          (forward-sexp 1))
         (unless (looking-at-p ")")
           (insert "\n")))
        ((and (looking-at ")") (bolp))
@@ -95,9 +106,5 @@ This assumes there is a single plist in the current buffer."
          (or stream standard-output)))
 
 (provide 'chronometrist-plist-pp)
-
-;; Local Variables:
-;; nameless-current-name: "chronometrist-plist-pp"
-;; End:
 
 ;;; chronometrist-plist-pp.el ends here

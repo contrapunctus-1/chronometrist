@@ -43,7 +43,7 @@ DATE should be a list in the form \"YYYY-MM-DD\"
 
 Each time interval is a string as returned by `chronometrist-seconds-to-hms'."
   (->> (gethash date chronometrist-events)
-       (chronometrist-events->time-list)
+       (chronometrist-events->ts-pairs)
        ;; Why were we calling `-partition' here?
        ;; (-partition 2)
        (--map (time-subtract (cadr it) (car it)))
@@ -97,10 +97,6 @@ ISO-8601 date string (\"YYYY-MM-DD\")."
    (get-buffer-create chronometrist-diary-buffer-name))
   (chronometrist-diary-view-mode)
   (chronometrist-diary-refresh nil nil date))
-
-;; Local Variables:
-;; nameless-current-name: "chronometrist-diary"
-;; End:
 
 (provide 'chronometrist-diary-view)
 

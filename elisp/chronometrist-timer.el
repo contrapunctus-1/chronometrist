@@ -18,7 +18,7 @@
 (require 'chronometrist-custom)
 (require 'chronometrist-statistics-custom)
 (require 'chronometrist-report-custom)
-(require 'chronometrist-common)
+(require 'chronometrist)
 
 (declare-function chronometrist-refresh "chronometrist.el")
 (declare-function chronometrist-report-refresh "chronometrist-report.el")
@@ -80,9 +80,5 @@ ARG should be the new update interval, in seconds."
   (chronometrist-maybe-start-timer))
 
 (provide 'chronometrist-timer)
-
-;; Local Variables:
-;; nameless-current-name: "chronometrist"
-;; End:
 
 ;;; chronometrist-timer.el ends here

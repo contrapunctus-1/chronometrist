@@ -4,6 +4,59 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [unreleased]
+### Added
+* New hooks - `chronometrist-mode-hook`, `chronometrist-list-format-transformers`, `chronometrist-entry-transformers`. chronometrist no longer needs to know about extensions.
+* New custom variable `chronometrist-sexp-pretty-print-function`
+### Fixed
+* Remove quotes from key-value prompt in quit keybindings
+* Lisp objects being stored as un`read`able strings in `chronometrist-value-history`, resulting in value suggestions not matching user input.
+* `chronometrist-report` no longer calls `delete-other-windows`; use `chronometrist-report-mode-hook` if it is desired.
+
+## [0.5.5] - 2020-09-02
+### Added
+* `chronometrist-skip-query-prompt` to re-use last-used tags/key-values with a single key. (...assuming you use `y-or-n-p`)
+### Changed
+* Prompts for keys and values now use `completing-read`, making the interface and the controls more consistent.
+
+## [0.5.4] - 2020-07-19
+### Fixed
+* Bug resulting in only the last tag combination being suggested
+
+## [0.5.3] - 2020-07-06
+### Changed
+* `chronometrist-goals` has been renamed to `chronometrist-goal`
+
+## [0.5.2] - 2020-07-05
+### Fixed
+* Package long description in the package menu
+
+## [0.5.1] - 2020-06-30
+### Fixed
+* Error when adding task (trying to append an atom to a list)
+
+## [0.5.0] - 2020-06-30
+### Added
+* Support for time goals via optional package `chronometrist-targets`.
+* New hook - `chronometrist-file-change-hook`
+### Changed
+* Use [ts.el](https://github.com/alphapapa/ts.el) structs to represent date-time, wherever possible. (`chronometrist-events` and `chronometrist-file` being notable exceptions)
+### Fixed
+* Prefix arguments now work with the point on a button, too.
+* Bug with missing entries in `chronometrist-key-history`
+* Operations for adding a new s-expression and replacing the last s-expression have been optimized. Notably, commands for clocking in/out are now significantly faster.
+
+## [0.4.4]
+### Fixed
+* Error when adding a task for the first time.
+
+## [0.4.3] - 2020-05-03
+### Changed
+* `chronometrist-toggle-task-no-reason` (which did nothing since the migration from timeclock.el) is now called `chronometrist-toggle-task-no-hooks`. It will toggle the task without running the before-in/after-in/before-out/after-out functions.
+### Fixed
+* Refresh buffer when clocking in (instead of waiting for first timer refresh)
+* Insertion of values is now slightly smarter about detecting and handling Lisp data types.
+
 ## [0.4.2] - 2020-01-15
 ### Fixed
 * Library headers for MELPA release

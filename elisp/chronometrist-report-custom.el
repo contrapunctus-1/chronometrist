@@ -41,8 +41,4 @@
 
 (provide 'chronometrist-report-custom)
 
-;; Local Variables:
-;; nameless-current-name: "chronometrist-report"
-;; End:
-
 ;;; chronometrist-report-custom.el ends here
