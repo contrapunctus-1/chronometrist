@@ -215,6 +215,7 @@
       * [X] Check for type of change to file
         + [X] Handle last expression being removed
       * [ ] Implement optimized operations
+      * [ ] BUG - if something was removed from the last expression (thereby decreasing the length of the file), =chronometrist-file-change-type= returns =t= instead of =:last=
    2. [ ] Don't suggest nil when asking for first project on first run
    3. [ ] When starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
    4. [ ] Mouse commands should work only on buttons.
