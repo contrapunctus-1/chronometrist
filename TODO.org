@@ -251,14 +251,15 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
 
 ** UX [12%]
    1. [ ] Optimization - (jonasw) store length and hash of previous file, see if the new file has the same hash until old-length bytes.
-   2. [ ] Don't suggest nil when asking for first project on first run
-   3. [ ] When starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
-   4. [ ] Mouse commands should work only on buttons.
-   5. [X] Button actions should accept prefix arguments and behave exactly like their keyboard counterparts.
-   6. [ ] mouse-3 should clock-out without asking for reason.
-   7. [ ] Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked /before/ clocking out, which adds time to the project.
-   8. [ ] Allow calling chronometrist-in/out from anywhere-within-Emacs (a la timeclock) as well as from the chronometrist buffer.
-   9. [ ] =chronometrist-timer= - if =chronometrist-file= is being edited (buffer exists and modified), don't refresh - this will (hopefully) prevent Emacs from going crazy with errors in trying to parse malformed data.
+   2. [ ] Optimization - generate history before querying, not when the file changes.
+   3. [ ] Don't suggest nil when asking for first project on first run
+   4. [ ] When starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
+   5. [ ] Mouse commands should work only on buttons.
+   6. [X] Button actions should accept prefix arguments and behave exactly like their keyboard counterparts.
+   7. [ ] mouse-3 should clock-out without asking for reason.
+   8. [ ] Some way to ask for the reason just before starting a project. Even when clocking out, the reason is asked /before/ clocking out, which adds time to the project.
+   9. [ ] Allow calling chronometrist-in/out from anywhere-within-Emacs (a la timeclock) as well as from the chronometrist buffer.
+   10. [ ] =chronometrist-timer= - if =chronometrist-file= is being edited (buffer exists and modified), don't refresh - this will (hopefully) prevent Emacs from going crazy with errors in trying to parse malformed data.
 
 * Maybe [0%]
 ** a task list
