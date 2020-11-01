@@ -63,18 +63,15 @@ This assumes there is a single plist in the current buffer."
         (insert " " (chronometrist-plist-pp-buffer-keyword-helper indent))
         (forward-sexp)
         (backward-sexp)
-        ;; an alist as a value
-        (if (looking-at "((")
-            (progn
-              (ignore-errors (down-list 1))
-              (let (expr)
-                (while (setq expr (ignore-errors (read (current-buffer))))
-                  ;; end of alist
-                  (unless (looking-at-p ")")
-                    (insert "\n " (make-string (1+ indent) ?\s))))))
-          (forward-sexp 1))
-        (unless (looking-at-p ")")
-          (insert "\n")))
+        ;; an alist/plist as a value
+        (if (looking-at "(")
+            ;; TODO - determine if it is a plain list, a plist/alist,
+            ;; or a list of plists
+            (let ((sexp (read (current-buffer))))
+              (backward-sexp)
+              (chronometrist-sexp-delete-list)
+              (insert (chronometrist-plist-pp-to-string sexp)))
+          (forward-sexp 1)))
        ((and (looking-at ")") (bolp))
         (delete-char -1)
         (forward-char 1))
