@@ -22,60 +22,72 @@
 
 (defvar chronometrist-plist-pp-whitespace-re "[\t\s]+?")
 
+(defun chronometrist-plist-pp-pair-p (cons)
+  (and (listp cons) (not (listp (cdr cons)))))
+
+(defun chronometrist-plist-pp-alist-p (list)
+  (cl-loop for elt in list always (chronometrist-plist-pp-pair-p elt)))
+
 (defun chronometrist-plist-pp-longest-keyword-length ()
   "Find the length of the longest keyword.
 This assumes there is a single plist in the current buffer."
   (save-excursion
-    (let (keyword-lengths-list sexp)
-      (goto-char (point-min))
-      (ignore-errors (down-list 1))
-      (while (setq sexp (ignore-errors (read (current-buffer))))
-        (when (symbolp sexp)
-          (setq keyword-lengths-list (append keyword-lengths-list
-                                             `(,(length (symbol-name sexp)))))))
-      (-> keyword-lengths-list (sort #'>) (car)))))
-
-(defun chronometrist-plist-pp-buffer-keyword-helper (sexp indent)
-  "Return a string indenting SEXP by INDENT spaces."
-  (chronometrist-sexp-delete-list)
-  (format (concat "% -" (number-to-string indent) "s") sexp))
-
-(defun chronometrist-plist-pp-buffer ()
-  "Naive pretty-printer for plists."
-  (let ((indent (chronometrist-plist-pp-longest-keyword-length)) sexp)
     (goto-char (point-min))
-    ;; opening paren + first keyword
     (ignore-errors (down-list 1))
-    (setq sexp (save-excursion (read (current-buffer))))
-    (insert (chronometrist-plist-pp-buffer-keyword-helper sexp indent))
-    (forward-sexp 1)
-    (insert "\n")
+    (cl-loop with sexp
+      while (setq sexp (ignore-errors (read (current-buffer))))
+      when (keywordp sexp)
+      maximize (length (symbol-name sexp)))))
+
+(cl-defun chronometrist-plist-pp-indent-sexp (sexp &key (left-indent 0) (right-indent 0))
+  "Return a string indenting SEXP by LEFT-INDENT and RIGHT-INDENT spaces."
+  (chronometrist-sexp-delete-list)
+  (format (concat "% -" (number-to-string right-indent) "s") sexp))
+
+(cl-defun chronometrist-plist-pp-buffer (&optional (left-indent 0))
+  "Naive pretty-printer for plists."
+  (let (right-indent sexp)
+    (goto-char (point-min))
     (while (not (eobp))
       (unless (looking-at-p ")")
         (setq sexp (save-excursion (read (current-buffer)))))
       (cond
-       ((and (looking-at ")") (bolp))
-        (progn (delete-char -1) (forward-char 1)))
-       ((looking-at chronometrist-plist-pp-whitespace-re)
-        (delete-region (match-beginning 0) (match-end 0)))
+       ((json-plist-p sexp)
+        ;; first keyword-value pair
+        (setq right-indent (chronometrist-plist-pp-longest-keyword-length))
+        (ignore-errors (down-list 1))
+        (setq sexp (save-excursion (read (current-buffer))))
+        (insert (chronometrist-plist-pp-indent-sexp sexp :left-indent left-indent
+                              :right-indent right-indent))
+        (forward-sexp 1))
+       ((looking-at ")")
+        (if (bolp)
+            (progn (delete-char -1) (forward-char 1))
+          (forward-char)))
+       ;; ((looking-at chronometrist-plist-pp-whitespace-re)
+       ;;  (delete-region (match-beginning 0) (match-end 0)))
        ;; any other keyword
        ((keywordp sexp)
-        (insert " " (chronometrist-plist-pp-buffer-keyword-helper sexp indent))
-        (if (not (looking-at "("))
-            (forward-sexp 1)
-          ;; we are before a list as a value
-          (let ((sexp (read (current-buffer))))
-            (cond ((json-plist-p sexp) )
-                  ((json-alist-p sexp) )))
-          ;; TODO - determine if it is a plain list, a plist/alist,
-          ;; or a list of plists
-          (backward-sexp)
-          (chronometrist-sexp-delete-list)
-          (insert (chronometrist-plist-pp-to-string sexp)))
-        (insert "\n"))
-       (t (forward-char 1))))))
+        (insert "\n " (chronometrist-plist-pp-indent-sexp sexp :left-indent left-indent
+                                    :right-indent right-indent)))
+       ;; we are before a list as a value
+       ((listp sexp)
+        ;; TODO - fix indentation
+        (let ((sublist-indent (- (point) (point-at-bol))))
+          (cond ((json-plist-p sexp)
+                 (chronometrist-sexp-delete-list)
+                 (insert (chronometrist-plist-pp-to-string sexp sublist-indent))
+                 (insert "\n"))
+                ((chronometrist-plist-pp-alist-p sexp)
+                 (down-list)
+                 (while (not (looking-at-p ")"))
+                   (forward-sexp)
+                   (insert "\n"))
+                 (forward-char))
+                (t (forward-char)))))
+       (t (forward-sexp))))))
 
-(defun chronometrist-plist-pp-to-string (object)
+(defun chronometrist-plist-pp-to-string (object &optional left-indent)
   "Convert OBJECT to a pretty-printed string."
   (with-temp-buffer
     (lisp-mode-variables nil)
@@ -83,7 +95,7 @@ This assumes there is a single plist in the current buffer."
     (let ((print-quoted t))
       (prin1 object (current-buffer)))
     (when (> (length object) 2)
-      (chronometrist-plist-pp-buffer))
+      (chronometrist-plist-pp-buffer left-indent))
     (buffer-string)))
 
 (defun chronometrist-plist-pp (object &optional stream)
