@@ -20,6 +20,11 @@
 
 (defvar chronometrist-plist-pp-whitespace-re "[\t\s]+?")
 
+(defun chronometrist-plist-pp-normalize-whitespace ()
+  (when (looking-at chronometrist-plist-pp-whitespace-re)
+    (delete-region (match-beginning 0) (match-end 0))
+    (insert " ")))
+
 (defun chronometrist-plist-pp-column ()
   "Return column point is on, as an integer.
 0 means point is at the beginning of the line."
@@ -29,7 +34,8 @@
   (and (listp cons) (not (listp (cdr cons)))))
 
 (defun chronometrist-plist-pp-alist-p (list)
-  (cl-loop for elt in list always (chronometrist-plist-pp-pair-p elt)))
+  (when (listp list)
+    (cl-loop for elt in list always (chronometrist-plist-pp-pair-p elt))))
 
 (defun chronometrist-plist-pp-longest-keyword-length ()
   "Find the length of the longest keyword.
@@ -44,18 +50,47 @@ This assumes there is a single plist in the current buffer."
 
 (cl-defun chronometrist-plist-pp-indent-sexp (sexp &key (left-indent 0) (right-indent 0))
   "Return a string indenting SEXP by LEFT-INDENT and RIGHT-INDENT spaces."
-  (chronometrist-sexp-delete-list)
   (format (concat (make-string left-indent ? )
                   "% -" (number-to-string right-indent) "s")
           sexp))
 
 ;; not a list? forward-sexp
 ;; if list ->
-;;   plist -> indent;
-;;   alist -> indent;
+;;   plist -> plist indent;
+;;   alist -> alist indent;
 ;;   else descend and call self for each element, then leave
 
-(defun chronometrist-plist-pp-alist-buffer ()
+(cl-defun chronometrist-plist-pp-buffer ()
+  "Naive pretty-printer for plists."
+  (while (not (looking-at-p ")"))
+    (setq sexp (save-excursion (read (current-buffer))))
+    (cond
+     ((json-plist-p sexp) (chronometrist-plist-pp-plist-buffer) (forward-sexp))
+     ((chronometrist-plist-pp-alist-p sexp) (chronometrist-plist-pp-alist-buffer) (forward-sexp))
+     ((listp sexp) (down-list) (chronometrist-plist-pp-buffer))
+     (t (forward-sexp))))
+  (if (bolp) (progn (delete-char -1) (forward-char 1))
+    (forward-char)))
+
+(defun chronometrist-plist-pp-buffer-plist ()
+  (down-list)
+  (let ((right-indent (chronometrist-plist-pp-longest-keyword-length)) (first-p t) sexp)
+    (while (not (looking-at-p ")"))
+      (chronometrist-plist-pp-normalize-whitespace)
+      (setq sexp (save-excursion (read (current-buffer))))
+      (cond ((keywordp sexp)
+             (chronometrist-sexp-delete-list)
+             (insert (if first-p "" " ")
+                     (chronometrist-plist-pp-indent-sexp sexp :right-indent right-indent))
+             (setq first-p nil))
+            ;; value
+            ((listp sexp) (chronometrist-plist-pp-buffer))
+            (t (forward-sexp)
+               (insert "\n"))))
+    (when (bolp) (delete-char -1))
+    (up-list)))
+
+(defun chronometrist-plist-pp-buffer-alist ()
   (down-list)
   (let ((indent (chronometrist-plist-pp-column)) (first-p t) sexp)
     (while (not (looking-at-p ")"))
