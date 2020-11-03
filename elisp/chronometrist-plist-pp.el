@@ -18,8 +18,6 @@
 
 ;;; Code:
 
-(require 'dash)
-
 (defvar chronometrist-plist-pp-whitespace-re "[\t\s]+?")
 
 (defun chronometrist-plist-pp-pair-p (cons)
