@@ -49,6 +49,25 @@ This assumes there is a single plist in the current buffer."
                   "% -" (number-to-string right-indent) "s")
           sexp))
 
+;; not a list? forward-sexp
+;; if list ->
+;;   plist -> indent;
+;;   alist -> indent;
+;;   else descend and call self for each element, then leave
+
+(defun chronometrist-plist-pp-alist-buffer ()
+  (down-list)
+  (let ((indent (chronometrist-plist-pp-column)) (first-p t) sexp)
+    (while (not (looking-at-p ")"))
+      (setq sexp (save-excursion (read (current-buffer))))
+      (chronometrist-sexp-delete-list)
+      (insert (if first-p
+                  (progn (setq first-p nil) "")
+                (make-string indent ?\ ))
+              (format "%S\n" sexp)))
+    (when (bolp) (delete-char -1))
+    (up-list)))
+
 (cl-defun chronometrist-plist-pp-buffer (&optional (left-indent 0) in-sublist-p)
   "Naive pretty-printer for plists."
   (let (right-indent sexp)
