@@ -20,6 +20,11 @@
 
 (defvar chronometrist-plist-pp-whitespace-re "[\t\s]+?")
 
+(defun chronometrist-plist-pp-column ()
+  "Return column point is on, as an integer.
+0 means point is at the beginning of the line."
+  (- (point) (point-at-bol)))
+
 (defun chronometrist-plist-pp-pair-p (cons)
   (and (listp cons) (not (listp (cdr cons)))))
 
@@ -44,7 +49,7 @@ This assumes there is a single plist in the current buffer."
                   "% -" (number-to-string right-indent) "s")
           sexp))
 
-(cl-defun chronometrist-plist-pp-buffer (&optional (left-indent 0))
+(cl-defun chronometrist-plist-pp-buffer (&optional (left-indent 0) in-sublist-p)
   "Naive pretty-printer for plists."
   (let (right-indent sexp)
     (goto-char (point-min))
@@ -63,7 +68,8 @@ This assumes there is a single plist in the current buffer."
        ((looking-at-p ")")
         (if (bolp)
             (progn (delete-char -1) (forward-char 1))
-          (forward-char)))
+          (forward-char))
+        (setq in-sublist-p nil))
        ;; ((looking-at chronometrist-plist-pp-whitespace-re)
        ;;  (delete-region (match-beginning 0) (match-end 0)))
        ;; any other keyword
@@ -76,7 +82,7 @@ This assumes there is a single plist in the current buffer."
        ;; forward-sexp as the fallback
        ((listp sexp)
         ;; TODO - fix indentation
-        (let ((sublist-indent (- (point) (point-at-bol))))
+        (let ((sublist-indent (if in-sublist-p left-indent (chronometrist-plist-pp-column))))
           (cond ((json-plist-p sexp)
                  (chronometrist-sexp-delete-list)
                  (insert (chronometrist-plist-pp-to-string sexp sublist-indent))
@@ -86,7 +92,9 @@ This assumes there is a single plist in the current buffer."
                  (while (not (looking-at-p ")"))
                    (forward-sexp)
                    (insert "\n")))
-                (t (forward-char)))))
+                (t (down-list)
+                   (setq in-sublist-p t
+                         left-indent (chronometrist-plist-pp-column))))))
        (t (forward-sexp))))))
 
 (defun chronometrist-plist-pp-to-string (object &optional left-indent)
