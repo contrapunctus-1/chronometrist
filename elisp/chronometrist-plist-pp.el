@@ -42,7 +42,9 @@ This assumes there is a single plist in the current buffer."
 (cl-defun chronometrist-plist-pp-indent-sexp (sexp &key (left-indent 0) (right-indent 0))
   "Return a string indenting SEXP by LEFT-INDENT and RIGHT-INDENT spaces."
   (chronometrist-sexp-delete-list)
-  (format (concat "% -" (number-to-string right-indent) "s") sexp))
+  (format (concat (make-string left-indent ? )
+                  "% -" (number-to-string right-indent) "s")
+          sexp))
 
 (cl-defun chronometrist-plist-pp-buffer (&optional (left-indent 0))
   "Naive pretty-printer for plists."
@@ -52,15 +54,15 @@ This assumes there is a single plist in the current buffer."
       (unless (looking-at-p ")")
         (setq sexp (save-excursion (read (current-buffer)))))
       (cond
-       ((json-plist-p sexp)
+       ((and (bobp) (json-plist-p sexp))
         ;; first keyword-value pair
         (setq right-indent (chronometrist-plist-pp-longest-keyword-length))
         (ignore-errors (down-list 1))
         (setq sexp (save-excursion (read (current-buffer))))
-        (insert (chronometrist-plist-pp-indent-sexp sexp :left-indent left-indent
-                              :right-indent right-indent))
+        ;; the first keyword does not need to be left-indented
+        (insert (chronometrist-plist-pp-indent-sexp sexp :right-indent right-indent))
         (forward-sexp 1))
-       ((looking-at ")")
+       ((looking-at-p ")")
         (if (bolp)
             (progn (delete-char -1) (forward-char 1))
           (forward-char)))
@@ -71,6 +73,9 @@ This assumes there is a single plist in the current buffer."
         (insert "\n " (chronometrist-plist-pp-indent-sexp sexp :left-indent left-indent
                                     :right-indent right-indent)))
        ;; we are before a list as a value
+       ;; FIXME - not using (looking-at-p "(") results in extra
+       ;; iterations; but that needs forward-char rather than
+       ;; forward-sexp as the fallback
        ((listp sexp)
         ;; TODO - fix indentation
         (let ((sublist-indent (- (point) (point-at-bol))))
@@ -82,8 +87,7 @@ This assumes there is a single plist in the current buffer."
                  (down-list)
                  (while (not (looking-at-p ")"))
                    (forward-sexp)
-                   (insert "\n"))
-                 (forward-char))
+                   (insert "\n")))
                 (t (forward-char)))))
        (t (forward-sexp))))))
 
