@@ -80,7 +80,8 @@ that point is after the first opening parenthesis."
                         (buffer-substring bol pos))
           (delete-region (1- bol) pos)
         (goto-char pos))
-      (forward-char))))
+      (when (not (eobp))
+        (forward-char)))))
 
 (defun chronometrist-plist-pp-buffer-plist (&optional inside-sublist-p)
   "Indent a single plist after point."
