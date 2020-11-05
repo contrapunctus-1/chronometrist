@@ -49,10 +49,9 @@ that point is after the first opening parenthesis."
       when (keywordp sexp)
       maximize (length (symbol-name sexp)))))
 
-(cl-defun chronometrist-plist-pp-indent-sexp (sexp &key (left-indent 0) (right-indent 0))
-  "Return a string indenting SEXP by LEFT-INDENT and RIGHT-INDENT spaces."
-  (format (concat (make-string left-indent ? )
-                  "% -" (number-to-string right-indent) "s")
+(cl-defun chronometrist-plist-pp-indent-sexp (sexp &optional (right-indent 0))
+  "Return a string indenting SEXP by RIGHT-INDENT spaces."
+  (format (concat "% -" (number-to-string right-indent) "s")
           sexp))
 
 (cl-defun chronometrist-plist-pp-buffer (&optional inside-sublist-p)
@@ -97,7 +96,7 @@ that point is after the first opening parenthesis."
              (insert (if first-p
                          (progn (setq first-p nil) "")
                        (make-string left-indent ?\ ))
-                     (chronometrist-plist-pp-indent-sexp sexp :right-indent right-indent)))
+                     (chronometrist-plist-pp-indent-sexp sexp right-indent)))
             ;; not a keyword = a value
             ((listp sexp)
              (chronometrist-plist-pp-buffer t)
@@ -124,15 +123,15 @@ that point is after the first opening parenthesis."
     (when (bolp) (delete-char -1))
     (up-list)))
 
-(defun chronometrist-plist-pp-to-string (object &optional left-indent)
+(defun chronometrist-plist-pp-to-string (object)
   "Convert OBJECT to a pretty-printed string."
   (with-temp-buffer
     (lisp-mode-variables nil)
     (set-syntax-table emacs-lisp-mode-syntax-table)
     (let ((print-quoted t))
       (prin1 object (current-buffer)))
-    (when (> (length object) 2)
-      (chronometrist-plist-pp-buffer left-indent))
+    (goto-char (point-min))
+    (chronometrist-plist-pp-buffer)
     (buffer-string)))
 
 (defun chronometrist-plist-pp (object &optional stream)
