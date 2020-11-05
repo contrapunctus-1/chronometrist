@@ -36,8 +36,12 @@ Point is placed at the end of the space."
   (and (listp cons) (not (listp (cdr cons)))))
 
 (defun chronometrist-plist-pp-alist-p (list)
+  "Return non-nil if LIST is an association list.
+If even a single element of LIST is a pure cons cell (as
+determined by `chronometrist-plist-pp-pair-p'), this function
+considers it an alist."
   (when (listp list)
-    (cl-loop for elt in list always (chronometrist-plist-pp-pair-p elt))))
+    (cl-loop for elt in list thereis (chronometrist-plist-pp-pair-p elt))))
 
 (defun chronometrist-plist-pp-longest-keyword-length ()
   "Find the length of the longest keyword in a plist.
