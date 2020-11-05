@@ -18,7 +18,7 @@
 
 ;;; Code:
 
-(defvar chronometrist-plist-pp-whitespace-re "[\t\s]+?")
+(defvar chronometrist-plist-pp-whitespace-re "[\n\t\s]+?")
 
 (defun chronometrist-plist-pp-normalize-whitespace ()
   "Remove whitespace following point, and insert a space.
@@ -57,7 +57,7 @@ that point is after the first opening parenthesis."
 
 (cl-defun chronometrist-plist-pp-buffer (&optional inside-sublist-p)
   "Recursively indent the alist, plist, or a list of plists after point."
-  (if (not (looking-at-p ")"))
+  (if (not (looking-at-p (rx (or ")" line-end))))
       (progn
         (setq sexp (save-excursion (read (current-buffer))))
         (cond
@@ -79,8 +79,8 @@ that point is after the first opening parenthesis."
       (if (string-match (concat "^" chronometrist-plist-pp-whitespace-re "$")
                         (buffer-substring bol pos))
           (delete-region (1- bol) pos)
-        (goto-char pos)))
-    (forward-char)))
+        (goto-char pos))
+      (forward-char))))
 
 (defun chronometrist-plist-pp-buffer-plist (&optional inside-sublist-p)
   "Indent a single plist after point."
@@ -105,7 +105,7 @@ that point is after the first opening parenthesis."
                (insert "\n"))))
     (when (bolp) (delete-char -1))
     (up-list)
-    (unless (eobp) (insert "\n"))
+    (unless (eolp) (insert "\n"))
     (when inside-sublist-p
       (insert (make-string (1- left-indent) ?\ )))))
 
