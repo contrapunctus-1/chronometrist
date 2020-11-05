@@ -21,6 +21,8 @@
 (defvar chronometrist-plist-pp-whitespace-re "[\t\s]+?")
 
 (defun chronometrist-plist-pp-normalize-whitespace ()
+  "Remove whitespace following point, and insert a space.
+Point is placed at the end of the space."
   (when (looking-at chronometrist-plist-pp-whitespace-re)
     (delete-region (match-beginning 0) (match-end 0))
     (insert " ")))
@@ -53,22 +55,15 @@ that point is after the first opening parenthesis."
                   "% -" (number-to-string right-indent) "s")
           sexp))
 
-;; not a list? forward-sexp
-;; if list ->
-;;   plist -> plist indent;
-;;   alist -> alist indent;
-;;   else descend and call self for each element, then leave
-
-;; FIXME - we're losing the value of inside-sublist-p somewhere
-
 (cl-defun chronometrist-plist-pp-buffer (&optional inside-sublist-p)
-  "Naive pretty-printer for plists."
+  "Recursively indent the alist, plist, or a list of plists after point."
   (if (not (looking-at-p ")"))
       (progn
         (setq sexp (save-excursion (read (current-buffer))))
         (cond
          ((json-plist-p sexp)
-          (chronometrist-plist-pp-buffer-plist inside-sublist-p) (chronometrist-plist-pp-buffer))
+          (chronometrist-plist-pp-buffer-plist inside-sublist-p)
+          (chronometrist-plist-pp-buffer inside-sublist-p))
          ((chronometrist-plist-pp-alist-p sexp)
           (chronometrist-plist-pp-buffer-alist)
           (unless inside-sublist-p (chronometrist-plist-pp-buffer)))
@@ -76,8 +71,15 @@ that point is after the first opening parenthesis."
           (down-list)
           (chronometrist-plist-pp-buffer t))
          (t (forward-sexp)
-            (chronometrist-plist-pp-buffer))))
-    (when (bolp) (delete-char -1))
+            (chronometrist-plist-pp-buffer inside-sublist-p))))
+    ;; we're before a ) - is it a lone paren on its own line?
+    (let ((pos (point))
+          (bol (point-at-bol)))
+      (goto-char bol)
+      (if (string-match (concat "^" chronometrist-plist-pp-whitespace-re "$")
+                        (buffer-substring bol pos))
+          (delete-region (1- bol) pos)
+        (goto-char pos)))
     (forward-char)))
 
 (defun chronometrist-plist-pp-buffer-plist (&optional inside-sublist-p)
