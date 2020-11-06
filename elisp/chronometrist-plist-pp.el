@@ -105,13 +105,17 @@ that point is after the first opening parenthesis."
                        (make-string left-indent ?\ ))
                      (chronometrist-plist-pp-indent-sexp sexp right-indent)))
             ;; not a keyword = a value
-            ((listp sexp)
+            ((json-plist-p sexp)
+             (chronometrist-plist-pp-buffer-plist))
+            ((and (listp sexp)
+                  (not (chronometrist-plist-pp-pair-p sexp)))
              (chronometrist-plist-pp-buffer t)
              (insert "\n"))
             (t (forward-sexp)
                (insert "\n"))))
     (when (bolp) (delete-char -1))
     (up-list)
+    ;; we have exited the plist, but might still be in a list with more plists
     (unless (eolp) (insert "\n"))
     (when inside-sublist-p
       (insert (make-string (1- left-indent) ?\ )))))
