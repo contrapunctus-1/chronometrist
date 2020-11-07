@@ -85,23 +85,17 @@ See `timeclock-log-data' for a description."
 IN-FILE and OUT-FILE, if provided, are used as input and output
 file names respectively."
   (interactive `(,(if (featurep 'timeclock)
-                      (read-file-name (concat "timeclock file (default: "
-                                              timeclock-file
-                                              "): ")
+                      (read-file-name (format "timeclock file (default: %s): "
+                                              timeclock-file)
                                       user-emacs-directory
                                       timeclock-file t)
-                    (read-file-name (concat "timeclock file: ")
-                                    user-emacs-directory
-                                    nil t))
-                 ,(read-file-name (concat "Output file (default: "
-                                          (locate-user-emacs-file "chronometrist.sexp")
-                                          "): ")
+                    (read-file-name "timeclock file: " user-emacs-directory nil t))
+                 ,(read-file-name (format "Output file (default: %s): "
+                                          (locate-user-emacs-file "chronometrist.sexp"))
                                   user-emacs-directory
                                   (locate-user-emacs-file "chronometrist.sexp"))))
   (when (if (file-exists-p out-file)
-            (yes-or-no-p (concat "Output file "
-                                 out-file
-                                 " already exists - overwrite? "))
+            (yes-or-no-p (format "Output file %s already exists - overwrite? " out-file))
           t)
     (let ((output (find-file-noselect out-file)))
       (with-current-buffer output
@@ -146,20 +140,16 @@ See `chronometrist-file' for a description."
 
 IN-FILE and OUT-FILE, if provided, are used as input and output
 file names respectively."
-  (interactive `(,(read-file-name (concat "s-expression file (default: "
-                                         chronometrist-file
-                                         "): ")
-                                 user-emacs-directory
-                                 chronometrist-file t)
-                 ,(read-file-name (concat "Output file (default: "
-                                          (locate-user-emacs-file "chronometrist.sqlite")
-                                          "): ")
+  (interactive `(,(read-file-name (format "s-expression file (default: %s): " chronometrist-file)
+                                  user-emacs-directory
+                                  chronometrist-file t)
+                 ,(read-file-name (format "Output file (default: %s): "
+                                          (locate-user-emacs-file "chronometrist.sqlite"))
                                   user-emacs-directory
                                   (locate-user-emacs-file "chronometrist.sqlite"))))
   (when (if (file-exists-p out-file)
-            (yes-or-no-p (concat "Output file "
-                                 out-file
-                                 " already exists - overwrite? "))
+            (yes-or-no-p
+             (format "Output file %s already exists - overwrite? " out-file))
           t)
     (chronometrist-migrate-populate-sexp in-file)
     (emacsql chronometrist-migrate-db
