@@ -262,6 +262,8 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
    10. [ ] =chronometrist-timer= - if =chronometrist-file= is being edited (buffer exists and modified), don't refresh - this will (hopefully) prevent Emacs from going crazy with errors in trying to parse malformed data.
 
 * Maybe [0%]
+** plist-pp
+1. Represent sublists by depth (integer) instead of a boolean.
 ** a task list
 #+BEGIN_SRC
 ("A Task"
