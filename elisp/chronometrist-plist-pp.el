@@ -13,9 +13,6 @@
 
 ;;; Commentary:
 
-;;; potential improvements -
-;;; * probably more robust code
-
 ;;; Code:
 
 (defvar chronometrist-plist-pp-whitespace-re "[\n\t\s]")
