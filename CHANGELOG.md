@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * New hooks - `chronometrist-mode-hook`, `chronometrist-list-format-transformers`, `chronometrist-entry-transformers`. chronometrist no longer needs to know about extensions.
 * New custom variable `chronometrist-sexp-pretty-print-function`
+### Changed
+* `chronometrist-plist-pp` now indents recursively.
 ### Fixed
 * Remove quotes from key-value prompt in quit keybindings
 * Lisp objects being stored as un`read`able strings in `chronometrist-value-history`, resulting in value suggestions not matching user input.
