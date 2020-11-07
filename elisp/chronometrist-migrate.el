@@ -30,7 +30,6 @@
 ;; are supported.)
 (defun chronometrist-migrate-populate-timelog (in-file)
   "Read data from IN-FILE to `chronometrist-migrate-table'.
-
 IN-FILE should be a file in the format supported by timeclock.el.
 See `timeclock-log-data' for a description."
   (clrhash chronometrist-migrate-table)
@@ -81,7 +80,6 @@ See `timeclock-log-data' for a description."
 
 (defun chronometrist-migrate-timelog-file->sexp-file (&optional in-file out-file)
   "Migrate your existing `timeclock-file' to the Chronometrist file format.
-
 IN-FILE and OUT-FILE, if provided, are used as input and output
 file names respectively."
   (interactive `(,(if (featurep 'timeclock)
@@ -121,10 +119,8 @@ See `chronometrist-file' for a description."
       (let ((index 0)
             expr)
         (while (setq expr (ignore-errors (read (current-buffer))))
-          (let* ((new-date       (->> (plist-get expr :start)
-                                      (s-left 10)))
-                 (existing-value (gethash new-date
-                                          chronometrist-migrate-table)))
+          (let* ((new-date       (s-left 10 (plist-get expr :start)))
+                 (existing-value (gethash new-date chronometrist-migrate-table)))
             (cl-incf index)
             (puthash new-date
                      (if existing-value
@@ -132,12 +128,10 @@ See `chronometrist-file' for a description."
                                  (list expr))
                        (list expr))
                      chronometrist-migrate-table)))
-        (unless (zerop index)
-          index)))))
+        (unless (zerop index) index)))))
 
 (defun chronometrist-migrate-sexp-file->sql-db (&optional in-file out-file)
   "Migrate your existing `chronometrist-file' to an SQL database.
-
 IN-FILE and OUT-FILE, if provided, are used as input and output
 file names respectively."
   (interactive `(,(read-file-name (format "s-expression file (default: %s): " chronometrist-file)
