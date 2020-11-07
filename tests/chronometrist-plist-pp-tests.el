@@ -84,7 +84,21 @@
       " :recipe (:name \"moong-masoor ki dal\""
       "          :url  \"https://www.mirchitales.com/moong-masoor-dal-red-and-yellow-lentil-curry/\")"
       " :start  \"2020-09-23T15:22:39+0530\""
-      " :stop   \"2020-09-23T16:29:49+0530\")"))))
+      " :stop   \"2020-09-23T16:29:49+0530\")"))
+    (expect
+     (chronometrist-plist-pp-to-string
+      '(:name    "Exercise"
+        :tags    (warm-up)
+        :start   "2018-11-21T15:35:04+0530"
+        :stop    "2018-11-21T15:38:41+0530"
+        :comment ("stretching" (25 10 "push-ups"))))
+     :to-equal
+     (concat
+      "(:name    \"Exercise\"\n"
+      " :tags    (warm-up)\n"
+      " :start   \"2018-11-21T15:35:04+0530\"\n"
+      " :stop    \"2018-11-21T15:38:41+0530\"\n"
+      " :comment (\"stretching\" (25 10 \"push-ups\")))"))))
 
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"

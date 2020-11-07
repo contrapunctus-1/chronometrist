@@ -18,12 +18,12 @@
 
 ;;; Code:
 
-(defvar chronometrist-plist-pp-whitespace-re "[\n\t\s]+?")
+(defvar chronometrist-plist-pp-whitespace-re "[\n\t\s]")
 
 (defun chronometrist-plist-pp-normalize-whitespace ()
   "Remove whitespace following point, and insert a space.
 Point is placed at the end of the space."
-  (when (looking-at chronometrist-plist-pp-whitespace-re)
+  (when (looking-at (concat chronometrist-plist-pp-whitespace-re "+"))
     (delete-region (match-beginning 0) (match-end 0))
     (insert " ")))
 
@@ -59,7 +59,8 @@ that point is after the first opening parenthesis."
           sexp))
 
 (cl-defun chronometrist-plist-pp-buffer (&optional inside-sublist-p)
-  "Recursively indent the alist, plist, or a list of plists after point."
+  "Recursively indent the alist, plist, or a list of plists after point.
+The list must be on a single line, as emitted by `prin1'."
   (if (not (looking-at-p (rx (or ")" line-end))))
       (progn
         (setq sexp (save-excursion (read (current-buffer))))
@@ -82,8 +83,9 @@ that point is after the first opening parenthesis."
     (let ((pos (point))
           (bol (point-at-bol)))
       (goto-char bol)
-      (if (string-match (concat "^" chronometrist-plist-pp-whitespace-re "$")
+      (if (string-match (concat "^" chronometrist-plist-pp-whitespace-re "*$")
                         (buffer-substring bol pos))
+          ;; join the ) to the previous line by deleting the newline and whitespace
           (delete-region (1- bol) pos)
         (goto-char pos))
       (when (not (eobp))
