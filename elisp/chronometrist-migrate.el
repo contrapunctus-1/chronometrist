@@ -157,6 +157,24 @@ file names respectively."
                                  :values ([(plist-get :na)])]))
              chronometrist-migrate-table)))
 
+(cl-loop for events being the hash-values of chronometrist-events do
+  (cl-loop for event in events do
+    (cl-loop for (keyword value) on event by #'cddr do
+      (let* ((pragma       (emacsql db [:pragma (funcall table_info events)]))
+             (row-exists-p (cl-loop for list in pragma thereis
+                             (eq (--> (symbol-name keyword)
+                                      (s-chop-prefix ":" it)
+                                      (intern it))
+                                 (second list)))))
+        (unless row-exists-p
+          (emacsql db [:alter-table events :add-column $i1]) keyword)
+        ;; FIXME
+        (emacsql db [:insert-into events :values $i1] value)))))
+
+(defun chronometrist-migrate (input-format output-format &optional input-file output-file)
+  "Migrate a Chronometrist file from INPUT-FORMAT to OUTPUT-FORMAT.
+Prompt for INPUT-FILE and OUTPUT-FILE if not provided.")
+
 (defun chronometrist-migrate-check ()
   "Offer to import data from `timeclock-file' if `chronometrist-file' does not exist."
   (when (and (bound-and-true-p timeclock-file)
