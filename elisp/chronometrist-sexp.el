@@ -69,7 +69,7 @@ were none."
                                   (setq pending-expr (cl-second split-expr))
                                   (cl-first split-expr))
                                  (t expr)))
-               (new-value-date (plist-get new-value :start (s-left 10)))
+               (new-value-date (s-left 10 (plist-get new-value :start)))
                (existing-value (gethash new-value-date chronometrist-events)))
           (unless pending-expr (cl-incf index))
           (puthash new-value-date
