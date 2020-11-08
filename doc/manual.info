@@ -32,6 +32,7 @@ The structure of this manual was inspired by @uref{https://documentation.divio.c
 How to@dots{}
 
 * How to set up Emacs to contribute::
+* How to create a new backend::
 
 Explanation
 
@@ -47,6 +48,7 @@ Explanation
 Chronometrist
 
 * Optimization::
+* Backends::
 
 Midnight-spanning events
 
@@ -98,6 +100,7 @@ Legend of currently-used time formats
 
 @menu
 * How to set up Emacs to contribute::
+* How to create a new backend::
 @end menu
 
 @node How to set up Emacs to contribute
@@ -121,6 +124,16 @@ From the project root, you can now run
 @item
 @samp{cask exec buttercup -L . --traceback pretty} to run tests.
 @end enumerate
+@end enumerate
+
+@node How to create a new backend
+@section How to create a new backend
+
+@enumerate
+@item
+Make an instance of class @samp{chronometrist-backend} to define your backend.
+@item
+Create methods for the nine generic functions in @samp{chronometrist-backend.el}
 @end enumerate
 
 @node Explanation
@@ -214,6 +227,7 @@ Note - sometimes, when hacking or dealing with errors, timers may result in subt
 
 @menu
 * Optimization::
+* Backends::
 @end menu
 
 @node Optimization
@@ -264,6 +278,17 @@ Instead, the aforementioned backend functions modify the relevant variables - @s
 @end enumerate
 
 There are still some operations which @uref{../elisp/chronometrist.el, @samp{chronometrist-refresh-file}} runs unconditionally - which is to say there is scope for further optimization, if or when required.
+@end enumerate
+
+@node Backends
+@subsection Backends
+
+Chronometrist can currently store data in two ways -
+@enumerate
+@item
+as plists in a plain text file, using the s-expression backend.
+@item
+as an SQL database, using the sqlite3 backend.
 @end enumerate
 
 @node Midnight-spanning events
@@ -1078,6 +1103,8 @@ Function - chronometrist-goal-on-file-change ()
 @section chronometrist-sexp
 
 @enumerate
+@item
+Custom variable - chronometrist-sexp-pretty-print-function
 @item
 Macro - chronometrist-sexp-in-file (file &rest body)
 @item

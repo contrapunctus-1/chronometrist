@@ -3,12 +3,15 @@
 ;;; Commentary:
 ;;
 
+(require 'chronometrist-backend)
 (require 'chronometrist-custom)
 
 ;;; Code:
 
 ;; chronometrist-file (-custom)
 ;; chronometrist-events, chronometrist-events-maybe-split (-events)
+
+(defvar chronometrist-sexp (chronometrist-backend :name "sexp" :extension "sexp"))
 
 (defcustom chronometrist-sexp-pretty-print-function
   (if (featurep 'ppp)

@@ -16,7 +16,9 @@ All of these are optional, but recommended for the best experience.
    From the project root, you can now run
    1. =cask= to install the project dependencies in a sandbox
    2. =cask exec buttercup -L . --traceback pretty= to run tests.
-
+** How to create a new backend
+1. Make an instance of class =chronometrist-backend= to define your backend.
+2. Create methods for the nine generic functions in =chronometrist-backend.el=
 * Explanation
 :PROPERTIES:
 :DESCRIPTION: The design, the implementation, and a little history
@@ -95,6 +97,12 @@ After the optimization...
 There are still some operations which [[file:../elisp/chronometrist.el::defun chronometrist-refresh-file (][=chronometrist-refresh-file=]] runs unconditionally - which is to say there is scope for further optimization, if or when required.
 
 [fn:1] As indicated by exploratory work in the =parsimonious-reading= branch, where I made a loop to only =read= and collect s-expressions from the file. It was near-instant...until I added event splitting to it.
+
+*** Backends
+Chronometrist can currently store data in two ways -
+1. as plists in a plain text file, using the s-expression backend.
+2. as an SQL database, using the sqlite3 backend.
+
 ** Midnight-spanning events
 :PROPERTIES:
 :DESCRIPTION: Events starting on one day and ending on another
