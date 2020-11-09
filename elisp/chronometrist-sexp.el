@@ -75,8 +75,7 @@ neatly), or falls back to `pp' if it isn't."
 
 (cl-defmethod chronometrist-current-task ((backend chronometrist-sexp))
   (let ((last-event (chronometrist-last backend)))
-    (if (plist-member last-event :stop)
-        nil
+    (unless (plist-member last-event :stop)
       (plist-get last-event :name))))
 
 ;; # Modifications #
