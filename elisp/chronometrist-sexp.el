@@ -11,8 +11,8 @@
 ;; chronometrist-file (-custom)
 ;; chronometrist-events, chronometrist-events-maybe-split (-events)
 
-(defclass chronometrist-sexp (chronometrist-backend))
-(defvar chronometrist-sexp (make-instance chronometrist-sexp :name "sexp" :ext "sexp"))
+(defclass chronometrist-sexp (chronometrist-backend) nil)
+(defvar chronometrist-sexp-backend (make-instance chronometrist-sexp :name "sexp" :ext "sexp"))
 
 (defcustom chronometrist-sexp-pretty-print-function
   (if (featurep 'ppp)
@@ -34,9 +34,7 @@ neatly), or falls back to `pp' if it isn't."
      (save-excursion ,@body)))
 
 ;; # Migration #
-(cl-defmethod chronometrist-to-hash ((backend chronometrist-sexp) table))
-
-(cl-defmethod chronometrist-from-hash ((backend chronometrist-sexp) table)
+(cl-defmethod chronometrist-to-hash ((backend chronometrist-sexp) table)
   (chronometrist-sexp-in-file chronometrist-file
     (goto-char (point-min))
     (let ((index 0) expr pending-expr)
@@ -61,6 +59,8 @@ neatly), or falls back to `pp' if it isn't."
                      (list new-value))
                    chronometrist-events)))
       (unless (zerop index) index))))
+
+(cl-defmethod chronometrist-from-hash ((backend chronometrist-sexp) table))
 
 ;; # Queries #
 (cl-defmethod chronometrist-open-log ((backend chronometrist-sexp))

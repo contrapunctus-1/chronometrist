@@ -3,9 +3,7 @@
 ;;; Commentary:
 ;;
 
-(defvar chronometrist-sqlite3 (chronometrist-backend :name "sqlite3" :extension "sqlite3"))
-
-
+(defvar chronometrist-sqlite3 (chronometrist-backend :name "sqlite3" :ext "sqlite3"))
 
 (provide 'chronometrist-sqlite3)
 

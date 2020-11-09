@@ -125,7 +125,7 @@ The data is acquired from `chronometrist-file'.
 Return final number of events read from file, or nil if there
 were none."
   (clrhash chronometrist-events)
-  (chronometrist-sexp-events-populate))
+  (chronometrist-to-hash chronometrist-current-backend chronometrist-events))
 
 (defun chronometrist-tasks-from-table ()
   "Return a list of task names from `chronometrist-events'."
