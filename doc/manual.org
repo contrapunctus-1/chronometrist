@@ -17,7 +17,7 @@ All of these are optional, but recommended for the best experience.
    1. =cask= to install the project dependencies in a sandbox
    2. =cask exec buttercup -L . --traceback pretty= to run tests.
 ** How to create a new backend
-1. Make an instance of class =chronometrist-backend= to define your backend.
+1. Subclass =chronometrist-backend= to define your backend.
 2. Create methods for the nine generic functions in =chronometrist-backend.el=
 * Explanation
 :PROPERTIES:
@@ -103,6 +103,9 @@ Chronometrist can currently store data in two ways -
 1. as plists in a plain text file, using the s-expression backend.
 2. as an SQL database, using the sqlite3 backend.
 
+Backends are defined as subclasses of the class =chronometrist-backend= [fn:1].
+
+[fn:1] I wouldd have liked to define them as instances of =chronometrist-backend=, but EIEIO, unlike CLOS, does not support EQL specialization.
 ** Midnight-spanning events
 :PROPERTIES:
 :DESCRIPTION: Events starting on one day and ending on another

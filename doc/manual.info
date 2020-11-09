@@ -131,7 +131,7 @@ From the project root, you can now run
 
 @enumerate
 @item
-Make an instance of class @samp{chronometrist-backend} to define your backend.
+Subclass @samp{chronometrist-backend} to define your backend.
 @item
 Create methods for the nine generic functions in @samp{chronometrist-backend.el}
 @end enumerate
@@ -290,6 +290,8 @@ as plists in a plain text file, using the s-expression backend.
 @item
 as an SQL database, using the sqlite3 backend.
 @end enumerate
+
+Backends are defined as subclasses of the class @samp{chronometrist-backend} @footnote{As indicated by exploratory work in the @samp{parsimonious-reading} branch, where I made a loop to only @samp{read} and collect s-expressions from the file. It was near-instant@dots{}until I added event splitting to it.}.
 
 @node Midnight-spanning events
 @section Midnight-spanning events

@@ -11,7 +11,8 @@
 ;; chronometrist-file (-custom)
 ;; chronometrist-events, chronometrist-events-maybe-split (-events)
 
-(defvar chronometrist-sexp (chronometrist-backend :name "sexp" :extension "sexp"))
+(defclass chronometrist-sexp (chronometrist-backend))
+(defvar chronometrist-sexp (make-instance chronometrist-sexp :name "sexp" :ext "sexp"))
 
 (defcustom chronometrist-sexp-pretty-print-function
   (if (featurep 'ppp)

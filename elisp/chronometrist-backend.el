@@ -10,12 +10,14 @@
   ((name
     :initarg :name
     :type string
-    :documentation "The name of the backend.")
-   (extension
-    :initarg :extension
+    :documentation "The name of the backend."
+    :initform "")
+   (ext
+    :initarg :ext
     :type string
     :documentation
-    "The extension used by a file of this backend, without a leading period.")))
+    "The extension used by a file of this backend, without a leading period."
+    :initform "")))
 
 (defvar chronometrist-backends nil
   "List of enabled backends.")
