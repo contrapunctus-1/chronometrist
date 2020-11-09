@@ -23,35 +23,37 @@
   "List of enabled backends.")
 
 ;; # Migration #
-(cl-defgeneric chronometrist-backend-to-hash (backend table)
+(cl-defgeneric chronometrist-to-hash (backend table)
   "Clear TABLE and fill it using BACKEND.")
 
-(cl-defgeneric chronometrist-backend-from-hash (backend table)
-  "Clear BACKEND and fill it using TABLE.")
+;; If the file for BACKEND exists and is not empty, signal an error or
+;; prompt the user?
+(cl-defgeneric chronometrist-from-hash (backend table)
+  "Fill BACKEND using TABLE.")
 
 ;; # Queries #
-(cl-defgeneric chronometrist-backend-open-file (backend)
+(cl-defgeneric chronometrist-open-file (backend)
   "Open the storage file associated with BACKEND.")
 
-(cl-defgeneric chronometrist-backend-last (backend)
+(cl-defgeneric chronometrist-last (backend)
   "Return the latest interval from BACKEND.")
 
-(cl-defgeneric chronometrist-backend-current-task (backend)
+(cl-defgeneric chronometrist-current-task (backend)
   "Return the name of the currently clocked-in task, or nil if not clocked in.")
 
-(cl-defgeneric chronometrist-backend-populate (backend table)
+(cl-defgeneric chronometrist-populate (backend table)
   "Read data from BACKEND into hash table TABLE.
 Return final number of intervals read from file, or nil if there
 were none.")
 
 ;; # Modifications #
-(cl-defgeneric chronometrist-backend-create-file (backend)
+(cl-defgeneric chronometrist-create-file (backend)
   "Create BACKEND file if it does not already exist.")
 
-(cl-defgeneric chronometrist-backend-new (backend plist)
+(cl-defgeneric chronometrist-new (backend plist)
   "Use PLIST to add a new interval to BACKEND.")
 
-(cl-defgeneric chronometrist-backend-replace-last (backend plist)
+(cl-defgeneric chronometrist-replace-last (backend plist)
   "Replace the latest record in BACKEND with PLIST.")
 
 (provide 'chronometrist-backend)
