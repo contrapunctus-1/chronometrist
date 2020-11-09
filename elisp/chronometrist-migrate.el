@@ -21,7 +21,6 @@
 (require 'chronometrist-common)
 (require 'chronometrist-time)
 (require 'chronometrist-plist-pp)
-(require 'emacsql-sqlite3)
 
 (defvar chronometrist-file)
 (defvar chronometrist-migrate-table (make-hash-table :test #'equal))
@@ -129,38 +128,6 @@ See `chronometrist-file' for a description."
                        (list expr))
                      chronometrist-migrate-table)))
         (unless (zerop index) index)))))
-
-(defun chronometrist-migrate-to-sqlite3 ()
-  (cl-loop with count = 0
-    for events being the hash-values of chronometrist-events do
-    (cl-loop for event in events do
-      (let* ((keywords (seq-filter #'keywordp event))
-             (values   (seq-remove #'keywordp event))
-             (columns  (mapcar (lambda (keyword)
-                                 (--> (symbol-name keyword)
-                                      (s-chop-prefix ":" it)
-                                      ;; emacsql seems to automatically
-                                      ;; convert dashes in column names
-                                      ;; to underscores, so we do the
-                                      ;; same, lest we get a "column
-                                      ;; already exists" error
-                                      (replace-regexp-in-string "-" "_" it)
-                                      (intern it)))
-                               keywords)))
-        ;; ensure all keywords in this plist exist as SQL columns
-        (cl-loop for column in columns do
-          (let* ((pragma        (emacsql chronometrist-migrate-db [:pragma (funcall table_info events)]))
-                 (column-exists (cl-loop for column-spec in pragma thereis
-                                  (eq column (second column-spec)))))
-            (unless column-exists
-              (emacsql chronometrist-migrate-db [:alter-table events :add-column $i1] column))))
-        (emacsql chronometrist-migrate-db [:insert-into events [$i1] :values $v2]
-                 (vconcat columns) (vconcat values)))
-      (incf count)
-      (when (zerop (% count 5))
-        (message "chronometrist-migrate-migrate - %s events converted" count)))
-    finally do
-    (message "chronometrist-migrate - finished converting %s events." count)))
 
 (defun chronometrist-migrate (input-format output-format &optional input-file output-file)
   "Migrate a Chronometrist file from INPUT-FORMAT to OUTPUT-FORMAT.
