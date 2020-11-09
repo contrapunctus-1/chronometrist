@@ -1,7 +1,8 @@
 ;;; Directory Local Variables
 ;;; For more information see (info "(emacs) Directory Variables")
 
-((emacs-lisp-mode . ((nameless-aliases . (("cc" . "chronometrist-common")
+((emacs-lisp-mode . ((nameless-aliases . (("cb" . "chronometrist-backend")
+                                          ("cc" . "chronometrist-common")
                                           ("cd" . "chronometrist-diary")
                                           ("ce" . "chronometrist-events")
                                           ("ck" . "chronometrist-kv")

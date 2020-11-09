@@ -65,6 +65,7 @@ Tags and Key-Values
 Reference
 
 * Legend of currently-used time formats::
+* chronometrist-backend.el: chronometrist-backendel.
 * chronometrist-common.el: chronometrist-commonel.
 * chronometrist-custom.el: chronometrist-customel.
 * chronometrist-diary-view.el: chronometrist-diary-viewel.
@@ -133,7 +134,7 @@ From the project root, you can now run
 @item
 Subclass @samp{chronometrist-backend} to define your backend.
 @item
-Create methods for the nine generic functions in @samp{chronometrist-backend.el}
+Create methods for the eight generic functions in @samp{chronometrist-backend.el}
 @end enumerate
 
 @node Explanation
@@ -452,6 +453,7 @@ Each of these has a corresponding function to clear it and fill it with values -
 
 @menu
 * Legend of currently-used time formats::
+* chronometrist-backend.el: chronometrist-backendel.
 * chronometrist-common.el: chronometrist-commonel.
 * chronometrist-custom.el: chronometrist-customel.
 * chronometrist-diary-view.el: chronometrist-diary-viewel.
@@ -544,6 +546,34 @@ Used for goals (chronometrist-goals-list, chronometrist-get-goal) - minutes seem
 @item
 Only returned by chronometrist-seconds-to-hms, called by chronometrist-format-time
 @end itemize
+
+@node chronometrist-backendel
+@section chronometrist-backend.el
+
+@enumerate
+@item
+Class - chronometrist-backend ()
+@item
+Variable - chronometrist-backend-current
+@item
+Variable - chronometrist-backends
+@item
+Generic Function - chronometrist-backend-to-hash (backend table)
+@item
+Generic Function - chronometrist-backend-from-hash (backend table)
+@item
+Generic Function - chronometrist-backend-open-file (backend)
+@item
+Generic Function - chronometrist-backend-latest-record (backend)
+@item
+Generic Function - chronometrist-backend-current-task (backend)
+@item
+Generic Function - chronometrist-backend-create-file (backend)
+@item
+Generic Function - chronometrist-backend-add-new (backend plist)
+@item
+Generic Function - chronometrist-backend-replace-last (backend plist)
+@end enumerate
 
 @node chronometrist-commonel
 @section chronometrist-common.el

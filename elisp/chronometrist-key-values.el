@@ -12,7 +12,6 @@
 (require 'chronometrist-common)
 
 (declare-function chronometrist-refresh "chronometrist.el")
-(declare-function chronometrist-last "chronometrist-queries.el")
 
 ;; This is free and unencumbered software released into the public domain.
 ;;
@@ -69,7 +68,7 @@ TAGS should be a list of symbols and/or strings.
 PLIST should be a property list. Properties reserved by
 Chronometrist - currently :name, :tags, :start, and :stop - will
 be removed."
-  (let* ((old-expr  (chronometrist-last))
+  (let* ((old-expr  (chronometrist-backend-last chronometrist-backend-current))
          (old-name  (plist-get old-expr :name))
          (old-start (plist-get old-expr :start))
          (old-stop  (plist-get old-expr :stop))
@@ -96,7 +95,7 @@ be removed."
                             new-kvs
                             `(:start ,old-start)
                             (when old-stop `(:stop  ,old-stop)))))
-    (chronometrist-replace-last chronometrist-current-backend plist)))
+    (chronometrist-replace-last chronometrist-backend-current plist)))
 
 ;;;; TAGS ;;;;
 (defvar chronometrist-tags-history (make-hash-table :test #'equal)
@@ -206,7 +205,7 @@ INITIAL-INPUT is as used in `completing-read'."
 _ARGS are ignored. This function always returns t, so it can be
 used in `chronometrist-before-out-functions'."
   (unless chronometrist--skip-detail-prompts
-    (let* ((last-expr (chronometrist-last))
+    (let* ((last-expr (chronometrist-backend-last chronometrist-backend-current))
            (last-name (plist-get last-expr :name))
            (last-tags (plist-get last-expr :tags))
            (input     (->> last-tags
@@ -353,7 +352,7 @@ It currently supports ido, ido-ubiquitous, ivy, and helm."
   "Prompt the user to enter keys.
 USED-KEYS are keys they have already added since the invocation
 of `chronometrist-kv-add'."
-  (let ((key-suggestions (--> (chronometrist-last)
+  (let ((key-suggestions (--> (chronometrist-backend-last chronometrist-backend-current)
                               (plist-get it :name)
                               (gethash it chronometrist-key-history))))
     (completing-read (format "Key (%s to quit): " (chronometrist-kv-completion-quit-key))
@@ -397,7 +396,8 @@ used in `chronometrist-before-out-functions'."
   (unless chronometrist--skip-detail-prompts
     (let* ((buffer      (get-buffer-create chronometrist-kv-buffer-name))
            (first-key-p t)
-           (last-kvs    (chronometrist-plist-remove (chronometrist-last) :name :tags :start :stop))
+           (last-kvs    (chronometrist-plist-remove (chronometrist-backend-last chronometrist-backend-current)
+                                        :name :tags :start :stop))
            (used-keys   (->> (seq-filter #'keywordp last-kvs)
                              (mapcar #'symbol-name)
                              (--map (s-chop-prefix ":" it)))))
@@ -405,7 +405,7 @@ used in `chronometrist-before-out-functions'."
       (with-current-buffer buffer
         (chronometrist-common-clear-buffer buffer)
         (chronometrist-kv-read-mode)
-        (if (and (chronometrist-current-task) last-kvs)
+        (if (and (chronometrist-backend-current-task chronometrist-backend-current) last-kvs)
             (progn
               (funcall chronometrist-sexp-pretty-print-function last-kvs buffer)
               (down-list -1)

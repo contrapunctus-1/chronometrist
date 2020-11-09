@@ -34,7 +34,8 @@ neatly), or falls back to `pp' if it isn't."
      (save-excursion ,@body)))
 
 ;; # Migration #
-(cl-defmethod chronometrist-to-hash ((backend chronometrist-sexp) table)
+(cl-defmethod chronometrist-backend-to-hash ((backend chronometrist-sexp) table)
+  (clrhash table)
   (chronometrist-sexp-in-file chronometrist-file
     (goto-char (point-min))
     (let ((index 0) expr pending-expr)
@@ -60,31 +61,31 @@ neatly), or falls back to `pp' if it isn't."
                    chronometrist-events)))
       (unless (zerop index) index))))
 
-(cl-defmethod chronometrist-from-hash ((backend chronometrist-sexp) table))
+(cl-defmethod chronometrist-backend-from-hash ((backend chronometrist-sexp) table))
 
 ;; # Queries #
-(cl-defmethod chronometrist-open-log ((backend chronometrist-sexp))
+(cl-defmethod chronometrist-backend-open-file ((backend chronometrist-sexp))
   (find-file-other-window chronometrist-file)
   (goto-char (point-max)))
 
-(cl-defmethod chronometrist-last ((backend chronometrist-sexp))
+(cl-defmethod chronometrist-backend-latest-record ((backend chronometrist-sexp))
   (chronometrist-sexp-in-file chronometrist-file
     (goto-char (point-max))
     (backward-list)
     (ignore-errors (read (current-buffer)))))
 
-(cl-defmethod chronometrist-current-task ((backend chronometrist-sexp))
-  (let ((last-event (chronometrist-last backend)))
+(cl-defmethod chronometrist-backend-current-task ((backend chronometrist-sexp))
+  (let ((last-event (chronometrist-backend-latest-record backend)))
     (unless (plist-member last-event :stop)
       (plist-get last-event :name))))
 
 ;; # Modifications #
-(cl-defmethod chronometrist-create-file ((backend chronometrist-sexp))
+(cl-defmethod chronometrist-backend-create-file ((backend chronometrist-sexp))
   (unless (file-exists-p chronometrist-file)
     (with-current-buffer (find-file-noselect chronometrist-file)
       (write-file chronometrist-file))))
 
-(cl-defmethod chronometrist-new ((backend chronometrist-sexp) plist)
+(cl-defmethod chronometrist-backend-add-new ((backend chronometrist-sexp) plist)
   (chronometrist-sexp-in-file chronometrist-file
     (goto-char (point-max))
     ;; If we're adding the first s-exp in the file, don't add a
@@ -106,7 +107,7 @@ neatly), or falls back to `pp' if it isn't."
     (forward-sexp (or arg 1))
     (delete-region point-1 (point))))
 
-(cl-defmethod chronometrist-replace-last ((backend chronometrist-sexp) plist)
+(cl-defmethod chronometrist-backend-replace-last ((backend chronometrist-sexp) plist)
   (chronometrist-sexp-in-file chronometrist-file
     (goto-char (point-max))
     (unless (and (bobp) (bolp))

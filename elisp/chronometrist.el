@@ -89,11 +89,11 @@
 Argument _BUTTON is for the purpose of using this command as a
 button action."
   (interactive)
-  (chronometrist-sexp-open-log chronometrist-current-backend))
+  (chronometrist-backend-open-file chronometrist-backend-current))
 
 (defun chronometrist-task-active? (task)
   "Return t if TASK is currently clocked in, else nil."
-  (equal (chronometrist-current-task) task))
+  (equal (chronometrist-backend-current-task chronometrist-backend-current) task))
 
 (defun chronometrist-activity-indicator ()
   "Return a string to indicate that a task is active.
@@ -107,7 +107,7 @@ See custom variable `chronometrist-activity-indicator'."
   ;; HACK - these calls are commented out, because `chronometrist-entries' is
   ;; called by both `chronometrist-refresh' and `chronometrist-refresh-file', and only the
   ;; latter should refresh from a file.
-  ;; (chronometrist-events-populate)
+  ;; (chronometrist-backend-to-hash chronometrist-backend-current chronometrist-events)
   ;; (chronometrist-events-clean)
   (->> (-sort #'string-lessp chronometrist-task-list)
        (--map-indexed
@@ -134,7 +134,7 @@ See custom variable `chronometrist-activity-indicator'."
 (defun chronometrist-goto-last-task ()
   "In the `chronometrist' buffer, move point to the line containing the last active task."
   (goto-char (point-min))
-  (re-search-forward (plist-get (chronometrist-last) :name) nil t)
+  (re-search-forward (plist-get (chronometrist-backend-last chronometrist-backend-current) :name) nil t)
   (beginning-of-line))
 
 (defun chronometrist-print-keybind (command &optional description firstonly)
@@ -203,7 +203,7 @@ Argument _FS-EVENT is ignored."
   ;; REVIEW - can we move most/all of this to the `chronometrist-file-change-hook'?
   (if chronometrist--inhibit-read-p
       (setq chronometrist--inhibit-read-p nil)
-    (chronometrist-events-populate)
+    (chronometrist-backend-to-hash chronometrist-backend-current chronometrist-events)
     (setq chronometrist-task-list (chronometrist-tasks-from-table))
     (chronometrist-tags-history-populate chronometrist-events chronometrist-tags-history))
   (chronometrist-key-history-populate   chronometrist-events chronometrist-key-history)
@@ -212,7 +212,7 @@ Argument _FS-EVENT is ignored."
 
 (defun chronometrist-query-stop ()
   "Ask the user if they would like to clock out."
-  (let ((task (chronometrist-current-task)))
+  (let ((task (chronometrist-backend-current-task chronometrist-backend-current)))
     (and task
          (yes-or-no-p (format "Stop tracking time for %s? " task))
          (chronometrist-out))
@@ -223,14 +223,14 @@ Argument _FS-EVENT is ignored."
 TASK is the name of the task, a string. PREFIX is ignored."
   (interactive "P")
   (let ((plist `(:name ,task :start ,(chronometrist-format-time-iso8601))))
-    (chronometrist-new chronometrist-current-backend plist)
+    (chronometrist-new chronometrist-backend-current plist)
     (chronometrist-refresh)))
 
 (defun chronometrist-out (&optional _prefix)
   "Record current moment as stop time to last s-exp in `chronometrist-file'.
 PREFIX is ignored."
   (interactive "P")
-  (let ((plist (plist-put (chronometrist-last) :stop (chronometrist-format-time-iso8601))))
+  (let ((plist (plist-put (chronometrist-backend-last chronometrist-backend-current) :stop (chronometrist-format-time-iso8601))))
     (chronometrist-replace-last plist)))
 
 ;; ## HOOKS ##
@@ -337,7 +337,7 @@ Argument _BUTTON is for the purpose of using this as a button
 action, and is ignored."
   (when current-prefix-arg
     (chronometrist-goto-nth-task (prefix-numeric-value current-prefix-arg)))
-  (let ((current  (chronometrist-current-task))
+  (let ((current  (chronometrist-backend-current-task chronometrist-backend-current))
         (at-point (chronometrist-task-at-point)))
     ;; clocked in + point on current    = clock out
     ;; clocked in + point on some other task = clock out, clock in to task
@@ -352,7 +352,7 @@ action, and is ignored."
 
 Argument _BUTTON is for the purpose of using this as a button
 action, and is ignored."
-  (let ((current (chronometrist-current-task)))
+  (let ((current (chronometrist-backend-current-task chronometrist-backend-current)))
     (when current
       (chronometrist-run-functions-and-clock-out current))
     (let ((task (read-from-minibuffer "New task name: " nil nil nil nil nil t)))
@@ -379,7 +379,7 @@ If INHIBIT-HOOKS is non-nil, the hooks
          (nth          (when prefix (chronometrist-goto-nth-task prefix)))
          (at-point     (chronometrist-task-at-point))
          (target       (or nth at-point))
-         (current      (chronometrist-current-task))
+         (current      (chronometrist-backend-current-task chronometrist-backend-current))
          (in-function  (if inhibit-hooks
                            #'chronometrist-in
                          #'chronometrist-run-functions-and-clock-in))
@@ -438,7 +438,7 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
           (cond ((or (not (file-exists-p chronometrist-file))
                      (chronometrist-common-file-empty-p chronometrist-file))
                  ;; first run
-                 (chronometrist-create-file chronometrist-current-backend)
+                 (chronometrist-backend-create-file chronometrist-backend-current)
                  (let ((inhibit-read-only t))
                    (chronometrist-common-clear-buffer buffer)
                    (insert "Welcome to Chronometrist! Hit RET to ")

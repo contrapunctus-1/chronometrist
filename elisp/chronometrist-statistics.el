@@ -260,7 +260,7 @@ specified by `chronometrist-statistics--ui-state'."
                (setq chronometrist-statistics--ui-state `(:mode week
                                         :start ,week-start
                                         :end   ,week-end)))
-             (chronometrist-create-file chronometrist-current-backend)
+             (chronometrist-backend-create-file chronometrist-backend-current)
              (chronometrist-statistics-mode)
              (switch-to-buffer buffer)
              (chronometrist-statistics-refresh))))))

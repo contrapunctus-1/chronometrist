@@ -20,10 +20,6 @@
 (require 'chronometrist-common)
 (require 'chronometrist-events)
 
-(defun chronometrist-last ()
-  "Return the last entry from `chronometrist-file' as a plist."
-  (chronometrist-last chronometrist-current-backend))
-
 (cl-defun chronometrist-task-time-one-day (task &optional (ts (ts-now)))
   "Return total time spent on TASK today or (if supplied) on timestamp TS.
 The data is obtained from `chronometrist-file', via `chronometrist-events'.

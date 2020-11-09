@@ -154,7 +154,7 @@ If FIRSTONLY is non-nil, insert only the first keybinding found."
 (defun chronometrist-report-refresh-file (_fs-event)
   "Re-read `chronometrist-file' and refresh the `chronometrist-report' buffer.
 Argument _FS-EVENT is ignored."
-  (chronometrist-events-populate)
+  (chronometrist-backend-to-hash chronometrist-backend-current chronometrist-events)
   ;; (chronometrist-events-clean)
   (chronometrist-report-refresh))
 
@@ -227,7 +227,7 @@ current week. Otherwise, display data from the week specified by
              (kill-buffer buffer))
             (t (unless keep-date
                  (setq chronometrist-report--ui-date nil))
-               (chronometrist-create-file chronometrist-current-backend)
+               (chronometrist-backend-create-file chronometrist-backend-current)
                (chronometrist-report-mode)
                (switch-to-buffer buffer)
                (chronometrist-report-refresh-file nil)

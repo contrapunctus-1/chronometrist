@@ -18,7 +18,7 @@ All of these are optional, but recommended for the best experience.
    2. =cask exec buttercup -L . --traceback pretty= to run tests.
 ** How to create a new backend
 1. Subclass =chronometrist-backend= to define your backend.
-2. Create methods for the nine generic functions in =chronometrist-backend.el=
+2. Create methods for the eight generic functions in =chronometrist-backend.el=
 * Explanation
 :PROPERTIES:
 :DESCRIPTION: The design, the implementation, and a little history
@@ -218,6 +218,18 @@ Each of these has a corresponding function to clear it and fill it with values -
      (hours minute seconds)
      * Only returned by chronometrist-seconds-to-hms, called by chronometrist-format-time
 
+** chronometrist-backend.el
+1. Class - chronometrist-backend ()
+2. Variable - chronometrist-backend-current
+3. Variable - chronometrist-backends
+4. Generic Function - chronometrist-backend-to-hash (backend table)
+5. Generic Function - chronometrist-backend-from-hash (backend table)
+6. Generic Function - chronometrist-backend-open-file (backend)
+7. Generic Function - chronometrist-backend-latest-record (backend)
+8. Generic Function - chronometrist-backend-current-task (backend)
+9. Generic Function - chronometrist-backend-create-file (backend)
+10. Generic Function - chronometrist-backend-add-new (backend plist)
+11. Generic Function - chronometrist-backend-replace-last (backend plist)
 ** chronometrist-common.el
 1.  Variable - chronometrist-empty-time-string
 2.  Variable - chronometrist-date-re
