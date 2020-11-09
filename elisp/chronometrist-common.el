@@ -72,18 +72,12 @@ supplied, 3 spaces are used."
   (-let [(h m s) (chronometrist-seconds-to-hms seconds)]
     (if (and (zerop h) (zerop m) (zerop s))
         "       -"
-      (let ((h (if (zerop h)
-                   blank
-                 (format "%2d:" h)))
-            (m (cond ((and (zerop h)
-                           (zerop m))
+      (let ((h (if (zerop h) blank (format "%2d:" h)))
+            (m (cond ((and (zerop h) (zerop m))
                       blank)
-                     ((zerop h)
-                      (format "%2d:" m))
-                     (t
-                      (format "%02d:" m))))
-            (s (if (and (zerop h)
-                        (zerop m))
+                     ((zerop h) (format "%2d:" m))
+                     (t (format "%02d:" m))))
+            (s (if (and (zerop h) (zerop m))
                    (format "%2d" s)
                  (format "%02d" s))))
         (concat h m s)))))
