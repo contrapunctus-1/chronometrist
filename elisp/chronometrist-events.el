@@ -27,7 +27,8 @@
 ;;; Code:
 
 (defvar chronometrist-events (make-hash-table :test #'equal)
-  "Each key is a date in the form (YEAR MONTH DAY).
+  "Hash table containing time intervals.
+Each key is a date in the form (YEAR MONTH DAY).
 
 Values are lists containing events, where each event is a list in
 the form (:name \"NAME\" :tags (TAGS) <key value pairs> ...
