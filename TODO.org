@@ -207,6 +207,8 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
    * sounds like a job for EIEIO - each format could be defined as an object, with slots for information such as the file extension.
 2. [ ] Instead of using =require= for all backends and dependencies, check which backends are loaded, and load dependencies accordingly.
 3. [ ] Make migration asynchronous, and use output from the sub-process to make a progress indicator.
+4. [ ] Optimization - (SQL) read all keywords once, remove duplicates, and create columns for them, instead of checking =pragma= for each plist.
+5. [ ] (SQL) Use transactions.
 ** chronometrist-report [0%]
 1. [ ] Show week counter and max weeks; don't scroll past first/last weeks
 2. [ ] Highlight column of current day
