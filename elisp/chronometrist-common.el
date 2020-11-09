@@ -117,13 +117,11 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
 EVENTS must be a list of valid Chronometrist property lists (see
 `chronometrist-file')."
   (cl-loop for plist in events collect
-           (let* ((start (chronometrist-iso-timestamp->ts
-                          (plist-get plist :start)))
-                  (stop (plist-get plist :stop))
-                  (stop (if stop
-                            (chronometrist-iso-timestamp->ts stop)
-                          (ts-now))))
-             (cons start stop))))
+    (cons (chronometrist-iso-timestamp->ts
+           (plist-get plist :start))
+          (aif (plist-get plist :stop)
+              (chronometrist-iso-timestamp->ts it)
+            (ts-now)))))
 
 (defun chronometrist-ts-pairs->durations (ts-pairs)
   "Return the durations represented by TS-PAIRS.
