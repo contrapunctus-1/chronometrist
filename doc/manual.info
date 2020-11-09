@@ -262,7 +262,7 @@ The next one was released in v0.5. Till then, any time the @uref{../elisp/chrono
 After the optimization@dots{}
 @enumerate
 @item
-Two backend functions (@uref{../elisp/chronometrist-sexp.el, @samp{chronometrist-sexp-new}} and @uref{../elisp/chronometrist-sexp.el, @samp{chronometrist-sexp-replace-last}}) were modified to set a flag (@uref{../elisp/chronometrist.el, @samp{chronometrist--inhibit-read-p}}) before saving the file.
+Two backend functions (@uref{../elisp/chronometrist-sexp.el, @samp{chronometrist-new}} and @uref{../elisp/chronometrist-sexp.el, @samp{chronometrist-replace-last}}) were modified to set a flag (@uref{../elisp/chronometrist.el, @samp{chronometrist--inhibit-read-p}}) before saving the file.
 @item
 If this flag is non-nil, @uref{../elisp/chronometrist.el, @samp{chronometrist-refresh-file}} skips the expensive calls to @samp{chronometrist-events-populate}, @samp{chronometrist-tasks-from-table}, and @samp{chronometrist-tags-history-populate}, and resets the flag.
 @item
@@ -1106,33 +1106,35 @@ Function - chronometrist-goal-on-file-change ()
 
 @enumerate
 @item
+Class - chronometrist-sexp
+@item
+Object - chronometrist-sexp
+@item
 Custom variable - chronometrist-sexp-pretty-print-function
 @item
 Macro - chronometrist-sexp-in-file (file &rest body)
 @item
-Function - chronometrist-sexp-open-log ()
+Method - chronometrist-to-hash ((backend chronometrist-sexp) table)
 @item
-Function - chronometrist-sexp-between (&optional (ts-beg (chronometrist-date)) (ts-end (ts-adjust 'day +1 (chronometrist-date))))
+Method - chronometrist-from-hash ((backend chronometrist-sexp) table)
 @item
-Function - chronometrist-sexp-query-till (&optional (date (chronometrist-date)))
+Method - chronometrist-open-log ((backend chronometrist-sexp))
 @item
-Function - chronometrist-sexp-last ()
+Method - chronometrist-last ((backend chronometrist-sexp))
 @itemize
 @item
 -> plist
 @end itemize
 @item
-Function - chronometrist-sexp-current-task ()
+Method - chronometrist-current-task ((backend chronometrist-sexp))
 @item
-Function - chronometrist-sexp-events-populate ()
+Method - chronometrist-create-file ((backend chronometrist-sexp))
 @item
-Function - chronometrist-sexp-create-file ()
-@item
-Function - chronometrist-sexp-new (plist &optional (buffer (find-file-noselect chronometrist-file)))
+Method - chronometrist-new (((backend chronometrist-sexp)) plist)
 @item
 Function - chronometrist-sexp-delete-list (&optional arg)
 @item
-Function - chronometrist-sexp-replace-last (plist)
+Method - chronometrist-replace-last (((backend chronometrist-sexp)) plist)
 @item
 Command - chronometrist-sexp-reindent-buffer ()
 @end enumerate

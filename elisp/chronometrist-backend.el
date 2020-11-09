@@ -19,6 +19,9 @@
     "The extension used by a file of this backend, without a leading period."
     :initform "")))
 
+(defvar chronometrist-current-backend nil
+  "The current backend in use.")
+
 (defvar chronometrist-backends nil
   "List of enabled backends.")
 

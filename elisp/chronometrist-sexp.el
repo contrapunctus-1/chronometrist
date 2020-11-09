@@ -33,32 +33,10 @@ neatly), or falls back to `pp' if it isn't."
   `(with-current-buffer (find-file-noselect ,file)
      (save-excursion ,@body)))
 
-;;;; Queries
-(defun chronometrist-sexp-open-log ()
-  "Open `chronometrist-file' in another window."
-  (find-file-other-window chronometrist-file)
-  (goto-char (point-max)))
+;; # Migration #
+(cl-defmethod chronometrist-to-hash ((backend chronometrist-sexp) table))
 
-(defun chronometrist-sexp-last ()
-  "Return last s-expression from `chronometrist-file'."
-  (chronometrist-sexp-in-file chronometrist-file
-    (goto-char (point-max))
-    (backward-list)
-    (ignore-errors (read (current-buffer)))))
-
-(defun chronometrist-sexp-current-task ()
-  "Return the name of the currently clocked-in task, or nil if not clocked in."
-  (let ((last-event (chronometrist-sexp-last)))
-    (if (plist-member last-event :stop)
-        nil
-      (plist-get last-event :name))))
-
-(defun chronometrist-sexp-events-populate ()
-  "Populate hash table `chronometrist-events'.
-The data is acquired from `chronometrist-file'.
-
-Return final number of events read from file, or nil if there
-were none."
+(cl-defmethod chronometrist-from-hash ((backend chronometrist-sexp) table)
   (chronometrist-sexp-in-file chronometrist-file
     (goto-char (point-min))
     (let ((index 0) expr pending-expr)
@@ -84,15 +62,30 @@ were none."
                    chronometrist-events)))
       (unless (zerop index) index))))
 
-;;;; Modifications
-(defun chronometrist-sexp-create-file ()
-  "Create `chronometrist-file' if it doesn't already exist."
+;; # Queries #
+(cl-defmethod chronometrist-open-log ((backend chronometrist-sexp))
+  (find-file-other-window chronometrist-file)
+  (goto-char (point-max)))
+
+(cl-defmethod chronometrist-last ((backend chronometrist-sexp))
+  (chronometrist-sexp-in-file chronometrist-file
+    (goto-char (point-max))
+    (backward-list)
+    (ignore-errors (read (current-buffer)))))
+
+(cl-defmethod chronometrist-current-task ((backend chronometrist-sexp))
+  (let ((last-event (chronometrist-last backend)))
+    (if (plist-member last-event :stop)
+        nil
+      (plist-get last-event :name))))
+
+;; # Modifications #
+(cl-defmethod chronometrist-create-file ((backend chronometrist-sexp))
   (unless (file-exists-p chronometrist-file)
     (with-current-buffer (find-file-noselect chronometrist-file)
       (write-file chronometrist-file))))
 
-(cl-defun chronometrist-sexp-new (plist)
-  "Add new PLIST at the end of `chronometrist-file'."
+(cl-defmethod chronometrist-new ((backend chronometrist-sexp) plist)
   (chronometrist-sexp-in-file chronometrist-file
     (goto-char (point-max))
     ;; If we're adding the first s-exp in the file, don't add a
@@ -114,8 +107,7 @@ were none."
     (forward-sexp (or arg 1))
     (delete-region point-1 (point))))
 
-(defun chronometrist-sexp-replace-last (plist)
-  "Replace the last s-expression in `chronometrist-file' with PLIST."
+(cl-defmethod chronometrist-replace-last ((backend chronometrist-sexp) plist)
   (chronometrist-sexp-in-file chronometrist-file
     (goto-char (point-max))
     (unless (and (bobp) (bolp))
@@ -131,7 +123,7 @@ were none."
     ;; :name should be removed from `chronometrist-task-list', but to ascertain
     ;; that condition we would have to either read the entire file or
     ;; map over the hash table, defeating the optimization. Thus, we
-    ;; don't update `chronometrist-task-list' here (unlike `chronometrist-sexp-new')
+    ;; don't update `chronometrist-task-list' here (unlike `chronometrist-new')
     (chronometrist-tags-history-replace-last plist)
     (setq chronometrist--inhibit-read-p t)
     (save-buffer)))

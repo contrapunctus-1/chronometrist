@@ -89,11 +89,7 @@
 Argument _BUTTON is for the purpose of using this command as a
 button action."
   (interactive)
-  (chronometrist-sexp-open-log))
-
-(defun chronometrist-common-create-file ()
-  "Create `chronometrist-file' if it doesn't already exist."
-  (chronometrist-sexp-create-file))
+  (chronometrist-sexp-open-log chronometrist-current-backend))
 
 (defun chronometrist-task-active? (task)
   "Return t if TASK is currently clocked in, else nil."
@@ -228,7 +224,7 @@ Argument _FS-EVENT is ignored."
 TASK is the name of the task, a string. PREFIX is ignored."
   (interactive "P")
   (let ((plist `(:name ,task :start ,(chronometrist-format-time-iso8601))))
-    (chronometrist-sexp-new plist)
+    (chronometrist-new chronometrist-current-backend plist)
     (chronometrist-refresh)))
 
 (defun chronometrist-out (&optional _prefix)
@@ -236,7 +232,7 @@ TASK is the name of the task, a string. PREFIX is ignored."
 PREFIX is ignored."
   (interactive "P")
   (let ((plist (plist-put (chronometrist-last) :stop (chronometrist-format-time-iso8601))))
-    (chronometrist-sexp-replace-last plist)))
+    (chronometrist-replace-last plist)))
 
 ;; ## HOOKS ##
 (defvar chronometrist-mode-hook nil
@@ -443,7 +439,7 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
           (cond ((or (not (file-exists-p chronometrist-file))
                      (chronometrist-common-file-empty-p chronometrist-file))
                  ;; first run
-                 (chronometrist-common-create-file)
+                 (chronometrist-create-file chronometrist-current-backend)
                  (let ((inhibit-read-only t))
                    (chronometrist-common-clear-buffer buffer)
                    (insert "Welcome to Chronometrist! Hit RET to ")

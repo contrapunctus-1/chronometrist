@@ -22,7 +22,7 @@
 
 (defun chronometrist-last ()
   "Return the last entry from `chronometrist-file' as a plist."
-  (chronometrist-sexp-last))
+  (chronometrist-last chronometrist-current-backend))
 
 (cl-defun chronometrist-task-time-one-day (task &optional (ts (ts-now)))
   "Return total time spent on TASK today or (if supplied) on timestamp TS.

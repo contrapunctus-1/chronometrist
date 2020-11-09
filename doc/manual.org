@@ -87,7 +87,7 @@ One of the earliest 'optimizations' of great importance turned out to simply be 
 The next one was released in v0.5. Till then, any time the [[file:../elisp/chronometrist-custom.el::defcustom chronometrist-file (][=chronometrist-file=]] was modified, we'd clear the [[file:../elisp/chronometrist-events.el::defvar chronometrist-events (][=chronometrist-events=]] hash table and read data into it again. The reading itself is nearly-instant, even with ~2 years' worth of data [fn:1] (it uses Emacs' [[elisp:(describe-function 'read)][=read=]], after all), but the splitting of [[* Midnight-spanning events][midnight-spanning events]] is the real performance killer.
 
 After the optimization...
-1. Two backend functions ([[file:../elisp/chronometrist-sexp.el::cl-defun chronometrist-sexp-new (][=chronometrist-sexp-new=]] and [[file:../elisp/chronometrist-sexp.el::defun chronometrist-sexp-replace-last (][=chronometrist-sexp-replace-last=]]) were modified to set a flag ([[file:../elisp/chronometrist.el::defvar chronometrist--inhibit-read-p ][=chronometrist--inhibit-read-p=]]) before saving the file.
+1. Two backend functions ([[file:../elisp/chronometrist-sexp.el::cl-defmethod chronometrist-new (][=chronometrist-new=]] and [[file:../elisp/chronometrist-sexp.el::cl-defmethod chronometrist-replace-last (][=chronometrist-replace-last=]]) were modified to set a flag ([[file:../elisp/chronometrist.el::defvar chronometrist--inhibit-read-p ][=chronometrist--inhibit-read-p=]]) before saving the file.
 2. If this flag is non-nil, [[file:../elisp/chronometrist.el::defun chronometrist-refresh-file (][=chronometrist-refresh-file=]] skips the expensive calls to =chronometrist-events-populate=, =chronometrist-tasks-from-table=, and =chronometrist-tags-history-populate=, and resets the flag.
 3. Instead, the aforementioned backend functions modify the relevant variables - =chronometrist-events=, =chronometrist-task-list=, and =chronometrist-tags-history= - via...
    * =chronometrist-events-add= / =chronometrist-events-replace-last=
@@ -455,20 +455,21 @@ Each of these has a corresponding function to clear it and fill it with values -
 13. Function - chronometrist-goal-on-file-change ()
 
 ** chronometrist-sexp
-1.  Custom variable - chronometrist-sexp-pretty-print-function
-2.  Macro - chronometrist-sexp-in-file (file &rest body)
-3.  Function - chronometrist-sexp-open-log ()
-4.  Function - chronometrist-sexp-between (&optional (ts-beg (chronometrist-date)) (ts-end (ts-adjust 'day +1 (chronometrist-date))))
-5.  Function - chronometrist-sexp-query-till (&optional (date (chronometrist-date)))
-6.  Function - chronometrist-sexp-last ()
-    * -> plist
-7.  Function - chronometrist-sexp-current-task ()
-8.  Function - chronometrist-sexp-events-populate ()
-9.  Function - chronometrist-sexp-create-file ()
-10. Function - chronometrist-sexp-new (plist &optional (buffer (find-file-noselect chronometrist-file)))
-11. Function - chronometrist-sexp-delete-list (&optional arg)
-12. Function - chronometrist-sexp-replace-last (plist)
-13. Command - chronometrist-sexp-reindent-buffer ()
+1. Class - chronometrist-sexp
+2. Object - chronometrist-sexp
+3. Custom variable - chronometrist-sexp-pretty-print-function
+4. Macro - chronometrist-sexp-in-file (file &rest body)
+5. Method - chronometrist-to-hash ((backend chronometrist-sexp) table)
+5. Method - chronometrist-from-hash ((backend chronometrist-sexp) table)
+5. Method - chronometrist-open-log ((backend chronometrist-sexp))
+8. Method - chronometrist-last ((backend chronometrist-sexp))
+   * -> plist
+9. Method - chronometrist-current-task ((backend chronometrist-sexp))
+11. Method - chronometrist-create-file ((backend chronometrist-sexp))
+12. Method - chronometrist-new (((backend chronometrist-sexp)) plist)
+13. Function - chronometrist-sexp-delete-list (&optional arg)
+14. Method - chronometrist-replace-last (((backend chronometrist-sexp)) plist)
+15. Command - chronometrist-sexp-reindent-buffer ()
 
 # Local Variables:
 # org-link-file-path-type: relative

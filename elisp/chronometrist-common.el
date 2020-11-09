@@ -61,7 +61,7 @@ file.")
 
 (defun chronometrist-current-task ()
   "Return the name of the currently clocked-in task, or nil if not clocked in."
-  (chronometrist-sexp-current-task))
+  (chronometrist-current-task chronometrist-current-backend))
 
 (cl-defun chronometrist-format-time (seconds &optional (blank "   "))
   "Format SECONDS as a string suitable for display in Chronometrist buffers.
