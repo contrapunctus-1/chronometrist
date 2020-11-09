@@ -130,33 +130,6 @@ See `chronometrist-file' for a description."
                      chronometrist-migrate-table)))
         (unless (zerop index) index)))))
 
-(defun chronometrist-migrate-sexp-file->sql-db (&optional in-file out-file)
-  "Migrate your existing `chronometrist-file' to an SQL database.
-IN-FILE and OUT-FILE, if provided, are used as input and output
-file names respectively."
-  (interactive `(,(read-file-name (format "s-expression file (default: %s): " chronometrist-file)
-                                  user-emacs-directory
-                                  chronometrist-file t)
-                 ,(read-file-name (format "Output file (default: %s): "
-                                          (locate-user-emacs-file "chronometrist.sqlite"))
-                                  user-emacs-directory
-                                  (locate-user-emacs-file "chronometrist.sqlite"))))
-  (when (if (file-exists-p out-file)
-            (yes-or-no-p
-             (format "Output file %s already exists - overwrite? " out-file))
-          t)
-    (chronometrist-migrate-populate-sexp in-file)
-    (emacsql chronometrist-migrate-db
-             [:create-table events ([name tags start stop])])
-    (maphash (lambda (_key value)
-               (emacsql chronometrist-migrate-db
-                        ;; There may be more than the four keys we
-                        ;; start with...i.e. we'd need to add a new
-                        ;; field
-                        [:insert :into events
-                                 :values ([(plist-get :na)])]))
-             chronometrist-migrate-table)))
-
 (defun chronometrist-migrate-to-sqlite3 ()
   (cl-loop with count = 0
     for events being the hash-values of chronometrist-events do
