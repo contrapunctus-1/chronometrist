@@ -134,7 +134,7 @@ See custom variable `chronometrist-activity-indicator'."
 (defun chronometrist-goto-last-task ()
   "In the `chronometrist' buffer, move point to the line containing the last active task."
   (goto-char (point-min))
-  (re-search-forward (plist-get (chronometrist-backend-last chronometrist-backend-current) :name) nil t)
+  (re-search-forward (plist-get (chronometrist-backend-latest-record chronometrist-backend-current) :name) nil t)
   (beginning-of-line))
 
 (defun chronometrist-print-keybind (command &optional description firstonly)
@@ -230,8 +230,8 @@ TASK is the name of the task, a string. PREFIX is ignored."
   "Record current moment as stop time to last s-exp in `chronometrist-file'.
 PREFIX is ignored."
   (interactive "P")
-  (let ((plist (plist-put (chronometrist-backend-last chronometrist-backend-current) :stop (chronometrist-format-time-iso8601))))
-    (chronometrist-replace-last plist)))
+  (let ((plist (plist-put (chronometrist-backend-latest-record chronometrist-backend-current) :stop (chronometrist-format-time-iso8601))))
+    (chronometrist-backend-replace-last chronometrist-backend-current plist)))
 
 ;; ## HOOKS ##
 (defvar chronometrist-mode-hook nil
