@@ -21,8 +21,8 @@
   :group 'applications)
 
 (defcustom chronometrist-file
-  (locate-user-emacs-file "chronometrist.sexp")
-  "Default path and name of the Chronometrist database.
+  (locate-user-emacs-file "chronometrist")
+  "Default path and name of the Chronometrist database, without an extension.
 
 It should be a text file containing plists in the form -
 \(:name \"task name\"

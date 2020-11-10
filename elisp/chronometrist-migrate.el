@@ -134,11 +134,11 @@ Prompt for INPUT-FILE and OUTPUT-FILE if not provided.")
 (defun chronometrist-migrate-check ()
   "Offer to import data from `timeclock-file' if `chronometrist-file' does not exist."
   (when (and (bound-and-true-p timeclock-file)
-             (not (file-exists-p chronometrist-file)))
+             (not (file-exists-p (chronometrist-file-path))))
     (if (yes-or-no-p (format (concat "Chronometrist v0.3+ uses a new file format;"
                                      " import data from %s ? ")
                              timeclock-file))
-        (chronometrist-migrate-timelog-file->sexp-file timeclock-file chronometrist-file)
+        (chronometrist-migrate-timelog-file->sexp-file timeclock-file (chronometrist-file-path))
       (message "You can migrate later using `chronometrist-migrate-timelog-file->sexp-file'."))))
 
 (provide 'chronometrist-migrate)

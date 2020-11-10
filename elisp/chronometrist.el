@@ -375,7 +375,7 @@ If INHIBIT-HOOKS is non-nil, the hooks
 `chronometrist-before-out-functions', and
 `chronometrist-after-out-functions' will not be run."
   (interactive "P")
-  (let* ((empty-file   (chronometrist-common-file-empty-p chronometrist-file))
+  (let* ((empty-file   (chronometrist-common-file-empty-p (chronometrist-file-path)))
          (nth          (when prefix (chronometrist-goto-nth-task prefix)))
          (at-point     (chronometrist-task-at-point))
          (target       (or nth at-point))
@@ -435,8 +435,8 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
           (setq chronometrist--point (point))
           (kill-buffer chronometrist-buffer-name)))
      (t (with-current-buffer buffer
-          (cond ((or (not (file-exists-p chronometrist-file))
-                     (chronometrist-common-file-empty-p chronometrist-file))
+          (cond ((or (not (file-exists-p (chronometrist-file-path)))
+                     (chronometrist-common-file-empty-p (chronometrist-file-path)))
                  ;; first run
                  (chronometrist-backend-create-file chronometrist-backend-current)
                  (let ((inhibit-read-only t))
@@ -461,7 +461,7 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
                      (chronometrist-goto-last-task))))
           (unless chronometrist--fs-watch
             (setq chronometrist--fs-watch
-                  (file-notify-add-watch chronometrist-file '(change) #'chronometrist-refresh-file))))))))
+                  (file-notify-add-watch (chronometrist-file-path) '(change) #'chronometrist-refresh-file))))))))
 
 (provide 'chronometrist)
 

@@ -198,7 +198,7 @@ Argument _FS-EVENT is ignored."
   (setq revert-buffer-function #'chronometrist-report-refresh)
   (unless chronometrist--fs-watch
     (setq chronometrist--fs-watch
-          (file-notify-add-watch chronometrist-file
+          (file-notify-add-watch (chronometrist-file-path)
                                  '(change)
                                  #'chronometrist-refresh-file))))
 

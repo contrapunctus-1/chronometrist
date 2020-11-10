@@ -26,6 +26,9 @@
 ;; ## VARIABLES ##
 ;;; Code:
 
+(defun chronometrist-file-path ()
+  (concat chronometrist-file "." (oref chronometrist-backend-current :ext)))
+
 (defvar chronometrist-empty-time-string "-")
 
 (defvar chronometrist-date-re "[0-9]\\{4\\}/[0-9]\\{2\\}/[0-9]\\{2\\}")

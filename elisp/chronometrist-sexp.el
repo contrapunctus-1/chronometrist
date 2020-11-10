@@ -36,7 +36,7 @@ neatly), or falls back to `pp' if it isn't."
 ;; # Migration #
 (cl-defmethod chronometrist-backend-to-hash ((backend chronometrist-sexp) table)
   (clrhash table)
-  (chronometrist-sexp-in-file chronometrist-file
+  (chronometrist-sexp-in-file (chronometrist-file-path)
     (goto-char (point-min))
     (let ((index 0) expr pending-expr)
       (while (or pending-expr
@@ -65,11 +65,11 @@ neatly), or falls back to `pp' if it isn't."
 
 ;; # Queries #
 (cl-defmethod chronometrist-backend-open-file ((backend chronometrist-sexp))
-  (find-file-other-window chronometrist-file)
+  (find-file-other-window (chronometrist-file-path))
   (goto-char (point-max)))
 
 (cl-defmethod chronometrist-backend-latest-record ((backend chronometrist-sexp))
-  (chronometrist-sexp-in-file chronometrist-file
+  (chronometrist-sexp-in-file (chronometrist-file-path)
     (goto-char (point-max))
     (backward-list)
     (ignore-errors (read (current-buffer)))))
@@ -81,12 +81,12 @@ neatly), or falls back to `pp' if it isn't."
 
 ;; # Modifications #
 (cl-defmethod chronometrist-backend-create-file ((backend chronometrist-sexp))
-  (unless (file-exists-p chronometrist-file)
-    (with-current-buffer (find-file-noselect chronometrist-file)
-      (write-file chronometrist-file))))
+  (unless (file-exists-p (chronometrist-file-path))
+    (with-current-buffer (find-file-noselect (chronometrist-file-path))
+      (write-file (chronometrist-file-path)))))
 
-(cl-defmethod chronometrist-backend-add-new ((backend chronometrist-sexp) plist)
-  (chronometrist-sexp-in-file chronometrist-file
+(cl-defmethod chronometrist-backend-new-record ((backend chronometrist-sexp) plist)
+  (chronometrist-sexp-in-file (chronometrist-file-path)
     (goto-char (point-max))
     ;; If we're adding the first s-exp in the file, don't add a
     ;; newline before it
@@ -108,7 +108,7 @@ neatly), or falls back to `pp' if it isn't."
     (delete-region point-1 (point))))
 
 (cl-defmethod chronometrist-backend-replace-last ((backend chronometrist-sexp) plist)
-  (chronometrist-sexp-in-file chronometrist-file
+  (chronometrist-sexp-in-file (chronometrist-file-path)
     (goto-char (point-max))
     (unless (and (bobp) (bolp))
       (insert "\n"))

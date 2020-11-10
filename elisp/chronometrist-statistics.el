@@ -228,7 +228,7 @@ value of `revert-buffer-function'."
   (setq revert-buffer-function #'chronometrist-statistics-refresh)
   (unless chronometrist--fs-watch
     (setq chronometrist--fs-watch
-          (file-notify-add-watch chronometrist-file
+          (file-notify-add-watch (chronometrist-file-path)
                                  '(change)
                                  #'chronometrist-refresh-file))))
 
