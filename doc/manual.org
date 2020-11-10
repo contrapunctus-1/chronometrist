@@ -32,14 +32,14 @@ All of these are optional, but recommended for the best experience.
     2. Incentivize use
        * Hooks allow the time tracker to automate tasks and become a useful part of your workflow
     3. Make it easy to edit data using existing, familiar tools
-       * We don't use an SQL database, where changing a single field is tricky [1]
+       * We don't use an SQL database, where changing a single field is tricky [fn:1]
        * We use a text file containing s-expressions (easy for humans to read and write)
        * We use ISO-8601 for timestamps (easy for humans to read and write) rather than UNIX epoch time
     4. Reduce human errors in tracking
     5. Have a useful, informative, interactive interface
     6. Support mouse and keyboard use equally
 
-    [1] I still have doubts about this. Having SQL as a query language would be very useful in perusing the stored data. Maybe we should have tried to create a companion mode to edit SQL databases interactively?
+[fn:1] I still have doubts about this. Having SQL as a query language would be very useful in perusing the stored data. Maybe we should have tried to create a companion mode to edit SQL databases interactively?
 
 ** Terminology
 :PROPERTIES:
@@ -84,7 +84,7 @@ One of the earliest 'optimizations' of great importance turned out to simply be 
 + It was fixed in v0.2.2 by making the watch creation conditional, using [[file:../elisp/chronometrist-common.el::defvar chronometrist--fs-watch ][=chronometrist--fs-watch=]] to store the watch object.
 
 **** Preserve state
-The next one was released in v0.5. Till then, any time the [[file:../elisp/chronometrist-custom.el::defcustom chronometrist-file (][=chronometrist-file=]] was modified, we'd clear the [[file:../elisp/chronometrist-events.el::defvar chronometrist-events (][=chronometrist-events=]] hash table and read data into it again. The reading itself is nearly-instant, even with ~2 years' worth of data [fn:1] (it uses Emacs' [[elisp:(describe-function 'read)][=read=]], after all), but the splitting of [[* Midnight-spanning events][midnight-spanning events]] is the real performance killer.
+The next one was released in v0.5. Till then, any time the [[file:../elisp/chronometrist-custom.el::defcustom chronometrist-file (][=chronometrist-file=]] was modified, we'd clear the [[file:../elisp/chronometrist-events.el::defvar chronometrist-events (][=chronometrist-events=]] hash table and read data into it again. The reading itself is nearly-instant, even with ~2 years' worth of data [fn:2] (it uses Emacs' [[elisp:(describe-function 'read)][=read=]], after all), but the splitting of [[* Midnight-spanning events][midnight-spanning events]] is the real performance killer.
 
 After the optimization...
 1. Two backend functions ([[file:../elisp/chronometrist-sexp.el::cl-defmethod chronometrist-new (][=chronometrist-new=]] and [[file:../elisp/chronometrist-sexp.el::cl-defmethod chronometrist-replace-last (][=chronometrist-replace-last=]]) were modified to set a flag ([[file:../elisp/chronometrist.el::defvar chronometrist--inhibit-read-p ][=chronometrist--inhibit-read-p=]]) before saving the file.
@@ -96,16 +96,16 @@ After the optimization...
 
 There are still some operations which [[file:../elisp/chronometrist.el::defun chronometrist-refresh-file (][=chronometrist-refresh-file=]] runs unconditionally - which is to say there is scope for further optimization, if or when required.
 
-[fn:1] As indicated by exploratory work in the =parsimonious-reading= branch, where I made a loop to only =read= and collect s-expressions from the file. It was near-instant...until I added event splitting to it.
+[fn:2] As indicated by exploratory work in the =parsimonious-reading= branch, where I made a loop to only =read= and collect s-expressions from the file. It was near-instant...until I added event splitting to it.
 
 *** Backends
 Chronometrist can currently store data in two ways -
 1. as plists in a plain text file, using the s-expression backend.
 2. as an SQL database, using the sqlite3 backend.
 
-Backends are defined as subclasses of the class =chronometrist-backend= [fn:1].
+Backends are defined as subclasses of the class =chronometrist-backend= [fn:3].
 
-[fn:1] I wouldd have liked to define them as instances of =chronometrist-backend=, but EIEIO, unlike CLOS, does not support EQL specialization.
+[fn:3] I would have liked to define them as instances of =chronometrist-backend=, but EIEIO, unlike CLOS, does not support EQL specialization.
 ** Midnight-spanning events
 :PROPERTIES:
 :DESCRIPTION: Events starting on one day and ending on another
@@ -164,11 +164,11 @@ A quick description, starting from the first time [[file:../elisp/chronometrist-
 :END:
 [[file:../elisp/chronometrist-key-values.el][chronometrist-key-values.el]] deals with adding additional information to events, in the form of key-values and tags.
 
-Key-values are stored as plist keywords and values. The user can add any keywords except =:name=, =:tags=, =:start=, and =:stop=. [fn:2] Values can be any readable Lisp values.
+Key-values are stored as plist keywords and values. The user can add any keywords except =:name=, =:tags=, =:start=, and =:stop=. [fn:4] Values can be any readable Lisp values.
 
 Similarly, tags are stored using a =:tags (<tag>*)= keyword-value pair. The tags themselves (the elements of the list) can be any readable Lisp value.
 
-[fn:2] To remove this restriction, I had briefly considered making a keyword called =:user=, whose value would be another plist containing all user-defined keyword-values. But in practice, this hasn't been a big enough issue yet to justify the work.
+[fn:4] To remove this restriction, I had briefly considered making a keyword called =:user=, whose value would be another plist containing all user-defined keyword-values. But in practice, this hasn't been a big enough issue yet to justify the work.
 *** User input
 The entry points are [[file:../elisp/chronometrist-key-values.el::defun chronometrist-kv-add (][=chronometrist-kv-add=]] and [[file:../elisp/chronometrist-key-values.el::defun chronometrist-tags-add (][=chronometrist-tags-add=]]. The user adds these to the desired hooks, and they prompt the user for tags/key-values.
 
@@ -230,6 +230,7 @@ Each of these has a corresponding function to clear it and fill it with values -
 9. Generic Function - chronometrist-backend-create-file (backend)
 10. Generic Function - chronometrist-backend-add-new (backend plist)
 11. Generic Function - chronometrist-backend-replace-last (backend plist)
+
 ** chronometrist-common.el
 1.  Variable - chronometrist-empty-time-string
 2.  Variable - chronometrist-date-re

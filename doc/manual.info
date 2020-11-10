@@ -171,7 +171,7 @@ Hooks allow the time tracker to automate tasks and become a useful part of your 
 Make it easy to edit data using existing, familiar tools
 @itemize
 @item
-We don't use an SQL database, where changing a single field is tricky [1]
+We don't use an SQL database, where changing a single field is tricky @footnote{I still have doubts about this. Having SQL as a query language would be very useful in perusing the stored data. Maybe we should have tried to create a companion mode to edit SQL databases interactively?}
 @item
 We use a text file containing s-expressions (easy for humans to read and write)
 @item
@@ -184,8 +184,6 @@ Have a useful, informative, interactive interface
 @item
 Support mouse and keyboard use equally
 @end enumerate
-
-[1] I still have doubts about this. Having SQL as a query language would be very useful in perusing the stored data. Maybe we should have tried to create a companion mode to edit SQL databases interactively?
 
 @node Terminology
 @section Terminology
@@ -292,7 +290,7 @@ as plists in a plain text file, using the s-expression backend.
 as an SQL database, using the sqlite3 backend.
 @end enumerate
 
-Backends are defined as subclasses of the class @samp{chronometrist-backend} @footnote{As indicated by exploratory work in the @samp{parsimonious-reading} branch, where I made a loop to only @samp{read} and collect s-expressions from the file. It was near-instant@dots{}until I added event splitting to it.}.
+Backends are defined as subclasses of the class @samp{chronometrist-backend} @footnote{I would have liked to define them as instances of @samp{chronometrist-backend}, but EIEIO, unlike CLOS, does not support EQL specialization.}.
 
 @node Midnight-spanning events
 @section Midnight-spanning events
