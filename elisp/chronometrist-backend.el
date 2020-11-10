@@ -50,7 +50,7 @@ there were none.")
 (cl-defgeneric chronometrist-backend-create-file (backend)
   "Create BACKEND file if it does not already exist.")
 
-(cl-defgeneric chronometrist-backend-add-new (backend plist)
+(cl-defgeneric chronometrist-backend-new-record (backend plist)
   "Use PLIST to add a new interval to BACKEND.")
 
 (cl-defgeneric chronometrist-backend-replace-last (backend plist)

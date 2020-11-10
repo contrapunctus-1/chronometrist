@@ -223,7 +223,7 @@ Argument _FS-EVENT is ignored."
 TASK is the name of the task, a string. PREFIX is ignored."
   (interactive "P")
   (let ((plist `(:name ,task :start ,(chronometrist-format-time-iso8601))))
-    (chronometrist-new chronometrist-backend-current plist)
+    (chronometrist-backend-new-record chronometrist-backend-current plist)
     (chronometrist-refresh)))
 
 (defun chronometrist-out (&optional _prefix)

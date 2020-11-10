@@ -123,7 +123,7 @@ neatly), or falls back to `pp' if it isn't."
     ;; :name should be removed from `chronometrist-task-list', but to ascertain
     ;; that condition we would have to either read the entire file or
     ;; map over the hash table, defeating the optimization. Thus, we
-    ;; don't update `chronometrist-task-list' here (unlike `chronometrist-new')
+    ;; don't update `chronometrist-task-list' here (unlike `chronometrist-backend-new-record')
     (chronometrist-tags-history-replace-last plist)
     (setq chronometrist--inhibit-read-p t)
     (save-buffer)))

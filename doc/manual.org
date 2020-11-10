@@ -228,7 +228,7 @@ Each of these has a corresponding function to clear it and fill it with values -
 7. Generic Function - chronometrist-backend-latest-record (backend)
 8. Generic Function - chronometrist-backend-current-task (backend)
 9. Generic Function - chronometrist-backend-create-file (backend)
-10. Generic Function - chronometrist-backend-add-new (backend plist)
+10. Generic Function - chronometrist-backend-new-record (backend plist)
 11. Generic Function - chronometrist-backend-replace-last (backend plist)
 
 ** chronometrist-common.el
@@ -479,7 +479,7 @@ Each of these has a corresponding function to clear it and fill it with values -
    * -> plist
 9. Method - chronometrist-current-task ((backend chronometrist-sexp))
 11. Method - chronometrist-create-file ((backend chronometrist-sexp))
-12. Method - chronometrist-new (((backend chronometrist-sexp)) plist)
+12. Method - chronometrist-backend-new-record (((backend chronometrist-sexp)) plist)
 13. Function - chronometrist-sexp-delete-list (&optional arg)
 14. Method - chronometrist-replace-last (((backend chronometrist-sexp)) plist)
 15. Command - chronometrist-sexp-reindent-buffer ()

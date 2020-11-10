@@ -568,7 +568,7 @@ Generic Function - chronometrist-backend-current-task (backend)
 @item
 Generic Function - chronometrist-backend-create-file (backend)
 @item
-Generic Function - chronometrist-backend-add-new (backend plist)
+Generic Function - chronometrist-backend-new-record (backend plist)
 @item
 Generic Function - chronometrist-backend-replace-last (backend plist)
 @end enumerate
@@ -1158,7 +1158,7 @@ Method - chronometrist-current-task ((backend chronometrist-sexp))
 @item
 Method - chronometrist-create-file ((backend chronometrist-sexp))
 @item
-Method - chronometrist-new (((backend chronometrist-sexp)) plist)
+Method - chronometrist-backend-new-record (((backend chronometrist-sexp)) plist)
 @item
 Function - chronometrist-sexp-delete-list (&optional arg)
 @item
