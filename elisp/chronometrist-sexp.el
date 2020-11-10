@@ -10,17 +10,10 @@
 ;; chronometrist-file (-custom)
 ;; chronometrist-events, chronometrist-events-maybe-split (-events)
 
-(defcustom chronometrist-sexp-pretty-print-function
-  (if (featurep 'ppp)
-      (lambda (object &optional _stream)
-        (insert (ppp-plist-to-string object)))
-    #'pp)
+(defcustom chronometrist-sexp-pretty-print-function #'chronometrist-plist-pp
   "Function used to pretty print plists in `chronometrist-file'.
 Like `pp', it must accept an OBJECT and optionally a
-STREAM (which is the value of `current-buffer').
-
-Uses `ppp' if it is available (which displays plists more
-neatly), or falls back to `pp' if it isn't."
+STREAM (which is the value of `current-buffer')."
   :type 'function)
 
 (defmacro chronometrist-sexp-in-file (file &rest body)
