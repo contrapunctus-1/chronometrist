@@ -104,8 +104,6 @@ file names respectively."
                  chronometrist-migrate-table)
         (save-buffer)))))
 
-(defvar chronometrist-migrate-db (emacsql-sqlite3 (locate-user-emacs-file "chronometrist.sqlite")))
-
 (defun chronometrist-migrate-populate-sexp (in-file)
   "Read data from IN-FILE to `chronometrist-migrate-table'.
 
