@@ -290,6 +290,32 @@ as plists in a plain text file, using the s-expression backend.
 as an SQL database, using the sqlite3 backend.
 @end enumerate
 
+Each of these has areas they excel in - plain text files are VCS-friendly, permit the use of tools like @samp{grep}, and are easy to make small, one-off edits in. SQL databases support a standard and popular query language, ACID guarantees, and are easy to make sweeping changes in.
+
+To try and get the best of both, two approaches were considered -
+@enumerate
+@item
+Support for multiple simultaneous backends
+@itemize
+@item
+@samp{chronometrist-backend-list} could be a custom variable, containing a list of enabled backends
+@item
+A function like @samp{(call-with-backends generic-function &rest args)} could be created, which calls the generic-function with each backend as the first argument, and use this whenever Chronometrist makes a change to the files.
+@item
+When the user makes a change to one of the files outside of Chronometrist, we detect the change (via filesystem watchers) and propagate it to the other backends.
+@end itemize
+Consequently, a user can make quick, one-off edits to the SQL database by editing a text file, or make sweeping, structure-aware changes to the text file using SQL statements.
+@item
+SQL as the main backend, with viewing/editing UI + auto-export
+@enumerate
+@item
+Write a 'record viewer/editor' for Chronometrist records. Basically, it reads in a record from the SQL database and displays it in an editable buffer. Forward/backward commands would be available, like in @samp{chronometrist-report} and @samp{chronometrist-statistics}. The record could be represented as anything - CSV, Org markup, Lisp data, etc. The user could edit and run a command to accept the changes, which would change the database.
+@item
+Automatically export from SQL to a plain text (or other) format, whenever there is a change in the database. (probably using hooks)
+@end enumerate
+These two put together result in the viewing and editing of individual records being easier, and the plain text format can be placed in a VCS, without dealing with any synchronization issues.
+@end enumerate
+
 Backends are defined as subclasses of the class @samp{chronometrist-backend} @footnote{I would have liked to define them as instances of @samp{chronometrist-backend}, but EIEIO, unlike CLOS, does not support EQL specialization.}.
 
 @node Midnight-spanning events
