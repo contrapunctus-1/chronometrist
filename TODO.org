@@ -275,12 +275,12 @@ Elements can be
 2. a list, with the first element being the task name as a string, followed by keyword-value pairs
 
 Keywords can be
-1. =:tag-prompt=, =:key-prompt= - values can be nil, t, or a function. If nil, don't ask for tags/keys for this task. If t, ask for tags/keys for this task (the default). If it's a function, use that as the prompt.
+1. =:tag-prompt=, =:key-prompt= - values can be nil, t, or a function. If nil, don't ask for tags/keys for this task. If t (the default), ask for tags/keys for this task using =chronometrist-tags-add=/=chronometrist-key-add=. If it's a function, use that as the prompt.
 ...
 
 Useful for
 1. Adding tasks without clocking into them (the list is stored in a separate file)
-2. Not asking for tags and/or key-values for a particular task
+2. Not asking for tags and/or key-values for a particular task, or having a special behaviour for a task. (e.g. some tasks I use follow certain patterns, which I'd like to automate away)
 
 ** UX [0%]
 1. [ ] Provide a command which tries to auto-configure Chronometrist keys in a way which is consistent with the user's other keymaps.
