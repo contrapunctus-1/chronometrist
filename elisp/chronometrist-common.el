@@ -140,10 +140,12 @@ If the day of TS is the same as the
 `chronometrist-report-week-start-day', return TS.
 
 TS must be a ts struct (see `ts.el')."
-  (cl-loop until (equal chronometrist-report-week-start-day
-                        (ts-day-name ts))
-           do (ts-decf (ts-day ts))
-           finally return ts))
+  (cl-loop
+    with week-start =
+    (alist-get chronometrist-report-week-start-day chronometrist-report-weekday-number-alist nil nil #'equal)
+    until (= week-start (ts-dow ts))
+    do (ts-decf (ts-day ts))
+    finally return ts))
 
 (provide 'chronometrist-common)
 
