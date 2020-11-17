@@ -27,6 +27,7 @@
 ;;; Code:
 
 (defun chronometrist-file-path ()
+  "Return the full storage path for the current backend."
   (concat chronometrist-file "." (oref chronometrist-backend-current :ext)))
 
 (defvar chronometrist-empty-time-string "-")

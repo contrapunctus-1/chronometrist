@@ -37,11 +37,11 @@ there were none.")
   "Fill BACKEND using TABLE.")
 
 ;; # Queries #
-(cl-defgeneric chronometrist-backend-open-file (backend)
+(cl-defgeneric chronometrist-backend-open-file (backend file)
   "Open the storage file associated with BACKEND.")
 
-(cl-defgeneric chronometrist-backend-latest-record (backend)
-  "Return the latest record from BACKEND.")
+(cl-defgeneric chronometrist-backend-latest-record (backend file)
+  "Return the latest record from FILE of BACKEND.")
 
 (cl-defgeneric chronometrist-backend-current-task (backend)
   "Return the name of the currently clocked-in task, or nil if not clocked in.")
@@ -53,8 +53,8 @@ there were none.")
 (cl-defgeneric chronometrist-backend-new-record (backend plist)
   "Use PLIST to add a new interval to BACKEND.")
 
-(cl-defgeneric chronometrist-backend-replace-last (backend plist)
-  "Replace the latest record in BACKEND with PLIST.")
+(cl-defgeneric chronometrist-backend-replace-last (backend file plist)
+  "Replace the latest record in FILE of BACKEND with PLIST.")
 
 (provide 'chronometrist-backend)
 

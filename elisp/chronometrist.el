@@ -89,7 +89,7 @@
 Argument _BUTTON is for the purpose of using this command as a
 button action."
   (interactive)
-  (chronometrist-backend-open-file chronometrist-backend-current))
+  (chronometrist-backend-open-file chronometrist-backend-current (chronometrist-file-path)))
 
 (defun chronometrist-task-active? (task)
   "Return t if TASK is currently clocked in, else nil."
@@ -231,7 +231,7 @@ TASK is the name of the task, a string. PREFIX is ignored."
 PREFIX is ignored."
   (interactive "P")
   (let ((plist (plist-put (chronometrist-backend-latest-record chronometrist-backend-current) :stop (chronometrist-format-time-iso8601))))
-    (chronometrist-backend-replace-last chronometrist-backend-current plist)))
+    (chronometrist-backend-replace-last chronometrist-backend-current (chronometrist-file-path) plist)))
 
 ;; ## HOOKS ##
 (defvar chronometrist-mode-hook nil

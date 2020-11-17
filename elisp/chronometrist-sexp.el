@@ -57,7 +57,7 @@ STREAM (which is the value of `current-buffer')."
 (cl-defmethod chronometrist-backend-from-hash ((backend chronometrist-sexp) table))
 
 ;; # Queries #
-(cl-defmethod chronometrist-backend-open-file ((backend chronometrist-sexp))
+(cl-defmethod chronometrist-backend-open-file ((backend chronometrist-sexp) file)
   (find-file-other-window (chronometrist-file-path))
   (goto-char (point-max)))
 
@@ -100,7 +100,7 @@ STREAM (which is the value of `current-buffer')."
     (forward-sexp (or arg 1))
     (delete-region point-1 (point))))
 
-(cl-defmethod chronometrist-backend-replace-last ((backend chronometrist-sexp) plist)
+(cl-defmethod chronometrist-backend-replace-last ((backend chronometrist-sexp) file plist)
   (chronometrist-sexp-in-file (chronometrist-file-path)
     (goto-char (point-max))
     (unless (and (bobp) (bolp))
