@@ -17,7 +17,12 @@
     :type string
     :documentation
     "The extension used by a file of this backend, without a leading period."
-    :initform "")))
+    :initform "")
+   (file :initarg :file)))
+
+(cl-defmethod initialize-instance :after ((backend chronometrist-backend) &rest)
+  (setf (oref backend :file)
+        (format "%s.%s" chronometrist-file (oref backend :ext))))
 
 (defvar chronometrist-backend-current nil
   "The current backend in use.")
