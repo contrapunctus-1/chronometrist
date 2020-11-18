@@ -59,6 +59,14 @@
 
 ;; ## VARIABLES ##
 
+(defgroup chronometrist-statistics nil
+  "Statistics buffer for the `chronometrist' time tracker."
+  :group 'chronometrist)
+
+(defcustom chronometrist-statistics-buffer-name "*Chronometrist-Statistics*"
+  "The name of the buffer created by `chronometrist-statistics'."
+  :type 'string)
+
 (defvar chronometrist-statistics--ui-state nil
   "Stores the display state for `chronometrist-statistics'.
 
