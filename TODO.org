@@ -262,6 +262,10 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
    10. [ ] =chronometrist-timer= - if =chronometrist-file= is being edited (buffer exists and modified), don't refresh - this will (hopefully) prevent Emacs from going crazy with errors in trying to parse malformed data.
 
 * Maybe [0%]
+** features [0%]
+1. [ ] 'input frontends' - a way to represent s-expressions as Markdown, Org, etc, so the entire plist can be edited in that mode.
+   * As a side-effect, this will permit use of Markdown, Org, etc in keyword-values - e.g. to use markup in comments or notes.
+
 ** plist-pp
 1. Represent sublists by depth (integer) instead of a boolean.
 ** a task list
@@ -275,7 +279,8 @@ Elements can be
 2. a list, with the first element being the task name as a string, followed by keyword-value pairs
 
 Keywords can be
-1. =:tag-prompt=, =:key-prompt= - values can be nil, t, or a function. If nil, don't ask for tags/keys for this task. If t (the default), ask for tags/keys for this task using =chronometrist-tags-add=/=chronometrist-key-add=. If it's a function, use that as the prompt.
+1. =:tag-prompt=, =:key-prompt= - values can be nil, t (the default), or a function. If nil, don't ask for tags/keys for this task. If t, ask for tags/keys for this task using =chronometrist-tags-add=/=chronometrist-key-add=. If it's a function, use that as the prompt.
+2. =:hide= - values can be nil (the default) or t - if t, hide this task from being displayed in =chronometrist=/=chronometrist-report=/=chronometrist-statistics= buffers. (effectively a non-destructive deletion of all intervals of the task)
 ...
 
 Useful for
