@@ -3,9 +3,12 @@
 ;;; Commentary:
 ;;
 
+<<<<<<< HEAD
 (require 'chronometrist-backend)
 (require 'chronometrist-custom)
 
+=======
+>>>>>>> dev
 ;;; Code:
 
 ;; chronometrist-file (-custom)

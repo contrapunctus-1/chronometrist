@@ -171,7 +171,18 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
    : (foo (1 . bar))
    Yikes!
 
-** chronometrist [7%]
+** New features [0%]
+1. [ ] undo/redo (by running undo-tree commands on chronometrist.sexp)
+   * [ ] Possibly show what changes would be made, and prompt the user to confirm it.
+   * How will this work with the SQLite backend? Rollbacks?
+   * It might be easier to just have a 'remove last interval' (the operation I use undo for most often), so we don't reimplement an undo for SQLite.
+2. [ ] *Convert* current interval - change the =:name= of the currently clocked-in interval. Tags and key-values may be re-queried. Clock-in hook functions will be run again with the new task as the argument.
+3. [ ] *Rename* a project (updating all records)
+4. [ ] *Delete* a project (erasing all records)
+5. [ ] *Hide* a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
+6. [ ] *Reset* current interval - update the =:start= time to the current time.
+
+** chronometrist [16%]
 1. [ ] Add =:stop= time when we call =chronometrist-kv-accept=, not when we quit the key-value prompt with a blank input.
    * It might be nice to be able to quit =chronometrist-kv-add= with C-g instead, actually.
      + =C-g= stops execution of =chronometrist-run-functions-and-clock-in=/=chronometrist-run-functions-and-clock-out=, so they can't reach the calls for =chronometrist-in=/=chronometrist-out=.
@@ -180,28 +191,19 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
        - What if we call =chronometrist-before-out-functions= with =run-hook-with-args= like all other hooks, so it runs all functions unconditionally and any function wishing to abort clocking in/out can use catch/throw?
 
          =chronometrist-kv-add= could quit nonlocally when the user enters a blank input (or hits C-g? Maybe by using =unwind-protect=?), cancelling the clock in/out, and thereby letting =chronometrist-kv-accept= resume clock in/out. (It can determine whether to clock in or out using =chronometrist-current-task=)
-2. [ ] Implement undo/redo by running undo-tree commands on chronometrist.sexp
-   * [ ] Possibly show what changes would be made, and prompt the user to confirm it.
-   * How will this work with the SQLite backend?
-   * It might be easier to just have a 'remove last interval' (the operation I use undo for most often), so we don't reimplement an undo for SQLite.
-3. [ ] *Convert* current interval - change the =:name= of the currently clocked-in interval. Tags and key-values may be re-queried. Clock-in hook functions will be run again with the new task as the argument.
-4. [ ] *Rename* a project (updating all records)
-5. [ ] *Delete* a project (erasing all records)
-6. [ ] *Hide* a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
-7. [ ] *Reset* current interval - update the =:start= time to the current time.
-8. [X] Enhanced tag/key-value prompt - before asking for tags/key-values, if the last occurence of task had tags/key-values, ask if they should be reused. y - yes, n - no (continue to usual prompts).
+2. [X] Enhanced tag/key-value prompt - before asking for tags/key-values, if the last occurence of task had tags/key-values, ask if they should be reused. y - yes, n - no (continue to usual prompts).
    * [X] Show what those tags/key-values are, so the user knows what will be added.
-9. [ ] Expandable items - show intervals for task today
+3. [ ] Expandable items - show intervals for task today
    * [ ] Switch between intervals and tag-combination breakdown
-10. [ ] Magit integration
-    * [ ] Add support for using key-values to point to a commit (commit hash + repo path?)
-      + Need some way to extend the key-value prompt, so we can provide completion for commit hashes + commit messages...
-    * [ ] Add command to open the commit associated with the interval in Magit
-    * [ ] Make a user-customizable alist of project names and repo locations (local or remote), so shorter project names can be used instead of repo locations, saving space and reducing duplication.
-11. [ ] Pretty printer - add support for alists as values
-12. [ ] key-values - make detection of Lisp values more robust.
-    * If the input string can be read in a single call to =read=, treat it as an s-expression; else, use the current heuristics.
-13. [ ] key-values - create transformer for key-values, to be run before they are added to the file. This will allow users to do things like sorting the key-values.
+4. [ ] Magit/other VCS integration
+   * [ ] Add support for using key-values to point to a commit (commit hash + repo path?)
+     + Need some way to extend the key-value prompt, so we can provide completion for commit hashes + commit messages...
+   * [ ] Add command to open the commit associated with the interval in Magit
+   * [ ] Make a user-customizable alist of project names and repo locations (local or remote), so shorter project names can be used instead of repo locations, saving space and reducing duplication.
+5. [ ] key-values - make detection of Lisp values more robust.
+   * If the input string can be read in a single call to =read=, treat it as an s-expression; else, use the current heuristics.
+6. [ ] key-values - create transformer for key-values, to be run before they are added to the file. This will allow users to do cool things like sorting the key-values.
+
 *** Migration [0%]
 1. [ ] Implement readers (format -> hash table), emitters (hash table -> format), and predicates for each format. Then implement a single =migrate= command to convert between any supported formats.
    * sounds like a job for EIEIO - each format could be defined as an object, with slots for information such as the file extension.
@@ -209,6 +211,7 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
 3. [ ] Make migration asynchronous, and use output from the sub-process to make a progress indicator.
 4. [ ] Optimization - (SQL) read all keywords once, remove duplicates, and create columns for them, instead of checking =pragma= for each plist.
 5. [ ] (SQL) Use transactions.
+
 ** chronometrist-report [0%]
 1. [ ] Show week counter and max weeks; don't scroll past first/last weeks
 2. [ ] Highlight column of current day
@@ -220,8 +223,8 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
 1. [ ] Remove duplication between =chronometrist-toggle-task= and =chronometrist-toggle-task-button=
 2. [ ] Make functions more test-friendly. Quite a few can get away with returning values instead of writing to a file - this will make it easier to test them. Other functions can handle the file operations for them.
 3. [ ] Rewrite using cl-loop
-   1. [ ] chronometrist-statistics-entries-internal
-   2. [ ] chronometrist-statistics-count-active-days
+   1. [ ] =chronometrist-statistics-entries-internal=
+   2. [ ] =chronometrist-statistics-count-active-days=
 4. [ ] Write integration tests using ecukes.
    1. Some feature definitions already exist in features/, write step definitions for them.
 5. [ ] Remove duplication - the three =chronometrist-*-history-populate= functions seem to have a common pattern of iterating over each hash value (a list of plists) in =chronometrist-events=, and over each element of that list.
@@ -268,26 +271,36 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
    10. [ ] =chronometrist-timer= - if =chronometrist-file= is being edited (buffer exists and modified), don't refresh - this will (hopefully) prevent Emacs from going crazy with errors in trying to parse malformed data.
 
 * Maybe [0%]
+** New features [0%]
+1. [ ] Some way to use markup (Markdown, Org, etc) for certain plist values.
+   Implementation ideas -
+   * A list of keys whose values are to be edited in a user-specified major mode.
+   * "Input frontends" - a way to represent s-expressions as Markdown, Org, etc, so the entire plist can be edited in that mode. As a side-effect, this will permit use of Markdown, Org, etc in keyword-values - e.g. to use markup in comments or notes.
+   * A binding in the key-value buffer, which will insert the string at point in a buffer of a certain mode.
+2. [ ] A custom variable containing a list of tasks
+   #+BEGIN_SRC
+   ("A Task Name"
+    ("Another Task Name" :key-prompt nil)
+    ...)
+   #+END_SRC
+
+   Elements can be
+   1. the task name as a string
+   2. a list, with the first element being the task name as a string, followed by keyword-value pairs
+
+   Keywords can be
+   1. =:tag-prompt=, =:key-prompt= - values can be nil, t (the default), or a function. If nil, don't ask for tags/keys for this task. If t, ask for tags/keys for this task using =chronometrist-tags-add=/=chronometrist-key-add=. If it's a function, use that as the prompt.
+   2. =:hide= - values can be nil (the default) or t - if t, hide this task from being displayed in =chronometrist=/=chronometrist-report=/=chronometrist-statistics= buffers. (effectively a non-destructive deletion of all intervals of the task)
+   ...
+
+   Useful for
+   1. Adding tasks without clocking into them (the list is stored in a separate file)
+   2. Not asking for tags and/or key-values for a particular task, or having a special behaviour for a task. (e.g. some tasks I use follow certain patterns, which I'd like to automate away)
+3. [ ] Completion for sub-plists - if the value of a user keyword-value pair is a plist (heuristic - list with keyword as first element), can we reuse the keyword-value prompt for it? 🤔
+   * Maybe generate the completion hash table when the plist is created, since this is likely to be less-used.
+
 ** plist-pp
 1. Represent sublists by depth (integer) instead of a boolean.
-** a task list
-#+BEGIN_SRC
-("A Task"
- ("Another Task" :key-prompt nil))
-#+END_SRC
-
-Elements can be
-1. the task name as a string
-2. a list, with the first element being the task name as a string, followed by keyword-value pairs
-
-Keywords can be
-1. =:tag-prompt=, =:key-prompt= - values can be nil, t, or a function. If nil, don't ask for tags/keys for this task. If t (the default), ask for tags/keys for this task using =chronometrist-tags-add=/=chronometrist-key-add=. If it's a function, use that as the prompt.
-...
-
-Useful for
-1. Adding tasks without clocking into them (the list is stored in a separate file)
-2. Not asking for tags and/or key-values for a particular task, or having a special behaviour for a task. (e.g. some tasks I use follow certain patterns, which I'd like to automate away)
-
 ** UX [0%]
 1. [ ] Provide a command which tries to auto-configure Chronometrist keys in a way which is consistent with the user's other keymaps.
 2. [ ] Do basic checks on values of all customizable variables when they are changed by the user, and provide meaningful errors if they can't be used by the program.
@@ -301,8 +314,6 @@ Useful for
 4. [ ] Tag-sensitive key suggestions, tag-sensitive value suggestions...?
    * Might complicate things quite a bit.
    * Lack of task-sensitive value suggestions (#3) is an inconsistency, because tags and keys are already task-sensitive. From that perspective, tag-sensitive key and value suggestions are a whole new can of worms.
-5. If the value of a user keyword-value pair is a plist (heuristic - list with keyword as first element), can we reuse the keyword-value prompt for it? Currently such sub-plists don't get any completion 🤔
-   * Maybe generate the completion hash table when the plist is created, since this is likely to be less-used.
 6. Change precision of timestamps from seconds to minutes. (like Org)
 
 ** chronometrist-report [0%]
