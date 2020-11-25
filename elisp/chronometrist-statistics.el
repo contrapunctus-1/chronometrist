@@ -22,7 +22,6 @@
 (require 'chronometrist-time)
 (require 'chronometrist-timer)
 (require 'chronometrist-events)
-(require 'chronometrist-statistics-custom)
 (require 'chronometrist-migrate)
 (require 'chronometrist-queries)
 

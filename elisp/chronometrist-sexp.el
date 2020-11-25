@@ -3,8 +3,6 @@
 ;;; Commentary:
 ;;
 
-(require 'chronometrist-custom)
-
 ;;; Code:
 
 ;; chronometrist-file (-custom)

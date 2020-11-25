@@ -19,7 +19,6 @@
 (require 'run-transformers)
 
 (require 'chronometrist-common)
-(require 'chronometrist-custom)
 (require 'chronometrist-key-values)
 (require 'chronometrist-queries)
 (require 'chronometrist-migrate)

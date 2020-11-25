@@ -15,9 +15,6 @@
 ;;
 
 ;;; Code:
-(require 'chronometrist-custom)
-(require 'chronometrist-statistics-custom)
-(require 'chronometrist-report-custom)
 (require 'chronometrist)
 
 (declare-function chronometrist-refresh "chronometrist.el")

@@ -18,8 +18,6 @@
 (require 'cl-lib)
 (require 'ts)
 
-(require 'chronometrist-custom)
-(require 'chronometrist-report-custom)
 (require 'chronometrist-time)
 (require 'chronometrist-sexp)
 
