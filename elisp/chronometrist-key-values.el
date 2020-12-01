@@ -1,18 +1,5 @@
 ;;; chronometrist-key-values.el --- add key-values to Chronometrist data -*- lexical-binding: t; -*-
 
-(require 'cl-lib)
-(require 'subr-x)
-(require 'dash)
-(require 'seq)
-(require 'anaphora)
-
-(require 'chronometrist-migrate)
-(require 'chronometrist-events)
-(require 'chronometrist-plist-pp)
-(require 'chronometrist-common)
-
-(declare-function chronometrist-refresh "chronometrist.el")
-
 ;; This is free and unencumbered software released into the public domain.
 ;;
 ;; Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -27,7 +14,17 @@
 
 ;;; Code:
 
-(require 'chronometrist-sexp)
+(require 'cl-lib)
+(require 'subr-x)
+(require 'dash)
+(require 'seq)
+(require 'anaphora)
+
+(require 'chronometrist-migrate)
+(require 'chronometrist-events)
+(require 'chronometrist-plist-pp)
+
+(declare-function chronometrist-refresh "chronometrist.el")
 
 (defvar chronometrist--tag-suggestions nil
   "Suggestions for tags.

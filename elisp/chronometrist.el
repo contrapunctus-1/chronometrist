@@ -23,7 +23,6 @@
 (require 'chronometrist-queries)
 (require 'chronometrist-migrate)
 (require 'chronometrist-backend)
-(require 'chronometrist-sexp)
 
 ;; This is free and unencumbered software released into the public domain.
 ;;

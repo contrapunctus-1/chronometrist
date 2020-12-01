@@ -19,7 +19,6 @@
 (require 'ts)
 
 (require 'chronometrist-time)
-(require 'chronometrist-sexp)
 
 ;; ## VARIABLES ##
 ;;; Code:

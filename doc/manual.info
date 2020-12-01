@@ -67,17 +67,14 @@ Reference
 * Legend of currently-used time formats::
 * chronometrist-backend.el: chronometrist-backendel.
 * chronometrist-common.el: chronometrist-commonel.
-* chronometrist-custom.el: chronometrist-customel.
 * chronometrist-diary-view.el: chronometrist-diary-viewel.
 * chronometrist.el: chronometristel.
 * chronometrist-events.el: chronometrist-eventsel.
 * chronometrist-migrate.el: chronometrist-migrateel.
 * chronometrist-plist-pp.el: chronometrist-plist-ppel.
 * chronometrist-queries.el: chronometrist-queriesel.
-* chronometrist-report-custom.el: chronometrist-report-customel.
 * chronometrist-report.el: chronometrist-reportel.
 * chronometrist-key-values.el: chronometrist-key-valuesel.
-* chronometrist-statistics-custom.el: chronometrist-statistics-customel.
 * chronometrist-statistics.el: chronometrist-statisticsel.
 * chronometrist-time.el: chronometrist-timeel.
 * chronometrist-timer.el: chronometrist-timerel.
@@ -479,17 +476,14 @@ Each of these has a corresponding function to clear it and fill it with values -
 * Legend of currently-used time formats::
 * chronometrist-backend.el: chronometrist-backendel.
 * chronometrist-common.el: chronometrist-commonel.
-* chronometrist-custom.el: chronometrist-customel.
 * chronometrist-diary-view.el: chronometrist-diary-viewel.
 * chronometrist.el: chronometristel.
 * chronometrist-events.el: chronometrist-eventsel.
 * chronometrist-migrate.el: chronometrist-migrateel.
 * chronometrist-plist-pp.el: chronometrist-plist-ppel.
 * chronometrist-queries.el: chronometrist-queriesel.
-* chronometrist-report-custom.el: chronometrist-report-customel.
 * chronometrist-report.el: chronometrist-reportel.
 * chronometrist-key-values.el: chronometrist-key-valuesel.
-* chronometrist-statistics-custom.el: chronometrist-statistics-customel.
 * chronometrist-statistics.el: chronometrist-statisticsel.
 * chronometrist-time.el: chronometrist-timeel.
 * chronometrist-timer.el: chronometrist-timerel.
@@ -649,24 +643,6 @@ ts -> ts
 @end itemize
 @end enumerate
 
-@node chronometrist-customel
-@section chronometrist-custom.el
-
-@enumerate
-@item
-Custom variable - chronometrist-file
-@item
-Custom variable - chronometrist-buffer-name
-@item
-Custom variable - chronometrist-hide-cursor
-@item
-Custom variable - chronometrist-update-interval
-@item
-Custom variable - chronometrist-activity-indicator
-@item
-Custom variable - chronometrist-day-start-time
-@end enumerate
-
 @node chronometrist-diary-viewel
 @section chronometrist-diary-view.el
 
@@ -691,6 +667,18 @@ Command - chronometrist-diary-view (&optional date)
 @section chronometrist.el
 
 @enumerate
+@item
+Custom variable - chronometrist-file
+@item
+Custom variable - chronometrist-buffer-name
+@item
+Custom variable - chronometrist-hide-cursor
+@item
+Custom variable - chronometrist-update-interval
+@item
+Custom variable - chronometrist-activity-indicator
+@item
+Custom variable - chronometrist-day-start-time
 @item
 Internal Variable - chronometrist--task-history
 @item
@@ -867,8 +855,8 @@ Function - chronometrist-statistics-count-active-days (task &optional (table chr
 Function - chronometrist-task-events-in-day (task ts)
 @end enumerate
 
-@node chronometrist-report-customel
-@section chronometrist-report-custom.el
+@node chronometrist-reportel
+@section chronometrist-report.el
 
 @enumerate
 @item
@@ -877,12 +865,6 @@ Custom variable - chronometrist-report-buffer-name
 Custom variable - chronometrist-report-week-start-day
 @item
 Custom variable - chronometrist-report-weekday-number-alist
-@end enumerate
-
-@node chronometrist-reportel
-@section chronometrist-report.el
-
-@enumerate
 @item
 Internal Variable - chronometrist-report--ui-date
 @item
@@ -993,18 +975,12 @@ Function - chronometrist-skip-query-prompt (task)
 Function - chronometrist-skip-query-reset (@math{_task})
 @end enumerate
 
-@node chronometrist-statistics-customel
-@section chronometrist-statistics-custom.el
-
-@enumerate
-@item
-Custom variable - chronometrist-statistics-buffer-name
-@end enumerate
-
 @node chronometrist-statisticsel
 @section chronometrist-statistics.el
 
 @enumerate
+@item
+Custom variable - chronometrist-statistics-buffer-name
 @item
 Internal Variable - chronometrist-statistics--ui-state
 @item

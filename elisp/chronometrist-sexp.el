@@ -3,17 +3,13 @@
 ;;; Commentary:
 ;;
 
-<<<<<<< HEAD
-(require 'chronometrist-backend)
-(require 'chronometrist-custom)
-
-=======
->>>>>>> dev
 ;;; Code:
 
 ;; chronometrist-file (-custom)
 ;; chronometrist-events, chronometrist-events-maybe-split (-events)
 
+(require 'chronometrist)
+(require 'chronometrist-backend)
 (defclass chronometrist-sexp (chronometrist-backend) nil)
 (defvar chronometrist-sexp-backend (make-instance chronometrist-sexp :name "sexp" :ext "sexp"))
 

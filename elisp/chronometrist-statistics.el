@@ -20,7 +20,6 @@
 
 (require 'chronometrist-common)
 (require 'chronometrist-time)
-(require 'chronometrist-timer)
 (require 'chronometrist-events)
 (require 'chronometrist-migrate)
 (require 'chronometrist-queries)
@@ -232,6 +231,10 @@ value of `revert-buffer-function'."
   (setq tabulated-list-sort-key '("Task" . nil))
   (tabulated-list-init-header)
   ;; (chronometrist-maybe-start-timer)
+  (add-hook 'chronometrist-timer-hook
+            (lambda ()
+              (when (get-buffer-window chronometrist-statistics-buffer-name)
+                (chronometrist-statistics-refresh))))
   (setq revert-buffer-function #'chronometrist-statistics-refresh)
   (unless chronometrist--fs-watch
     (setq chronometrist--fs-watch

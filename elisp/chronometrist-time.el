@@ -2,12 +2,6 @@
 
 ;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
 
-(require 'parse-time)
-(require 'dash)
-(require 's)
-
-(declare-function chronometrist-day-start "chronometrist-events.el")
-
 ;; This is free and unencumbered software released into the public domain.
 ;;
 ;; Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,6 +17,11 @@
 ;; which ones those are.
 
 ;;; Code:
+(require 'parse-time)
+(require 'dash)
+(require 's)
+
+(declare-function chronometrist-day-start "chronometrist-events.el")
 
 (defun chronometrist-iso-timestamp->ts (timestamp)
   "Return new ts struct, parsing TIMESTAMP with `parse-iso8601-time-string'."

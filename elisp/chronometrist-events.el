@@ -11,9 +11,7 @@
 ;;
 ;; For more information, please refer to <https://unlicense.org>
 
-;; (require 'chronometrist-plist-pp)
 (require 'chronometrist-common)
-(require 'chronometrist-sexp)
 (require 'ts)
 
 ;; external -
