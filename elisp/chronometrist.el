@@ -248,11 +248,10 @@ Argument _FS-EVENT is ignored."
 
 (defun chronometrist-query-stop ()
   "Ask the user if they would like to clock out."
-  (let ((task (chronometrist-backend-current-task chronometrist-backend-current)))
-    (and task
-         (yes-or-no-p (format "Stop tracking time for %s? " task))
-         (chronometrist-out))
-    t))
+  (aand (chronometrist-backend-current-task chronometrist-backend-current)
+        (yes-or-no-p (format "Stop tracking time for %s? " it))
+        (chronometrist-out))
+  t)
 
 (defun chronometrist-in (task &optional _prefix)
   "Clock in to TASK; record current time in `chronometrist-file'.
