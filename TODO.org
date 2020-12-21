@@ -181,6 +181,7 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
 4. [ ] *Delete* a project (erasing all records)
 5. [ ] *Hide* a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
 6. [ ] *Reset* current interval - update the =:start= time to the current time.
+7. [ ] Alternative query function for tags and key-values - a single query. Either with tags and key-values as a single plist, or something like the multi-field query-replace prompt.
 
 ** chronometrist [16%]
 1. [ ] Add =:stop= time when we call =chronometrist-kv-accept=, not when we quit the key-value prompt with a blank input.
