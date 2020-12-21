@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 ### Added
-* New hooks - `chronometrist-mode-hook`, `chronometrist-list-format-transformers`, `chronometrist-entry-transformers`. chronometrist no longer needs to know about extensions.
+* New hooks - `chronometrist-mode-hook`, `chronometrist-list-format-transformers`, `chronometrist-entry-transformers`.
 * New custom variable `chronometrist-sexp-pretty-print-function`
 ### Changed
 * `chronometrist-plist-pp` now indents recursively.
