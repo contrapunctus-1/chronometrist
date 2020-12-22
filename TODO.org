@@ -158,7 +158,7 @@
    #+END_SRC
    And of course, that results in an error trying to process it.
 
-** chronometrist [10%]
+** chronometrist [8%]
 1. [ ] Add =:stop= time when we call =chronometrist-kv-accept=, not when we quit the key-value prompt.
 2. [ ] Implement undo/redo by running undo-tree commands on chronometrist.sexp
    * [ ] Possibly show what changes would be made, and prompt the user to confirm it.
@@ -178,6 +178,7 @@
     * [ ] Add command to open the commit associated with the interval in Magit
     * [ ] Make a user-customizable alist of project names and repo locations (local or remote), so shorter project names can be used instead of repo locations, saving space and reducing duplication.
 11. [ ] Pretty printer - add support for alists as values
+12. [ ] Customizable field widths
 
 ** chronometrist-report [0%]
 1. [ ] Show week counter and max weeks; don't scroll past first/last weeks

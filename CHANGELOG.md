@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.6] - 2020-12-22
+### Fixed
+* Bug triggered by clocking out of a task with a name longer than the field width, caused by hacky way of determining the task at point. (issue #2)
+
 ## [0.5.5] - 2020-09-02
 ### Added
 * `chronometrist-skip-query-prompt` to re-use last-used tags/key-values with a single key. (...assuming you use `y-or-n-p`)
