@@ -157,7 +157,7 @@ Hooks allow the time tracker to automate tasks and become a useful part of your 
 Make it easy to edit data using existing, familiar tools
 @itemize
 @item
-We don't use an SQL database, where changing a single field is tricky [1]
+We don't use an SQL database, where changing a single field is tricky @footnote{As indicated by exploratory work in the @samp{parsimonious-reading} branch, where I made a loop to only @samp{read} and collect s-expressions from the file. It was near-instant@dots{}until I added event splitting to it.}
 @item
 We use a text file containing s-expressions (easy for humans to read and write)
 @item
@@ -169,9 +169,9 @@ Reduce human errors in tracking
 Have a useful, informative, interactive interface
 @item
 Support mouse and keyboard use equally
-@end enumerate
 
 [1] I still have doubts about this. Having SQL as a query language would be very useful in perusing the stored data. Maybe we should have tried to create a companion mode to edit SQL databases interactively?
+@end enumerate
 
 @node Terminology
 @section Terminology
@@ -1078,6 +1078,8 @@ Function - chronometrist-goal-on-file-change ()
 @section chronometrist-sexp
 
 @enumerate
+@item
+Custom variable - chronometrist-sexp-pretty-print-function
 @item
 Macro - chronometrist-sexp-in-file (file &rest body)
 @item
