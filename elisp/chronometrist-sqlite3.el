@@ -65,6 +65,15 @@
 
 (cl-defmethod chronometrist-backend-current-task ((backend chronometrist-sqlite3)))
 
+(cl-defmethod chronometrist-backend-intervals (task &optional (ts (ts-now)))
+  "Return the time intervals for TASK on TS.")
+
+(cl-defmethod chronometrist-backend-task-time (task &optional (ts (ts-now))))
+
+(cl-defmethod chronometrist-backend-active-time (&optional ts))
+
+(cl-defmethod chronometrist-backend-active-days (task))
+
 ;; # Modifications #
 (cl-defmethod chronometrist-backend-create-file ((backend chronometrist-sqlite3))
   "Create file for BACKEND if it does not already exist.
@@ -72,10 +81,10 @@ Return the emacsql-sqlite3 connection object."
   (aprog1 (emacsql-sqlite3 (concat chronometrist-file "." (oref backend :ext)))
     (emacsql it [:create-table events ([name tags start stop])])))
 
-(cl-defmethod chronometrist-backend-new-record ((backend chronometrist-sqlite3) plist file)
+(cl-defmethod chronometrist-backend-new-record ((backend chronometrist-sqlite3) plist)
   (chronometrist-sqlite3-insert-plist plist file))
 
-(cl-defmethod chronometrist-backend-replace-last ((backend chronometrist-sqlite3) file plist)
+(cl-defmethod chronometrist-backend-replace-last ((backend chronometrist-sqlite3) plist)
   (emacsql db [:delete-from events :where ]))
 
 (provide 'chronometrist-sqlite3)

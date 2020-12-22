@@ -72,7 +72,6 @@ Reference
 * chronometrist-events.el: chronometrist-eventsel.
 * chronometrist-migrate.el: chronometrist-migrateel.
 * chronometrist-plist-pp.el: chronometrist-plist-ppel.
-* chronometrist-queries.el: chronometrist-queriesel.
 * chronometrist-report.el: chronometrist-reportel.
 * chronometrist-key-values.el: chronometrist-key-valuesel.
 * chronometrist-statistics.el: chronometrist-statisticsel.
@@ -481,7 +480,6 @@ Each of these has a corresponding function to clear it and fill it with values -
 * chronometrist-events.el: chronometrist-eventsel.
 * chronometrist-migrate.el: chronometrist-migrateel.
 * chronometrist-plist-pp.el: chronometrist-plist-ppel.
-* chronometrist-queries.el: chronometrist-queriesel.
 * chronometrist-report.el: chronometrist-reportel.
 * chronometrist-key-values.el: chronometrist-key-valuesel.
 * chronometrist-statistics.el: chronometrist-statisticsel.
@@ -827,34 +825,6 @@ Function - chronometrist-plist-pp-to-string (object)
 Function - chronometrist-plist-pp (object &optional stream)
 @end enumerate
 
-@node chronometrist-queriesel
-@section chronometrist-queries.el
-
-@enumerate
-@item
-Function - chronometrist-last ()
-@itemize
-@item
--> plist
-@end itemize
-@item
-Function - chronometrist-task-time-one-day (task &optional (ts (ts-now)))
-@itemize
-@item
-String &optional ts -> seconds
-@end itemize
-@item
-Function - chronometrist-active-time-one-day (&optional ts)
-@itemize
-@item
-&optional ts -> seconds
-@end itemize
-@item
-Function - chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
-@item
-Function - chronometrist-task-events-in-day (task ts)
-@end enumerate
-
 @node chronometrist-reportel
 @section chronometrist-report.el
 
@@ -1165,6 +1135,30 @@ Method - chronometrist-backend-new-record (((backend chronometrist-sexp)) plist)
 Function - chronometrist-sexp-delete-list (&optional arg)
 @item
 Method - chronometrist-replace-last (((backend chronometrist-sexp)) plist)
+@item
+Method - chronometrist-task-time-one-day (task &optional (ts (ts-now)))
+@itemize
+@item
+String &optional ts -> seconds
+@end itemize
+@item
+Method - chronometrist-active-time-one-day (&optional ts)
+@itemize
+@item
+&optional ts -> seconds
+@end itemize
+@item
+Method - chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
+@itemize
+@item
+String &optional table -> integer
+@end itemize
+@item
+Method - chronometrist-task-events-in-day (task ts)
+@itemize
+@item
+String ts -> events
+@end itemize
 @item
 Command - chronometrist-sexp-reindent-buffer ()
 @end enumerate

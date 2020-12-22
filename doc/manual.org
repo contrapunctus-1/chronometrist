@@ -346,16 +346,6 @@ Each of these has a corresponding function to clear it and fill it with values -
 6. Function - chronometrist-plist-pp-to-string (object)
 7. Function - chronometrist-plist-pp (object &optional stream)
 
-** chronometrist-queries.el
-1. Function - chronometrist-last ()
-   * -> plist
-2. Function - chronometrist-task-time-one-day (task &optional (ts (ts-now)))
-   * String &optional ts -> seconds
-3. Function - chronometrist-active-time-one-day (&optional ts)
-   * &optional ts -> seconds
-4. Function - chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
-5. Function - chronometrist-task-events-in-day (task ts)
-
 ** chronometrist-report.el
 1. Custom variable - chronometrist-report-buffer-name
 2. Custom variable - chronometrist-report-week-start-day
@@ -480,16 +470,24 @@ Each of these has a corresponding function to clear it and fill it with values -
 3. Custom variable - chronometrist-sexp-pretty-print-function
 4. Macro - chronometrist-sexp-in-file (file &rest body)
 5. Method - chronometrist-to-hash ((backend chronometrist-sexp) table)
-5. Method - chronometrist-from-hash ((backend chronometrist-sexp) table)
-5. Method - chronometrist-open-log ((backend chronometrist-sexp))
+6. Method - chronometrist-from-hash ((backend chronometrist-sexp) table)
+7. Method - chronometrist-open-log ((backend chronometrist-sexp))
 8. Method - chronometrist-last ((backend chronometrist-sexp))
    * -> plist
 9. Method - chronometrist-current-task ((backend chronometrist-sexp))
-11. Method - chronometrist-create-file ((backend chronometrist-sexp))
-12. Method - chronometrist-backend-new-record (((backend chronometrist-sexp)) plist)
-13. Function - chronometrist-sexp-delete-list (&optional arg)
-14. Method - chronometrist-replace-last (((backend chronometrist-sexp)) plist)
-15. Command - chronometrist-sexp-reindent-buffer ()
+10. Method - chronometrist-create-file ((backend chronometrist-sexp))
+11. Method - chronometrist-backend-new-record (((backend chronometrist-sexp)) plist)
+12. Function - chronometrist-sexp-delete-list (&optional arg)
+13. Method - chronometrist-replace-last (((backend chronometrist-sexp)) plist)
+14. Method - chronometrist-task-time-one-day (task &optional (ts (ts-now)))
+    * String &optional ts -> seconds
+15. Method - chronometrist-active-time-one-day (&optional ts)
+    * &optional ts -> seconds
+16. Method - chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
+    * String &optional table -> integer
+17. Method - chronometrist-task-events-in-day (task ts)
+    * String ts -> events
+18. Command - chronometrist-sexp-reindent-buffer ()
 
 # Local Variables:
 # org-link-file-path-type: relative

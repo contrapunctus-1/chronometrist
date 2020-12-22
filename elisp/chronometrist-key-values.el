@@ -92,7 +92,7 @@ be removed."
                             new-kvs
                             `(:start ,old-start)
                             (when old-stop `(:stop  ,old-stop)))))
-    (chronometrist-backend-replace-last chronometrist-backend-current (chronometrist-file-path) plist)))
+    (chronometrist-backend-replace-last chronometrist-backend-current plist)))
 
 ;;;; TAGS ;;;;
 (defvar chronometrist-tags-history (make-hash-table :test #'equal)

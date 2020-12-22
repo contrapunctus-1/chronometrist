@@ -99,7 +99,7 @@ STREAM (which is the value of `current-buffer')."
     (forward-sexp (or arg 1))
     (delete-region point-1 (point))))
 
-(cl-defmethod chronometrist-backend-replace-last ((backend chronometrist-sexp) file plist)
+(cl-defmethod chronometrist-backend-replace-last ((backend chronometrist-sexp) plist)
   (chronometrist-sexp-in-file (chronometrist-file-path)
     (goto-char (point-max))
     (unless (and (bobp) (bolp))
@@ -120,6 +120,63 @@ STREAM (which is the value of `current-buffer')."
     (setq chronometrist--inhibit-read-p t)
     (save-buffer)))
 
+(cl-defmethod chronometrist-backend-intervals (task &optional (ts (ts-now)))
+  "Get intervals for TASK on TS.
+TS should be a ts struct (see `ts.el').
+
+Returns a list of events, where each event is a property list in
+the form (:name \"NAME\" :start START :stop STOP ...), where
+START and STOP are ISO-8601 time strings.
+
+This will not return correct results if TABLE contains records
+which span midnights. (see `chronometrist-events-clean')"
+  (->> (gethash (ts-format "%F" ts) chronometrist-events)
+       (mapcar (lambda (event)
+                 (when (equal task (plist-get event :name))
+                   event)))
+       (seq-filter #'identity)))
+
+(cl-defmethod chronometrist-backend-task-time (task &optional (ts (ts-now)))
+  "Return total time spent on TASK today or (if supplied) on timestamp TS.
+The data is obtained from `chronometrist-file', via `chronometrist-events'.
+
+TS should be a ts struct (see `ts.el').
+
+The return value is seconds, as an integer."
+  (let ((task-events (chronometrist-task-events-in-day task ts)))
+    (if task-events
+        (->> (chronometrist-events->ts-pairs task-events)
+             (chronometrist-ts-pairs->durations)
+             (-reduce #'+)
+             (truncate))
+      ;; no events for this task on TS, i.e. no time spent
+      0)))
+
+(cl-defmethod chronometrist-backend-active-time (&optional ts)
+  "Return the total active time on TS (if non-nil) or today.
+TS must be a ts struct (see `ts.el')
+
+Return value is seconds as an integer."
+  (->> chronometrist-task-list
+       (--map (chronometrist-task-time-one-day it ts))
+       (-reduce #'+)
+       (truncate)))
+
+(cl-defmethod chronometrist-backend-active-days (task &optional (table chronometrist-events))
+  "Return the number of days the user spent any time on TASK.
+TABLE must be a hash table - if not supplied, `chronometrist-events' is used.
+
+This will not return correct results if TABLE contains records
+which span midnights. (see `chronometrist-events-clean')"
+  (let ((count 0))
+    (maphash (lambda (_date events)
+               (when (seq-find (lambda (event)
+                                 (equal (plist-get event :name) task))
+                               events)
+                 (cl-incf count)))
+             table)
+    count))
+
 (defun chronometrist-sexp-reindent-buffer ()
   "Reindent the current buffer.
 This is meant to be run in `chronometrist-file' when using the s-expression backend."
@@ -130,8 +187,7 @@ This is meant to be run in `chronometrist-file' when using the s-expression back
       (backward-list)
       (chronometrist-sexp-delete-list)
       (when (looking-at "\n*")
-        (delete-region (match-beginning 0)
-                       (match-end 0)))
+        (delete-region (match-beginning 0) (match-end 0)))
       (funcall chronometrist-sexp-pretty-print-function expr (current-buffer))
       (insert "\n")
       (unless (eobp)

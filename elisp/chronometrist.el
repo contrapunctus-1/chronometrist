@@ -20,7 +20,6 @@
 
 (require 'chronometrist-common)
 (require 'chronometrist-key-values)
-(require 'chronometrist-queries)
 (require 'chronometrist-migrate)
 (require 'chronometrist-backend)
 
@@ -125,7 +124,7 @@ The default is midnight, i.e. \"00:00:00\"."
 Argument _BUTTON is for the purpose of using this command as a
 button action."
   (interactive)
-  (chronometrist-backend-open-file chronometrist-backend-current (chronometrist-file-path)))
+  (chronometrist-backend-open-file chronometrist-backend-current))
 
 (defun chronometrist-task-active? (task)
   "Return t if TASK is currently clocked in, else nil."
@@ -262,7 +261,7 @@ TASK is the name of the task, a string. PREFIX is ignored."
 PREFIX is ignored."
   (interactive "P")
   (let ((plist (plist-put (chronometrist-backend-latest-record chronometrist-backend-current) :stop (chronometrist-format-time-iso8601))))
-    (chronometrist-backend-replace-last chronometrist-backend-current (chronometrist-file-path) plist)))
+    (chronometrist-backend-replace-last chronometrist-backend-current plist)))
 
 ;; ## HOOKS ##
 (defvar chronometrist-mode-hook nil

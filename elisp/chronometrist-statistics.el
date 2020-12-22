@@ -22,7 +22,6 @@
 (require 'chronometrist-time)
 (require 'chronometrist-events)
 (require 'chronometrist-migrate)
-(require 'chronometrist-queries)
 
 (declare-function chronometrist-refresh-file "chronometrist.el")
 
@@ -124,7 +123,7 @@ It simply operates on the entire hash table TABLE (see
 reduced to the desired range using
 `chronometrist-events-subset'."
   (mapcar (lambda (task)
-            (let* ((active-days    (chronometrist-statistics-count-active-days task table))
+            (let* ((active-days    (chronometrist-count-active-days task table))
                    (active-percent (cl-case (plist-get chronometrist-statistics--ui-state :mode)
                                      ('week (* 100 (/ active-days 7.0)))))
                    (active-percent (if (zerop active-days)

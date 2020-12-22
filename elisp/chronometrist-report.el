@@ -17,7 +17,6 @@
 (require 'filenotify)
 (require 'subr-x)
 (require 'chronometrist-common)
-(require 'chronometrist-queries)
 (require 'chronometrist-timer)
 (require 'chronometrist-migrate)
 
