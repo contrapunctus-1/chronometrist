@@ -171,9 +171,8 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
    : (foo (1 . bar))
    Yikes!
 
-** chronometrist [8%]
-1. [ ] Add =:stop= time when we call =chronometrist-kv-accept=, not when we quit the key-value prompt.
-2. [ ] Implement undo/redo by running undo-tree commands on chronometrist.sexp
+** New features [0%]
+1. [ ] undo/redo (by running undo-tree commands on chronometrist.sexp)
    * [ ] Possibly show what changes would be made, and prompt the user to confirm it.
    * How will this work with the SQLite backend? Rollbacks?
    * It might be easier to just have a 'remove last interval' (the operation I use undo for most often), so we don't reimplement an undo for SQLite.
@@ -182,9 +181,8 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
 4. [ ] *Delete* a project (erasing all records)
 5. [ ] *Hide* a project (don't show it in any Chronometrist-* buffer, effectively deleting it non-destructively)
 6. [ ] *Reset* current interval - update the =:start= time to the current time.
-7. [ ] Alternative query function for tags and key-values - a single query. Either with tags and key-values as a single plist, or something like the multi-field query-replace prompt.
 
-** chronometrist [14%]
+** chronometrist [12%]
 1. [ ] Add =:stop= time when we call =chronometrist-kv-accept=, not when we quit the key-value prompt with a blank input.
    * It might be nice to be able to quit =chronometrist-kv-add= with C-g instead, actually.
      + =C-g= stops execution of =chronometrist-run-functions-and-clock-in=/=chronometrist-run-functions-and-clock-out=, so they can't reach the calls for =chronometrist-in=/=chronometrist-out=.
@@ -206,6 +204,7 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
    * If the input string can be read in a single call to =read=, treat it as an s-expression; else, use the current heuristics.
 6. [ ] key-values - create transformer for key-values, to be run before they are added to the file. This will allow users to do cool things like sorting the key-values.
 7. [ ] Customizable field widths
+8. [ ] Alternative query function for tags and key-values - a single query. Either with tags and key-values as a single plist, or something like the multi-field query-replace prompt.
 
 *** Migration [0%]
 1. [ ] Implement readers (format -> hash table), emitters (hash table -> format), and predicates for each format. Then implement a single =migrate= command to convert between any supported formats.
