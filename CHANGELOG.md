@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `chronometrist-report` no longer calls `delete-other-windows`; use `chronometrist-report-mode-hook` if it is desired.
 * Fixed infinite loop in `chronometrist-report` triggered by non-English locales.
 
+## [0.5.6] - 2020-12-22
+### Fixed
+* Bug triggered by clocking out of a task with a name longer than the field width, caused by hacky way of determining the task at point. (issue #2)
+
 ## [0.5.5] - 2020-09-02
 ### Added
 * `chronometrist-skip-query-prompt` to re-use last-used tags/key-values with a single key. (...assuming you use `y-or-n-p`)
