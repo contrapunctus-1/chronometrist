@@ -143,14 +143,8 @@ See custom variable `chronometrist-activity-indicator'."
   "Return the task at point in the `chronometrist' buffer, or nil if there is no task at point."
   (save-excursion
     (beginning-of-line)
-    (if (re-search-forward "[0-9]+ +" nil t)
-        (--> (buffer-substring-no-properties
-              (point)
-              (progn
-                (re-search-forward chronometrist-time-re-ui nil t)
-                (match-beginning 0)))
-             (replace-regexp-in-string "[ \t]*$" "" it))
-      nil)))
+    (when (re-search-forward "[0-9]+ +" nil t)
+      (get-text-property (point) 'tabulated-list-id))))
 
 (defun chronometrist-goto-last-task ()
   "In the `chronometrist' buffer, move point to the line containing the last active task."
