@@ -172,6 +172,7 @@
    * [X] Show what those tags/key-values are, so the user knows what will be added.
 9. [ ] Expandable items - show intervals for task today
    * [ ] Switch between intervals and tag-combination breakdown
+10. [ ] Customizable field widths
 
 ** chronometrist-report [0%]
 1. [ ] Show week counter and max weeks; don't scroll past first/last weeks
