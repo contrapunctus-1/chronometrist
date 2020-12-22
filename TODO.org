@@ -170,6 +170,13 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
    as a value, when suggested in the history it is presented rather differently -
    : (foo (1 . bar))
    Yikes!
+4. [ ] Midnight spanning intervals currently display the full time when clocked out. e.g. this...
+   #+BEGIN_SRC
+   (:name      "Programming"
+    :start     "2020-12-22T23:01:00+0530"
+    :stop      "2020-12-23T00:54:52+0530")
+   #+END_SRC
+   ...is displayed as 1:53:52 after clocking out. :\
 
 ** chronometrist [8%]
 1. [ ] Add =:stop= time when we call =chronometrist-kv-accept=, not when we quit the key-value prompt.
