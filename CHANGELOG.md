@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 ### Added
-* New hooks - `chronometrist-mode-hook`, `chronometrist-list-format-transformers`, `chronometrist-entry-transformers`. chronometrist no longer needs to know about extensions.
+* New hooks - `chronometrist-mode-hook`, `chronometrist-list-format-transformers`, `chronometrist-entry-transformers`.
 * New custom variable `chronometrist-sexp-pretty-print-function`
 ### Changed
 * `chronometrist-plist-pp` now indents recursively.
@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Lisp objects being stored as un`read`able strings in `chronometrist-value-history`, resulting in value suggestions not matching user input.
 * `chronometrist-report` no longer calls `delete-other-windows`; use `chronometrist-report-mode-hook` if it is desired.
 * Fixed infinite loop in `chronometrist-report` triggered by non-English locales.
+
+## [0.5.6] - 2020-12-22
+### Fixed
+* Bug triggered by clocking out of a task with a name longer than the field width, caused by hacky way of determining the task at point. (issue #2)
 
 ## [0.5.5] - 2020-09-02
 ### Added
