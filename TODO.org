@@ -275,8 +275,12 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
 * Maybe [0%]
 ** New features [0%]
 1. [ ] Some way to use markup (Markdown, Org, etc) for certain plist values.
+
    Implementation ideas -
    * A list of keys whose values are to be edited in a user-specified major mode.
+     + Multiple windows - instead of a single key-value buffer, we'll have multiple buffers in multiple visible windows. The =accept= command will use the data from all involved buffers.
+       - The buffer and window will be created when a key associated with that mode is selected at the prompt.
+     + Alternatively, the whole plist goes into a single buffer of the markup's major mode - the markup bits as markup, the rest of the plist in a code block 🤷‍
    * "Input frontends" - a way to represent s-expressions as Markdown, Org, etc, so the entire plist can be edited in that mode. As a side-effect, this will permit use of Markdown, Org, etc in keyword-values - e.g. to use markup in comments or notes.
    * A binding in the key-value buffer, which will insert the string at point in a buffer of a certain mode.
 2. [ ] A custom variable containing a list of tasks
