@@ -100,18 +100,18 @@ The first date is the first occurrence of
   (let* ((week-dates (chronometrist-report-date->week-dates))) ;; uses today if chronometrist-report--ui-date is nil
     (setq chronometrist-report--ui-week-dates week-dates)
     (cl-loop for task in chronometrist-task-list collect
-             (let* ((durations        (--map (chronometrist-task-time-one-day task (chronometrist-date it))
-                                             week-dates))
-                    (duration-strings (mapcar #'chronometrist-format-time
-                                              durations))
-                    (total-duration   (->> (-reduce #'+ durations)
-                                           (chronometrist-format-time)
-                                           (vector))))
-               (list task
-                     (vconcat
-                      (vector task)
-                      duration-strings ;; vconcat converts lists to vectors
-                      total-duration))))))
+      (let* ((durations        (--map (chronometrist-backend-task-time chronometrist-backend-current task (chronometrist-date it))
+                                      week-dates))
+             (duration-strings (mapcar #'chronometrist-format-time
+                                       durations))
+             (total-duration   (->> (-reduce #'+ durations)
+                                    (chronometrist-format-time)
+                                    (vector))))
+        (list task
+              (vconcat
+               (vector task)
+               duration-strings ;; vconcat converts lists to vectors
+               total-duration))))))
 
 (defun chronometrist-report-print-keybind (command &optional description firstonly)
   "Insert one or more keybindings for COMMAND into the current buffer.
@@ -128,11 +128,10 @@ If FIRSTONLY is non-nil, insert only the first keybinding found."
   "Print the non-tabular part of the buffer in `chronometrist-report'."
   (let ((inhibit-read-only t)
         (w                 "\n    ")
-        (total-time-daily  (->> chronometrist-report--ui-week-dates
-                                (mapcar #'chronometrist-date)
-                                (mapcar #'chronometrist-active-time-one-day))))
+        (total-time-daily  (->> (mapcar #'chronometrist-date chronometrist-report--ui-week-dates)
+                                (--map (chronometrist-backend-active-time chronometrist-backend-current it)))))
     (goto-char (point-min))
-    (insert "                         ")
+    (insert (make-string 25 ?\ ))
     (insert (mapconcat (lambda (ts)
                          (ts-format "%F" ts))
                        (chronometrist-report-date->week-dates)

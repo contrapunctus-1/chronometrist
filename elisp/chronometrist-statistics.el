@@ -95,12 +95,12 @@ TABLE should be a hash table - if not supplied,
 `chronometrist-events' is used."
   ;; (cl-loop
   ;;  for date being the hash-keys of table
-  ;;  (let ((events-in-day  (chronometrist-task-events-in-day task (chronometrist-iso-date->ts key))))
+  ;;  (let ((events-in-day  (chronometrist-backend-task-intervals task (chronometrist-iso-date->ts key))))
   ;;    (when events-in-day)))
   (let ((days  0)
         (per-day-time-list))
     (maphash (lambda (key _value)
-               (let ((events-in-day (chronometrist-task-events-in-day task (chronometrist-iso-date->ts key))))
+               (let ((events-in-day (chronometrist-backend-task-intervals task (chronometrist-iso-date->ts key))))
                  (when events-in-day
                    (setq days (1+ days))
                    (->> (chronometrist-events->ts-pairs events-in-day)

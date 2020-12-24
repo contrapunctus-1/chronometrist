@@ -48,7 +48,7 @@ there were none.")
 (cl-defgeneric chronometrist-backend-current-task (backend)
   "Return the name of the currently clocked-in task, or nil if not clocked in.")
 
-(cl-defgeneric chronometrist-backend-intervals (backend task &optional (ts (ts-now)))
+(cl-defgeneric chronometrist-backend-task-intervals (backend task &optional (ts (ts-now)))
   "Return the time intervals for TASK on TS, or today.
 TS must be a ts struct (see `ts.el').")
 (cl-defgeneric chronometrist-backend-task-time (backend task &optional (ts (ts-now)))

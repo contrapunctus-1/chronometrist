@@ -40,8 +40,7 @@
              (vconcat columns) (vconcat values))))
 
 (cl-defmethod chronometrist-backend-from-hash ((backend chronometrist-sqlite3) file)
-  (cl-loop with db = (emacsql-sqlite3
-                      (concat file "." (oref chronometrist-sqlite3-backend :ext)))
+  (cl-loop with db = (emacsql-sqlite3 (concat file "." (oref backend :ext)))
     with count = 0
     for events being the hash-values of table do
     (cl-loop for event in events do

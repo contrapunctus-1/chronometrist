@@ -120,7 +120,7 @@ STREAM (which is the value of `current-buffer')."
     (setq chronometrist--inhibit-read-p t)
     (save-buffer)))
 
-(cl-defmethod chronometrist-backend-intervals (task &optional (ts (ts-now)))
+(cl-defmethod chronometrist-backend-task-intervals ((backend chronometrist-sexp) task &optional (ts (ts-now)))
   "Get intervals for TASK on TS.
 TS should be a ts struct (see `ts.el').
 
@@ -136,14 +136,14 @@ which span midnights. (see `chronometrist-events-clean')"
                    event)))
        (seq-filter #'identity)))
 
-(cl-defmethod chronometrist-backend-task-time (task &optional (ts (ts-now)))
+(cl-defmethod chronometrist-backend-task-time ((backend chronometrist-sexp) task &optional (ts (ts-now)))
   "Return total time spent on TASK today or (if supplied) on timestamp TS.
 The data is obtained from `chronometrist-file', via `chronometrist-events'.
 
 TS should be a ts struct (see `ts.el').
 
 The return value is seconds, as an integer."
-  (let ((task-events (chronometrist-task-events-in-day task ts)))
+  (let ((task-events (chronometrist-backend-task-intervals task ts)))
     (if task-events
         (->> (chronometrist-events->ts-pairs task-events)
              (chronometrist-ts-pairs->durations)
@@ -152,17 +152,17 @@ The return value is seconds, as an integer."
       ;; no events for this task on TS, i.e. no time spent
       0)))
 
-(cl-defmethod chronometrist-backend-active-time (&optional ts)
+(cl-defmethod chronometrist-backend-active-time ((backend chronometrist-sexp) &optional ts)
   "Return the total active time on TS (if non-nil) or today.
 TS must be a ts struct (see `ts.el')
 
 Return value is seconds as an integer."
   (->> chronometrist-task-list
-       (--map (chronometrist-task-time-one-day it ts))
+       (--map (chronometrist-backend-task-time chronometrist-backend-current it ts))
        (-reduce #'+)
        (truncate)))
 
-(cl-defmethod chronometrist-backend-active-days (task &optional (table chronometrist-events))
+(cl-defmethod chronometrist-backend-active-days ((backend chronometrist-sexp) task &optional (table chronometrist-events))
   "Return the number of days the user spent any time on TASK.
 TABLE must be a hash table - if not supplied, `chronometrist-events' is used.
 
