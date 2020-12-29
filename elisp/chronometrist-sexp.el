@@ -56,7 +56,7 @@ STREAM (which is the value of `current-buffer')."
 (cl-defmethod chronometrist-backend-from-hash ((backend chronometrist-sexp) table))
 
 ;; # Queries #
-(cl-defmethod chronometrist-backend-open-file ((backend chronometrist-sexp) file)
+(cl-defmethod chronometrist-backend-open-file ((backend chronometrist-sexp))
   (find-file-other-window (chronometrist-file-path))
   (goto-char (point-max)))
 
@@ -143,7 +143,7 @@ The data is obtained from `chronometrist-file', via `chronometrist-events'.
 TS should be a ts struct (see `ts.el').
 
 The return value is seconds, as an integer."
-  (let ((task-events (chronometrist-backend-task-intervals task ts)))
+  (let ((task-events (chronometrist-backend-task-intervals chronometrist-backend-current task ts)))
     (if task-events
         (->> (chronometrist-events->ts-pairs task-events)
              (chronometrist-ts-pairs->durations)

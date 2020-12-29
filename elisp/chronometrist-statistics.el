@@ -100,7 +100,7 @@ TABLE should be a hash table - if not supplied,
   (let ((days  0)
         (per-day-time-list))
     (maphash (lambda (key _value)
-               (let ((events-in-day (chronometrist-backend-task-intervals task (chronometrist-iso-date->ts key))))
+               (let ((events-in-day (chronometrist-backend-task-intervals chronometrist-backend-current task (chronometrist-iso-date->ts key))))
                  (when events-in-day
                    (setq days (1+ days))
                    (->> (chronometrist-events->ts-pairs events-in-day)

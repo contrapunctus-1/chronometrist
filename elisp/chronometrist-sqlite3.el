@@ -39,15 +39,17 @@
     (emacsql db [:insert-into events [$i1] :values $v2]
              (vconcat columns) (vconcat values))))
 
-(cl-defmethod chronometrist-backend-from-hash ((backend chronometrist-sqlite3) file)
+(cl-defmethod chronometrist-backend-from-hash ((backend chronometrist-sqlite3) hash-table file)
+  "Save HASH-TABLE as a FILE of BACKEND.
+FILE should be a file path without an extension."
   (cl-loop with db = (emacsql-sqlite3 (concat file "." (oref backend :ext)))
     with count = 0
-    for events being the hash-values of table do
+    for events being the hash-values of hash-table do
     (cl-loop for event in events do
       (chronometrist-sqlite3-insert-plist event db)
       (incf count)
       (when (zerop (% count 5))
-        (message "chronometrist-migrate-migrate - %s events converted" count)))
+        (message "chronometrist-migrate - %s events converted" count)))
     finally return count do
     (message "chronometrist-migrate - finished converting %s events." count)))
 
@@ -64,14 +66,14 @@
 
 (cl-defmethod chronometrist-backend-current-task ((backend chronometrist-sqlite3)))
 
-(cl-defmethod chronometrist-backend-intervals (task &optional (ts (ts-now)))
+(cl-defmethod chronometrist-backend-intervals ((backend chronometrist-sqlite3) task &optional (ts (ts-now)))
   "Return the time intervals for TASK on TS.")
 
-(cl-defmethod chronometrist-backend-task-time (task &optional (ts (ts-now))))
+(cl-defmethod chronometrist-backend-task-time ((backend chronometrist-sqlite3) task &optional (ts (ts-now))))
 
-(cl-defmethod chronometrist-backend-active-time (&optional ts))
+(cl-defmethod chronometrist-backend-active-time ((backend chronometrist-sqlite3) &optional ts))
 
-(cl-defmethod chronometrist-backend-active-days (task))
+(cl-defmethod chronometrist-backend-active-days ((backend chronometrist-sqlite3) task))
 
 ;; # Modifications #
 (cl-defmethod chronometrist-backend-create-file ((backend chronometrist-sqlite3))
