@@ -264,6 +264,20 @@ Instead, the aforementioned backend functions modify the relevant variables - @s
 @end enumerate
 
 There are still some operations which @uref{../elisp/chronometrist.el, @samp{chronometrist-refresh-file}} runs unconditionally - which is to say there is scope for further optimization, if or when required.
+
+@item
+Checking hashes
+
+
+@samp{chronometrist-file-change-type}
+@samp{chronometrist-file-hash-length}
+@samp{chronometrist--file-hashes}
+
+Issues -
+@enumerate
+@item
+Whitespace changes after last expression return @samp{:append} instead of nil.
+@end enumerate
 @end enumerate
 
 @node Midnight-spanning events

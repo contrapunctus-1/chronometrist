@@ -256,11 +256,11 @@ reversed and will have duplicate elements removed."
     (puthash key
              ;; placing `reverse' after `remove-duplicates'
              ;; to get a list in reverse chronological order
-             (-> (-flatten value)
+             (-> (-flatten list)
                  (cl-remove-duplicates :test #'equal)
                  (reverse))
              table)
-    finally returning table))
+    finally (cl-return table)))
 
 (defun chronometrist-key-history-populate (events-table history-table)
   "Clear HISTORY-TABLE and store key history in it, using EVENTS-TABLE.

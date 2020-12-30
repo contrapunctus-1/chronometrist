@@ -95,6 +95,15 @@ After the optimization...
 There are still some operations which [[file:../elisp/chronometrist.el::defun chronometrist-refresh-file (][=chronometrist-refresh-file=]] runs unconditionally - which is to say there is scope for further optimization, if or when required.
 
 [fn:1] As indicated by exploratory work in the =parsimonious-reading= branch, where I made a loop to only =read= and collect s-expressions from the file. It was near-instant...until I added event splitting to it.
+
+**** Checking hashes
+=chronometrist-file-change-type=
+=chronometrist-file-hash-length=
+=chronometrist--file-hashes=
+
+Issues -
+1. Whitespace changes after last expression return =:append= instead of nil.
+
 ** Midnight-spanning events
 :PROPERTIES:
 :DESCRIPTION: Events starting on one day and ending on another
