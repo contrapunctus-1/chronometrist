@@ -264,6 +264,15 @@ Instead, the aforementioned backend functions modify the relevant variables - @s
 @end enumerate
 
 There are still some operations which @uref{../elisp/chronometrist.el, @samp{chronometrist-refresh-file}} runs unconditionally - which is to say there is scope for further optimization, if or when required.
+
+@item
+Other strategies
+
+
+@enumerate
+@item
+Deferring (tag and key-value) history generation. Instead of generating the history for all tasks whenever the file changes, generate them when they are prompted for, and only for the task that is being prompted. (see branch @samp{delay-history})
+@end enumerate
 @end enumerate
 
 @node Midnight-spanning events

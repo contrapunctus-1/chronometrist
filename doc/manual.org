@@ -95,6 +95,9 @@ After the optimization...
 There are still some operations which [[file:../elisp/chronometrist.el::defun chronometrist-refresh-file (][=chronometrist-refresh-file=]] runs unconditionally - which is to say there is scope for further optimization, if or when required.
 
 [fn:1] As indicated by exploratory work in the =parsimonious-reading= branch, where I made a loop to only =read= and collect s-expressions from the file. It was near-instant...until I added event splitting to it.
+
+**** Other strategies
+1. Deferring (tag and key-value) history generation. Instead of generating the history for all tasks whenever the file changes, generate them when they are prompted for, and only for the task that is being prompted. (see branch =delay-history=)
 ** Midnight-spanning events
 :PROPERTIES:
 :DESCRIPTION: Events starting on one day and ending on another
