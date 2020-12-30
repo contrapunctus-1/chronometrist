@@ -129,14 +129,11 @@ were none."
 
 (defun chronometrist-tasks-from-table ()
   "Return a list of task names from `chronometrist-events'."
-  (let (acc)
-    (maphash (lambda (_key value)
-               (mapc (lambda (event)
-                       (setq acc (append acc `(,(plist-get event :name)))))
-                     value))
-             chronometrist-events)
-    (cl-remove-duplicates (sort acc #'string-lessp)
-                          :test #'equal)))
+  (cl-loop for plists being the hash-values of chronometrist-events append
+    (cl-loop for plist in plists collect (plist-get plist :name)) into list
+    finally
+    (cl-return
+     (cl-remove-duplicates (sort list #'string-lessp) :test #'equal))))
 
 (defun chronometrist-events-add (plist)
   "Add new PLIST at the end of `chronometrist-events'."
