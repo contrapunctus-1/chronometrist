@@ -18,7 +18,6 @@
 (require 'subr-x)
 (require 'chronometrist-common)
 (require 'chronometrist-queries)
-(require 'chronometrist-timer)
 (require 'chronometrist-migrate)
 
 (declare-function chronometrist-refresh-file "chronometrist.el")
@@ -217,6 +216,10 @@ Argument _FS-EVENT is ignored."
   (setq tabulated-list-sort-key '("Task" . nil))
   (tabulated-list-init-header)
   (chronometrist-maybe-start-timer)
+  (add-hook 'chronometrist-timer-hook
+            (lambda ()
+              (when (get-buffer-window chronometrist-report-buffer-name)
+                (chronometrist-report-refresh))))
   (setq revert-buffer-function #'chronometrist-report-refresh)
   (unless chronometrist--fs-watch
     (setq chronometrist--fs-watch

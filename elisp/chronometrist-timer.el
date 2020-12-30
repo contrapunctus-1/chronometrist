@@ -15,13 +15,12 @@
 ;;
 
 ;;; Code:
-(require 'chronometrist)
-
 (declare-function chronometrist-refresh "chronometrist.el")
-(declare-function chronometrist-report-refresh "chronometrist-report.el")
-(declare-function chronometrist-statistics-refresh "chronometrist-statistics.el")
 
 (defvar chronometrist--timer-object nil)
+
+(defcustom chronometrist-timer-hook nil
+  "Functions run by `chronometrist-timer'.")
 
 (defun chronometrist-timer ()
   "Refresh Chronometrist and related buffers.
@@ -34,10 +33,7 @@ is clocked in to a task."
     ;; remove this condition.
     (when (get-buffer-window chronometrist-buffer-name)
       (chronometrist-refresh))
-    (when (get-buffer-window chronometrist-report-buffer-name)
-      (chronometrist-report-refresh))
-    (when (get-buffer-window chronometrist-statistics-buffer-name)
-      (chronometrist-statistics-refresh))))
+    (run-hooks 'chronometrist-timer-hook)))
 
 (defun chronometrist-stop-timer ()
   "Stop the timer for Chronometrist buffers."
