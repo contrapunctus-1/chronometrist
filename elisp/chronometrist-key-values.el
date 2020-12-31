@@ -105,16 +105,25 @@ Each value is a list of tag combinations, in reverse
 chronological order. Each combination is a list containing tags
 as symbol and/or strings.")
 
+(defun chronometrist-map-file (file fn)
+  "Run FN for each s-expression in FILE.
+FN must be a function accepting one argument."
+  (declare (indent defun) (debug t))
+  (chronometrist-sexp-in-file file
+    (goto-char (point-min))
+    (cl-loop with var
+      while (->> (current-buffer)
+                 (read )
+                 (ignore-errors )
+                 (setq var ))
+      do (funcall fn var))))
+
 (defun chronometrist-tags-history-populate (task history-table file)
   "Store tag history for TASK in HISTORY-TABLE from FILE.
 HISTORY-TABLE must be a hash table. (see `chronometrist-tags-history')"
-  (chronometrist-sexp-in-file file
-    (goto-char (point-min))
-    (cl-loop with plist
-      while (setq plist
-                  (ignore-errors
-                    (read (current-buffer)))) do
-      (let ((new-tag-list (plist-get plist :tags))
+  (chronometrist-map-file file
+    (lambda (plist)
+      (let ((new-tag-list  (plist-get plist :tags))
             (old-tag-lists (gethash task history-table)))
         (and (equal task (plist-get plist :name))
              new-tag-list
@@ -126,6 +135,31 @@ HISTORY-TABLE must be a hash table. (see `chronometrist-tags-history')"
   ;; We can't use `chronometrist-ht-history-prep' to do this, because it uses
   ;; `-flatten' - the values of `chronometrist-tags-history' hold tag combinations
   ;; (as lists), not individual tags.
+  (--> (gethash task history-table)
+       (cl-remove-duplicates it :test #'equal :from-end t)
+       (puthash task it history-table)))
+
+(defun chronometrist-key-history-populate (task history-table file)
+  "Store key history for TASK in HISTORY-TABLE from FILE.
+Return the new value of HISTORY-TABLE.
+
+HISTORY-TABLE must be a hash table (see `chronometrist-key-history')."
+  (chronometrist-map-file file
+    (lambda (plist)
+      (catch 'quit
+        (let* ((name  (plist-get plist :name))
+               (check (unless (equal name task) (throw 'quit nil)))
+               (keys  (--> (chronometrist-plist-remove plist :name :start :stop :tags)
+                           (seq-filter #'keywordp it)
+                           (cl-loop for key in it collect
+                             (s-chop-prefix ":" (symbol-name key)))))
+               (check (unless keys (throw 'quit nil)))
+               (old-keys (gethash name history-table)))
+          (puthash name
+                   (if old-keys
+                       (append keys old-keys)
+                     keys)
+                   history-table)))))
   (--> (gethash task history-table)
        (cl-remove-duplicates it :test #'equal :from-end t)
        (puthash task it history-table)))
@@ -198,17 +232,16 @@ INITIAL-INPUT is as used in `completing-read'."
 _ARGS are ignored. This function always returns t, so it can be
 used in `chronometrist-before-out-functions'."
   (unless chronometrist--skip-detail-prompts
-    (let* ((last-expr       (chronometrist-last))
-           (last-name       (plist-get last-expr :name))
-           (_update-history (chronometrist-tags-history-populate last-name chronometrist-tags-history
-                                                     chronometrist-file))
-           (last-tags       (plist-get last-expr :tags))
-           (input           (->> last-tags
-                                 (chronometrist-maybe-symbol-to-string)
-                                 (-interpose ",")
-                                 (apply #'concat)
-                                 (chronometrist-tags-prompt last-name)
-                                 (chronometrist-maybe-string-to-symbol))))
+    (let* ((last-expr (chronometrist-last))
+           (last-name (plist-get last-expr :name))
+           (_history  (chronometrist-tags-history-populate last-name chronometrist-tags-history chronometrist-file))
+           (last-tags (plist-get last-expr :tags))
+           (input     (->> last-tags
+                           (chronometrist-maybe-symbol-to-string)
+                           (-interpose ",")
+                           (apply #'concat)
+                           (chronometrist-tags-prompt last-name)
+                           (chronometrist-maybe-string-to-symbol))))
       (when input
         (--> (append last-tags input)
              (reverse it)
@@ -255,35 +288,6 @@ reversed and will have duplicate elements removed."
                  (reverse))
              table)
     finally return table))
-
-(defun chronometrist-key-history-populate (events-table history-table)
-  "Clear HISTORY-TABLE and store key history in it, using EVENTS-TABLE.
-Return the new value of HISTORY-TABLE.
-
-EVENTS-TABLE and HISTORY-TABLE must be hash tables (see `chronometrist-events' and `chronometrist-key-history')."
-  (clrhash history-table)
-  ;; add each task as a key
-  (mapc (lambda (task)
-          (puthash task nil history-table))
-        ;; ;; Not necessary, if the only place this is called is `chronometrist-refresh-file'
-        ;; (setq chronometrist--task-list (chronometrist-tasks-from-table))
-        chronometrist-task-list)
-  (cl-loop for events being the hash-values of events-table do
-    (cl-loop for event in events do
-      (let ((name (plist-get event :name))
-            (keys (->> (chronometrist-plist-remove event :name :start :stop :tags)
-                       (seq-filter #'keywordp))))
-        (cl-loop for key in keys do
-          (when key
-            (let ((old-keys (gethash name history-table))
-                  (new-key  (->> (symbol-name key)
-                                 (s-chop-prefix ":")
-                                 (list))))
-              (--> (if old-keys
-                       (append old-keys new-key)
-                     new-key)
-                   (puthash name it history-table))))))))
-  (chronometrist-ht-history-prep history-table))
 
 (defun chronometrist-value-history-populate (events-table history-table)
   "Clear HISTORY-TABLE and store value history in it, using EVENTS-TABLE.
@@ -391,10 +395,13 @@ used in `chronometrist-before-out-functions'."
   (unless chronometrist--skip-detail-prompts
     (let* ((buffer      (get-buffer-create chronometrist-kv-buffer-name))
            (first-key-p t)
-           (last-kvs    (chronometrist-plist-remove (chronometrist-last) :name :tags :start :stop))
+           (last-sexp   (chronometrist-last))
+           (last-name   (plist-get last-sexp :name))
+           (last-kvs    (chronometrist-plist-remove last-sexp :name :tags :start :stop))
            (used-keys   (->> (seq-filter #'keywordp last-kvs)
                              (mapcar #'symbol-name)
                              (--map (s-chop-prefix ":" it)))))
+      (chronometrist-key-history-populate last-name chronometrist-key-history chronometrist-file)
       (switch-to-buffer buffer)
       (with-current-buffer buffer
         (chronometrist-common-clear-buffer buffer)

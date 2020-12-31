@@ -349,39 +349,40 @@ Each of these has a corresponding function to clear it and fill it with values -
 16. Function - chronometrist-report-next-week (arg)
 
 ** chronometrist-key-values.el
-1.  Internal Variable - chronometrist--tag-suggestions
-2.  Internal Variable - chronometrist--value-suggestions
-3.  Function - chronometrist-plist-remove (plist &rest keys)
-4.  Function - chronometrist-maybe-string-to-symbol (list)
-5.  Function - chronometrist-maybe-symbol-to-string (list)
-6.  Function - chronometrist-append-to-last (tags plist)
-7.  Variable - chronometrist-tags-history
-8.  Function - chronometrist-tags-history-populate (task history-table file)
-9.  Function - chronometrist-tags-history-add (plist)
-10. Function - chronometrist-tags-history-replace-last (plist)
-11. Function - chronometrist-tags-history-combination-strings (task)
-12. Function - chronometrist-tags-history-individual-strings (task)
-13. Function - chronometrist-tags-prompt (task &optional initial-input)
-14. Function - chronometrist-tags-add (&rest args)
-15. Custom Variable - chronometrist-kv-buffer-name
-16. Variable - chronometrist-key-history
-17. Variable - chronometrist-value-history
-18. Function - chronometrist-ht-history-prep (table)
-19. Function - chronometrist-key-history-populate (events-table history-table)
-20. Function - chronometrist-value-history-populate (events-table history-table)
-21. Keymap - chronometrist-kv-read-mode-map
-22. Major Mode - chronometrist-kv-read-mode
-23. Function - chronometrist-kv-completion-quit-key ()
-24. Function - chronometrist-string-has-whitespace-p (string)
-25. Function - chronometrist-key-prompt (used-keys)
-26. Function - chronometrist-value-prompt (key)
-27. Function - chronometrist-value-insert (value)
-28. Function - chronometrist-kv-add (&rest args)
-29. Command - chronometrist-kv-accept ()
-30. Command - chronometrist-kv-reject ()
-31. Internal Variable - chronometrist--skip-detail-prompts
-32. Function - chronometrist-skip-query-prompt (task)
-33. Function - chronometrist-skip-query-reset (_task)
+1. Internal Variable - chronometrist--tag-suggestions
+2. Internal Variable - chronometrist--value-suggestions
+3. Function - chronometrist-plist-remove (plist &rest keys)
+4. Function - chronometrist-maybe-string-to-symbol (list)
+5. Function - chronometrist-maybe-symbol-to-string (list)
+6. Function - chronometrist-append-to-last (tags plist)
+7. Variable - chronometrist-tags-history
+8. Function - chronometrist-map-file (file fn)
+9. Function - chronometrist-tags-history-populate (task history-table file)
+10. Function - chronometrist-key-history-populate (task history-table file)
+11. Function - chronometrist-tags-history-add (plist)
+12. Function - chronometrist-tags-history-replace-last (plist)
+13. Function - chronometrist-tags-history-combination-strings (task)
+14. Function - chronometrist-tags-history-individual-strings (task)
+15. Function - chronometrist-tags-prompt (task &optional initial-input)
+16. Function - chronometrist-tags-add (&rest args)
+17. Custom Variable - chronometrist-kv-buffer-name
+18. Variable - chronometrist-key-history
+19. Variable - chronometrist-value-history
+20. Function - chronometrist-ht-history-prep (table)
+21. Function - chronometrist-value-history-populate (events-table history-table)
+22. Keymap - chronometrist-kv-read-mode-map
+23. Major Mode - chronometrist-kv-read-mode
+24. Function - chronometrist-kv-completion-quit-key ()
+25. Function - chronometrist-string-has-whitespace-p (string)
+26. Function - chronometrist-key-prompt (used-keys)
+27. Function - chronometrist-value-prompt (key)
+28. Function - chronometrist-value-insert (value)
+29. Function - chronometrist-kv-add (&rest args)
+30. Command - chronometrist-kv-accept ()
+31. Command - chronometrist-kv-reject ()
+32. Internal Variable - chronometrist--skip-detail-prompts
+33. Function - chronometrist-skip-query-prompt (task)
+34. Function - chronometrist-skip-query-reset (_task)
 
 ** chronometrist-statistics-custom.el
 1. Custom variable - chronometrist-statistics-buffer-name

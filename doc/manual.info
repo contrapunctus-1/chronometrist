@@ -868,7 +868,11 @@ Function - chronometrist-append-to-last (tags plist)
 @item
 Variable - chronometrist-tags-history
 @item
+Function - chronometrist-map-file (file fn)
+@item
 Function - chronometrist-tags-history-populate (task history-table file)
+@item
+Function - chronometrist-key-history-populate (task history-table file)
 @item
 Function - chronometrist-tags-history-add (plist)
 @item
@@ -889,8 +893,6 @@ Variable - chronometrist-key-history
 Variable - chronometrist-value-history
 @item
 Function - chronometrist-ht-history-prep (table)
-@item
-Function - chronometrist-key-history-populate (events-table history-table)
 @item
 Function - chronometrist-value-history-populate (events-table history-table)
 @item

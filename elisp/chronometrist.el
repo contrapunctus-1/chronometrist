@@ -261,7 +261,6 @@ Argument _FS-EVENT is ignored."
       (setq chronometrist--inhibit-read-p nil)
     (chronometrist-events-populate)
     (setq chronometrist-task-list (chronometrist-tasks-from-table)))
-  (chronometrist-key-history-populate   chronometrist-events chronometrist-key-history)
   (chronometrist-value-history-populate chronometrist-events chronometrist-value-history)
   (chronometrist-refresh))
 
