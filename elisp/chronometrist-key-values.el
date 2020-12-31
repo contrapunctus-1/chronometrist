@@ -105,38 +105,30 @@ Each value is a list of tag combinations, in reverse
 chronological order. Each combination is a list containing tags
 as symbol and/or strings.")
 
-(defun chronometrist-tags-history-populate (events-table history-table)
-  "Clear HISTORY-TABLE and store tag history in it, using EVENTS-TABLE.
-Return the new value of HISTORY-TABLE.
-
-HISTORY-TABLE and EVENTS-TABLE must be hash tables. (see
-`chronometrist-tags-history' and `chronometrist-events')"
-  (clrhash history-table)
-  (cl-loop for events being the hash-values of events-table do
-    (cl-loop for event in events do
-      (let* ((name          (plist-get event :name))
-             (tags          (plist-get event :tags))
-             (existing-tags (gethash name history-table)))
-        (when tags
-          (puthash name
-                   (if existing-tags
-                       (append existing-tags `(,tags))
-                     `(,tags))
-                   history-table)))))
+(defun chronometrist-tags-history-populate (task history-table file)
+  "Store tag history for TASK in HISTORY-TABLE from FILE.
+HISTORY-TABLE must be a hash table. (see `chronometrist-tags-history')"
+  (chronometrist-sexp-in-file file
+    (goto-char (point-min))
+    (cl-loop with plist
+      while (setq plist
+                  (ignore-errors
+                    (read (current-buffer)))) do
+      (let ((new-tag-list (plist-get plist :tags))
+            (old-tag-lists (gethash task history-table)))
+        (and (equal task (plist-get plist :name))
+             new-tag-list
+             (puthash task
+                      (if old-tag-lists
+                          (cons new-tag-list old-tag-lists)
+                        (list new-tag-list))
+                      history-table)))))
   ;; We can't use `chronometrist-ht-history-prep' to do this, because it uses
-  ;; `-flatten'; the values of `chronometrist-tags-history' hold tag combinations
+  ;; `-flatten' - the values of `chronometrist-tags-history' hold tag combinations
   ;; (as lists), not individual tags.
-  (cl-loop for task being the hash-keys of history-table
-    using (hash-values tag-lists) do
-    (puthash task
-             ;; Because remove-duplicates keeps the _last_
-             ;; occurrence, trying to avoid this `reverse' by
-             ;; switching the args in the call to `append'
-             ;; above will not get you the correct behavior!
-             (-> (cl-remove-duplicates tag-lists :test #'equal)
-                 (reverse))
-             history-table)
-    finally return history-table))
+  (--> (gethash task history-table)
+       (cl-remove-duplicates it :test #'equal :from-end t)
+       (puthash task it history-table)))
 
 (defun chronometrist-tags-history-add (plist)
   "Add tags from PLIST to `chronometrist-tags-history'."
@@ -206,15 +198,17 @@ INITIAL-INPUT is as used in `completing-read'."
 _ARGS are ignored. This function always returns t, so it can be
 used in `chronometrist-before-out-functions'."
   (unless chronometrist--skip-detail-prompts
-    (let* ((last-expr (chronometrist-last))
-           (last-name (plist-get last-expr :name))
-           (last-tags (plist-get last-expr :tags))
-           (input     (->> last-tags
-                           (chronometrist-maybe-symbol-to-string)
-                           (-interpose ",")
-                           (apply #'concat)
-                           (chronometrist-tags-prompt last-name)
-                           (chronometrist-maybe-string-to-symbol))))
+    (let* ((last-expr       (chronometrist-last))
+           (last-name       (plist-get last-expr :name))
+           (_update-history (chronometrist-tags-history-populate last-name chronometrist-tags-history
+                                                     chronometrist-file))
+           (last-tags       (plist-get last-expr :tags))
+           (input           (->> last-tags
+                                 (chronometrist-maybe-symbol-to-string)
+                                 (-interpose ",")
+                                 (apply #'concat)
+                                 (chronometrist-tags-prompt last-name)
+                                 (chronometrist-maybe-string-to-symbol))))
       (when input
         (--> (append last-tags input)
              (reverse it)
