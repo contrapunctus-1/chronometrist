@@ -352,12 +352,12 @@ Argument _FS-EVENT is ignored."
               ((null file-change-type) nil)
               (t (chronometrist-events-populate))))
     (chronometrist-events-populate)
-    (setq chronometrist-task-list
-          (-> (chronometrist-map-file chronometrist-file
-                (lambda (plist)
-                  (plist-get plist :name)))
-              (cl-remove-duplicates  :test #'equal)
-              (sort  #'string-lessp))))
+    (--> (chronometrist-map-file chronometrist-file
+           (lambda (plist)
+             (plist-get plist :name)))
+         (cl-remove-duplicates it :test #'equal)
+         (sort it #'string-lessp)
+         (setq chronometrist-task-list it)))
   (setq chronometrist--file-hashes
         (list :last (chronometrist-file-hash :before-last nil)
               :rest (chronometrist-file-hash nil :before-last)))
