@@ -342,24 +342,25 @@ Argument _FS-EVENT is ignored."
   ;; `chronometrist-file-change-type' must be run /before/ we update `chronometrist--file-hashes'
   ;; (the latter represents the old state of the file, which
   ;; `chronometrist-file-change-type' compares with the new one)
-  (awhen chronometrist--file-hashes
-    (let ((file-change-type (chronometrist-file-change-type it)))
-      (message "chronometrist - file change type is %s" file-change-type)
-      (cond ((eq file-change-type :append)
-             (chronometrist-events-add plist))
-            ((eq file-change-type :last)
-             (chronometrist-events-replace-last plist))
-            ((null file-change-type) nil)
-            (t (chronometrist-events-populate)))))
-  (setq chronometrist--file-hashes
-        (list :last (chronometrist-file-hash :before-last nil)
-              :rest (chronometrist-file-hash nil :before-last)))
-  (setq chronometrist-task-list
-        (-> (chronometrist-map-file chronometrist-file
-              (lambda (plist)
-                (plist-get plist :name)))
-            (cl-remove-duplicates  :test #'equal)
-            (sort  #'string-lessp)))
+  (aif chronometrist--file-hashes
+      (let ((file-change-type (chronometrist-file-change-type it)))
+        (message "chronometrist - file change type is %s" file-change-type)
+        (cond ((eq file-change-type :append)
+               (chronometrist-events-add (chronometrist-sexp-last)))
+              ((eq file-change-type :last)
+               (chronometrist-events-replace-last (chronometrist-sexp-last)))
+              ((null file-change-type) nil)
+              (t (chronometrist-events-populate))))
+    (chronometrist-events-populate)
+    (setq chronometrist--file-hashes
+          (list :last (chronometrist-file-hash :before-last nil)
+                :rest (chronometrist-file-hash nil :before-last)))
+    (setq chronometrist-task-list
+          (-> (chronometrist-map-file chronometrist-file
+                (lambda (plist)
+                  (plist-get plist :name)))
+              (cl-remove-duplicates  :test #'equal)
+              (sort  #'string-lessp))))
   ;; REVIEW - can we move most/all of this to the `chronometrist-file-change-hook'?
   (chronometrist-refresh))
 
