@@ -106,20 +106,25 @@ chronological order. Each combination is a list containing tags
 as symbol and/or strings.")
 
 (defun chronometrist-map-file (file fn)
-  "Run FN for each s-expression in FILE.
+  "Run FN for each s-expression in FILE, from last to first.
 FN must be a function accepting one argument."
-  (declare (indent defun) (debug t))
+  (declare (indent defun))
   (chronometrist-sexp-in-file file
-    (goto-char (point-min))
+    (goto-char (point-max))
     (cl-loop with var
-      while (->> (current-buffer)
-                 (read )
-                 (ignore-errors )
-                 (setq var ))
+      while (and (not (bobp))
+                 (backward-sexp)
+                 (->> (current-buffer)
+                      (read )
+                      (ignore-errors )
+                      (setq var ))
+                 (backward-sexp))
       do (funcall fn var))))
 
 (defun chronometrist-tags-history-populate (task history-table file)
   "Store tag history for TASK in HISTORY-TABLE from FILE.
+Return the new value inserted into HISTORY-TABLE.
+
 HISTORY-TABLE must be a hash table. (see `chronometrist-tags-history')"
   (chronometrist-map-file file
     (lambda (plist)
@@ -129,7 +134,7 @@ HISTORY-TABLE must be a hash table. (see `chronometrist-tags-history')"
              new-tag-list
              (puthash task
                       (if old-tag-lists
-                          (cons new-tag-list old-tag-lists)
+                          (cons old-tag-lists new-tag-list)
                         (list new-tag-list))
                       history-table)))))
   ;; We can't use `chronometrist-ht-history-prep' to do this, because it uses
@@ -141,7 +146,7 @@ HISTORY-TABLE must be a hash table. (see `chronometrist-tags-history')"
 
 (defun chronometrist-key-history-populate (task history-table file)
   "Store key history for TASK in HISTORY-TABLE from FILE.
-Return the new value of HISTORY-TABLE.
+Return the new value inserted into HISTORY-TABLE.
 
 HISTORY-TABLE must be a hash table (see `chronometrist-key-history')."
   (chronometrist-map-file file
@@ -156,9 +161,7 @@ HISTORY-TABLE must be a hash table (see `chronometrist-key-history')."
                (check (unless keys (throw 'quit nil)))
                (old-keys (gethash name history-table)))
           (puthash name
-                   (if old-keys
-                       (append keys old-keys)
-                     keys)
+                   (if old-keys (append old-keys keys) keys)
                    history-table)))))
   (--> (gethash task history-table)
        (cl-remove-duplicates it :test #'equal :from-end t)
