@@ -291,7 +291,7 @@ Each of these has a corresponding function to clear it and fill it with values -
 15. Function - chronometrist-refresh (&optional ignore-auto noconfirm)
 16. Internal Variable - chronometrist--inhibit-read-p
 17. Internal Variable - chronometrist--file-hashes
-18. Function - chronometrist-file-hash-length (&optional start end)
+18. Function - chronometrist-file-hash (&optional start end)
 19. Function - chronometrist-file-change-type (hashes)
 20. Function - chronometrist-refresh-file (fs-event)
 21. Command - chronometrist-query-stop ()

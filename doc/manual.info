@@ -720,7 +720,7 @@ Internal Variable - chronometrist--inhibit-read-p
 @item
 Internal Variable - chronometrist--file-hashes
 @item
-Function - chronometrist-file-hash-length (&optional start end)
+Function - chronometrist-file-hash (&optional start end)
 @item
 Function - chronometrist-file-change-type (hashes)
 @item
