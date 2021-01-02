@@ -57,19 +57,13 @@
   (should (= (length (gethash "Arrangement/new edition" chronometrist-key-history)) 2)))
 
 (ert-deftest chronometrist-value-history ()
-  (before-all
-   (setq chronometrist-file "tests/test.sexp")
-   (chronometrist-events-populate)
-   (chronometrist-value-history-populate chronometrist-events chronometrist-value-history))
-  (it "should
-have 5 hash keys"
-      (should
-       (hash-table-count chronometrist-value-history)
-              :to-be 5)
-      (should
-       (cl-loop for task being the hash-keys of chronometrist-value-history
-                always (stringp task))
-              :to-be t)))
+  (progn
+    (clrhash chronometrist-value-history)
+    (chronometrist-value-history-populate chronometrist-value-history "test.sexp"))
+  (should (= (hash-table-count chronometrist-value-history) 5))
+  (should
+   (cl-loop for task being the hash-keys of chronometrist-value-history
+     always (stringp task))))
 
 ;; Local Variables:
 ;; nameless-current-name: "chronometrist"

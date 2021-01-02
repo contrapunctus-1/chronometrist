@@ -870,9 +870,13 @@ Variable - chronometrist-tags-history
 @item
 Function - chronometrist-map-file (file fn)
 @item
+Function - chronometrist-history-prep (key history-table)
+@item
 Function - chronometrist-tags-history-populate (task history-table file)
 @item
 Function - chronometrist-key-history-populate (task history-table file)
+@item
+Function - chronometrist-value-history-populate (history-table file)
 @item
 Function - chronometrist-tags-history-add (plist)
 @item
@@ -891,10 +895,6 @@ Custom Variable - chronometrist-kv-buffer-name
 Variable - chronometrist-key-history
 @item
 Variable - chronometrist-value-history
-@item
-Function - chronometrist-ht-history-prep (table)
-@item
-Function - chronometrist-value-history-populate (events-table history-table)
 @item
 Keymap - chronometrist-kv-read-mode-map
 @item

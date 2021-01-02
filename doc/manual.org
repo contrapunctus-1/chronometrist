@@ -357,19 +357,19 @@ Each of these has a corresponding function to clear it and fill it with values -
 6. Function - chronometrist-append-to-last (tags plist)
 7. Variable - chronometrist-tags-history
 8. Function - chronometrist-map-file (file fn)
-9. Function - chronometrist-tags-history-populate (task history-table file)
-10. Function - chronometrist-key-history-populate (task history-table file)
-11. Function - chronometrist-tags-history-add (plist)
-12. Function - chronometrist-tags-history-replace-last (plist)
-13. Function - chronometrist-tags-history-combination-strings (task)
-14. Function - chronometrist-tags-history-individual-strings (task)
-15. Function - chronometrist-tags-prompt (task &optional initial-input)
-16. Function - chronometrist-tags-add (&rest args)
-17. Custom Variable - chronometrist-kv-buffer-name
-18. Variable - chronometrist-key-history
-19. Variable - chronometrist-value-history
-20. Function - chronometrist-ht-history-prep (table)
-21. Function - chronometrist-value-history-populate (events-table history-table)
+9. Function - chronometrist-history-prep (key history-table)
+10. Function - chronometrist-tags-history-populate (task history-table file)
+11. Function - chronometrist-key-history-populate (task history-table file)
+12. Function - chronometrist-value-history-populate (history-table file)
+13. Function - chronometrist-tags-history-add (plist)
+14. Function - chronometrist-tags-history-replace-last (plist)
+15. Function - chronometrist-tags-history-combination-strings (task)
+16. Function - chronometrist-tags-history-individual-strings (task)
+17. Function - chronometrist-tags-prompt (task &optional initial-input)
+18. Function - chronometrist-tags-add (&rest args)
+19. Custom Variable - chronometrist-kv-buffer-name
+20. Variable - chronometrist-key-history
+21. Variable - chronometrist-value-history
 22. Keymap - chronometrist-kv-read-mode-map
 23. Major Mode - chronometrist-kv-read-mode
 24. Function - chronometrist-kv-completion-quit-key ()

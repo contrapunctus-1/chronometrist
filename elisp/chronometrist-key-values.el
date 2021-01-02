@@ -113,13 +113,21 @@ FN must be a function accepting one argument."
     (goto-char (point-max))
     (cl-loop with var
       while (and (not (bobp))
-                 (backward-sexp)
+                 (backward-list)
                  (->> (current-buffer)
                       (read )
                       (ignore-errors )
                       (setq var ))
-                 (backward-sexp))
+                 (backward-list))
       do (funcall fn var))))
+
+(defun chronometrist-history-prep (key history-table)
+  "Prepare history hash tables for use in prompts.
+Each value in hash table TABLE must be a list. Each value will be
+reversed and will have duplicate elements removed."
+  (--> (gethash key history-table)
+       (cl-remove-duplicates it :test #'equal :from-end t)
+       (puthash key it history-table)))
 
 (defun chronometrist-tags-history-populate (task history-table file)
   "Store tag history for TASK in HISTORY-TABLE from FILE.
@@ -137,12 +145,7 @@ HISTORY-TABLE must be a hash table. (see `chronometrist-tags-history')"
                           (cons old-tag-lists new-tag-list)
                         (list new-tag-list))
                       history-table)))))
-  ;; We can't use `chronometrist-ht-history-prep' to do this, because it uses
-  ;; `-flatten' - the values of `chronometrist-tags-history' hold tag combinations
-  ;; (as lists), not individual tags.
-  (--> (gethash task history-table)
-       (cl-remove-duplicates it :test #'equal :from-end t)
-       (puthash task it history-table)))
+  (chronometrist-history-prep task history-table))
 
 (defun chronometrist-key-history-populate (task history-table file)
   "Store key history for TASK in HISTORY-TABLE from FILE.
@@ -163,9 +166,30 @@ HISTORY-TABLE must be a hash table (see `chronometrist-key-history')."
           (puthash name
                    (if old-keys (append old-keys keys) keys)
                    history-table)))))
-  (--> (gethash task history-table)
-       (cl-remove-duplicates it :test #'equal :from-end t)
-       (puthash task it history-table)))
+  (chronometrist-history-prep task history-table))
+
+(defun chronometrist-value-history-populate (history-table file)
+  "Store value history in HISTORY-TABLE from FILE.
+HISTORY-TABLE must be a hash table. (see `chronometrist-value-history')"
+  ;; Note - while keys are Lisp keywords, values may be any Lisp
+  ;; object, including lists
+  (chronometrist-map-file file
+    (lambda (plist)
+      ;; We call them user-key-values because we filter out Chronometrist's
+      ;; reserved key-values
+      (let ((user-key-values (chronometrist-plist-remove plist :name :tags :start :stop)))
+        (cl-loop for (key value) on user-key-values by #'cddr do
+          (let* ((key-string (s-chop-prefix ":" (symbol-name key)))
+                 (old-values (gethash key-string history-table))
+                 (value      (if (not (stringp value)) ;; why?
+                                 (list (format "%S" value))
+                               (list value))))
+            (puthash key-string
+                     (if old-values (append old-values value) value)
+                     history-table))))))
+  (maphash (lambda (key values)
+             (chronometrist-history-prep key history-table))
+           history-table))
 
 (defun chronometrist-tags-history-add (plist)
   "Add tags from PLIST to `chronometrist-tags-history'."
@@ -277,49 +301,6 @@ is removed.")
 The hash table keys are user-key names (as strings), and the
 values are lists containing values (as strings).")
 
-(defun chronometrist-ht-history-prep (table)
-  "Prepare history hash tables for use in prompts.
-Each value in hash table TABLE must be a list. Each value will be
-reversed and will have duplicate elements removed."
-  (cl-loop for list being the hash-values of table
-    using (hash-keys key) do
-    (puthash key
-             ;; placing `reverse' after `remove-duplicates'
-             ;; to get a list in reverse chronological order
-             (-> (-flatten list)
-                 (cl-remove-duplicates :test #'equal)
-                 (reverse))
-             table)
-    finally return table))
-
-(defun chronometrist-value-history-populate (events-table history-table)
-  "Clear HISTORY-TABLE and store value history in it, using EVENTS-TABLE.
-Return the new value of HISTORY-TABLE.
-
-EVENTS-TABLE and HISTORY-TABLE must be hash tables. (see
-`chronometrist-events' and `chronometrist-value-history')"
-  ;; Note - while keys are Lisp keywords, values may be any Lisp
-  ;; object, including lists
-  (clrhash history-table)
-  (cl-loop with user-key-values
-    for events-list being the hash-values of events-table do
-    (cl-loop for event in events-list do
-      ;; We call them user-key-values because we filter out Chronometrist's
-      ;; reserved key-values
-      (setq user-key-values (chronometrist-plist-remove event :name :tags :start :stop))
-      (cl-loop for (key value) on user-key-values by #'cddr do
-        (let* ((key-string (->> (symbol-name key) (s-chop-prefix ":")))
-               (old-values (gethash key-string history-table))
-               (value      (if (not (stringp value))
-                               (list (format "%S" value))
-                             (list value))))
-          (puthash key-string
-                   (if old-values
-                       (append old-values value)
-                     value)
-                   history-table)))))
-  (chronometrist-ht-history-prep history-table))
-
 (defvar chronometrist-kv-read-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-c") #'chronometrist-kv-accept)
@@ -405,6 +386,7 @@ used in `chronometrist-before-out-functions'."
                              (mapcar #'symbol-name)
                              (--map (s-chop-prefix ":" it)))))
       (chronometrist-key-history-populate last-name chronometrist-key-history chronometrist-file)
+      (chronometrist-value-history-populate chronometrist-value-history chronometrist-file)
       (switch-to-buffer buffer)
       (with-current-buffer buffer
         (chronometrist-common-clear-buffer buffer)
