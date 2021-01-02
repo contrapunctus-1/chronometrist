@@ -266,12 +266,60 @@ Instead, the aforementioned backend functions modify the relevant variables - @s
 There are still some operations which @uref{../elisp/chronometrist.el, @samp{chronometrist-refresh-file}} runs unconditionally - which is to say there is scope for further optimization, if or when required.
 
 @item
-Other strategies
+Other strategies [25%]
 
 
 @enumerate
 @item
-Deferring (tag and key-value) history generation. Instead of generating the history for all tasks whenever the file changes, generate them when they are prompted for, and only for the task that is being prompted. (see branch @samp{delay-history})
+Defer (tag/key/value) history generation from file-change-time to prompt-time, and make it per-task instead of all tasks at once
+@itemize
+@item
+The biggest resource hog is splitting of midnight-spanning intervals, however.
+@item
+Reduce memory use by allowing user to restrict number of s-expressions read.
+@item
+Per-task history generation will create problems - e.g. values for a given key for one task won't be suggested for values for the same key in another 🤦
+@itemize
+@item
+Tags and keys are already task-sensitive; just don't make values task-sensitive.
+@end itemize
+@end itemize
+@item
+Compare partial hashes of file to know what has changed - only update memory when necessary.
+@item
+In-memory cache - don't store entire file into memory; instead, split midnight-spanning events just for the requested data.
+@itemize
+@item
+Will increase load time for the first time @samp{chronometrist}, @samp{chronometrist-report}, or @samp{chronometrist-statistics} are run (including forward/backward commands in the latter two)
+@itemize
+@item
+Can try pre-emptively loading data for the latter two
+@end itemize
+@item
+Will reduce memory use.
+@end itemize
+@item
+Mix of 2 and 3 - in-memory cache with partial updates
+@item
+Split and save midnight-spanning intervals to disk - remove the need for an in-memory version of data with split midnight-spanning intervals.
+@itemize
+@item
+Least memory use?
+@item
+Might make the file harder for a user to edit.
+@end itemize
+@item
+Save timestamps as UNIX epoch time.
+@itemize
+@item
+Will (probably) greatly speed up time parsing and interval splitting.
+@item
+Will greatly impede human editing of the file, too. 🤔
+@itemize
+@item
+An editing UI could help - pretty sure every timestamp edit I've ever made has been for the last interval, or at most an interval in today's data.
+@end itemize
+@end itemize
 @end enumerate
 @end enumerate
 
