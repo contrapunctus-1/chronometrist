@@ -20,9 +20,7 @@
 
 (require 'chronometrist-common)
 (require 'chronometrist-time)
-(require 'chronometrist-timer)
 (require 'chronometrist-events)
-(require 'chronometrist-statistics-custom)
 (require 'chronometrist-migrate)
 (require 'chronometrist-queries)
 
@@ -58,6 +56,14 @@
 ;;; Code:
 
 ;; ## VARIABLES ##
+
+(defgroup chronometrist-statistics nil
+  "Statistics buffer for the `chronometrist' time tracker."
+  :group 'chronometrist)
+
+(defcustom chronometrist-statistics-buffer-name "*Chronometrist-Statistics*"
+  "The name of the buffer created by `chronometrist-statistics'."
+  :type 'string)
 
 (defvar chronometrist-statistics--ui-state nil
   "Stores the display state for `chronometrist-statistics'.
@@ -225,6 +231,10 @@ value of `revert-buffer-function'."
   (setq tabulated-list-sort-key '("Task" . nil))
   (tabulated-list-init-header)
   ;; (chronometrist-maybe-start-timer)
+  (add-hook 'chronometrist-timer-hook
+            (lambda ()
+              (when (get-buffer-window chronometrist-statistics-buffer-name)
+                (chronometrist-statistics-refresh))))
   (setq revert-buffer-function #'chronometrist-statistics-refresh)
   (unless chronometrist--fs-watch
     (setq chronometrist--fs-watch

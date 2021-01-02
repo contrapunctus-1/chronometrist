@@ -157,7 +157,7 @@ Hooks allow the time tracker to automate tasks and become a useful part of your 
 Make it easy to edit data using existing, familiar tools
 @itemize
 @item
-We don't use an SQL database, where changing a single field is tricky [1]
+We don't use an SQL database, where changing a single field is tricky @footnote{As indicated by exploratory work in the @samp{parsimonious-reading} branch, where I made a loop to only @samp{read} and collect s-expressions from the file. It was near-instant@dots{}until I added event splitting to it.}
 @item
 We use a text file containing s-expressions (easy for humans to read and write)
 @item
@@ -169,9 +169,9 @@ Reduce human errors in tracking
 Have a useful, informative, interactive interface
 @item
 Support mouse and keyboard use equally
-@end enumerate
 
 [1] I still have doubts about this. Having SQL as a query language would be very useful in perusing the stored data. Maybe we should have tried to create a companion mode to edit SQL databases interactively?
+@end enumerate
 
 @node Terminology
 @section Terminology
@@ -277,6 +277,63 @@ Issues -
 @enumerate
 @item
 Whitespace changes after last expression return @samp{:append} instead of nil.
+@end enumerate
+
+@item
+Other strategies [25%]
+
+
+@enumerate
+@item
+Defer (tag/key/value) history generation from file-change-time to prompt-time, and make it per-task instead of all tasks at once
+@itemize
+@item
+The biggest resource hog is splitting of midnight-spanning intervals, however.
+@item
+Reduce memory use by allowing user to restrict number of s-expressions read.
+@item
+Per-task history generation will create problems - e.g. values for a given key for one task won't be suggested for values for the same key in another 🤦
+@itemize
+@item
+Tags and keys are already task-sensitive; just don't make values task-sensitive.
+@end itemize
+@end itemize
+@item
+Compare partial hashes of file to know what has changed - only update memory when necessary.
+@item
+In-memory cache - don't store entire file into memory; instead, split midnight-spanning events just for the requested data.
+@itemize
+@item
+Will increase load time for the first time @samp{chronometrist}, @samp{chronometrist-report}, or @samp{chronometrist-statistics} are run (including forward/backward commands in the latter two)
+@itemize
+@item
+Can try pre-emptively loading data for the latter two
+@end itemize
+@item
+Will reduce memory use.
+@end itemize
+@item
+Mix of 2 and 3 - in-memory cache with partial updates
+@item
+Split and save midnight-spanning intervals to disk - remove the need for an in-memory version of data with split midnight-spanning intervals.
+@itemize
+@item
+Least memory use?
+@item
+Might make the file harder for a user to edit.
+@end itemize
+@item
+Save timestamps as UNIX epoch time.
+@itemize
+@item
+Will (probably) greatly speed up time parsing and interval splitting.
+@item
+Will greatly impede human editing of the file, too. 🤔
+@itemize
+@item
+An editing UI could help - pretty sure every timestamp edit I've ever made has been for the last interval, or at most an interval in today's data.
+@end itemize
+@end itemize
 @end enumerate
 @end enumerate
 
@@ -879,7 +936,15 @@ Function - chronometrist-append-to-last (tags plist)
 @item
 Variable - chronometrist-tags-history
 @item
-Function - chronometrist-tags-history-populate (events-table history-table)
+Function - chronometrist-map-file (file fn)
+@item
+Function - chronometrist-history-prep (key history-table)
+@item
+Function - chronometrist-tags-history-populate (task history-table file)
+@item
+Function - chronometrist-key-history-populate (task history-table file)
+@item
+Function - chronometrist-value-history-populate (history-table file)
 @item
 Function - chronometrist-tags-history-add (plist)
 @item
@@ -898,12 +963,6 @@ Custom Variable - chronometrist-kv-buffer-name
 Variable - chronometrist-key-history
 @item
 Variable - chronometrist-value-history
-@item
-Function - chronometrist-ht-history-prep (table)
-@item
-Function - chronometrist-key-history-populate (events-table history-table)
-@item
-Function - chronometrist-value-history-populate (events-table history-table)
 @item
 Keymap - chronometrist-kv-read-mode-map
 @item
@@ -1098,6 +1157,8 @@ Function - chronometrist-goal-on-file-change ()
 @section chronometrist-sexp
 
 @enumerate
+@item
+Custom variable - chronometrist-sexp-pretty-print-function
 @item
 Macro - chronometrist-sexp-in-file (file &rest body)
 @item

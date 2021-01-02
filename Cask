@@ -3,15 +3,16 @@
 
 (package
  "Chronometrist"
- "0.5.4"
+ "0.5.6"
  "A time tracker for Emacs with a nice interface")
 
 (depends-on "cl")
-(depends-on "dash"     "2.16.0")
-(depends-on "seq"      "2.20")
-(depends-on "s"        "1.12.0")
-(depends-on "ts"       "0.2")
-(depends-on "anaphora" "1.0.4")
+(depends-on "dash"              "2.16.0")
+(depends-on "seq"               "2.20")
+(depends-on "s"                 "1.12.0")
+(depends-on "ts"                "0.2")
+(depends-on "anaphora"          "1.0.4")
+(depends-on "call-transformers" "0.0.1")
 
 (files "elisp/*.el")
 

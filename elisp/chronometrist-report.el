@@ -18,8 +18,6 @@
 (require 'subr-x)
 (require 'chronometrist-common)
 (require 'chronometrist-queries)
-(require 'chronometrist-timer)
-(require 'chronometrist-report-custom)
 (require 'chronometrist-migrate)
 
 (declare-function chronometrist-refresh-file "chronometrist.el")
@@ -35,6 +33,29 @@
 ;; ## VARIABLES ##
 
 ;;; Code:
+
+(defgroup chronometrist-report nil
+  "Weekly report for the `chronometrist' time tracker."
+  :group 'chronometrist)
+
+(defcustom chronometrist-report-buffer-name "*Chronometrist-Report*"
+  "The name of the buffer created by `chronometrist-report'."
+  :type 'string)
+
+(defcustom chronometrist-report-week-start-day "Sunday"
+  "The day used for start of week by `chronometrist-report'."
+  :type 'string)
+
+(defcustom chronometrist-report-weekday-number-alist
+  '(("Sunday"    . 0)
+    ("Monday"    . 1)
+    ("Tuesday"   . 2)
+    ("Wednesday" . 3)
+    ("Thursday"  . 4)
+    ("Friday"    . 5)
+    ("Saturday"  . 6))
+  "Alist in the form (\"NAME\" . NUMBER), where \"NAME\" is the name of a weekday and NUMBER its associated number."
+  :type 'alist)
 
 (defvar chronometrist-report--ui-date nil
   "The first date of the week displayed by `chronometrist-report'.
@@ -195,6 +216,10 @@ Argument _FS-EVENT is ignored."
   (setq tabulated-list-sort-key '("Task" . nil))
   (tabulated-list-init-header)
   (chronometrist-maybe-start-timer)
+  (add-hook 'chronometrist-timer-hook
+            (lambda ()
+              (when (get-buffer-window chronometrist-report-buffer-name)
+                (chronometrist-report-refresh))))
   (setq revert-buffer-function #'chronometrist-report-refresh)
   (unless chronometrist--fs-watch
     (setq chronometrist--fs-watch
@@ -225,8 +250,7 @@ current week. Otherwise, display data from the week specified by
                   (not keep-date))
              (setq chronometrist-report--point (point))
              (kill-buffer buffer))
-            (t (delete-other-windows)
-               (unless keep-date
+            (t (unless keep-date
                  (setq chronometrist-report--ui-date nil))
                (chronometrist-common-create-file)
                (chronometrist-report-mode)

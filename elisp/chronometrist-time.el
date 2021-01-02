@@ -5,7 +5,6 @@
 (require 'parse-time)
 (require 'dash)
 (require 's)
-(require 'chronometrist-report-custom)
 
 (declare-function chronometrist-day-start "chronometrist-events.el")
 

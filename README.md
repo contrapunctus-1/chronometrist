@@ -104,15 +104,19 @@ If you wish you could define time goals for some tasks, and have Chronometrist n
 See the Customize groups `chronometrist` and `chronometrist-report` for variables intended to be user-customizable.
 
 ### Hooks
-Chronometrist currently has four hooks -
-1. `chronometrist-before-in-functions`
-2. `chronometrist-after-in-functions`
-3. `chronometrist-before-out-functions`
-4. `chronometrist-after-out-functions`
+Chronometrist currently has the following hooks -
+1. `chronometrist-mode-hook`
+2. `chronometrist-before-in-functions`
+3. `chronometrist-after-in-functions`
+4. `chronometrist-before-out-functions`
+5. `chronometrist-after-out-functions`
+6. `chronometrist-list-format-transformers`
+7. `chronometrist-entry-transformers`
+8. `chronometrist-file-change-hook`
 
-As their names suggest, these are 'abnormal' hooks, i.e. the functions they contain must accept arguments. In this case, each function must accept exactly one argument - the name of the project which is being started or stopped, as a string.
+The hooks whose names end with `-functions` are abnormal hooks - each function must accept exactly one argument, which is the name of the project which is being started or stopped, as a string.
 
-`chronometrist-before-out-functions` is different from the others in that it runs until failure - the task will be clocked out only if all functions in this hook return `t`.
+`chronometrist-before-out-functions` is different from the other three, in that it runs until failure - the task will be clocked out only if all functions in this hook return `t`.
 
 ### Opening certain files when you start a task
 An idea from the author's own init -
@@ -163,6 +167,9 @@ Return nil (and run `magit-status') if the user answers no."
 
 (setq chronometrist-activity-indicator 'my-activity-indicator)
 ```
+
+### Better pretty-printing
+If you view/edit `chronometrist-file` pretty often, you may wish to install `ppp` and load it before `chronometrist`. `chronometrist-sexp-pretty-print-function` will then use `ppp` for pretty-printing instead of Emacs' built-in `pp`, resulting in nicer-looking plists. Use `M-x chronometrist-sexp-reindent-buffer` in a buffer visiting `chronometrist-file` to apply the changes to the whole file.
 
 ## Roadmap/Ideas
 * Show details for time spent on a project when clicking on a non-zero "time spent" field (in both Chronometrist and Chronometrist-Report buffers).

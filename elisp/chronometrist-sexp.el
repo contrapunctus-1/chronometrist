@@ -3,14 +3,16 @@
 ;;; Commentary:
 ;;
 
-(require 'chronometrist-custom)
-(require 'chronometrist-plist-pp)
-
 ;;; Code:
 
 ;; chronometrist-file (-custom)
 ;; chronometrist-events, chronometrist-events-maybe-split (-events)
-;; chronometrist-plist-pp (-plist-pp)
+
+(defcustom chronometrist-sexp-pretty-print-function #'chronometrist-plist-pp
+  "Function used to pretty print plists in `chronometrist-file'.
+Like `pp', it must accept an OBJECT and optionally a
+STREAM (which is the value of `current-buffer')."
+  :type 'function)
 
 (defmacro chronometrist-sexp-in-file (file &rest body)
   "Run BODY in a buffer visiting FILE, restoring point afterwards."
@@ -46,9 +48,7 @@ Return final number of events read from file, or nil if there
 were none."
   (chronometrist-sexp-in-file chronometrist-file
     (goto-char (point-min))
-    (let ((index 0)
-          expr
-          pending-expr)
+    (let ((index 0) expr pending-expr)
       (while (or pending-expr
                  (setq expr (ignore-errors (read (current-buffer)))))
         ;; find and split midnight-spanning events during deserialization itself
@@ -87,7 +87,7 @@ were none."
     ;; newline before it
     (unless (bobp) (insert "\n"))
     (unless (bolp) (insert "\n"))
-    (chronometrist-plist-pp plist (current-buffer))
+    (funcall chronometrist-sexp-pretty-print-function plist (current-buffer))
     ;; Update in-memory (`chronometrist-events', `chronometrist-task-list') too...
     (chronometrist-events-add plist)
     (chronometrist-task-list-add (plist-get plist :name))
@@ -109,7 +109,7 @@ were none."
     (unless (and (bobp) (bolp)) (insert "\n"))
     (backward-list 1)
     (chronometrist-sexp-delete-list)
-    (chronometrist-plist-pp plist (current-buffer))
+    (funcall chronometrist-sexp-pretty-print-function plist (current-buffer))
     (chronometrist-events-replace-last plist)
     ;; We assume here that this function will always be used to
     ;; replace something with the same :name. At the time of writing,
@@ -134,7 +134,7 @@ This is meant to be run in `chronometrist-file' when using the s-expression back
       (chronometrist-sexp-delete-list)
       (when (looking-at "\n*")
         (delete-region (match-beginning 0) (match-end 0)))
-      (chronometrist-plist-pp expr (current-buffer))
+      (funcall chronometrist-sexp-pretty-print-function expr (current-buffer))
       (insert "\n")
       (unless (eobp) (insert "\n")))))
 

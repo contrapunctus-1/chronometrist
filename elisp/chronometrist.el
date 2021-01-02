@@ -4,15 +4,21 @@
 ;; Maintainer: contrapunctus <xmpp:contrapunctus@jabber.fr>
 ;; Keywords: calendar
 ;; Homepage: https://github.com/contrapunctus-1/chronometrist
-;; Package-Requires: ((emacs "25.1") (dash "2.16.0") (seq "2.20") (s "1.12.0") (ts "0.2") (anaphora "1.0.4"))
-;; Version: 0.5.4
+;; Package-Requires: ((emacs "25.1")
+;;                    (dash "2.16.0")
+;;                    (seq "2.20")
+;;                    (s "1.12.0")
+;;                    (ts "0.2")
+;;                    (anaphora "1.0.4")
+;;                    (run-transformers "0.0.1"))
+;; Version: 0.5.6
 
 (require 'filenotify)
 (require 'cl-lib)
 (require 'subr-x)
+(require 'run-transformers)
 
 (require 'chronometrist-common)
-(require 'chronometrist-custom)
 (require 'chronometrist-key-values)
 (require 'chronometrist-queries)
 (require 'chronometrist-migrate)
@@ -64,20 +70,70 @@
 ;; For information on usage and customization, see https://github.com/contrapunctus-1/chronometrist/blob/master/README.md
 
 ;;; Code:
-
-;; `chronometrist-goal' is an optional extension. But even these don't make the
-;; warnings go away :\
 (eval-when-compile
-  (defvar chronometrist-goal-list)
-  (defvar chronometrist-mode-map))
-
-(declare-function 'chronometrist-goal-get "chronometrist-goal")
-
+  (defvar chronometrist-mode-map)
+  (require 'subr-x))
 (autoload 'chronometrist-maybe-start-timer "chronometrist-timer" nil t)
 (autoload 'chronometrist-report "chronometrist-report" nil t)
 (autoload 'chronometrist-statistics "chronometrist-statistics" nil t)
 
 ;; ## VARIABLES ##
+
+(defgroup chronometrist nil
+  "A time tracker with a nice UI."
+  :group 'applications)
+
+(defcustom chronometrist-file
+  (locate-user-emacs-file "chronometrist.sexp")
+  "Default path and name of the Chronometrist database.
+
+It should be a text file containing plists in the form -
+\(:name \"task name\"
+ [:tags TAGS]
+ [:comment \"comment\"]
+ [KEY-VALUE-PAIR ...]
+ :start \"TIME\"
+ :stop \"TIME\"\)
+
+Where -
+
+TAGS is a list. It can contain any strings and symbols.
+
+KEY-VALUE-PAIR can be any keyword-value pairs. Currently,
+Chronometrist ignores them.
+
+TIME must be an ISO-8601 time string.
+
+\(The square brackets here refer to optional elements, not
+vectors.\)"
+  :type 'file)
+
+(defcustom chronometrist-buffer-name "*Chronometrist*"
+  "The name of the buffer created by `chronometrist'."
+  :type 'string)
+
+(defcustom chronometrist-hide-cursor nil
+  "If non-nil, hide the cursor and only highlight the current line in the `chronometrist' buffer."
+  :type 'boolean)
+
+(defcustom chronometrist-update-interval 5
+  "How often the `chronometrist' buffer should be updated, in seconds.
+
+This is not guaranteed to be accurate - see (info \"(elisp)Timers\")."
+  :type 'integer)
+
+(defcustom chronometrist-activity-indicator "*"
+  "How to indicate that a task is active.
+Can be a string to be displayed, or a function which returns this string.
+The default is \"*\""
+  :type '(choice string function))
+
+(defcustom chronometrist-day-start-time "00:00:00"
+  "The time at which a day is considered to start, in \"HH:MM:SS\".
+
+The default is midnight, i.e. \"00:00:00\"."
+  :type 'string)
+
 (defvar chronometrist--task-history nil)
 (defvar chronometrist--point nil)
 
@@ -98,12 +154,6 @@ button action."
   "Return t if TASK is currently clocked in, else nil."
   (equal (chronometrist-current-task) task))
 
-(defun chronometrist-use-goals? ()
-  "Return t if `chronometrist-goal' is available and
-`chronometrist-goal-list' is bound."
-  (and (featurep 'chronometrist-goal)
-       (bound-and-true-p chronometrist-goal-list)))
-
 (defun chronometrist-activity-indicator ()
   "Return a string to indicate that a task is active.
 See custom variable `chronometrist-activity-indicator'."
@@ -118,42 +168,23 @@ See custom variable `chronometrist-activity-indicator'."
   ;; latter should refresh from a file.
   ;; (chronometrist-events-populate)
   ;; (chronometrist-events-clean)
-  (->> chronometrist-task-list
-       (-sort #'string-lessp)
+  (->> (-sort #'string-lessp chronometrist-task-list)
        (--map-indexed
         (let* ((task        it)
                (index       (number-to-string (1+ it-index)))
-               (task-button (list task
-                                  'action 'chronometrist-toggle-task-button
-                                  'follow-link t))
+               (task-button `(,task action chronometrist-toggle-task-button follow-link t))
                (task-time   (chronometrist-format-time (chronometrist-task-time-one-day task)))
-               (indicator   (if (chronometrist-task-active? task)
-                                (chronometrist-activity-indicator)
-                              ""))
-               (use-goals    (chronometrist-use-goals?))
-               (target      (when use-goals
-                              ;; this can return nil if there is no goal for a task
-                              (chronometrist-goal-get task)))
-               (target-str  (if target
-                                (format "% 4d" target)
-                              "")))
-          (list task
-                (vconcat (vector index task-button task-time indicator)
-                         (when use-goals
-                           (vector target-str))))))))
+               (indicator   (if (chronometrist-task-active? task) (chronometrist-activity-indicator) "")))
+          (--> (vector index task-button task-time indicator)
+               (list task it)
+               (run-transformers chronometrist-entry-transformers it))))))
 
 (defun chronometrist-task-at-point ()
   "Return the task at point in the `chronometrist' buffer, or nil if there is no task at point."
   (save-excursion
     (beginning-of-line)
-    (if (re-search-forward "[0-9]+ +" nil t)
-        (--> (buffer-substring-no-properties
-              (point)
-              (progn
-                (re-search-forward chronometrist-time-re-ui nil t)
-                (match-beginning 0)))
-             (replace-regexp-in-string "[ \t]*$" "" it))
-      nil)))
+    (when (re-search-forward "[0-9]+ +" nil t)
+      (get-text-property (point) 'tabulated-list-id))))
 
 (defun chronometrist-goto-last-task ()
   "In the `chronometrist' buffer, move point to the line containing the last active task."
@@ -166,11 +197,8 @@ See custom variable `chronometrist-activity-indicator'."
 If DESCRIPTION is non-nil, insert that too.
 If FIRSTONLY is non-nil, return only the first keybinding found."
   (insert
-   "\n"
-   (format "% 18s - %s"
-           (chronometrist-format-keybinds command
-                             chronometrist-mode-map
-                             firstonly)
+   (format "\n% 18s - %s"
+           (chronometrist-format-keybinds command chronometrist-mode-map firstonly)
            (if description description ""))))
 
 (defun chronometrist-print-non-tabular ()
@@ -178,15 +206,13 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
   (with-current-buffer chronometrist-buffer-name
     (let ((inhibit-read-only t)
           (w "\n    ")
-          ;; (keybind-start-new (chronometrist-format-keybinds 'chronometrist-add-new-task
-          ;;                                      chronometrist-mode-map))
+          ;; (keybind-start-new (chronometrist-format-keybinds 'chronometrist-add-new-task chronometrist-mode-map))
           (keybind-toggle    (chronometrist-format-keybinds 'chronometrist-toggle-task chronometrist-mode-map t)))
       (goto-char (point-max))
-      (-->
-       (chronometrist-active-time-one-day)
-       (chronometrist-format-time it)
-       (format "%s%- 26s%s" w "Total" it)
-       (insert it))
+      (--> (chronometrist-active-time-one-day)
+           (chronometrist-format-time it)
+           (format "%s%- 26s%s" w "Total" it)
+           (insert it))
       (insert "\n")
       (insert w (format "% 17s" "Keys") w (format "% 17s" "----"))
       (chronometrist-print-keybind 'chronometrist-add-new-task)
@@ -313,10 +339,7 @@ Argument _FS-EVENT is ignored."
   (if chronometrist--inhibit-read-p
       (setq chronometrist--inhibit-read-p nil)
     (chronometrist-events-populate)
-    (setq chronometrist-task-list (chronometrist-tasks-from-table))
-    (chronometrist-tags-history-populate chronometrist-events chronometrist-tags-history))
-  (chronometrist-key-history-populate   chronometrist-events chronometrist-key-history)
-  (chronometrist-value-history-populate chronometrist-events chronometrist-value-history)
+    (setq chronometrist-task-list (chronometrist-tasks-from-table)))
   (chronometrist-refresh))
 
 (defun chronometrist-query-stop ()
@@ -343,6 +366,26 @@ PREFIX is ignored."
     (chronometrist-sexp-replace-last plist)))
 
 ;; ## HOOKS ##
+(defvar chronometrist-mode-hook nil
+  "Normal hook run at the very end of `chronometrist-mode'.")
+
+(defvar chronometrist-list-format-transformers nil
+  "List of functions to transform `tabulated-list-format' (which see).
+This is called with `run-transformers' in `chronometrist-mode', which see.
+
+Extensions using `chronometrist-list-format-transformers' to
+increase the number of columns will also need to modify the value
+of `tabulated-list-entries' by using
+`chronometrist-entry-transformers'.")
+
+(defvar chronometrist-entry-transformers nil
+  "List of functions to transform each entry of `tabulated-list-entries'.
+This is called with `run-transformers' in `chronometrist-entries', which see.
+
+Extensions using `chronometrist-entry-transformers' to increase
+the number of columns will also need to modify the value of
+`tabulated-list-format' by using
+`chronometrist-list-format-transformers'.")
 
 (defvar chronometrist-before-in-functions nil
   "Functions to run before a task is clocked in.
@@ -406,19 +449,16 @@ is the name of the task to be clocked out of.")
 (define-derived-mode chronometrist-mode tabulated-list-mode "Chronometrist"
   "Major mode for `chronometrist'."
   (make-local-variable 'tabulated-list-format)
-  (setq tabulated-list-format
-        (vconcat [("#"       3  t)
-                  ("Task"    25 t)
-                  ("Time"    10 t)
-                  ("Active"  10 t)]
-                 (when (chronometrist-use-goals?)
-                   [("Target" 3 t)])))
+  (--> [("#" 3 t) ("Task" 25 t) ("Time" 10 t) ("Active" 10 t)]
+        (run-transformers chronometrist-list-format-transformers it)
+        (setq tabulated-list-format it))
   (make-local-variable 'tabulated-list-entries)
   (setq tabulated-list-entries 'chronometrist-entries)
   (make-local-variable 'tabulated-list-sort-key)
   (setq tabulated-list-sort-key '("Task" . nil))
   (tabulated-list-init-header)
-  (setq revert-buffer-function #'chronometrist-refresh))
+  (setq revert-buffer-function #'chronometrist-refresh)
+  (run-hooks 'chronometrist-mode-hook))
 
 ;; ## BUTTONS ##
 
