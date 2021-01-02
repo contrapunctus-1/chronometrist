@@ -352,15 +352,15 @@ Argument _FS-EVENT is ignored."
               ((null file-change-type) nil)
               (t (chronometrist-events-populate))))
     (chronometrist-events-populate)
-    (setq chronometrist--file-hashes
-          (list :last (chronometrist-file-hash :before-last nil)
-                :rest (chronometrist-file-hash nil :before-last)))
     (setq chronometrist-task-list
           (-> (chronometrist-map-file chronometrist-file
                 (lambda (plist)
                   (plist-get plist :name)))
               (cl-remove-duplicates  :test #'equal)
               (sort  #'string-lessp))))
+  (setq chronometrist--file-hashes
+        (list :last (chronometrist-file-hash :before-last nil)
+              :rest (chronometrist-file-hash nil :before-last)))
   ;; REVIEW - can we move most/all of this to the `chronometrist-file-change-hook'?
   (chronometrist-refresh))
 
