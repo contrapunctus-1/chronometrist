@@ -20,6 +20,22 @@ STREAM (which is the value of `current-buffer')."
   `(with-current-buffer (find-file-noselect ,file)
      (save-excursion ,@body)))
 
+(defun chronometrist-map-file (file fn)
+  "Run FN for each s-expression in FILE, from last to first.
+FN must be a function accepting one argument."
+  (declare (indent defun))
+  (chronometrist-sexp-in-file file
+    (goto-char (point-max))
+    (cl-loop with var
+      while (and (not (bobp))
+                 (backward-list)
+                 (->> (current-buffer)
+                      (read )
+                      (ignore-errors )
+                      (setq var ))
+                 (backward-list))
+      collect (funcall fn var))))
+
 ;;;; Queries
 (defun chronometrist-sexp-open-log ()
   "Open `chronometrist-file' in another window."
@@ -88,12 +104,6 @@ were none."
     (unless (bobp) (insert "\n"))
     (unless (bolp) (insert "\n"))
     (funcall chronometrist-sexp-pretty-print-function plist (current-buffer))
-    ;; Update in-memory (`chronometrist-events', `chronometrist-task-list') too...
-    (chronometrist-events-add plist)
-    (chronometrist-task-list-add (plist-get plist :name))
-    (chronometrist-tags-history-add plist)
-    ;; ...so we can skip some expensive operations.
-    (setq chronometrist--inhibit-read-p t)
     (save-buffer)))
 
 (defun chronometrist-sexp-delete-list (&optional arg)
@@ -110,7 +120,6 @@ were none."
     (backward-list 1)
     (chronometrist-sexp-delete-list)
     (funcall chronometrist-sexp-pretty-print-function plist (current-buffer))
-    (chronometrist-events-replace-last plist)
     ;; We assume here that this function will always be used to
     ;; replace something with the same :name. At the time of writing,
     ;; this is indeed the case. The reason for this is that if the

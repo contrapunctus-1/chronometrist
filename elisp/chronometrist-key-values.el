@@ -105,22 +105,6 @@ Each value is a list of tag combinations, in reverse
 chronological order. Each combination is a list containing tags
 as symbol and/or strings.")
 
-(defun chronometrist-map-file (file fn)
-  "Run FN for each s-expression in FILE, from last to first.
-FN must be a function accepting one argument."
-  (declare (indent defun))
-  (chronometrist-sexp-in-file file
-    (goto-char (point-max))
-    (cl-loop with var
-      while (and (not (bobp))
-                 (backward-list)
-                 (->> (current-buffer)
-                      (read )
-                      (ignore-errors )
-                      (setq var ))
-                 (backward-list))
-      do (funcall fn var))))
-
 (defun chronometrist-history-prep (key history-table)
   "Prepare history hash tables for use in prompts.
 Each value in hash table TABLE must be a list. Each value will be

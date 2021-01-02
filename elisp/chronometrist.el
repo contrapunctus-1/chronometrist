@@ -250,8 +250,6 @@ value of `revert-buffer-function'."
         (chronometrist-maybe-start-timer)
         (set-window-point window point)))))
 
-(defvar chronometrist--inhibit-read-p nil)
-
 (defvar chronometrist--file-hashes nil
   "List of hashes of `chronometrist-file'.
 `chronometrist-refresh-file' sets this to a plist in the form
@@ -321,18 +319,18 @@ Return
           ;; the last expression may shrink, and if we try to hash the
           ;; old region again to determine if it has changed, we will
           ;; get an args-out-of-range error.
-          (last-same-p     (equal (--> (hash-table-keys chronometrist-events)
-                                       (last it)
-                                       (car it)
-                                       (gethash it chronometrist-events)
-                                       (last it)
-                                       (car it))
-                                  (chronometrist-last)))
-          (new-rest-hash   (third (chronometrist-file-hash rest-start rest-end)))
-          (rest-same-p     (equal rest-hash new-rest-hash))
-          (appended-sexp   (chronometrist-sexp-in-file chronometrist-file
-                             (goto-char last-end)
-                             (ignore-errors (read (current-buffer))))))
+          (last-same-p   (--> (hash-table-keys chronometrist-events)
+                              (last it)
+                              (car it)
+                              (gethash it chronometrist-events)
+                              (last it)
+                              (car it)
+                              (equal it (chronometrist-last))))
+          (new-rest-hash (third (chronometrist-file-hash rest-start rest-end)))
+          (rest-same-p   (equal rest-hash new-rest-hash))
+          (appended-sexp (chronometrist-sexp-in-file chronometrist-file
+                           (goto-char last-end)
+                           (ignore-errors (read (current-buffer))))))
     (cond ((not rest-same-p) t)
           (last-same-p (when appended-sexp :append))
           (t :last))))
@@ -345,20 +343,24 @@ Argument _FS-EVENT is ignored."
   ;; (the latter represents the old state of the file, which
   ;; `chronometrist-file-change-type' compares with the new one)
   (awhen chronometrist--file-hashes
-    (message "chronometrist - file change type is %s" (chronometrist-file-change-type it))
-    ;; (case it
-    ;;   (:append )
-    ;;   (:last )
-    ;;   (t ))
-    )
+    (let ((file-change-type (chronometrist-file-change-type it)))
+      (message "chronometrist - file change type is %s" file-change-type)
+      (cond ((eq file-change-type :append)
+             (chronometrist-events-add plist))
+            ((eq file-change-type :last)
+             (chronometrist-events-replace-last plist))
+            ((null file-change-type) nil)
+            (t (chronometrist-events-populate)))))
   (setq chronometrist--file-hashes
         (list :last (chronometrist-file-hash :before-last nil)
               :rest (chronometrist-file-hash nil :before-last)))
+  (setq chronometrist-task-list
+        (-> (chronometrist-map-file chronometrist-file
+              (lambda (plist)
+                (plist-get plist :name)))
+            (cl-remove-duplicates  :test #'equal)
+            (sort  #'string-lessp)))
   ;; REVIEW - can we move most/all of this to the `chronometrist-file-change-hook'?
-  (if chronometrist--inhibit-read-p
-      (setq chronometrist--inhibit-read-p nil)
-    (chronometrist-events-populate)
-    (setq chronometrist-task-list (chronometrist-tasks-from-table)))
   (chronometrist-refresh))
 
 (defun chronometrist-query-stop ()
