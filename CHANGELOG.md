@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Lisp objects being stored as un`read`able strings in `chronometrist-value-history`, resulting in value suggestions not matching user input.
 * `chronometrist-report` no longer calls `delete-other-windows`; use `chronometrist-report-mode-hook` if it is desired.
 * Fixed infinite loop in `chronometrist-report` triggered by non-English locales.
+* Optimization - refresh time after changing chronometrist-file is now near-instant for the two most common situations - an expression being added to the end of the file, or the last expression in the file being changed. This works for changes made by the user as well as changes made by Chronometrist (or other) commands.
 
 ## [0.5.6] - 2020-12-22
 ### Fixed
