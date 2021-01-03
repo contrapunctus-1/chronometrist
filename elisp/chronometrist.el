@@ -262,11 +262,11 @@ where HASH-1 and HASH-2 are lists in the form
 
 \(see `chronometrist-file-hash')
 
-HASH-1 represents the text between the start of the last
-s-expression to the end of the file, and
+HASH-1 represents the text between the start and the end of the last
+s-expression, and
 
 HASH-2 represents the text between the start of the file and the
-position before the last s-expression.")
+end of the second-last s-expression.")
 
 (defun chronometrist-file-hash (&optional start end)
   "Calculate hash of `chronometrist-file' between START and END.
@@ -277,7 +277,7 @@ nil or any other value - the value of `point-min'.
 
 END can be
 a number or marker,
-:before-last - the position at the start of the last s-expression,
+:before-last - the position at the end of the second-last s-expression,
 nil or any other value - the position at the end of the last s-expression.
 
 Return a list in the form (A B HASH), where A and B are markers
@@ -290,7 +290,8 @@ in `chronometrist-file' describing the region for which HASH was calculated."
                         (t (point-min))))
            (end   (cond ((eq :before-last end)
                          (goto-char (point-max))
-                         (backward-list))
+                         (backward-list 2)
+                         (forward-list))
                         ((number-or-marker-p end) end)
                         (t (goto-char (point-max))
                            (backward-list)
@@ -299,10 +300,26 @@ in `chronometrist-file' describing the region for which HASH was calculated."
            (secure-hash 'sha1 it)
            (list start end it)))))
 
+(defun chronometrist-read-from (position)
+  (chronometrist-sexp-in-file chronometrist-file
+    (goto-char
+     (if (number-or-marker-p position)
+         position
+       (funcall position)))
+    (ignore-errors (read (current-buffer)))))
+
+;; rest-start rest-end last-start last-end
+;; :append - rest same, last same, new expr after last-end
+;; :modify - rest same, last not same, no expr after last-end
+;; :remove - rest same, last not same, no expr after last-start
+;; nil     - rest same, last same, no expr after last-end
+;; t       - rest changed
+
 ;; tests -
 ;; add newline after last expression and save
 ;; remove newline afer last expession and save
 ;; remove a key-value from last expression
+;; remove the last expression
 
 (defun chronometrist-file-change-type (hashes)
   "Determine the type of change made to `chronometrist-file'.
@@ -310,7 +327,8 @@ HASHES must be a plist. (see `chronometrist--file-hashes')
 
 Return
 :append  if a new s-expression was added to the end,
-  :last  if the last s-expression was modified,
+:modify  if the last s-expression was modified,
+:remove  if the last s-expression was removed,
     nil  if the contents didn't change, and
       t  for any other change."
   (-let* (((last-start last-end last-hash) (plist-get hashes :last))
@@ -318,22 +336,31 @@ Return
           ;; Using a hash for the last expression can cause issues -
           ;; the last expression may shrink, and if we try to hash the
           ;; old region again to determine if it has changed, we will
-          ;; get an args-out-of-range error.
-          (last-same-p   (--> (hash-table-keys chronometrist-events)
-                              (last it)
-                              (car it)
-                              (gethash it chronometrist-events)
-                              (last it)
-                              (car it)
-                              (equal it (chronometrist-last))))
-          (new-rest-hash (third (chronometrist-file-hash rest-start rest-end)))
-          (rest-same-p   (equal rest-hash new-rest-hash))
-          (appended-sexp (chronometrist-sexp-in-file chronometrist-file
-                           (goto-char last-end)
-                           (ignore-errors (read (current-buffer))))))
+          ;; get an args-out-of-range error. A hash will also result
+          ;; in false negatives for whitespace/indentation
+          ;; differences.
+          (last-same-p   (--> (hash-table-keys chronometrist-events) (last it) (car it)
+                              (gethash it chronometrist-events) (last it) (car it)
+                              (equal it (chronometrist-read-from last-start))))
+          (file-new-length (chronometrist-sexp-in-file chronometrist-file (point-max)))
+          ;; If the last expression is removed,
+          ;; `delete-trailing-whitespace' will also squeeze the two
+          ;; remaining trailing newlines, which makes file-new-length
+          ;; shorter than rest-end, and gives an erroneous result of t
+          ;; ("other change") rather than :removed
+          (rest-same-p (unless (< file-new-length rest-end)
+                         (equal rest-hash
+                                (third (chronometrist-file-hash rest-start rest-end))))))
     (cond ((not rest-same-p) t)
-          (last-same-p (when appended-sexp :append))
-          (t :last))))
+          (last-same-p
+           (when (chronometrist-read-from last-end) :append))
+          ((not (chronometrist-read-from last-start))
+           :remove)
+          ((not (chronometrist-read-from
+                 (lambda ()
+                   (progn (goto-char last-start)
+                          (forward-list)))))
+           :modify))))
 
 (defun chronometrist-refresh-file (_fs-event)
   "Re-read `chronometrist-file' and refresh the `chronometrist' buffer.
@@ -347,7 +374,7 @@ Argument _FS-EVENT is ignored."
         (message "chronometrist - file change type is %s" file-change-type)
         (cond ((eq file-change-type :append)
                (chronometrist-events-add (chronometrist-sexp-last)))
-              ((eq file-change-type :last)
+              ((eq file-change-type :modify)
                (chronometrist-events-replace-last (chronometrist-sexp-last)))
               ((null file-change-type) nil)
               (t (chronometrist-events-populate))))
@@ -510,7 +537,8 @@ action, and is ignored."
     (when current
       (chronometrist-run-functions-and-clock-out current))
     (let ((task (read-from-minibuffer "New task name: " nil nil nil nil nil t)))
-      (chronometrist-run-functions-and-clock-in task))))
+      (chronometrist-run-functions-and-clock-in task))
+    (chronometrist-refresh-file nil)))
 
 ;; ## COMMANDS ##
 

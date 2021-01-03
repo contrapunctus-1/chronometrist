@@ -221,7 +221,7 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
 4. [ ] Jump to beginning/end of data (keys B/F)
 5. [ ] Expandable items - show tag-combination-based breakdown
 
-** Code quality [12%]
+** Code quality [25%]
 1. [ ] Remove duplication between =chronometrist-toggle-task= and =chronometrist-toggle-task-button=
 2. [ ] Make functions more test-friendly. Quite a few can get away with returning values instead of writing to a file - this will make it easier to test them. Other functions can handle the file operations for them.
 3. [ ] Rewrite using cl-loop
@@ -260,12 +260,13 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
 4. [ ] Fix heading link to "midnight-spanning events" - jumps to the correct heading in HTML export, but jumps to its own self in Org mode.
 5. [ ] Figure out some way to hide package prefixes in identifiers in Org mode (without actually affecting the contents, a la nameless-mode)
 
-** UX [20%]
-   1. [-] Optimization - (jonasw) store length and hash of previous file, see if the new file has the same hash until old-length bytes.
+** UX [30%]
+   1. [X] Optimization - (jonasw) store length and hash of previous file, see if the new file has the same hash until old-length bytes.
       * [X] Check for type of change to file
         + [X] Handle last expression being removed
-      * [ ] Implement optimized operations
-      * [ ] BUG - if something was removed from the last expression (thereby decreasing the length of the file), =chronometrist-file-change-type= returns =t= instead of =:last=
+      * [X] Implement optimized operations
+      * [X] BUG - if something was removed from the last expression (thereby decreasing the length of the file), =chronometrist-file-change-type= returns =t= instead of =:last=
+      * [X] BUG - args out of range error when last plist is removed
    2. [X] Optimization - generate history before querying, not when the file changes.
    3. [ ] Don't suggest nil when asking for first project on first run
    4. [ ] When starting a project with time of "-" (i.e. not worked on today until now), immediately set time to 0 instead of waiting for the first timer refresh
