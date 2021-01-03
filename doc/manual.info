@@ -270,14 +270,8 @@ Checking hashes
 
 
 @samp{chronometrist-file-change-type}
-@samp{chronometrist-file-hash-length}
-@samp{chronometrist--file-hashes}
-
-Issues -
-@enumerate
-@item
-Whitespace changes after last expression return @samp{:append} instead of nil.
-@end enumerate
+@samp{chronometrist-file-hash}
+@samp{chronometrist--file-state}
 
 @item
 Other strategies [25%]
@@ -716,11 +710,13 @@ Function - chronometrist-goto-nth-task (n)
 @item
 Function - chronometrist-refresh (&optional ignore-auto noconfirm)
 @item
-Internal Variable - chronometrist--file-hashes
+Internal Variable - chronometrist--file-state
 @item
-Function - chronometrist-file-hash (&optional start end)
+Function - chronometrist-file-hash (&optional start end hash)
 @item
-Function - chronometrist-file-change-type (hashes)
+Function - chronometrist-read-from (position)
+@item
+Function - chronometrist-file-change-type (state)
 @item
 Function - chronometrist-refresh-file (fs-event)
 @item

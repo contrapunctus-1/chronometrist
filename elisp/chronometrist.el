@@ -250,55 +250,51 @@ value of `revert-buffer-function'."
         (chronometrist-maybe-start-timer)
         (set-window-point window point)))))
 
-(defvar chronometrist--file-hashes nil
-  "List of hashes of `chronometrist-file'.
+(defvar chronometrist--file-state nil
+  "List containing the state of `chronometrist-file'.
 `chronometrist-refresh-file' sets this to a plist in the form
 
-\(:last HASH-1 :rest HASH-2)
-
-where HASH-1 and HASH-2 are lists in the form
-
-\(START END HASH)
+\(:last (LAST-START LAST-END) :rest (REST-START REST-END HASH))
 
 \(see `chronometrist-file-hash')
 
-HASH-1 represents the text between the start and the end of the last
-s-expression, and
+LAST-START and LAST-END represent the start and the end of the
+last s-expression.
 
-HASH-2 represents the text between the start of the file and the
+REST-START and REST-END represent the start of the file and the
 end of the second-last s-expression.")
 
-(defun chronometrist-file-hash (&optional start end)
+(defun chronometrist-file-hash (&optional start end hash)
   "Calculate hash of `chronometrist-file' between START and END.
 START can be
-a number or marker,
 :before-last - the position at the start of the last s-expression
 nil or any other value - the value of `point-min'.
 
 END can be
-a number or marker,
 :before-last - the position at the end of the second-last s-expression,
 nil or any other value - the position at the end of the last s-expression.
+
+Return (START END) if HASH is nil, else (START END HASH).
 
 Return a list in the form (A B HASH), where A and B are markers
 in `chronometrist-file' describing the region for which HASH was calculated."
   (chronometrist-sexp-in-file chronometrist-file
-    (let* ((start (cond ((eq :before-last start)
-                         (goto-char (point-max))
-                         (backward-list))
-                        ((number-or-marker-p start) start)
-                        (t (point-min))))
-           (end   (cond ((eq :before-last end)
-                         (goto-char (point-max))
-                         (backward-list 2)
-                         (forward-list))
-                        ((number-or-marker-p end) end)
-                        (t (goto-char (point-max))
-                           (backward-list)
-                           (forward-list)))))
-      (--> (buffer-substring-no-properties start end)
-           (secure-hash 'sha1 it)
-           (list start end it)))))
+    (let* ((start (if (eq :before-last start)
+                      (progn (goto-char (point-max))
+                             (backward-list))
+                    (point-min)))
+           (end   (if (eq :before-last end)
+                      (progn (goto-char (point-max))
+                             (backward-list 2)
+                             (forward-list))
+                    (goto-char (point-max))
+                    (backward-list)
+                    (forward-list))))
+      (if hash
+          (--> (buffer-substring-no-properties start end)
+               (secure-hash 'sha1 it)
+               (list start end it))
+        (list start end)))))
 
 (defun chronometrist-read-from (position)
   (chronometrist-sexp-in-file chronometrist-file
@@ -321,9 +317,9 @@ in `chronometrist-file' describing the region for which HASH was calculated."
 ;; remove a key-value from last expression
 ;; remove the last expression
 
-(defun chronometrist-file-change-type (hashes)
+(defun chronometrist-file-change-type (state)
   "Determine the type of change made to `chronometrist-file'.
-HASHES must be a plist. (see `chronometrist--file-hashes')
+STATE must be a plist. (see `chronometrist--file-state')
 
 Return
 :append  if a new s-expression was added to the end,
@@ -331,8 +327,8 @@ Return
 :remove  if the last s-expression was removed,
     nil  if the contents didn't change, and
       t  for any other change."
-  (-let* (((last-start last-end last-hash) (plist-get hashes :last))
-          ((rest-start rest-end rest-hash) (plist-get hashes :rest))
+  (-let* (((last-start last-end)           (plist-get state :last))
+          ((rest-start rest-end rest-hash) (plist-get state :rest))
           ;; Using a hash for the last expression can cause issues -
           ;; the last expression may shrink, and if we try to hash the
           ;; old region again to determine if it has changed, we will
@@ -366,10 +362,10 @@ Return
   "Re-read `chronometrist-file' and refresh the `chronometrist' buffer.
 Argument _FS-EVENT is ignored."
   (run-hooks 'chronometrist-file-change-hook)
-  ;; `chronometrist-file-change-type' must be run /before/ we update `chronometrist--file-hashes'
+  ;; `chronometrist-file-change-type' must be run /before/ we update `chronometrist--file-state'
   ;; (the latter represents the old state of the file, which
   ;; `chronometrist-file-change-type' compares with the new one)
-  (aif chronometrist--file-hashes
+  (aif chronometrist--file-state
       (let ((file-change-type (chronometrist-file-change-type it)))
         (message "chronometrist - file change type is %s" file-change-type)
         (cond ((eq file-change-type :append)
@@ -393,7 +389,7 @@ Argument _FS-EVENT is ignored."
          (cl-remove-duplicates it :test #'equal)
          (sort it #'string-lessp)
          (setq chronometrist-task-list it)))
-  (setq chronometrist--file-hashes
+  (setq chronometrist--file-state
         (list :last (chronometrist-file-hash :before-last nil)
               :rest (chronometrist-file-hash nil :before-last)))
   ;; REVIEW - can we move most/all of this to the `chronometrist-file-change-hook'?
