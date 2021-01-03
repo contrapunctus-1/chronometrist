@@ -474,7 +474,7 @@ Each of these has a corresponding function to clear it and fill it with values -
 ** chronometrist-sexp
 1. Custom variable - chronometrist-sexp-pretty-print-function
 2. Macro - chronometrist-sexp-in-file (file &rest body)
-3. Function - chronometrist-map-file (file fn)
+3. Macro - chronometrist-loop-file (for expr in file &rest loop-clauses)
 4. Function - chronometrist-sexp-open-log ()
 5. Function - chronometrist-sexp-between (&optional (ts-beg (chronometrist-date)) (ts-end (ts-adjust 'day +1 (chronometrist-date))))
 6. Function - chronometrist-sexp-query-till (&optional (date (chronometrist-date)))

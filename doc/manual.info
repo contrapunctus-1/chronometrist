@@ -1154,7 +1154,7 @@ Custom variable - chronometrist-sexp-pretty-print-function
 @item
 Macro - chronometrist-sexp-in-file (file &rest body)
 @item
-Function - chronometrist-map-file (file fn)
+Macro - chronometrist-loop-file (for expr in file &rest loop-clauses)
 @item
 Function - chronometrist-sexp-open-log ()
 @item

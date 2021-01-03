@@ -20,33 +20,18 @@ STREAM (which is the value of `current-buffer')."
   `(with-current-buffer (find-file-noselect ,file)
      (save-excursion ,@body)))
 
-(defun chronometrist-mapcar-file (file fn)
-  "Run FN for each s-expression in FILE, from last to first.
-Return the values of FN as a list.
-FN must be a function accepting one argument."
+(defmacro chronometrist-loop-file (for expr in file &rest loop-clauses)
+  "`cl-loop' LOOP-CLAUSES over s-expressions in FILE.
+VAR is bound to each s-expression."
   (declare (indent defun))
-  (chronometrist-sexp-in-file file
-    (goto-char (point-max))
-    (cl-loop with var
-      while (and (not (bobp))
-                 (backward-list)
-                 (setq var (ignore-errors (read (current-buffer))))
-                 (backward-list))
-      collect (funcall fn var))))
-
-(defun chronometrist-mapc-file (file fn)
-  "Run FN for each s-expression in FILE, from last to first.
-Return nil.
-FN must be a function accepting one argument."
-  (declare (indent defun))
-  (chronometrist-sexp-in-file file
-    (goto-char (point-max))
-    (cl-loop with var
-      while (and (not (bobp))
-                 (backward-list)
-                 (setq var (ignore-errors (read (current-buffer))))
-                 (backward-list))
-      do (funcall fn var))))
+  `(chronometrist-sexp-in-file ,file
+     (goto-char (point-max))
+     (cl-loop with ,expr
+       while (and (not (bobp))
+                  (backward-list)
+                  (setq ,expr (ignore-errors (read (current-buffer))))
+                  (backward-list))
+       ,@loop-clauses)))
 
 ;;;; Queries
 (defun chronometrist-sexp-open-log ()
