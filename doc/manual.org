@@ -81,7 +81,9 @@ Thus, I have considered various optimization strategies, and so far implemented 
 One of the earliest 'optimizations' of great importance turned out to simply be a bug - turns out, if you run an identical call to [[elisp:(describe-function 'file-notify-add-watch)][=file-notify-add-watch=]] twice, you create /two/ file watchers and your callback will be called /twice./ We were creating a file watcher /each time the chronometrist command was run./ 🤦 This was causing humongous slowdowns each time the file changed. 😅
 + It was fixed in v0.2.2 by making the watch creation conditional, using [[file:../elisp/chronometrist-common.el::defvar chronometrist--fs-watch ][=chronometrist--fs-watch=]] to store the watch object.
 
-**** Preserve state
+**** Preserve hash table state for some commands
+NOTE - this has been replaced with a more general optimization - see next section.
+
 The next one was released in v0.5. Till then, any time the [[file:../elisp/chronometrist-custom.el::defcustom chronometrist-file (][=chronometrist-file=]] was modified, we'd clear the [[file:../elisp/chronometrist-events.el::defvar chronometrist-events (][=chronometrist-events=]] hash table and read data into it again. The reading itself is nearly-instant, even with ~2 years' worth of data [fn:1] (it uses Emacs' [[elisp:(describe-function 'read)][=read=]], after all), but the splitting of [[* Midnight-spanning events][midnight-spanning events]] is the real performance killer.
 
 After the optimization...
@@ -96,30 +98,11 @@ There are still some operations which [[file:../elisp/chronometrist.el::defun ch
 
 [fn:1] As indicated by exploratory work in the =parsimonious-reading= branch, where I made a loop to only =read= and collect s-expressions from the file. It was near-instant...until I added event splitting to it.
 
-**** Checking hashes
-=chronometrist-file-change-type=
-=chronometrist-file-hash=
-=chronometrist--file-state=
+**** Determine type of change made to file
+Most changes, whether made through user-editing or by Chronometrist commands, happen at the end of the file. We try to detect the kind of change made - whether the last expression was modified, removed, or whether a new expression was added to the end - and make the corresponding change to =chronometrist-events=, instead of doing a full parse again (=chronometrist-events-populate=). The increase in responsiveness has been significant.
 
-**** Other strategies [25%]
-1. [X] Defer (tag/key/value) history generation from file-change-time to prompt-time, and make it per-task instead of all tasks at once
-   * The biggest resource hog is splitting of midnight-spanning intervals, however.
-   * Reduce memory use by allowing user to restrict number of s-expressions read.
-   * Per-task history generation will create problems - e.g. values for a given key for one task won't be suggested for values for the same key in another 🤦
-     + Tags and keys are already task-sensitive; just don't make values task-sensitive.
-2. [ ] Compare partial hashes of file to know what has changed - only update memory when necessary.
-3. [ ] In-memory cache - don't store entire file into memory; instead, split midnight-spanning events just for the requested data.
-   * Will increase load time for the first time =chronometrist=, =chronometrist-report=, or =chronometrist-statistics= are run (including forward/backward commands in the latter two)
-     + Can try pre-emptively loading data for the latter two
-   * Will reduce memory use.
-4. [ ] Mix of 2 and 3 - in-memory cache with partial updates
-5. [ ] Split and save midnight-spanning intervals to disk - remove the need for an in-memory version of data with split midnight-spanning intervals.
-   * Least memory use?
-   * Might make the file harder for a user to edit.
-6. [ ] Save timestamps as UNIX epoch time.
-   * Will (probably) greatly speed up time parsing and interval splitting.
-   * Will greatly impede human editing of the file, too. 🤔
-     + An editing UI could help - pretty sure every timestamp edit I've ever made has been for the last interval, or at most an interval in today's data.
+When =chronometrist-refresh-file= is run by the file system watcher, it uses  =chronometrist-file-hash= to assign indices and a hash to =chronometrist--file-state=. The next time the file changes, =chronometrist-file-change-type= compares this state to the current state of the file to determine the type of change made.
+
 ** Midnight-spanning events
 :PROPERTIES:
 :DESCRIPTION: Events starting on one day and ending on another
