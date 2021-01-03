@@ -267,10 +267,12 @@ end of the second-last s-expression.")
 (defun chronometrist-file-hash (&optional start end hash)
   "Calculate hash of `chronometrist-file' between START and END.
 START can be
+a number or marker,
 :before-last - the position at the start of the last s-expression
 nil or any other value - the value of `point-min'.
 
 END can be
+a number or marker,
 :before-last - the position at the end of the second-last s-expression,
 nil or any other value - the position at the end of the last s-expression.
 
@@ -279,17 +281,19 @@ Return (START END) if HASH is nil, else (START END HASH).
 Return a list in the form (A B HASH), where A and B are markers
 in `chronometrist-file' describing the region for which HASH was calculated."
   (chronometrist-sexp-in-file chronometrist-file
-    (let* ((start (if (eq :before-last start)
-                      (progn (goto-char (point-max))
-                             (backward-list))
-                    (point-min)))
-           (end   (if (eq :before-last end)
-                      (progn (goto-char (point-max))
-                             (backward-list 2)
-                             (forward-list))
-                    (goto-char (point-max))
-                    (backward-list)
-                    (forward-list))))
+    (let* ((start (cond ((number-or-marker-p start) start)
+                        ((eq :before-last start)
+                         (goto-char (point-max))
+                         (backward-list))
+                        (t (point-min))))
+           (end   (cond ((number-or-marker-p end) end)
+                        ((eq :before-last end)
+                         (goto-char (point-max))
+                         (backward-list 2)
+                         (forward-list))
+                        (t (goto-char (point-max))
+                           (backward-list)
+                           (forward-list)))))
       (if hash
           (--> (buffer-substring-no-properties start end)
                (secure-hash 'sha1 it)
@@ -346,7 +350,7 @@ Return
           ;; ("other change") rather than :removed
           (rest-same-p (unless (< file-new-length rest-end)
                          (equal rest-hash
-                                (third (chronometrist-file-hash rest-start rest-end))))))
+                                (third (chronometrist-file-hash rest-start rest-end t))))))
     (cond ((not rest-same-p) t)
           (last-same-p
            (when (chronometrist-read-from last-end) :append))
@@ -378,8 +382,7 @@ Argument _FS-EVENT is ignored."
                                (car it))))
                  (--> (gethash key chronometrist-events)
                       (-drop-last 1 it)
-                      (puthash key it chronometrist-events)))
-               (puthash chronometrist-events))
+                      (puthash key it chronometrist-events))))
               ((null file-change-type) nil)
               (t (chronometrist-events-populate))))
     (chronometrist-events-populate)
@@ -391,7 +394,7 @@ Argument _FS-EVENT is ignored."
          (setq chronometrist-task-list it)))
   (setq chronometrist--file-state
         (list :last (chronometrist-file-hash :before-last nil)
-              :rest (chronometrist-file-hash nil :before-last)))
+              :rest (chronometrist-file-hash nil :before-last t)))
   ;; REVIEW - can we move most/all of this to the `chronometrist-file-change-hook'?
   (chronometrist-refresh))
 
