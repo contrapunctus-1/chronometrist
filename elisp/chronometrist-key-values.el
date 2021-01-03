@@ -118,7 +118,7 @@ reversed and will have duplicate elements removed."
 Return the new value inserted into HISTORY-TABLE.
 
 HISTORY-TABLE must be a hash table. (see `chronometrist-tags-history')"
-  (chronometrist-map-file file
+  (chronometrist-mapc-file file
     (lambda (plist)
       (let ((new-tag-list  (plist-get plist :tags))
             (old-tag-lists (gethash task history-table)))
@@ -126,7 +126,7 @@ HISTORY-TABLE must be a hash table. (see `chronometrist-tags-history')"
              new-tag-list
              (puthash task
                       (if old-tag-lists
-                          (cons old-tag-lists new-tag-list)
+                          (append old-tag-lists (list new-tag-list))
                         (list new-tag-list))
                       history-table)))))
   (chronometrist-history-prep task history-table))
@@ -136,7 +136,7 @@ HISTORY-TABLE must be a hash table. (see `chronometrist-tags-history')"
 Return the new value inserted into HISTORY-TABLE.
 
 HISTORY-TABLE must be a hash table (see `chronometrist-key-history')."
-  (chronometrist-map-file file
+  (chronometrist-mapc-file file
     (lambda (plist)
       (catch 'quit
         (let* ((name  (plist-get plist :name))
@@ -157,7 +157,7 @@ HISTORY-TABLE must be a hash table (see `chronometrist-key-history')."
 HISTORY-TABLE must be a hash table. (see `chronometrist-value-history')"
   ;; Note - while keys are Lisp keywords, values may be any Lisp
   ;; object, including lists
-  (chronometrist-map-file file
+  (chronometrist-mapc-file file
     (lambda (plist)
       ;; We call them user-key-values because we filter out Chronometrist's
       ;; reserved key-values
