@@ -10,7 +10,7 @@
 ;;                    (s "1.12.0")
 ;;                    (ts "0.2")
 ;;                    (anaphora "1.0.4"))
-;; Version: 0.6.0
+;; Version: 0.6.1
 
 (require 'filenotify)
 (require 'cl-lib)
@@ -383,7 +383,7 @@ Argument _FS-EVENT is ignored."
   ;; `chronometrist-file-change-type' compares with the new one)
   (aif chronometrist--file-state
       (let ((file-change-type (chronometrist-file-change-type it)))
-        (message "chronometrist - file change type is %s" file-change-type)
+        ;; (message "chronometrist - file change type is %s" file-change-type)
         (cond ((eq file-change-type :append)
                (chronometrist-events-add (chronometrist-sexp-last)))
               ((eq file-change-type :modify)
