@@ -4,18 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [unreleased]
+## [0.6.0] - 2021-01-04
 ### Added
 * New hooks - `chronometrist-mode-hook`, `chronometrist-list-format-transformers`, `chronometrist-entry-transformers`, and `chronometrist-timer-hook`.
 * New custom variable `chronometrist-sexp-pretty-print-function`
 ### Changed
 * `chronometrist-plist-pp` now indents recursively.
+### Optimization
+* Refresh time after changing `chronometrist-file` is now near-instant for the most common situations - an expression being added to the end of the file, or the last expression in the file being changed or removed. This works for changes made by the user as well as changes made by Chronometrist (or other) commands.
+* Tag, key, and value histories are generated before the user is prompted, rather than each time the file is saved.
 ### Fixed
 * Remove quotes from key-value prompt in quit keybindings
 * Lisp objects being stored as un`read`able strings in `chronometrist-value-history`, resulting in value suggestions not matching user input.
 * `chronometrist-report` no longer calls `delete-other-windows`; use `chronometrist-report-mode-hook` if it is desired.
 * Fixed infinite loop in `chronometrist-report` triggered by non-English locales.
-* Optimization - refresh time after changing `chronometrist-file` is now near-instant for the most common situations - an expression being added to the end of the file, and the last expression in the file being changed or removed. This works for changes made by the user as well as changes made by Chronometrist (or other) commands.
 
 ## [0.5.6] - 2020-12-22
 ### Fixed

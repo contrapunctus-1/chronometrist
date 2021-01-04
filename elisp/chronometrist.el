@@ -9,9 +9,8 @@
 ;;                    (seq "2.20")
 ;;                    (s "1.12.0")
 ;;                    (ts "0.2")
-;;                    (anaphora "1.0.4")
-;;                    (chronometrist-run-transformers "0.0.1"))
-;; Version: 0.5.6
+;;                    (anaphora "1.0.4"))
+;; Version: 0.6.0
 
 (require 'filenotify)
 (require 'cl-lib)
