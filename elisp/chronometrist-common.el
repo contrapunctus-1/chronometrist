@@ -43,14 +43,6 @@ must correspond to the output from `chronometrist-format-time'.")
 (defvar chronometrist-task-list nil
   "List of tasks in `chronometrist-file', as returned by `chronometrist-tasks-from-table'.")
 
-(defun chronometrist-task-list-add (task)
-  "Add TASK to `chronometrist-task-list', if it is not already present."
-  (unless (member task chronometrist-task-list)
-    (--> (list task)
-         (append chronometrist-task-list it)
-         (sort it #'string-lessp)
-         (setq chronometrist-task-list it))))
-
 (defvar chronometrist--fs-watch nil
   "Filesystem watch object.
 

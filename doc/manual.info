@@ -541,8 +541,6 @@ Variable - chronometrist-time-re-ui
 @item
 Variable - chronometrist-task-list
 @item
-Function - chronometrist-task-list-add (task)
-@item
 Internal Variable - chronometrist--fs-watch
 @item
 Function - chronometrist-current-task ()
@@ -638,6 +636,8 @@ String -> Boolean
 @end itemize
 @item
 Function - chronometrist-use-goals? ()
+@item
+Function - chronometrist-run-transformers (transformers arg)
 @item
 Function - chronometrist-activity-indicator ()
 @item
