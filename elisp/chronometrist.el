@@ -10,13 +10,12 @@
 ;;                    (s "1.12.0")
 ;;                    (ts "0.2")
 ;;                    (anaphora "1.0.4")
-;;                    (run-transformers "0.0.1"))
+;;                    (chronometrist-run-transformers "0.0.1"))
 ;; Version: 0.5.6
 
 (require 'filenotify)
 (require 'cl-lib)
 (require 'subr-x)
-(require 'run-transformers)
 
 (require 'chronometrist-common)
 (require 'chronometrist-key-values)
@@ -161,6 +160,20 @@ See custom variable `chronometrist-activity-indicator'."
       (funcall chronometrist-activity-indicator)
     chronometrist-activity-indicator))
 
+(defun chronometrist-run-transformers (transformers arg)
+  "Run TRANSFORMERS with ARG.
+TRANSFORMERS should be a list of functions (F₁ ... Fₙ), each of
+which should accept a single argument.
+
+Call F₁ with ARG, with each following function being called with
+the return value of the previous function.
+
+Return the value returned by Fₙ."
+  (if transformers
+      (dolist (fn transformers arg)
+        (setq arg (funcall fn arg)))
+    arg))
+
 (defun chronometrist-entries ()
   "Create entries to be displayed in the buffer created by `chronometrist', in the format specified by `tabulated-list-entries'."
   ;; HACK - these calls are commented out, because `chronometrist-entries' is
@@ -177,7 +190,7 @@ See custom variable `chronometrist-activity-indicator'."
                (indicator   (if (chronometrist-task-active? task) (chronometrist-activity-indicator) "")))
           (--> (vector index task-button task-time indicator)
                (list task it)
-               (run-transformers chronometrist-entry-transformers it))))))
+               (chronometrist-run-transformers chronometrist-entry-transformers it))))))
 
 (defun chronometrist-task-at-point ()
   "Return the task at point in the `chronometrist' buffer, or nil if there is no task at point."
@@ -425,7 +438,7 @@ PREFIX is ignored."
 
 (defvar chronometrist-list-format-transformers nil
   "List of functions to transform `tabulated-list-format' (which see).
-This is called with `run-transformers' in `chronometrist-mode', which see.
+This is called with `chronometrist-run-transformers' in `chronometrist-mode', which see.
 
 Extensions using `chronometrist-list-format-transformers' to
 increase the number of columns will also need to modify the value
@@ -434,7 +447,7 @@ of `tabulated-list-entries' by using
 
 (defvar chronometrist-entry-transformers nil
   "List of functions to transform each entry of `tabulated-list-entries'.
-This is called with `run-transformers' in `chronometrist-entries', which see.
+This is called with `chronometrist-run-transformers' in `chronometrist-entries', which see.
 
 Extensions using `chronometrist-entry-transformers' to increase
 the number of columns will also need to modify the value of
@@ -504,7 +517,7 @@ is the name of the task to be clocked out of.")
   "Major mode for `chronometrist'."
   (make-local-variable 'tabulated-list-format)
   (--> [("#" 3 t) ("Task" 25 t) ("Time" 10 t) ("Active" 10 t)]
-        (run-transformers chronometrist-list-format-transformers it)
+        (chronometrist-run-transformers chronometrist-list-format-transformers it)
         (setq tabulated-list-format it))
   (make-local-variable 'tabulated-list-entries)
   (setq tabulated-list-entries 'chronometrist-entries)

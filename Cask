@@ -12,7 +12,6 @@
 (depends-on "s"                 "1.12.0")
 (depends-on "ts"                "0.2")
 (depends-on "anaphora"          "1.0.4")
-(depends-on "call-transformers" "0.0.1")
 
 (files "elisp/*.el")
 
