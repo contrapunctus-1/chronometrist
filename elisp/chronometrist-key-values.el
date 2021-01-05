@@ -182,19 +182,6 @@ HISTORY-TABLE must be a hash table. (see `chronometrist-value-history')"
       (--> (append tags old-tags)
            (puthash name it table)))))
 
-(defun chronometrist-tags-history-replace-last (plist)
-  "Replace the latest tag combination for PLIST's task with tags from PLIST."
-  (let* ((table    chronometrist-tags-history)
-         (name     (plist-get plist :name))
-         (tags     (awhen (plist-get plist :tags) (list it)))
-         (old-tags (gethash name table)))
-    (when tags
-      (if old-tags
-          (--> (cdr old-tags)
-               (append tags it)
-               (puthash name it table))
-        (puthash name tags table)))))
-
 (defun chronometrist-tags-history-combination-strings (task)
   "Return list of past tag combinations for TASK.
 Each combination is a string, with tags separated by commas.
