@@ -194,7 +194,7 @@ If you view/edit `chronometrist-file` pretty often, you may wish to install `ppp
 
 ## Contributions and contact
 Feedback and MRs are very welcome. 🙂
-* [TODO.org][TODO.org] has a long list of tasks
+* [TODO.org](TODO.org) has a long list of tasks
 * [doc/manual.org](doc/manual.org) contains an overview of the codebase, explains various mechanisms and decisions, and has a reference of definitions.
 
 If you have tried using Chronometrist, I'd love to hear your experiences! Get in touch with the author and other Emacs users in the Emacs channel on the Jabber network - [xmpp:emacs@salas.suchat.org?join](https://conversations.im/j/emacs@salas.suchat.org) ([web chat](https://inverse.chat/#converse/room?jid=emacs@salas.suchat.org))
