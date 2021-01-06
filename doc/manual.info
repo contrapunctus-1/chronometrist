@@ -885,8 +885,6 @@ Function - chronometrist-value-history-populate (history-table file)
 @item
 Function - chronometrist-tags-history-add (plist)
 @item
-Function - chronometrist-tags-history-replace-last (plist)
-@item
 Function - chronometrist-tags-history-combination-strings (task)
 @item
 Function - chronometrist-tags-history-individual-strings (task)
