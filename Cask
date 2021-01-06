@@ -3,7 +3,7 @@
 
 (package
  "Chronometrist"
- "0.6.1"
+ "0.6.2"
  "A time tracker for Emacs with a nice interface")
 
 (depends-on "cl")
