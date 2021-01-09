@@ -180,7 +180,7 @@ Return the value returned by Fₙ."
   ;; latter should refresh from a file.
   ;; (chronometrist-events-populate)
   ;; (chronometrist-events-clean)
-  (->> (-sort #'string-lessp chronometrist-task-list)
+  (->> (-sort #'string-lessp chronometrist--task-list)
        (--map-indexed
         (let* ((task        it)
                (index       (number-to-string (1+ it-index)))
@@ -401,7 +401,7 @@ Argument _FS-EVENT is ignored."
     (--> (chronometrist-loop-file for plist in chronometrist-file collect (plist-get plist :name))
          (cl-remove-duplicates it :test #'equal)
          (sort it #'string-lessp)
-         (setq chronometrist-task-list it)))
+         (setq chronometrist--task-list it)))
   (setq chronometrist--file-state
         (list :last (chronometrist-file-hash :before-last nil)
               :rest (chronometrist-file-hash nil :before-last t)))

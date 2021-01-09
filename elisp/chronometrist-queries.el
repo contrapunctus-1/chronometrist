@@ -45,7 +45,7 @@ The return value is seconds, as an integer."
 TS must be a ts struct (see `ts.el')
 
 Return value is seconds as an integer."
-  (->> chronometrist-task-list
+  (->> chronometrist--task-list
        (--map (chronometrist-task-time-one-day it ts))
        (-reduce #'+)
        (truncate)))

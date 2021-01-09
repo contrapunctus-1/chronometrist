@@ -539,7 +539,7 @@ Variable - chronometrist-date-re
 @item
 Variable - chronometrist-time-re-ui
 @item
-Variable - chronometrist-task-list
+Internal Variable - chronometrist--task-list
 @item
 Internal Variable - chronometrist--fs-watch
 @item

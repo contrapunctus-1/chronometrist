@@ -99,7 +99,7 @@ The first date is the first occurrence of
   "Create entries to be displayed in the `chronometrist-report' buffer."
   (let* ((week-dates (chronometrist-report-date->week-dates))) ;; uses today if chronometrist-report--ui-date is nil
     (setq chronometrist-report--ui-week-dates week-dates)
-    (cl-loop for task in chronometrist-task-list collect
+    (cl-loop for task in chronometrist--task-list collect
              (let* ((durations        (--map (chronometrist-task-time-one-day task (chronometrist-date it))
                                              week-dates))
                     (duration-strings (mapcar #'chronometrist-format-time

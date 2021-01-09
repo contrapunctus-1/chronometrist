@@ -219,7 +219,7 @@ Each of these has a corresponding function to clear it and fill it with values -
 1. Variable - chronometrist-empty-time-string
 2. Variable - chronometrist-date-re
 3. Variable - chronometrist-time-re-ui
-4. Variable - chronometrist-task-list
+4. Internal Variable - chronometrist--task-list
 5. Internal Variable - chronometrist--fs-watch
 6. Function - chronometrist-current-task ()
 7. Function - chronometrist-format-time  (seconds &optional (blank "   "))

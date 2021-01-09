@@ -40,7 +40,7 @@ This is distinct from `chronometrist-time-re-file' (which see) -
 `chronometrist-time-re-ui' is meant for the user interface, and
 must correspond to the output from `chronometrist-format-time'.")
 
-(defvar chronometrist-task-list nil
+(defvar chronometrist--task-list nil
   "List of tasks in `chronometrist-file', as returned by `chronometrist-tasks-from-table'.")
 
 (defvar chronometrist--fs-watch nil

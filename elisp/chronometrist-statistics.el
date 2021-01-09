@@ -142,7 +142,7 @@ reduced to the desired range using
                                            active-percent
                                            average-time)))
               (list task content)))
-          chronometrist-task-list))
+          chronometrist--task-list))
 
 (defun chronometrist-statistics-entries ()
   "Create entries to be displayed in the buffer created by `chronometrist-statistics'."
