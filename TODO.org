@@ -114,7 +114,7 @@ Some options and ideas -
    * Per-task history generation will create problems - e.g. values for a given key for one task won't be suggested for values for the same key in another 🤦
      + Tags and keys are already task-sensitive; just don't make values task-sensitive.
 2. [X] Compare partial hashes of file to know what has changed - only update memory when necessary.
-3. [ ] In-memory cache - don't store entire file into memory; instead, split midnight-spanning events just for the requested data.
+3. [ ] In-memory cache - don't store entire file into memory; instead, split midnight-spanning intervals just for the requested data.
    * Will increase load time for the first time =chronometrist=, =chronometrist-report=, or =chronometrist-statistics= are run (including forward/backward commands in the latter two)
      + Can try pre-emptively loading data for the latter two
    * Will reduce memory used by =chronometrist-events=.
@@ -128,21 +128,21 @@ Some options and ideas -
    * Will greatly impede human editing of the file, too. 🤔
      + An editing UI could help - pretty sure every timestamp edit I've ever made has been for the last interval, or at most an interval in today's data.
 ** Cache
-   + Lessons from the parsimonious-reading branch - iterating =read= over the whole file is fast; splitting the events is not.
+   + Lessons from the parsimonious-reading branch - iterating =read= over the whole file is fast; splitting the intervals is not.
    + Things we need to read the whole file for - task list, tag/key/value history.
-   + Fill =chronometrist-events= only as much as the buffer needing split events requires. e.g. for =chronometrist=, just a day; for =chronometrist-report=, a week; etc.
-   + Anything requiring split events will first look in =chronometrist-events=, and if not found, will read from the file and update =chronometrist-events=.
+   + Fill =chronometrist-events= only as much as the buffer needing split intervals requires. e.g. for =chronometrist=, just a day; for =chronometrist-report=, a week; etc.
+   + Anything requiring split intervals will first look in =chronometrist-events=, and if not found, will read from the file and update =chronometrist-events=.
    + When the file changes, use the file byte length and hash strategy described below to know whether to keep the cache.
    + Save cache to a file, so that event splitting is avoided by reading from that.
 ** Ideas to make -refresh-file faster
    1. Support multiple files, so we read and process lesser data when one of them changes.
    2. Make file writing async
    3. Don't refresh from file when clocking in.
-   4. Only write to the file when Emacs is idle or being killed, and store data in memory (in the events hash table) in the meantime
+   4. Only write to the file when Emacs is idle or being killed, and store data in memory (in the intervals hash table) in the meantime
    5. What if commands both write to the file /and/ add to the hash table, so we don't have to re-read the file and re-populate the table for commands? The expensive reading+parsing could be avoided for commands, and only take place for the user changing the file.
       * [X] jonasw - store length and hash of previous file, see if the new file has the same hash until old-length bytes.
         * Rather than storing and hashing the full length, we could do it until (before) the last s-expression (or last N s-expressions?). That way, we know if the last expression (or last N expressions) have changed.
-          * Or even the first expression of the current date. That way, we just re-read the events for today. Because chronometrist-events uses dates as keys, it's easy to work on the basis of dates.
+          * Or even the first expression of the current date. That way, we just re-read the intervals for today. Because chronometrist-events uses dates as keys, it's easy to work on the basis of dates.
    6. [ ] Don't generate tag/keyword/value history from the entire log, just from the last N days (where N is user-customizable).
    7. [ ] Just why are we reading the whole file? ~chronometrist~ should not read more than a day; ~chronometrist-report~ should not read more than a week at a time, and so on. Make a branch which works on this logic, see if it is faster.
 
@@ -274,7 +274,7 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
           : ‘file-notify-add-watch’ ((describe-function 'file-notify-add-watch))
           ...yuck :\
    * Currently using file: links with text search - =[file:../elisp/file.el::defun identifier (]=, =[file:../elisp/file.el::defvar identifier (]=, etc.
-4. [ ] Fix heading link to "midnight-spanning events" - jumps to the correct heading in HTML export, but jumps to its own self in Org mode.
+4. [ ] Fix heading link to "midnight-spanning intervals" - jumps to the correct heading in HTML export, but jumps to its own self in Org mode.
 5. [ ] Figure out some way to hide package prefixes in identifiers in Org mode (without actually affecting the contents, a la nameless-mode)
 
 ** UX [30%]
