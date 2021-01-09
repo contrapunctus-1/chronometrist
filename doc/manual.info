@@ -727,8 +727,6 @@ Function - chronometrist-events-maybe-split (event)
 @item
 Function - chronometrist-events-populate ()
 @item
-Function - chronometrist-tasks-from-table ()
-@item
 Function - chronometrist-events-add (plist)
 @item
 Function - chronometrist-events-replace-last (plist)
