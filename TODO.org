@@ -193,7 +193,7 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
     :start     "2020-12-22T23:01:00+0530"
     :stop      "2020-12-23T00:54:52+0530")
    #+END_SRC
-   ...is displayed as 1:53:52 after clocking out. :\
+   ...is displayed as 1:53:52 (rather than 00:54:52) after clocking out. :\
 
 ** chronometrist [8%]
 1. [ ] Add =:stop= time when we call =chronometrist-kv-accept=, not when we quit the key-value prompt.
@@ -219,7 +219,7 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
          =chronometrist-kv-add= could quit nonlocally when the user enters a blank input (or hits C-g? Maybe by using =unwind-protect=?), cancelling the clock in/out, and thereby letting =chronometrist-kv-accept= resume clock in/out. (It can determine whether to clock in or out using =chronometrist-current-task=)
 2. [X] Enhanced tag/key-value prompt - before asking for tags/key-values, if the last occurence of task had tags/key-values, ask if they should be reused. y - yes, n - no (continue to usual prompts).
    * [X] Show what those tags/key-values are, so the user knows what will be added.
-3. [ ] Expandable items - show intervals for task today
+3. [ ] "Explain" command - show intervals for task today
    * [ ] Switch between intervals and tag-combination breakdown
 4. [ ] Magit/other VCS integration
    * [ ] Add support for using key-values to point to a commit (commit hash + repo path?)
@@ -236,7 +236,7 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
 2. [ ] Highlight column of current day
 3. [ ] Command to narrow report to specific project(s)
 4. [ ] Jump to beginning/end of data (keys B/F)
-5. [ ] Expandable items - show tag-combination-based breakdown
+5. [ ] "Explain" command - show tag-combination-based breakdown
 
 ** Code quality [25%]
 1. [ ] Remove duplication between =chronometrist-toggle-task= and =chronometrist-toggle-task-button=
