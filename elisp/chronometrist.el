@@ -132,6 +132,25 @@ The default is \"*\""
 The default is midnight, i.e. \"00:00:00\"."
   :type 'string)
 
+(defcustom chronometrist-task-list nil
+  "List of tasks in addition to those found in `chronometrist-file'.
+Each element can either be the task name as a string, or a list
+in the form -
+\(\"NAME\" [:KEYWORD VALUE]*)
+
+Chronometrist currently recognizes the following keywords -
+
+:hide - if VALUE is non-nil, do not display this task in
+`chronometrist', `chronometrist-report', and
+`chronometrist-statistics' buffers.
+
+:before-in, :after-in, :before-out, :after-out - VALUE must be a
+list. For this task, use the given value in place of
+`chronometrist-before-in-functions',
+`chronometrist-after-in-functions',
+`chronometrist-before-out-functions', or
+`chronometrist-after-out-functions'.")
+
 (defvar chronometrist--task-history nil)
 (defvar chronometrist--point nil)
 
@@ -487,17 +506,35 @@ is the name of the task to be clocked out of.")
 (defvar chronometrist-file-change-hook nil
   "Functions to be run after `chronometrist-file' is changed on disk.")
 
+(defvar chronometrist--task-hook nil)
+
+(defun chronometrist-run-hooks (task hook)
+  (let ((fn  (if (eq hook :before-out)
+                 #'run-hook-with-args-until-failure
+               #'run-hook-with-args))
+        (var (case hook
+               (:before-in  'chronometrist-before-in-functions)
+               (:after-in   'chronometrist-after-in-functions)
+               (:before-out 'chronometrist-before-out-functions)
+               (:after-out  'chronometrist-after-out-functions))))
+    (if (--> (assoc task chronometrist-task-list #'equal)
+             (rest it)
+             (plist-get it hook)
+             (setq chronometrist--task-hook it))
+        (funcall fn 'chronometrist--task-hook task)
+      (funcall fn var task))))
+
 (defun chronometrist-run-functions-and-clock-in (task)
   "Run hooks and clock in to TASK."
-  (run-hook-with-args 'chronometrist-before-in-functions task)
+  (chronometrist-run-hooks task :before-in)
   (chronometrist-in task)
-  (run-hook-with-args 'chronometrist-after-in-functions task))
+  (chronometrist-run-hooks task :after-in))
 
 (defun chronometrist-run-functions-and-clock-out (task)
   "Run hooks and clock out of TASK."
-  (when (run-hook-with-args-until-failure 'chronometrist-before-out-functions task)
+  (when (chronometrist-run-hooks task :before-out)
     (chronometrist-out)
-    (run-hook-with-args 'chronometrist-after-out-functions task)))
+    (chronometrist-run-hooks task :after-out)))
 
 ;; ## MAJOR-MODE ##
 (defvar chronometrist-mode-map
