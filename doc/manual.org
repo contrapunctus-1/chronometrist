@@ -326,10 +326,10 @@ Each of these has a corresponding function to clear it and fill it with values -
    * -> plist
 2. Function - chronometrist-task-time-one-day (task &optional (ts (ts-now)))
    * String &optional ts -> seconds
-3. Function - chronometrist-active-time-one-day (&optional ts)
+3. Function - chronometrist-active-time-one-day (&optional (ts (ts-now)))
    * &optional ts -> seconds
 4. Function - chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
-5. Function - chronometrist-task-events-in-day (task ts)
+5. Function - chronometrist-task-events-in-day (task &optional (ts (ts-now)))
 
 ** chronometrist-report-custom.el
 1. Custom variable - chronometrist-report-buffer-name
