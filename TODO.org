@@ -317,7 +317,10 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
    2. a list, with the first element being the task name as a string, followed by keyword-value pairs
 
    Keywords can be
-   1. =:tag-prompt=, =:key-prompt= - values can be nil, t (the default), or a function. If nil, don't ask for tags/keys for this task. If t, ask for tags/keys for this task using =chronometrist-tags-add=/=chronometrist-key-add=. If it's a function, use that as the prompt.
+   1. +=:tag-prompt=, =:key-prompt= - values can be nil, t (the default), or a function. If nil, don't ask for tags/keys for this task. If t, ask for tags/keys for this task using =chronometrist-tags-add=/=chronometrist-key-add=. If it's a function, use that as the prompt.+
+      * Tags and key-values are optional extensions; we don't want Chronometrist to know about them.
+        + Well, even with this style of configuration, Chronometrist doesn't necessarily have to...it could use the fields it knows about, ignoring the rest; the extensions could check for the fields they know about.
+      * Instead of setting the prompt function, set hooks (=chronometrist-before-in-functions=/=chronometrist-after-in-functions=/=chronometrist-before-out-functions=/=chronometrist-after-out-functions=) per-task. This is preferable, because if you define a custom prompt function, you probably also want to remove certain functions coming earlier in the hook, such as =chronometrist-skip-query-prompt=, for that task.
    2. =:hide= - values can be nil (the default) or t - if t, hide this task from being displayed in =chronometrist=/=chronometrist-report=/=chronometrist-statistics= buffers. (effectively a non-destructive deletion of all intervals of the task)
    ...
 
