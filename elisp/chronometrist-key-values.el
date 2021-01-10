@@ -440,7 +440,7 @@ This function always returns t, so it can be used in `chronometrist-before-out-f
 ;; rename `chronometrist-tags-history' to `chronometrist-tag-history' for consistency
 ;; change `chronometrist-append-to-last' to only accept a single plist
 
-(cl-defun chronometrist-key-values-make-hydra (key type)
+(defmacro chronometrist-key-values-make-hydra (key type)
   "Make a Hydra offering TYPE history for KEY.
 TYPE should be either :tag, :key, or :value; correspondingly, KEY
 should be a hash table key in `chronometrist-tags-history',
@@ -450,23 +450,22 @@ should be a hash table key in `chronometrist-tags-history',
                         (:value chronometrist-value-history)))
          (type    (case type (:tag "tags") (:key "key") (:value "value")))
          (history (-take 5 (gethash key table))))
-    (eval
-     (cl-loop with num = 1
-       for item in history
-       collect (list (format "%s" num)
-                     `(lambda ()
-                        (interactive)
-                        ;; FIXME
-                        (chronometrist-append-to-last (quote ,item) nil))
-                     (format "%s" item)) into heads
-       do (incf num)
-       finally
-       (cl-return
-        `(defhydra ,(make-symbol (format "chronometrist-%s-hydra" type))
-           (:color blue)
-           ,(format "Which %s?" type)
-           ,@heads
-           ("o" chronometrist-tags-add ,(format "other %s" type))))))))
+    (cl-loop with num = 1
+      for item in history
+      collect (list (format "%s" num)
+                    `(lambda ()
+                       (interactive)
+                       ;; FIXME
+                       (chronometrist-append-to-last (quote ,item) nil))
+                    (format "%s" item)) into heads
+      do (incf num)
+      finally
+      (cl-return
+       `(defhydra ,(make-symbol (format "chronometrist-%s-hydra" type))
+          (:color blue)
+          ,(format "Which %s?" type)
+          ,@heads
+          ("o" chronometrist-tags-add ,(format "other %s" type)))))))
 
 (provide 'chronometrist-key-values)
 
