@@ -444,25 +444,28 @@ should be a hash table key in `chronometrist-tags-history',
   (let* ((table   (case type (:tag chronometrist-tags-history)
                         (:key chronometrist-key-history)
                         (:value chronometrist-value-history)))
-         (type    (case type (:tag "tags") (:key "key") (:value "value")))
+         (typestr (case type (:tag "tags") (:key "key") (:value "value")))
          (history (-take 5 (gethash key table))))
-    (cl-loop with num = 1
-      for item in history
-      collect (list (format "%s" num)
-                    `(lambda ()
-                       (interactive)
-                       (chronometrist-sexp-replace-last
-                        (chronometrist-plist-update (chronometrist-sexp-last) (quote ,item))))
-                    (format "%s" item)) into heads
+    (cl-loop with num = 1 for item in history collect
+      (list (format "%s" num)
+            `(lambda ()
+               (interactive)
+               (chronometrist-sexp-replace-last
+                (chronometrist-plist-update
+                 (chronometrist-sexp-last)
+                 (quote ,(case type
+                           (:tag (list :tags item))
+                           (t item))))))
+            (format "%s" item)) into heads
       do (incf num)
       finally
       (cl-return
        `(progn
-          (defhydra ,(make-symbol (format "chronometrist-%s-hydra" type))
+          (defhydra ,(make-symbol (format "chronometrist-%s-hydra" typestr))
             (:color blue)
-            ,(format "Which %s?" type)
+            ,(format "Which %s?" typestr)
             ,@heads
-            ("o" chronometrist-tags-add ,(format "other %s" type))
+            ("o" chronometrist-tags-add ,(format "other %s" typestr))
             ("s" ? "skip"))
           (chronometrist-tags-hydra/body))))))
 
