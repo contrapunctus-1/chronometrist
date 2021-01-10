@@ -29,6 +29,30 @@
    (equal (chronometrist-plist-remove '(:a 1 :b 2 :c 3 :d 4) :d :a)
           '(:b 2 :c 3))))
 
+(ert-deftest chronometrist-plist-update ()
+  (let ((test-plist-1 '(:name "Old name"
+                              :tags (foo)
+                              :key1 "val 1"
+                              :start "2021-01-10T22:59:23+0530"
+                              :stop "2021-01-10T22:59:27+0530"))
+        (test-plist-2 '(:name "New name" :tags (bar)
+                              :key1 "new val 1"
+                              :key2 "val 2"
+                              :start "2021-01-10T22:59:23+0530"
+                              :stop "2021-01-10T22:59:27+0530")))
+    ;; :name, :start, and :stop should not be updated
+    ;; same keys should be updated
+    ;; new keys should be added
+    ;; old tags should be preserved
+    ;; new tags should be added
+    (should (equal (chronometrist-plist-update test-plist-1 test-plist-2)
+                   '(:name "Old name"
+                           :tags (foo bar)
+                           :key1 "new val 1"
+                           :key2 "val 2"
+                           :start "2021-01-10T22:59:23+0530"
+                           :stop "2021-01-10T22:59:27+0530")))))
+
 (ert-deftest chronometrist-tags-history ()
   (progn
     (clrhash chronometrist-tags-history)

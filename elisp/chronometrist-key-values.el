@@ -62,41 +62,36 @@ Used as history by `chronometrist--value-suggestions'.")
            it)
          list))
 
-(defun chronometrist-append-to-last (tags plist)
-  "Add TAGS and PLIST to the last entry in `chronometrist-file'.
-TAGS should be a list of symbols and/or strings.
+(defun chronometrist-plist-update (old-plist new-plist)
+  "Add tags and keyword-values from NEW-PLIST to OLD-PLIST.
+OLD-PLIST and NEW-PLIST should be a property lists.
 
-PLIST should be a property list. Properties reserved by
-Chronometrist - currently :name, :tags, :start, and :stop - will
-be removed."
-  (let* ((old-expr  (chronometrist-last))
-         (old-name  (plist-get old-expr :name))
-         (old-start (plist-get old-expr :start))
-         (old-stop  (plist-get old-expr :stop))
-         (old-tags  (plist-get old-expr :tags))
-         ;; Anything that's left will be the user's key-values.
-         (old-kvs   (chronometrist-plist-remove old-expr :name :tags :start :stop))
-         ;; Prevent the user from adding reserved key-values.
-         (plist     (chronometrist-plist-remove plist :name :tags :start :stop))
-         (new-tags  (if old-tags
-                        (-> (append old-tags tags)
-                            (cl-remove-duplicates :test #'equal))
-                      tags))
-         ;; In case there is an overlap in key-values, we use
-         ;; plist-put to replace old ones with new ones.
-         (new-kvs   (cl-copy-list old-expr))
-         (new-kvs   (if plist
-                        (-> (cl-loop for (key val) on plist by #'cddr
-                              do (plist-put new-kvs key val)
-                              finally return new-kvs)
-                            (chronometrist-plist-remove :name :tags :start :stop))
-                      old-kvs))
-         (plist     (append `(:name ,old-name)
-                            (when new-tags `(:tags ,new-tags))
-                            new-kvs
-                            `(:start ,old-start)
-                            (when old-stop `(:stop  ,old-stop)))))
-    (chronometrist-sexp-replace-last plist)))
+Keywords reserved by Chronometrist - :name, :start, and :stop -
+will not be updated. Keywords in OLD-PLIST with new values in
+NEW-PLIST will be updated. Tags in OLD-PLIST will be preserved
+alongside new tags from NEW-PLIST."
+  (-let* (((&plist :name  old-name  :tags old-tags
+                   :start old-start :stop old-stop) old-plist)
+          ;; Anything that's left will be the user's key-values.
+          (old-kvs   (chronometrist-plist-remove old-plist :name :tags :start :stop))
+          ;; Prevent the user from adding reserved key-values.
+          (plist     (chronometrist-plist-remove new-plist :name :tags :start :stop))
+          (new-tags  (-> (append old-tags (plist-get new-plist :tags))
+                         (cl-remove-duplicates :test #'equal)))
+          ;; In case there is an overlap in key-values, we use
+          ;; plist-put to replace old ones with new ones.
+          (new-kvs   (cl-copy-list old-plist))
+          (new-kvs   (if plist
+                         (-> (cl-loop for (key val) on plist by #'cddr
+                               do (plist-put new-kvs key val)
+                               finally return new-kvs)
+                             (chronometrist-plist-remove :name :tags :start :stop))
+                       old-kvs)))
+    (append `(:name ,old-name)
+            (when new-tags `(:tags ,new-tags))
+            new-kvs
+            `(:start ,old-start)
+            (when old-stop `(:stop  ,old-stop)))))
 
 ;;;; TAGS ;;;;
 (defvar chronometrist-tags-history (make-hash-table :test #'equal)
@@ -243,7 +238,8 @@ used in `chronometrist-before-out-functions'."
              (reverse it)
              (cl-remove-duplicates it :test #'equal)
              (reverse it)
-             (chronometrist-append-to-last it nil)))))
+             (chronometrist-plist-update (chronometrist-sexp-last) it)
+             (chronometrist-sexp-replace-last it)))))
   t)
 
 ;;;; KEY-VALUES ;;;;
@@ -397,8 +393,9 @@ used in `chronometrist-before-out-functions'."
       (goto-char (point-min))
       (setq user-kv-expr (ignore-errors (read (current-buffer))))
       (kill-buffer chronometrist-kv-buffer-name))
-    (if user-kv-expr
-        (chronometrist-append-to-last nil user-kv-expr)
+    (aif user-kv-expr
+        (chronometrist-sexp-replace-last
+         (chronometrist-plist-update (chronometrist-sexp-last) it))
       (chronometrist-refresh))))
 
 (defun chronometrist-kv-reject ()
@@ -426,7 +423,8 @@ This function always returns t, so it can be used in `chronometrist-before-out-f
          (yes-or-no-p
           (format "Skip prompt and use last-used tags/key-values? %S " plist))
          (setq chronometrist--skip-detail-prompts t)
-         (chronometrist-append-to-last (plist-get plist :tags) plist))
+         (chronometrist-sexp-replace-last
+          (chronometrist-plist-update (chronometrist-sexp-last) plist)))
     t))
 
 (defun chronometrist-skip-query-reset (_task)
@@ -434,13 +432,11 @@ This function always returns t, so it can be used in `chronometrist-before-out-f
 This function always returns t, so it can be used in `chronometrist-before-out-functions'."
   (setq chronometrist--skip-detail-prompts nil) t)
 
-;;;; ## Heil Hydra :> ## ;;;;
-
 ;; TODO
-;; rename `chronometrist-tags-history' to `chronometrist-tag-history' for consistency
-;; change `chronometrist-append-to-last' to only accept a single plist
+;; 1. rename `chronometrist-tags-history' to `chronometrist-tag-history' for consistency
 
-(defmacro chronometrist-key-values-make-hydra (key type)
+
+(defmacro chronometrist-key-values-hydra-prompt (key type)
   "Make a Hydra offering TYPE history for KEY.
 TYPE should be either :tag, :key, or :value; correspondingly, KEY
 should be a hash table key in `chronometrist-tags-history',
@@ -455,17 +451,20 @@ should be a hash table key in `chronometrist-tags-history',
       collect (list (format "%s" num)
                     `(lambda ()
                        (interactive)
-                       ;; FIXME
-                       (chronometrist-append-to-last (quote ,item) nil))
+                       (chronometrist-sexp-replace-last
+                        (chronometrist-plist-update (chronometrist-sexp-last) (quote ,item))))
                     (format "%s" item)) into heads
       do (incf num)
       finally
       (cl-return
-       `(defhydra ,(make-symbol (format "chronometrist-%s-hydra" type))
-          (:color blue)
-          ,(format "Which %s?" type)
-          ,@heads
-          ("o" chronometrist-tags-add ,(format "other %s" type)))))))
+       `(progn
+          (defhydra ,(make-symbol (format "chronometrist-%s-hydra" type))
+            (:color blue)
+            ,(format "Which %s?" type)
+            ,@heads
+            ("o" chronometrist-tags-add ,(format "other %s" type))
+            ("s" ? "skip"))
+          (chronometrist-tags-hydra/body))))))
 
 (provide 'chronometrist-key-values)
 
