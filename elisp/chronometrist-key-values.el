@@ -226,6 +226,7 @@ INITIAL-INPUT is as used in `completing-read'."
   "Read tags from the user; add them to the last entry in `chronometrist-file'.
 _ARGS are ignored. This function always returns t, so it can be
 used in `chronometrist-before-out-functions'."
+  (interactive)
   (unless chronometrist--skip-detail-prompts
     (let* ((last-expr (chronometrist-last))
            (last-name (plist-get last-expr :name))
@@ -432,6 +433,40 @@ This function always returns t, so it can be used in `chronometrist-before-out-f
   "Enable prompting for tags and key-values.
 This function always returns t, so it can be used in `chronometrist-before-out-functions'."
   (setq chronometrist--skip-detail-prompts nil) t)
+
+;;;; ## Heil Hydra :> ## ;;;;
+
+;; TODO
+;; rename `chronometrist-tags-history' to `chronometrist-tag-history' for consistency
+;; change `chronometrist-append-to-last' to only accept a single plist
+
+(cl-defun chronometrist-key-values-make-hydra (key type)
+  "Make a Hydra offering TYPE history for KEY.
+TYPE should be either :tag, :key, or :value; correspondingly, KEY
+should be a hash table key in `chronometrist-tags-history',
+`chronometrist-key-history', or `chronometrist-value-history'."
+  (let* ((table   (case type (:tag chronometrist-tags-history)
+                        (:key chronometrist-key-history)
+                        (:value chronometrist-value-history)))
+         (type    (case type (:tag "tags") (:key "key") (:value "value")))
+         (history (-take 5 (gethash key table))))
+    (eval
+     (cl-loop with num = 1
+       for item in history
+       collect (list (format "%s" num)
+                     `(lambda ()
+                        (interactive)
+                        ;; FIXME
+                        (chronometrist-append-to-last (quote ,item) nil))
+                     (format "%s" item)) into heads
+       do (incf num)
+       finally
+       (cl-return
+        `(defhydra ,(make-symbol (format "chronometrist-%s-hydra" type))
+           (:color blue)
+           ,(format "Which %s?" type)
+           ,@heads
+           ("o" chronometrist-tags-add ,(format "other %s" type))))))))
 
 (provide 'chronometrist-key-values)
 
