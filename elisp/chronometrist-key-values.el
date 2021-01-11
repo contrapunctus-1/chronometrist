@@ -456,7 +456,6 @@ This function always returns t, so it can be used in `chronometrist-before-out-f
 ;;      after the values are selected?
 ;; 3. select a combination and edit it
 ;;    * use universal argument?
-;; 4. first run behaviour? (= no suggestions)
 
 (defmacro chronometrist-key-values-make-hydra-prompt (key type)
   "Make a Hydra offering TYPE history for KEY.
@@ -477,11 +476,10 @@ Depending on TYPE, the resulting Hydra is called either
             `(lambda ()
                (interactive)
                (chronometrist-sexp-replace-last
-                (chronometrist-plist-update
-                 (chronometrist-sexp-last)
-                 (quote ,(case type
-                           (:tag (list :tags item))
-                           (t item))))))
+                (chronometrist-plist-update (chronometrist-sexp-last)
+                                (quote ,(case type
+                                          (:tag (list :tags item))
+                                          (t item))))))
             (format "%s" item)) into heads
       do (incf num)
       finally
@@ -496,15 +494,22 @@ Depending on TYPE, the resulting Hydra is called either
 
 ;; Stick these in the before/after in/out hooks
 (defun chronometrist-tags-hydra (task)
-  (chronometrist-key-values-make-hydra-prompt task :tag)
-  (chronometrist-tags-hydra/body))
+  (chronometrist-tags-history-populate)
+  (if (hash-table-empty-p chronometrist-tags-history)
+      (chronometrist-tags-add)
+    (chronometrist-key-values-make-hydra-prompt task :tag)
+    (chronometrist-tags-hydra/body)))
 
 (defun chronometrist-key-values-hydra (task)
-  (chronometrist-key-values-make-hydra-prompt task :key)
-  (chronometrist-key-hydra/body)
-  ;; How do we get the selected key(s) from the previous Hydra?
-  (chronometrist-key-values-make-hydra-prompt key :value)
-  (chronometrist-value-hydra/body))
+  (chronometrist-key-history-populate)
+  (chronometrist-value-history-populate)
+  (if (hash-table-empty-p chronometrist-key-history)
+      (chronometrist-kv-add)
+    (chronometrist-key-values-make-hydra-prompt task :key)
+    (chronometrist-key-hydra/body)
+    ;; How do we get the selected key(s) from the previous Hydra?
+    (chronometrist-key-values-make-hydra-prompt key :value)
+    (chronometrist-value-hydra/body)))
 
 (provide 'chronometrist-key-values)
 
