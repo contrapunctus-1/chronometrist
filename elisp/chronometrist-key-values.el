@@ -227,18 +227,13 @@ used in `chronometrist-before-out-functions'."
            (last-name (plist-get last-expr :name))
            (_history  (chronometrist-tags-history-populate last-name chronometrist-tags-history chronometrist-file))
            (last-tags (plist-get last-expr :tags))
-           (input     (->> last-tags
-                           (chronometrist-maybe-symbol-to-string)
+           (input     (->> (chronometrist-maybe-symbol-to-string last-tags)
                            (-interpose ",")
                            (apply #'concat)
                            (chronometrist-tags-prompt last-name)
                            (chronometrist-maybe-string-to-symbol))))
       (when input
-        (--> (append last-tags input)
-             (reverse it)
-             (cl-remove-duplicates it :test #'equal)
-             (reverse it)
-             (chronometrist-plist-update (chronometrist-sexp-last) it)
+        (--> (chronometrist-plist-update (chronometrist-sexp-last) (list :tags input))
              (chronometrist-sexp-replace-last it)))))
   t)
 
