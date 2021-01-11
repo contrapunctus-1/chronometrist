@@ -94,6 +94,20 @@ alongside new tags from NEW-PLIST."
             (when old-stop `(:stop  ,old-stop)))))
 
 ;;;; TAGS ;;;;
+(defcustom chronometrist-tag-history-style :combinations
+  "How previously-used tags are suggested.
+Valid values are :combinations and :individual."
+  :group 'chronometrist-key-values
+  :type '(choice (const :combinations)
+                 (const :individual)))
+
+(defcustom chronometrist-key-history-style :individual
+  "How previously-used tags are suggested.
+Valid values are :combinations and :individual."
+  :group 'chronometrist-key-values
+  :type '(choice (const :combinations)
+                 (const :individual)))
+
 (defvar chronometrist-tags-history (make-hash-table :test #'equal)
   "Hash table of tasks and past tag combinations.
 Each value is a list of tag combinations, in reverse
@@ -113,16 +127,18 @@ reversed and will have duplicate elements removed."
 Return the new value inserted into HISTORY-TABLE.
 
 HISTORY-TABLE must be a hash table. (see `chronometrist-tags-history')"
-  (chronometrist-loop-file for plist in file do
-    (let ((new-tag-list  (plist-get plist :tags))
-          (old-tag-lists (gethash task history-table)))
-      (and (equal task (plist-get plist :name))
-           new-tag-list
-           (puthash task
-                    (if old-tag-lists
-                        (append old-tag-lists (list new-tag-list))
-                      (list new-tag-list))
-                    history-table))))
+  (chronometrist-loop-file for plist in file
+    when (equal task (plist-get plist :name)) do
+    (catch 'quit
+      (let* ((new-tags (plist-get plist :tags))
+             (check    (unless new-tags (throw 'quit nil)))
+             (new-tags (case chronometrist-tag-history-style
+                         (:combinations (list new-tags))
+                         (:individual   new-tags)))
+             (old-tags (gethash task history-table)))
+        (puthash task
+                 (if old-tags (append old-tags new-tags) new-tags)
+                 history-table))))
   (chronometrist-history-prep task history-table))
 
 (defun chronometrist-key-history-populate (task history-table file)
@@ -132,16 +148,19 @@ Return the new value inserted into HISTORY-TABLE.
 HISTORY-TABLE must be a hash table (see `chronometrist-key-history')."
   (chronometrist-loop-file for plist in file do
     (catch 'quit
-      (let* ((name  (plist-get plist :name))
-             (check (unless (equal name task) (throw 'quit nil)))
-             (keys  (--> (chronometrist-plist-remove plist :name :start :stop :tags)
-                         (seq-filter #'keywordp it)
-                         (cl-loop for key in it collect
-                           (s-chop-prefix ":" (symbol-name key)))))
-             (check (unless keys (throw 'quit nil)))
+      (let* ((name     (plist-get plist :name))
+             (check    (unless (equal name task) (throw 'quit nil)))
+             (new-keys (--> (chronometrist-plist-remove plist :name :start :stop :tags)
+                            (seq-filter #'keywordp it)
+                            (cl-loop for key in it collect
+                              (s-chop-prefix ":" (symbol-name key)))))
+             (check    (unless new-keys (throw 'quit nil)))
+             (new-keys (case chronometrist-key-history-style
+                         (:combinations (list new-keys))
+                         (:individual   new-keys)))
              (old-keys (gethash name history-table)))
         (puthash name
-                 (if old-keys (append old-keys keys) keys)
+                 (if old-keys (append old-keys new-keys) new-keys)
                  history-table))))
   (chronometrist-history-prep task history-table))
 
