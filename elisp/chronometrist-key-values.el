@@ -446,6 +446,11 @@ This function always returns t, so it can be used in `chronometrist-before-out-f
 This function always returns t, so it can be used in `chronometrist-before-out-functions'."
   (setq chronometrist--skip-detail-prompts nil) t)
 
+;; FIXME
+;; 1. Putting `chronometrist-tags-hydra' in a hook results in the succeeding hook
+;;    functions also being run, without waiting for the user to
+;;    provide input to the Hydra :\
+
 ;; TODO
 ;; 1. rename `chronometrist-tags-history' to `chronometrist-tag-history' for consistency
 ;; 2. suggest key combinations for task, instead of individual keys
@@ -456,6 +461,24 @@ This function always returns t, so it can be used in `chronometrist-before-out-f
 ;;      after the values are selected?
 ;; 3. select a combination and edit it
 ;;    * use universal argument?
+;; 4. Multiple values for a key
+;;
+;; key combinations
+;;   either
+;;     0-9 - select combination (save in var) (don't exit)
+;;     use selection (and exit)
+;;     edit selection (then exit)
+;;     skip (exit)
+;;   or (fewer keystrokes)
+;;     0-9 - use combination (and exit)
+;;     C-z 0-9 - edit combination (then exit)
+;;     skip (exit)
+;;
+;; individual keys
+;;   0-9 - select keys (toggles) (save in var)
+;;   use selection
+;;   edit selection
+;;   skip
 
 (defmacro chronometrist-key-values-make-hydra-prompt (key type)
   "Make a Hydra offering TYPE history for KEY.
@@ -494,15 +517,15 @@ Depending on TYPE, the resulting Hydra is called either
 
 ;; Stick these in the before/after in/out hooks
 (defun chronometrist-tags-hydra (task)
-  (chronometrist-tags-history-populate)
+  (chronometrist-tags-history-populate task chronometrist-tags-history chronometrist-file)
   (if (hash-table-empty-p chronometrist-tags-history)
       (chronometrist-tags-add)
     (chronometrist-key-values-make-hydra-prompt task :tag)
-    (chronometrist-tags-hydra/body)))
+    (chronometrist-tags-hydra/body))
+  t)
 
 (defun chronometrist-key-values-hydra (task)
-  (chronometrist-key-history-populate)
-  (chronometrist-value-history-populate)
+  (chronometrist-key-history-populate task chronometrist-key-history chronometrist-file)
   (if (hash-table-empty-p chronometrist-key-history)
       (chronometrist-kv-add)
     (chronometrist-key-values-make-hydra-prompt task :key)
@@ -510,6 +533,34 @@ Depending on TYPE, the resulting Hydra is called either
     ;; How do we get the selected key(s) from the previous Hydra?
     (chronometrist-key-values-make-hydra-prompt key :value)
     (chronometrist-value-hydra/body)))
+
+(defun choice (prompt alist)
+  (let* ((text (cl-loop with index = 1
+                 with sep = ", "
+                 with len = (length alist)
+                 for cell in alist
+                 when (= index len) do
+                 (setq sep ".")
+                 collect (format "[%s]: %s%s" (car cell) (cdr cell) sep) into hints
+                 do (incf index)
+                 finally (cl-return (apply #'concat prompt ": " hints))))
+         (input (read-key-sequence (propertize text 'face 'minibuffer-prompt)))
+         (match (alist-get input alist nil nil #'equal)))
+    (if match match nil)))
+
+(defun chronometrist-tags-choice (task)
+  (chronometrist-tags-history-populate task chronometrist-tags-history chronometrist-file)
+  (if (hash-table-empty-p chronometrist-tags-history)
+      (chronometrist-tags-add)
+    (let* ((tag-choices   (-take 9 (gethash task chronometrist-tags-history)))
+           (key-tag-alist (cl-loop with num = 1
+                            for item in tag-choices
+                            collect (cons (format "%s" num) item)
+                            do (incf num)))
+           (selection     (choice "Which tags?" key-tag-alist)))
+      (chronometrist-sexp-replace-last
+       (chronometrist-plist-update (chronometrist-sexp-last) (list :tags selection)))))
+  t)
 
 (provide 'chronometrist-key-values)
 
