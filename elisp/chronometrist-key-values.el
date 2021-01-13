@@ -446,11 +446,6 @@ This function always returns t, so it can be used in `chronometrist-before-out-f
 This function always returns t, so it can be used in `chronometrist-before-out-functions'."
   (setq chronometrist--skip-detail-prompts nil) t)
 
-;; FIXME
-;; 1. Putting `chronometrist-tags-hydra' in a hook results in the succeeding hook
-;;    functions also being run, without waiting for the user to
-;;    provide input to the Hydra :\
-
 ;; TODO
 ;; 1. rename `chronometrist-tags-history' to `chronometrist-tag-history' for consistency
 ;; 2. suggest key combinations for task, instead of individual keys
@@ -462,104 +457,93 @@ This function always returns t, so it can be used in `chronometrist-before-out-f
 ;; 3. select a combination and edit it
 ;;    * use universal argument?
 ;; 4. Multiple values for a key
-;;
+
 ;; key combinations
-;;   either
+;;   either this (multiple selections)
 ;;     0-9 - select combination (save in var) (don't exit)
 ;;     use selection (and exit)
 ;;     edit selection (then exit)
 ;;     skip (exit)
-;;   or (fewer keystrokes)
+;;   or this (fewer keystrokes)
 ;;     0-9 - use combination (and exit)
 ;;     C-z 0-9 - edit combination (then exit)
 ;;     skip (exit)
-;;
+
 ;; individual keys
 ;;   0-9 - select keys (toggles) (save in var)
 ;;   use selection
 ;;   edit selection
 ;;   skip
 
-(defmacro chronometrist-key-values-make-hydra-prompt (key type)
-  "Make a Hydra offering TYPE history for KEY.
-TYPE should be either :tag, :key, or :value; correspondingly, KEY
-should be a hash table key in `chronometrist-tags-history',
-`chronometrist-key-history', or `chronometrist-value-history'.
+;; [x] we want C-g to quit, and universal arg to work...
 
-Depending on TYPE, the resulting Hydra is called either
-`chronometrist-tags-hydra',`chronometrist-key-hydra', or
-`chronometrist-value-hydra'."
-  (let* ((table   (case type (:tag chronometrist-tags-history)
-                        (:key chronometrist-key-history)
-                        (:value chronometrist-value-history)))
-         (typestr (case type (:tag "tags") (:key "key") (:value "value")))
-         (history (-take 5 (gethash key table))))
-    (cl-loop with num = 1 for item in history collect
-      (list (format "%s" num)
-            `(lambda ()
-               (interactive)
-               (chronometrist-sexp-replace-last
-                (chronometrist-plist-update (chronometrist-sexp-last)
-                                (quote ,(case type
-                                          (:tag (list :tags item))
-                                          (t item))))))
-            (format "%s" item)) into heads
+;; How is the keymap we define being used by `read-key-sequence'?
+
+;; Subsume `chronometrist-choice' into `chronometrist-choice-define-commands'? Or we'll have
+;; to pass suggestions twice...
+
+(defun chronometrist-choice-command-name (i)
+  (make-symbol (format "chronometrist-choice-%s" i)))
+
+(defmacro chronometrist-choice-define-commands (key type)
+  "TYPE can be one of :tag, :key, or :value."
+  (let* ((table (case type
+                  (:tag chronometrist-tags-history)
+                  (:key chronometrist-key-history)
+                  (:value chronometrist-value-history)))
+         (seq (-take 10 (gethash key table))))
+    (cl-loop with num = 0
+      for elt in seq
       do (incf num)
-      finally
+      if (= num 10) do (setq num 0)
+      collect
+      `(defun ,(chronometrist-choice-command-name num) ()
+         (interactive "P")
+         (chronometrist-sexp-replace-last
+          (chronometrist-plist-update
+           (chronometrist-sexp-last)
+           ,(case type
+              (:tag (list :tags elt))
+              (t elt))))) into forms
+      finally do
       (cl-return
-       `(progn
-          (defhydra ,(make-symbol (format "chronometrist-%s-hydra" typestr))
-            (:color blue)
-            ,(format "Which %s?" typestr)
-            ,@heads
-            ("o" chronometrist-tags-add ,(format "other %s" typestr))
-            ("s" ? "skip")))))))
+       `(progn ,@forms)))))
 
-;; Stick these in the before/after in/out hooks
-(defun chronometrist-tags-hydra (task)
-  (chronometrist-tags-history-populate task chronometrist-tags-history chronometrist-file)
-  (if (hash-table-empty-p chronometrist-tags-history)
-      (chronometrist-tags-add)
-    (chronometrist-key-values-make-hydra-prompt task :tag)
-    (chronometrist-tags-hydra/body))
-  t)
-
-(defun chronometrist-key-values-hydra (task)
-  (chronometrist-key-history-populate task chronometrist-key-history chronometrist-file)
-  (if (hash-table-empty-p chronometrist-key-history)
-      (chronometrist-kv-add)
-    (chronometrist-key-values-make-hydra-prompt task :key)
-    (chronometrist-key-hydra/body)
-    ;; How do we get the selected key(s) from the previous Hydra?
-    (chronometrist-key-values-make-hydra-prompt key :value)
-    (chronometrist-value-hydra/body)))
-
-(defun choice (prompt alist)
-  (let* ((text (cl-loop with index = 1
-                 with sep = ", "
-                 with len = (length alist)
-                 for cell in alist
-                 when (= index len) do
-                 (setq sep ".")
-                 collect (format "[%s]: %s%s" (car cell) (cdr cell) sep) into hints
-                 do (incf index)
-                 finally (cl-return (apply #'concat prompt ": " hints))))
-         (input (read-key-sequence (propertize text 'face 'minibuffer-prompt)))
-         (match (alist-get input alist nil nil #'equal)))
-    (if match match nil)))
+(defun chronometrist-choice (prompt seq)
+  "Query user with PROMPT to choose an element of SEQ.
+Each element corresponds to a numeric key (0-9). See
+`chronometrist-choice-define-commands' for creating the commands
+called by this function."
+  (let* (text
+         (map (aprog1 (make-sparse-keymap)
+                (set-keymap-parent it (current-global-map))
+                (cl-loop with num = 0
+                  with sep = ", "
+                  for elt in seq
+                  do (incf num)
+                  if (= num 10) do (setq num 0 sep ".")
+                  do (define-key it
+                       (kbd (format "%s" num))
+                       (chronometrist-choice-command-name num))
+                  collect (format "[%s]: %s%s" num elt sep) into hints
+                  finally do
+                  (setq text
+                        (propertize (apply #'concat prompt ": " hints)
+                                    'face 'minibuffer-prompt)))))
+         (key (read-key-sequence text))
+         (cmd (lookup-key map key)))
+    (command-execute cmd)
+    ;; cmd
+    ))
 
 (defun chronometrist-tags-choice (task)
+  "Query user for tags to be added to TASK.
+Return t, to permit use in `chronometrist-before-out-functions'."
   (chronometrist-tags-history-populate task chronometrist-tags-history chronometrist-file)
   (if (hash-table-empty-p chronometrist-tags-history)
       (chronometrist-tags-add)
-    (let* ((tag-choices   (-take 9 (gethash task chronometrist-tags-history)))
-           (key-tag-alist (cl-loop with num = 1
-                            for item in tag-choices
-                            collect (cons (format "%s" num) item)
-                            do (incf num)))
-           (selection     (choice "Which tags?" key-tag-alist)))
-      (chronometrist-sexp-replace-last
-       (chronometrist-plist-update (chronometrist-sexp-last) (list :tags selection)))))
+    (chronometrist-choice-define-commands task :tag)
+    (chronometrist-choice "Which tags?" choices))
   t)
 
 (provide 'chronometrist-key-values)
