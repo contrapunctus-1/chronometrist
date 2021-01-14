@@ -477,37 +477,35 @@ This function always returns t, so it can be used in `chronometrist-before-out-f
 
 ;; [x] we want C-g to quit, and universal arg to work...
 
-;; How is the keymap we define being used by `read-key-sequence'?
+;; How is the keymap we define being used by `read-key-sequence'? 🤔
 
 ;; Subsume `chronometrist-choice' into `chronometrist-choice-define-commands'? Or we'll have
 ;; to pass suggestions twice...
 
 (defun chronometrist-choice-command-name (i)
-  (make-symbol (format "chronometrist-choice-%s" i)))
+  (intern (format "chronometrist-choice-%s" i)))
 
-(defmacro chronometrist-choice-define-commands (key type)
+(defvar chronometrist--choice-state nil)
+
+(defmacro chronometrist-choice-define-commands (type)
   "TYPE can be one of :tag, :key, or :value."
-  (let* ((table (case type
-                  (:tag chronometrist-tags-history)
-                  (:key chronometrist-key-history)
-                  (:value chronometrist-value-history)))
-         (seq (-take 10 (gethash key table))))
-    (cl-loop with num = 0
-      for elt in seq
-      do (incf num)
-      if (= num 10) do (setq num 0)
-      collect
-      `(defun ,(chronometrist-choice-command-name num) ()
-         (interactive "P")
-         (chronometrist-sexp-replace-last
-          (chronometrist-plist-update
-           (chronometrist-sexp-last)
-           ,(case type
-              (:tag (list :tags elt))
-              (t elt))))) into forms
-      finally do
-      (cl-return
-       `(progn ,@forms)))))
+  (cl-loop with seq = chronometrist--choice-state
+    with num = 0
+    for elt in seq do (incf num)
+    if (= num 10) do (setq num 0)
+    collect
+    `(defun ,(chronometrist-choice-command-name num) (&optional arg)
+       (interactive "P")
+       (chronometrist-sexp-replace-last
+        (chronometrist-plist-update
+         (chronometrist-sexp-last)
+         (quote ,(case type
+                   (:tag (list :tags elt))
+                   (t elt)))))) into forms
+    finally
+    (cl-return
+     `(progn ,@forms
+             (defun chronometrist-choice-skip () (interactive))))))
 
 (defun chronometrist-choice (prompt seq)
   "Query user with PROMPT to choose an element of SEQ.
@@ -542,8 +540,9 @@ Return t, to permit use in `chronometrist-before-out-functions'."
   (chronometrist-tags-history-populate task chronometrist-tags-history chronometrist-file)
   (if (hash-table-empty-p chronometrist-tags-history)
       (chronometrist-tags-add)
-    (chronometrist-choice-define-commands task :tag)
-    (chronometrist-choice "Which tags?" choices))
+    (setq chronometrist--choice-state (-take 10 (gethash task chronometrist-tags-history)))
+    (chronometrist-choice-define-commands :tag)
+    (chronometrist-choice "Which tags?" chronometrist--choice-state))
   t)
 
 (provide 'chronometrist-key-values)
