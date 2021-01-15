@@ -458,38 +458,57 @@ This function always returns t, so it can be used in `chronometrist-before-out-f
 ;;    * use universal argument?
 ;; 4. Multiple values for a key
 
-;; key combinations
-;;   either this (multiple selections)
-;;     0-9 - select combination (save in var) (don't exit)
-;;     use selection (and exit)
-;;     edit selection (then exit)
-;;     skip (exit)
-;;   or this (fewer keystrokes)
-;;     0-9 - use combination (and exit)
-;;     C-z 0-9 - edit combination (then exit)
-;;     skip (exit)
+;; #### POSSIBLE INTERFACES ####
+;;
+;; (#1 and #2 are meant to be mixed and matched.)
+;;
+;; 1. (tag|key|value) combinations -> ...
+;;      0-9     - use combination (and exit)
+;;      C-u 0-9 - edit combination (then exit)
+;;      s       - skip (exit)
+;;      (b      - back [to previous prompt])
 
-;; individual keys
-;;   0-9 - select keys (toggles) (save in var)
-;;   use selection
-;;   edit selection
-;;   skip
+;; 2. select individual (tags|keys|values) -> ...
+;;      0-9 - select keys (toggles; save in var; doesn't exit)
+;;      u   - use selection (and exit)
+;;      e   - edit selection (then exit)
+;;      s   - skip (exit)
+;;      (b  - back [to previous prompt])
+;;    Great for values; makes it easy to add multiple values, too,
+;;    especially for users who don't know Lisp.
+
+;; 3. tag-key-value combinations (everything in one prompt)
+;;      0-9     - use combination (and exit)
+;;      C-u 0-9 - edit combination (then exit)
+;;      s       - skip (exit)
 
 ;; [x] we want C-g to quit, and universal arg to work...
 
-;; How is the keymap we define being used by `read-key-sequence'? 🤔
-
-;; Subsume `chronometrist-choice' into `chronometrist-choice-define-commands'? Or we'll have
+;; Subsume `chronometrist-choice/body' into `chronometrist-choice-define-commands'? Or we'll have
 ;; to pass suggestions twice...
+
+;; FIXME - incorrect tags added to file
+
+;; defchoice expands to...
+;;   define a global var for state ("key", form, "hint")
+;;   (another macro?) define commands using FORM in state
+;;   define keymap, use state to bind commands to given keys
+;;   define a foo/function to (analogous to Hydra's foo/body)
+;; we make a macro to generate choice prompts at runtime
+
+(defmacro defchoice (name &rest choices)
+  `(progn
+     (defvar ,(intern (format "%s-state")) choices)
+     (defun ,(intern (format "%s-prompt" name)) nil)))
 
 (defun chronometrist-choice-command-name (i)
   (intern (format "chronometrist-choice-%s" i)))
 
-(defvar chronometrist--choice-state nil)
+(defvar chronometrist-tag-choice/state nil)
 
 (defmacro chronometrist-choice-define-commands (type)
   "TYPE can be one of :tag, :key, or :value."
-  (cl-loop with seq = chronometrist--choice-state
+  (cl-loop with seq = chronometrist-tag-choice/state
     with num = 0
     for elt in seq do (incf num)
     if (= num 10) do (setq num 0)
@@ -507,7 +526,7 @@ This function always returns t, so it can be used in `chronometrist-before-out-f
      `(progn ,@forms
              (defun chronometrist-choice-skip () (interactive))))))
 
-(defun chronometrist-choice (prompt seq)
+(defun chronometrist-choice/body (prompt choices)
   "Query user with PROMPT to choose an element of SEQ.
 Each element corresponds to a numeric key (0-9). See
 `chronometrist-choice-define-commands' for creating the commands
@@ -515,15 +534,15 @@ called by this function."
   (let* (text
          (map (aprog1 (make-sparse-keymap)
                 (set-keymap-parent it (current-global-map))
-                (cl-loop with num = 0
-                  with sep = ", "
-                  for elt in seq
+                (cl-loop with sep = ", "
+                  for choice in choices
                   do (incf num)
                   if (= num 10) do (setq num 0 sep ".")
-                  do (define-key it
-                       (kbd (format "%s" num))
-                       (chronometrist-choice-command-name num))
-                  collect (format "[%s]: %s%s" num elt sep) into hints
+                  collect
+                  (-let [(key form hint) choice]
+                    (define-key it (kbd key)
+                      (chronometrist-choice-command-name num))
+                    (format "[%s]: %s%s" num hint sep)) into hints
                   finally do
                   (setq text
                         (propertize (apply #'concat prompt ": " hints)
@@ -540,9 +559,22 @@ Return t, to permit use in `chronometrist-before-out-functions'."
   (chronometrist-tags-history-populate task chronometrist-tags-history chronometrist-file)
   (if (hash-table-empty-p chronometrist-tags-history)
       (chronometrist-tags-add)
-    (setq chronometrist--choice-state (-take 10 (gethash task chronometrist-tags-history)))
+    (cl-loop with num = 0
+      for comb in (-take 10 (gethash task chronometrist-tags-history))
+      do (incf num)
+      if (= num 10) do (setq num 0)
+      collect
+      (list (format "%s" num)
+            `(chronometrist-sexp-replace-last
+              (chronometrist-plist-update (chronometrist-sexp-last) (quote ,(list :tags comb))))
+            (format "%s" comb))
+      into numeric-commands
+      finally do
+      (setq chronometrist-tag-choice/state
+            (append numeric-commands
+                    '(("s" (defun chronometrist-choice-skip () (interactive)) "skip")))))
     (chronometrist-choice-define-commands :tag)
-    (chronometrist-choice "Which tags?" chronometrist--choice-state))
+    (chronometrist-choice/body "Which tags?" chronometrist-tag-choice/state))
   t)
 
 (provide 'chronometrist-key-values)
