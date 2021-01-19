@@ -40,7 +40,7 @@ The return value is seconds, as an integer."
       ;; no events for this task on TS, i.e. no time spent
       0)))
 
-(defun chronometrist-active-time-one-day (&optional ts)
+(cl-defun chronometrist-active-time-one-day (&optional (ts (ts-now)))
   "Return the total active time on TS (if non-nil) or today.
 TS must be a ts struct (see `ts.el')
 
@@ -65,7 +65,7 @@ which span midnights. (see `chronometrist-events-clean')"
              table)
     count))
 
-(defun chronometrist-task-events-in-day (task ts)
+(cl-defun chronometrist-task-events-in-day (task &optional (ts (ts-now)))
   "Get events for TASK on TS.
 TS should be a ts struct (see `ts.el').
 

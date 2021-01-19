@@ -41,7 +41,7 @@ This is distinct from `chronometrist-time-re-file' (which see) -
 must correspond to the output from `chronometrist-format-time'.")
 
 (defvar chronometrist-task-list nil
-  "List of tasks in `chronometrist-file', as returned by `chronometrist-tasks-from-table'.")
+  "List of tasks in `chronometrist-file'.")
 
 (defvar chronometrist--fs-watch nil
   "Filesystem watch object.

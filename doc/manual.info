@@ -727,8 +727,6 @@ Function - chronometrist-events-maybe-split (event)
 @item
 Function - chronometrist-events-populate ()
 @item
-Function - chronometrist-tasks-from-table ()
-@item
 Function - chronometrist-events-add (plist)
 @item
 Function - chronometrist-events-replace-last (plist)
@@ -791,7 +789,7 @@ Function - chronometrist-task-time-one-day (task &optional (ts (ts-now)))
 String &optional ts -> seconds
 @end itemize
 @item
-Function - chronometrist-active-time-one-day (&optional ts)
+Function - chronometrist-active-time-one-day (&optional (ts (ts-now)))
 @itemize
 @item
 &optional ts -> seconds
@@ -799,7 +797,7 @@ Function - chronometrist-active-time-one-day (&optional ts)
 @item
 Function - chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
 @item
-Function - chronometrist-task-events-in-day (task ts)
+Function - chronometrist-task-events-in-day (task &optional (ts (ts-now)))
 @end enumerate
 
 @node chronometrist-report-customel

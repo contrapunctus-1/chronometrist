@@ -293,19 +293,18 @@ Each of these has a corresponding function to clear it and fill it with values -
 38. Command - chronometrist (&optional arg)
 
 ** chronometrist-events.el
-1.  Variable - chronometrist-events
-    * keys - iso-date
-2.  Function - chronometrist-day-start (timestamp)
-    * iso-timestamp -> encode-time
-3.  Function - chronometrist-file-clean ()
-    * commented out, unused
-4.  Function - chronometrist-events-maybe-split (event)
-5.  Function - chronometrist-events-populate ()
-6.  Function - chronometrist-tasks-from-table ()
-7.  Function - chronometrist-events-add (plist)
-8.  Function - chronometrist-events-replace-last (plist)
-9.  Function - chronometrist-events-subset (start end)
-    * ts ts -> hash-table
+1. Variable - chronometrist-events
+   * keys - iso-date
+2. Function - chronometrist-day-start (timestamp)
+   * iso-timestamp -> encode-time
+3. Function - chronometrist-file-clean ()
+   * commented out, unused
+4. Function - chronometrist-events-maybe-split (event)
+5. Function - chronometrist-events-populate ()
+6. Function - chronometrist-events-add (plist)
+7. Function - chronometrist-events-replace-last (plist)
+8. Function - chronometrist-events-subset (start end)
+   * ts ts -> hash-table
 
 ** chronometrist-migrate.el
 1. Variable - chronometrist-migrate-table
@@ -327,10 +326,10 @@ Each of these has a corresponding function to clear it and fill it with values -
    * -> plist
 2. Function - chronometrist-task-time-one-day (task &optional (ts (ts-now)))
    * String &optional ts -> seconds
-3. Function - chronometrist-active-time-one-day (&optional ts)
+3. Function - chronometrist-active-time-one-day (&optional (ts (ts-now)))
    * &optional ts -> seconds
 4. Function - chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
-5. Function - chronometrist-task-events-in-day (task ts)
+5. Function - chronometrist-task-events-in-day (task &optional (ts (ts-now)))
 
 ** chronometrist-report-custom.el
 1. Custom variable - chronometrist-report-buffer-name

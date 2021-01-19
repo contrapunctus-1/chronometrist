@@ -127,14 +127,6 @@ were none."
   (clrhash chronometrist-events)
   (chronometrist-sexp-events-populate))
 
-(defun chronometrist-tasks-from-table ()
-  "Return a list of task names from `chronometrist-events'."
-  (cl-loop for plists being the hash-values of chronometrist-events append
-    (cl-loop for plist in plists collect (plist-get plist :name)) into list
-    finally
-    (cl-return
-     (cl-remove-duplicates (sort list #'string-lessp) :test #'equal))))
-
 (defun chronometrist-events-add (plist)
   "Add new PLIST at the end of `chronometrist-events'."
   (let* ((date-today   (format-time-string "%Y-%m-%d"))
