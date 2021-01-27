@@ -362,7 +362,7 @@ Return
           ;; ("other change") rather than :removed
           (rest-same-p (unless (< file-new-length rest-end)
                          (equal rest-hash
-                                (third (chronometrist-file-hash rest-start rest-end t))))))
+                                (cl-third (chronometrist-file-hash rest-start rest-end t))))))
     (cond ((not rest-same-p) t)
           (last-same-p
            (when (chronometrist-read-from last-end) :append))
