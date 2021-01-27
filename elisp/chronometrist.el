@@ -586,8 +586,7 @@ action, and is ignored."
     (when current
       (chronometrist-run-functions-and-clock-out current))
     (let ((task (read-from-minibuffer "New task name: " nil nil nil nil nil t)))
-      (chronometrist-run-functions-and-clock-in task))
-    (chronometrist-refresh-file nil)))
+      (chronometrist-run-functions-and-clock-in task))))
 
 ;; ## COMMANDS ##
 
