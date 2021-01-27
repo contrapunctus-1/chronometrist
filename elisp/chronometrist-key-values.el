@@ -118,6 +118,7 @@ reversed and will have duplicate elements removed."
 Return the new value inserted into HISTORY-TABLE.
 
 HISTORY-TABLE must be a hash table. (see `chronometrist-tags-history')"
+  (puthash task nil history-table)
   (chronometrist-loop-file for plist in file do
     (let ((new-tag-list  (plist-get plist :tags))
           (old-tag-lists (gethash task history-table)))
@@ -135,6 +136,7 @@ HISTORY-TABLE must be a hash table. (see `chronometrist-tags-history')"
 Return the new value inserted into HISTORY-TABLE.
 
 HISTORY-TABLE must be a hash table (see `chronometrist-key-history')."
+  (puthash task nil history-table)
   (chronometrist-loop-file for plist in file do
     (catch 'quit
       (let* ((name  (plist-get plist :name))
@@ -150,9 +152,13 @@ HISTORY-TABLE must be a hash table (see `chronometrist-key-history')."
                  history-table))))
   (chronometrist-history-prep task history-table))
 
+;; We don't want values to be task-sensitive, so this does not have a
+;; KEY parameter similar to TASK for `chronometrist-tags-history-populate' or
+;; `chronometrist-key-history-populate'
 (defun chronometrist-value-history-populate (history-table file)
   "Store value history in HISTORY-TABLE from FILE.
 HISTORY-TABLE must be a hash table. (see `chronometrist-value-history')"
+  (clrhash history-table)
   ;; Note - while keys are Lisp keywords, values may be any Lisp
   ;; object, including lists
   (chronometrist-loop-file for plist in file do
