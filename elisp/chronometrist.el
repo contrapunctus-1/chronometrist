@@ -132,7 +132,6 @@ The default is \"*\""
 The default is midnight, i.e. \"00:00:00\"."
   :type 'string)
 
-(defvar chronometrist--task-history nil)
 (defvar chronometrist--point nil)
 
 ;; ## FUNCTIONS ##
