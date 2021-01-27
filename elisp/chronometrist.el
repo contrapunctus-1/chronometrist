@@ -373,6 +373,28 @@ Return
                           (forward-list)))))
            :modify))))
 
+(defun chronometrist-add-to-task-list (task)
+  (unless (cl-member task chronometrist-task-list :test #'equal)
+    (setq chronometrist-task-list
+          (sort (cons task chronometrist-task-list) #'string-lessp))))
+
+(defun chronometrist-remove-from-task-list (task)
+  (let ((count (cl-loop with count = 0
+                 for intervals being the hash-values of chronometrist-events
+                 do (cl-loop for interval in intervals
+                      do (cl-incf count))
+                 finally return count))
+        (position (cl-loop with count = 0
+                    for intervals being the hash-values of chronometrist-events
+                    when (cl-loop for interval in intervals
+                           do (cl-incf count)
+                           when (equal task (plist-get interval :name))
+                           return t)
+                    return count)))
+    (when (and position (= position count))
+      ;; The only interval for TASK is the last expression
+      (setq chronometrist-task-list (remove task chronometrist-task-list)))))
+
 (defun chronometrist-refresh-file (_fs-event)
   "Re-read `chronometrist-file' and refresh the `chronometrist' buffer.
 Argument _FS-EVENT is ignored."
@@ -385,17 +407,29 @@ Argument _FS-EVENT is ignored."
             (task   (plist-get (chronometrist-last) :name)))
         ;; (message "chronometrist - file change type is %s" change)
         (pcase change
-          (:append (chronometrist-events-add (chronometrist-sexp-last)))
-          (:modify (chronometrist-events-replace-last (chronometrist-sexp-last)))
-          (:remove (let ((key (--> (hash-table-keys chronometrist-events)
-                                   (last it)
-                                   (car it))))
-                     (--> (gethash key chronometrist-events)
-                          (-drop-last 1 it)
-                          (puthash key it chronometrist-events))))
+          (:append
+           (chronometrist-events-add (chronometrist-sexp-last))
+           (chronometrist-add-to-task-list task))
+          (:modify
+           (chronometrist-events-replace-last (chronometrist-sexp-last))
+           (chronometrist-remove-from-task-list task)
+           (chronometrist-add-to-task-list task))
+          (:remove
+           (let* ((date (--> (hash-table-keys chronometrist-events)
+                             (last it)
+                             (car it)))
+                  (old-task (--> (gethash date chronometrist-events)
+                                 (last it)
+                                 (car it)
+                                 (plist-get it :name))))
+             (chronometrist-remove-from-task-list old-task)
+             (--> (gethash date chronometrist-events)
+                  (-drop-last 1 it)
+                  (puthash date it chronometrist-events))))
           ((pred null) nil)
-          (t (chronometrist-events-populate))))
+          (_ (chronometrist-events-populate))))
     (chronometrist-events-populate)
+    ;; re-create task list
     (--> (chronometrist-loop-file for plist in chronometrist-file collect (plist-get plist :name))
          (cl-remove-duplicates it :test #'equal)
          (sort it #'string-lessp)

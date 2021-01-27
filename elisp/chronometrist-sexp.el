@@ -24,8 +24,10 @@ STREAM (which is the value of `current-buffer')."
   "`cl-loop' LOOP-CLAUSES over s-expressions in FILE.
 VAR is bound to each s-expression."
   (declare (indent defun)
+           (debug nil)
            ;; FIXME
-           (debug ("for" form "in" form &rest &or sexp form)))
+           ;; (debug ("for" form "in" form &rest &or sexp form))
+           )
   `(chronometrist-sexp-in-file ,file
      (goto-char (point-max))
      (cl-loop with ,expr

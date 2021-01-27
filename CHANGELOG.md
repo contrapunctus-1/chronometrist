@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 * Incorrect order of tag/key/value history
 * Error when running emacs with `-q`
+* `chronometrist` buffer not being updated when a new task is added or the sole interval for a task is removed.
 
 ## [0.6.3] - 2021-01-19
 ### Fixed

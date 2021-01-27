@@ -217,4 +217,4 @@ jwiegley for timeclock.el, which we used as a backend in earlier versions
 
 blandest for helping me with the name
 
-fiete for testing and bug reports
+fiete and wu-lee for testing and bug reports

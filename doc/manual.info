@@ -663,6 +663,10 @@ Function - chronometrist-read-from (position)
 @item
 Function - chronometrist-file-change-type (state)
 @item
+Function - chronometrist-add-to-task-list (task)
+@item
+Function - chronometrist-remove-from-task-list (task)
+@item
 Function - chronometrist-refresh-file (fs-event)
 @item
 Command - chronometrist-query-stop ()
