@@ -275,7 +275,25 @@ Most changes, whether made through user-editing or by Chronometrist commands, ha
 
 When @samp{chronometrist-refresh-file} is run by the file system watcher, it uses  @samp{chronometrist-file-hash} to assign indices and a hash to @samp{chronometrist--file-state}. The next time the file changes, @samp{chronometrist-file-change-type} compares this state to the current state of the file to determine the type of change made.
 
-A particular concern is when a change results in the addition of a new task, or removal of the last event of a task - i.e. @samp{chronometrist-task-list} should be updated.
+Challenges -
+@enumerate
+@item
+Correctly detecting the type of change
+@item
+Updating @samp{chronometrist-task-list} and the Chronometrist buffer, when a new task is added or the last interval for a task is removed (v0.6.4)
+@item
+Handling changes made to an active interval after midnight
+@itemize
+@item
+use the date from the plist's @samp{:start} timestamp instead of the date today
+@item
+:append - normally, add to table; for spanning intervals, invalid operation
+@item
+:modify - normally, replace in table; for spanning intervals, split and replace
+@item
+:remove - normally, remove from table; for spanning intervals, split and remove
+@end itemize
+@end enumerate
 @end enumerate
 
 @node Midnight-spanning events
@@ -731,9 +749,7 @@ Function - chronometrist-events-maybe-split (event)
 @item
 Function - chronometrist-events-populate ()
 @item
-Function - chronometrist-events-add (plist)
-@item
-Function - chronometrist-events-replace-last (plist)
+Function - chronometrist-events-update (plist &optional replace)
 @item
 Function - chronometrist-events-subset (start end)
 @itemize

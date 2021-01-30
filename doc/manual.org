@@ -103,6 +103,15 @@ Most changes, whether made through user-editing or by Chronometrist commands, ha
 
 When =chronometrist-refresh-file= is run by the file system watcher, it uses  =chronometrist-file-hash= to assign indices and a hash to =chronometrist--file-state=. The next time the file changes, =chronometrist-file-change-type= compares this state to the current state of the file to determine the type of change made.
 
+Challenges -
+1. Correctly detecting the type of change
+2. Updating =chronometrist-task-list= and the Chronometrist buffer, when a new task is added or the last interval for a task is removed (v0.6.4)
+3. Handling changes made to an active interval after midnight
+   * use the date from the plist's =:start= timestamp instead of the date today
+   * :append - normally, add to table; for spanning intervals, invalid operation
+   * :modify - normally, replace in table; for spanning intervals, split and replace
+   * :remove - normally, remove from table; for spanning intervals, split and remove
+
 ** Midnight-spanning events
 :PROPERTIES:
 :DESCRIPTION: Events starting on one day and ending on another
@@ -302,9 +311,8 @@ Each of these has a corresponding function to clear it and fill it with values -
    * commented out, unused
 4. Function - chronometrist-events-maybe-split (event)
 5. Function - chronometrist-events-populate ()
-6. Function - chronometrist-events-add (plist)
-7. Function - chronometrist-events-replace-last (plist)
-8. Function - chronometrist-events-subset (start end)
+6. Function - chronometrist-events-update (plist &optional replace)
+7. Function - chronometrist-events-subset (start end)
    * ts ts -> hash-table
 
 ** chronometrist-migrate.el

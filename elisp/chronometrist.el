@@ -395,50 +395,55 @@ Return
       ;; The only interval for TASK is the last expression
       (setq chronometrist-task-list (remove task chronometrist-task-list)))))
 
-(defun chronometrist-refresh-file (_fs-event)
+(defun chronometrist-refresh-file (fs-event)
   "Re-read `chronometrist-file' and refresh the `chronometrist' buffer.
 Argument _FS-EVENT is ignored."
   (run-hooks 'chronometrist-file-change-hook)
+  ;; (message "chronometrist - file %s" fs-event)
   ;; `chronometrist-file-change-type' must be run /before/ we update `chronometrist--file-state'
   ;; (the latter represents the old state of the file, which
   ;; `chronometrist-file-change-type' compares with the new one)
-  (aif chronometrist--file-state
-      (let ((change (chronometrist-file-change-type it))
-            (task   (plist-get (chronometrist-last) :name)))
-        ;; (message "chronometrist - file change type is %s" change)
-        (pcase change
-          (:append
-           (chronometrist-events-add (chronometrist-sexp-last))
-           (chronometrist-add-to-task-list task))
-          (:modify
-           (chronometrist-events-replace-last (chronometrist-sexp-last))
-           (chronometrist-remove-from-task-list task)
-           (chronometrist-add-to-task-list task))
-          (:remove
-           (let* ((date (--> (hash-table-keys chronometrist-events)
-                             (last it)
-                             (car it)))
-                  (old-task (--> (gethash date chronometrist-events)
-                                 (last it)
-                                 (car it)
-                                 (plist-get it :name))))
-             (chronometrist-remove-from-task-list old-task)
-             (--> (gethash date chronometrist-events)
-                  (-drop-last 1 it)
-                  (puthash date it chronometrist-events))))
-          ((pred null) nil)
-          (_ (chronometrist-events-populate))))
-    (chronometrist-events-populate)
-    ;; re-create task list
-    (--> (chronometrist-loop-file for plist in chronometrist-file collect (plist-get plist :name))
-         (cl-remove-duplicates it :test #'equal)
-         (sort it #'string-lessp)
-         (setq chronometrist-task-list it)))
-  (setq chronometrist--file-state
-        (list :last (chronometrist-file-hash :before-last nil)
-              :rest (chronometrist-file-hash nil :before-last t)))
-  ;; REVIEW - can we move most/all of this to the `chronometrist-file-change-hook'?
-  (chronometrist-refresh))
+  (-let* (((descriptor action file ...) fs-event)
+          (change      (chronometrist-file-change-type chronometrist--file-state))
+          (reset-watch (or (eq action 'deleted) (eq action 'renamed))))
+    ;; (message "chronometrist - file change type is %s" change)
+    (cond ((or reset-watch (not chronometrist--file-state) (eq change t))
+           (when reset-watch
+             (setq chronometrist--fs-watch nil chronometrist--file-state nil))
+           (chronometrist-events-populate)
+           ;; re-create task list
+           (--> (chronometrist-loop-file for plist in chronometrist-file collect (plist-get plist :name))
+                (cl-remove-duplicates it :test #'equal)
+                (sort it #'string-lessp)
+                (setq chronometrist-task-list it)))
+          (chronometrist--file-state
+           (let ((task (plist-get (chronometrist-last) :name)))
+             (pcase change
+               (:append
+                (chronometrist-events-update (chronometrist-sexp-last))
+                (chronometrist-add-to-task-list task))
+               (:modify
+                (chronometrist-events-update (chronometrist-sexp-last) t)
+                (chronometrist-remove-from-task-list task)
+                (chronometrist-add-to-task-list task))
+               (:remove
+                (let* ((date (--> (hash-table-keys chronometrist-events)
+                                  (last it)
+                                  (car it)))
+                       (old-task (--> (gethash date chronometrist-events)
+                                      (last it)
+                                      (car it)
+                                      (plist-get it :name))))
+                  (chronometrist-remove-from-task-list old-task)
+                  (--> (gethash date chronometrist-events)
+                       (-drop-last 1 it)
+                       (puthash date it chronometrist-events))))
+               ((pred null) nil)))))
+    (setq chronometrist--file-state
+          (list :last (chronometrist-file-hash :before-last nil)
+                :rest (chronometrist-file-hash nil :before-last t)))
+    ;; REVIEW - can we move most/all of this to the `chronometrist-file-change-hook'?
+    (chronometrist-refresh)))
 
 (defun chronometrist-query-stop ()
   "Ask the user if they would like to clock out."
