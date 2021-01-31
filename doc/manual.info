@@ -553,12 +553,6 @@ Only returned by chronometrist-seconds-to-hms, called by chronometrist-format-ti
 
 @enumerate
 @item
-Variable - chronometrist-empty-time-string
-@item
-Variable - chronometrist-date-re
-@item
-Variable - chronometrist-time-re-ui
-@item
 Variable - chronometrist-task-list
 @item
 Internal Variable - chronometrist--fs-watch

@@ -24,22 +24,6 @@
 ;; ## VARIABLES ##
 ;;; Code:
 
-(defvar chronometrist-empty-time-string "-")
-
-(defvar chronometrist-date-re "[0-9]\\{4\\}/[0-9]\\{2\\}/[0-9]\\{2\\}")
-
-(defvar chronometrist-time-re-ui
-  (rx-to-string
-   `(or
-     (and (repeat 0 2
-                  (optional (repeat 1 2 digit) ":"))
-          (repeat 1 2 digit))
-     ,chronometrist-empty-time-string))
-  "Regular expression to represent a timestamp in `chronometrist'.
-This is distinct from `chronometrist-time-re-file' (which see) -
-`chronometrist-time-re-ui' is meant for the user interface, and
-must correspond to the output from `chronometrist-format-time'.")
-
 (defvar chronometrist-task-list nil
   "List of tasks in `chronometrist-file'.")
 

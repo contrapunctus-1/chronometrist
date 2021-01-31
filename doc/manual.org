@@ -225,22 +225,19 @@ Each of these has a corresponding function to clear it and fill it with values -
   * Only returned by chronometrist-seconds-to-hms, called by chronometrist-format-time
 
 ** chronometrist-common.el
-1. Variable - chronometrist-empty-time-string
-2. Variable - chronometrist-date-re
-3. Variable - chronometrist-time-re-ui
-4. Variable - chronometrist-task-list
-5. Internal Variable - chronometrist--fs-watch
-6. Function - chronometrist-current-task ()
-7. Function - chronometrist-format-time  (seconds &optional (blank "   "))
+1. Variable - chronometrist-task-list
+2. Internal Variable - chronometrist--fs-watch
+3. Function - chronometrist-current-task ()
+4. Function - chronometrist-format-time  (seconds &optional (blank "   "))
    * seconds -> "h:m:s"
-8. Function - chronometrist-common-file-empty-p (file)
-9. Function - chronometrist-common-clear-buffer (buffer)
-10. Function - chronometrist-format-keybinds (command map &optional firstonly)
-11. Function - chronometrist-events->ts-pairs (events)
-    * (plist ...) -> ((ts . ts) ...)
-12. Function - chronometrist-ts-pairs->durations (ts-pairs)
-    * ((ts . ts) ...) -> seconds
-13. Function - chronometrist-previous-week-start (ts)
+5. Function - chronometrist-common-file-empty-p (file)
+6. Function - chronometrist-common-clear-buffer (buffer)
+7. Function - chronometrist-format-keybinds (command map &optional firstonly)
+8. Function - chronometrist-events->ts-pairs (events)
+   * (plist ...) -> ((ts . ts) ...)
+9. Function - chronometrist-ts-pairs->durations (ts-pairs)
+   * ((ts . ts) ...) -> seconds
+10. Function - chronometrist-previous-week-start (ts)
     * ts -> ts
 
 ** chronometrist-custom.el
