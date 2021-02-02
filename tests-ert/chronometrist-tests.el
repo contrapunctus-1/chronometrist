@@ -1,6 +1,12 @@
 ;; -*- lexical-binding: t; -*-
 (require 'chronometrist)
 
+(defmacro chronometrist-tests--change-type-and-update (state)
+  `(prog1 (chronometrist-file-change-type ,state)
+     (setq ,state
+           (list :last (chronometrist-file-hash :before-last nil)
+                 :rest (chronometrist-file-hash nil :before-last t)))))
+
 (ert-deftest file-change-type ()
   (let* ((chronometrist-file            (concat default-directory "test.sexp"))
          (test-contents    (with-current-buffer (find-file-noselect chronometrist-file)
@@ -19,10 +25,7 @@
                          '(:name "Append Test"
                                  :start "2021-02-01T13:06:46+0530"
                                  :stop "2021-02-01T13:06:49+0530"))
-                        (prog1 (chronometrist-file-change-type chronometrist--file-state)
-                          (setq chronometrist--file-state
-                                (list :last (chronometrist-file-hash :before-last nil)
-                                      :rest (chronometrist-file-hash nil :before-last t)))))))
+                        (chronometrist-tests--change-type-and-update chronometrist--file-state))))
           (should (eq :modify
                       (progn
                         (chronometrist-sexp-replace-last
@@ -30,10 +33,7 @@
                                  :tags (some tags)
                                  :start "2021-02-01T13:06:46+0530"
                                  :stop "2021-02-01T13:06:49+0530"))
-                        (prog1 (chronometrist-file-change-type chronometrist--file-state)
-                          (setq chronometrist--file-state
-                                (list :last (chronometrist-file-hash :before-last nil)
-                                      :rest (chronometrist-file-hash nil :before-last t)))))))
+                        (chronometrist-tests--change-type-and-update chronometrist--file-state))))
           (should (eq :remove
                       (progn
                         (chronometrist-sexp-in-file chronometrist-file
@@ -41,10 +41,7 @@
                           (backward-list 1)
                           (chronometrist-sexp-delete-list 1)
                           (save-buffer))
-                        (prog1 (chronometrist-file-change-type chronometrist--file-state)
-                          (setq chronometrist--file-state
-                                (list :last (chronometrist-file-hash :before-last nil)
-                                      :rest (chronometrist-file-hash nil :before-last t)))))))
+                        (chronometrist-tests--change-type-and-update chronometrist--file-state))))
           (should (eq t
                       (progn
                         (chronometrist-sexp-in-file chronometrist-file
@@ -54,7 +51,7 @@
                                              :stop "2021-02-02T17:39:44+0530")
                                      (current-buffer))
                           (save-buffer))
-                        (chronometrist-file-change-type chronometrist--file-state)))))
+                        (chronometrist-tests--change-type-and-update chronometrist--file-state)))))
       (with-current-buffer (find-file-noselect chronometrist-file)
         (delete-region (point-min) (point-max))
         (insert test-contents)
