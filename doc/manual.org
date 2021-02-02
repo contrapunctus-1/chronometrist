@@ -278,26 +278,28 @@ Each of these has a corresponding function to clear it and fill it with values -
 17. Function - chronometrist-file-hash (&optional start end hash)
 18. Function - chronometrist-read-from (position)
 19. Function - chronometrist-file-change-type (state)
-20. Function - chronometrist-add-to-task-list (task)
-21. Function - chronometrist-remove-from-task-list (task)
-22. Function - chronometrist-refresh-file (fs-event)
-23. Command - chronometrist-query-stop ()
-24. Command - chronometrist-in (task &optional _prefix)
-25. Command - chronometrist-out (&optional _prefix)
-26. Variable - chronometrist-before-in-functions
-27. Variable - chronometrist-after-in-functions
-28. Variable - chronometrist-before-out-functions
-29. Variable - chronometrist-after-out-functions
-30. Function - chronometrist-run-functions-and-clock-in (task)
-31. Function - chronometrist-run-functions-and-clock-out (task)
-32. Keymap - chronometrist-mode-map
-33. Major Mode - chronometrist-mode
-34. Function - chronometrist-toggle-task-button (button)
-35. Function - chronometrist-add-new-task-button (button)
-36. Command - chronometrist-toggle-task (&optional prefix inhibit-hooks)
-37. Command - chronometrist-toggle-task-no-hooks (&optional prefix)
-38. Command - chronometrist-add-new-task ()
-39. Command - chronometrist (&optional arg)
+20. Function - chronometrist-task-list ()
+    * -> List
+21. Function - chronometrist-add-to-task-list (task)
+22. Function - chronometrist-remove-from-task-list (task)
+23. Function - chronometrist-refresh-file (fs-event)
+24. Command - chronometrist-query-stop ()
+25. Command - chronometrist-in (task &optional _prefix)
+26. Command - chronometrist-out (&optional _prefix)
+27. Variable - chronometrist-before-in-functions
+28. Variable - chronometrist-after-in-functions
+29. Variable - chronometrist-before-out-functions
+30. Variable - chronometrist-after-out-functions
+31. Function - chronometrist-run-functions-and-clock-in (task)
+32. Function - chronometrist-run-functions-and-clock-out (task)
+33. Keymap - chronometrist-mode-map
+34. Major Mode - chronometrist-mode
+35. Function - chronometrist-toggle-task-button (button)
+36. Function - chronometrist-add-new-task-button (button)
+37. Command - chronometrist-toggle-task (&optional prefix inhibit-hooks)
+38. Command - chronometrist-toggle-task-no-hooks (&optional prefix)
+39. Command - chronometrist-add-new-task ()
+40. Command - chronometrist (&optional arg)
 
 ** chronometrist-events.el
 1. Variable - chronometrist-events

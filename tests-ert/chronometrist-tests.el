@@ -1,6 +1,11 @@
 ;; -*- lexical-binding: t; -*-
 (require 'chronometrist)
 
+(ert-deftest task-list ()
+  (let ((task-list (chronometrist-task-list)))
+    (should (listp task-list))
+    (should (seq-every-p #'stringp task-list))))
+
 (defmacro chronometrist-tests--change-type-and-update (state)
   `(prog1 (chronometrist-file-change-type ,state)
      (setq ,state

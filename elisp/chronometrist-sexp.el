@@ -14,6 +14,13 @@ Like `pp', it must accept an OBJECT and optionally a
 STREAM (which is the value of `current-buffer')."
   :type 'function)
 
+(define-derived-mode chronometrist-sexp-mode
+  ;; fundamental-mode
+  emacs-lisp-mode
+  "chronometrist-sexp")
+
+(add-to-list 'chronometrist-sexp-mode-hook 'auto-revert-mode)
+
 (defmacro chronometrist-sexp-in-file (file &rest body)
   "Run BODY in a buffer visiting FILE, restoring point afterwards."
   (declare (indent defun) (debug t))
@@ -33,6 +40,8 @@ VAR is bound to each s-expression."
      (cl-loop with ,expr
        while (and (not (bobp))
                   (backward-list)
+                  (and (not (bobp))
+                       (not (looking-at-p "^[[:blank:]]*;")))
                   (setq ,expr (ignore-errors (read (current-buffer))))
                   (backward-list))
        ,@loop-clauses)))
@@ -94,6 +103,8 @@ were none."
   "Create `chronometrist-file' if it doesn't already exist."
   (unless (file-exists-p chronometrist-file)
     (with-current-buffer (find-file-noselect chronometrist-file)
+      (goto-char (point-min))
+      (insert ";;; -*- mode: chronometrist-sexp; -*-")
       (write-file chronometrist-file))))
 
 (cl-defun chronometrist-sexp-new (plist)

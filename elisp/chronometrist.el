@@ -373,6 +373,12 @@ Return
                           (forward-list)))))
            :modify))))
 
+(defun chronometrist-task-list ()
+  "Return a list of tasks from `chronometrist-file'."
+  (--> (chronometrist-loop-file for plist in chronometrist-file collect (plist-get plist :name))
+       (cl-remove-duplicates it :test #'equal)
+       (sort it #'string-lessp)))
+
 (defun chronometrist-add-to-task-list (task)
   (unless (cl-member task chronometrist-task-list :test #'equal)
     (setq chronometrist-task-list
@@ -411,11 +417,7 @@ Argument _FS-EVENT is ignored."
            (when reset-watch
              (setq chronometrist--fs-watch nil chronometrist--file-state nil))
            (chronometrist-events-populate)
-           ;; re-create task list
-           (--> (chronometrist-loop-file for plist in chronometrist-file collect (plist-get plist :name))
-                (cl-remove-duplicates it :test #'equal)
-                (sort it #'string-lessp)
-                (setq chronometrist-task-list it)))
+           (setq chronometrist-task-list (chronometrist-task-list)))
           (chronometrist--file-state
            (let ((task (plist-get (chronometrist-last) :name)))
              (pcase change
