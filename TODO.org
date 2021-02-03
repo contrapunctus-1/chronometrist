@@ -127,6 +127,11 @@ Some options and ideas -
    * Will (probably) greatly speed up time parsing and interval splitting.
    * Will greatly impede human editing of the file, too. 🤔
      + An editing UI could help - pretty sure every timestamp edit I've ever made has been for the last interval, or at most an interval in today's data.
+7. [ ] Use an SQL database instead of a text file. Assuming SQL can
+   1. find the difference between ISO-8601 timestamps
+   2. compare ISO-8601 timestamps, and
+   3. do 1 and 2 faster than Elisp.
+8. [ ] Change data structure - instead of storing each plist as-is, split each into two, one with the =:start= and one with the =:end=. (Tags and key values could be added to either one.) Now we have the elegance of the one-plist-is-a-complete-interval schema in the file, and the ease and speed of detection of midnight spanning intervals in memory.
 ** Cache
    + Lessons from the parsimonious-reading branch - iterating =read= over the whole file is fast; splitting the intervals is not.
    + Things we need to read the whole file for - task list, tag/key/value history.
