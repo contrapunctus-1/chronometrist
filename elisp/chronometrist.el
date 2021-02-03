@@ -399,11 +399,13 @@ Argument _FS-EVENT is ignored."
   ;; (the latter represents the old state of the file, which
   ;; `chronometrist-file-change-type' compares with the new one)
   (-let* (((descriptor action file ...) fs-event)
-          (change      (chronometrist-file-change-type chronometrist--file-state))
+          (change      (when chronometrist--file-state
+                         (chronometrist-file-change-type chronometrist--file-state)))
           (reset-watch (or (eq action 'deleted) (eq action 'renamed))))
     ;; (message "chronometrist - file change type is %s" change)
     (cond ((or reset-watch (not chronometrist--file-state) (eq change t))
            (when reset-watch
+             (file-notify-rm-watch chronometrist--fs-watch)
              (setq chronometrist--fs-watch nil chronometrist--file-state nil))
            (chronometrist-events-populate)
            (setq chronometrist-task-list (chronometrist-task-list)))
