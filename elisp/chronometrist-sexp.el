@@ -26,7 +26,7 @@ STREAM (which is the value of `current-buffer')."
      (save-excursion ,@body)))
 
 (defmacro chronometrist-loop-file (for expr in file &rest loop-clauses)
-  "`cl-loop' LOOP-CLAUSES over s-expressions in FILE.
+  "`cl-loop' LOOP-CLAUSES over s-expressions in FILE, in reverse.
 VAR is bound to each s-expression."
   (declare (indent defun)
            (debug nil)
@@ -38,8 +38,8 @@ VAR is bound to each s-expression."
      (cl-loop with ,expr
        while (and (not (bobp))
                   (backward-list)
-                  (and (not (bobp))
-                       (not (looking-at-p "^[[:blank:]]*;")))
+                  (or (not (bobp))
+                      (not (looking-at-p "^[[:blank:]]*;")))
                   (setq ,expr (ignore-errors (read (current-buffer))))
                   (backward-list))
        ,@loop-clauses)))
