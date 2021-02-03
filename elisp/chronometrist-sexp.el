@@ -19,8 +19,6 @@ STREAM (which is the value of `current-buffer')."
   emacs-lisp-mode
   "chronometrist-sexp")
 
-(add-to-list 'chronometrist-sexp-mode-hook 'auto-revert-mode)
-
 (defmacro chronometrist-sexp-in-file (file &rest body)
   "Run BODY in a buffer visiting FILE, restoring point afterwards."
   (declare (indent defun) (debug t))
