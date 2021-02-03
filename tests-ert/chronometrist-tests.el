@@ -12,6 +12,10 @@
            (list :last (chronometrist-file-hash :before-last nil)
                  :rest (chronometrist-file-hash nil :before-last t)))))
 
+;; ;; TODO
+;; add newline after last expression and save => nil
+;; remove newline after last expession and save => nil
+
 (ert-deftest file-change-type ()
   (let* ((chronometrist-file            (concat default-directory "test.sexp"))
          (test-contents    (with-current-buffer (find-file-noselect chronometrist-file)

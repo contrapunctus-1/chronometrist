@@ -326,12 +326,6 @@ in `chronometrist-file' describing the region for which HASH was calculated."
 ;; nil     - rest same, last same, no expr after last-end
 ;; t       - rest changed
 
-;; tests -
-;; add newline after last expression and save
-;; remove newline afer last expession and save
-;; remove a key-value from last expression
-;; remove the last expression
-
 (defun chronometrist-file-change-type (state)
   "Determine the type of change made to `chronometrist-file'.
 STATE must be a plist. (see `chronometrist--file-state')
@@ -344,21 +338,16 @@ Return
       t  for any other change."
   (-let* (((last-start last-end)           (plist-get state :last))
           ((rest-start rest-end rest-hash) (plist-get state :rest))
-          ;; Using a hash for the last expression can cause issues -
-          ;; the last expression may shrink, and if we try to hash the
-          ;; old region again to determine if it has changed, we will
-          ;; get an args-out-of-range error. A hash will also result
-          ;; in false negatives for whitespace/indentation
+          ;; Using a hash to determine if the last expression has
+          ;; changed can cause issues - the expression may shrink, and
+          ;; if we try to compute the hash of the old region again, we
+          ;; will get an args-out-of-range error. A hash will also
+          ;; result in false negatives for whitespace/indentation
           ;; differences.
-          (last-same-p   (--> (hash-table-keys chronometrist-events) (last it) (car it)
-                              (gethash it chronometrist-events) (last it) (car it)
-                              (equal it (chronometrist-read-from last-start))))
+          (last-same-p     (--> (hash-table-keys chronometrist-events) (last it) (car it)
+                                (gethash it chronometrist-events) (last it) (car it)
+                                (equal it (chronometrist-read-from last-start))))
           (file-new-length (chronometrist-sexp-in-file chronometrist-file (point-max)))
-          ;; If the last expression is removed,
-          ;; `delete-trailing-whitespace' will also squeeze the two
-          ;; remaining trailing newlines, which makes file-new-length
-          ;; shorter than rest-end, and gives an erroneous result of t
-          ;; ("other change") rather than :removed
           (rest-same-p (unless (< file-new-length rest-end)
                          (equal rest-hash
                                 (cl-third (chronometrist-file-hash rest-start rest-end t))))))
