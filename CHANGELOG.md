@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Added
+* Major mode (syntax highlighting, hook) for Chronometrist s-expression files, derived from emacs-lisp-mode
+
 ## [0.6.4] - 2021-01-27
 ### Fixed
 * Incorrect order of tag/key/value history
