@@ -2,6 +2,20 @@
 ** Commentary
 This is displayed when the user clicks on the package's entry in =M-x list-packages=.
 #+BEGIN_SRC emacs-lisp
+;;; chronometrist.el --- A time tracker with a nice interface -*- lexical-binding: t; -*-
+
+;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
+;; Maintainer: contrapunctus <xmpp:contrapunctus@jabber.fr>
+;; Keywords: calendar
+;; Homepage: https://github.com/contrapunctus-1/chronometrist
+;; Package-Requires: ((emacs "25.1")
+;;                    (dash "2.16.0")
+;;                    (seq "2.20")
+;;                    (s "1.12.0")
+;;                    (ts "0.2")
+;;                    (anaphora "1.0.4"))
+;; Version: 0.6.4
+
 ;;; Commentary:
 ;;
 ;; A time tracker in Emacs with a nice interface
@@ -43,6 +57,16 @@ This is displayed when the user clicks on the package's entry in =M-x list-packa
 *** Preliminaries
 #+BEGIN_SRC emacs-lisp
 ;;; Code:
+(require 'filenotify)
+(require 'cl-lib)
+(require 'subr-x)
+
+(require 'chronometrist-common)
+(require 'chronometrist-key-values)
+(require 'chronometrist-queries)
+(require 'chronometrist-migrate)
+(require 'chronometrist-sexp)
+
 (eval-when-compile
   (defvar chronometrist-mode-map)
   (require 'subr-x))
