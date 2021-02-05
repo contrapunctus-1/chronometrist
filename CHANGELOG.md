@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 * Major mode (syntax highlighting, hook) for Chronometrist s-expression files, derived from emacs-lisp-mode
+### Fixed
+* Bug in updating the task list in some cases of the latest interval being modified.
 
 ## [0.6.4] - 2021-01-27
 ### Fixed

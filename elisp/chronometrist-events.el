@@ -114,6 +114,17 @@ treated as though their time is 00:00:00."
              chronometrist-events)
     subset))
 
+(defun chronometrist-events-last-date ()
+  (--> (hash-table-keys chronometrist-events)
+       (last it)
+       (car it)))
+
+(defun chronometrist-events-last ()
+  "Return the last plist from `chronometrist-events'."
+  (--> (gethash (chronometrist-events-last-date) chronometrist-events)
+       (last it)
+       (car it)))
+
 (provide 'chronometrist-events)
 
 ;;; chronometrist-events.el ends here

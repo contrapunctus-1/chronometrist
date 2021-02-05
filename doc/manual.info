@@ -681,6 +681,8 @@ Function - chronometrist-task-list ()
 -> List
 @end itemize
 @item
+Function - chronometrist-reset-task-list ()
+@item
 Function - chronometrist-add-to-task-list (task)
 @item
 Function - chronometrist-remove-from-task-list (task)
