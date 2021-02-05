@@ -1052,12 +1052,7 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
 
 #+END_SRC
 *** Common
-**** task-list
-:PROPERTIES:
-:component: common
-:type: variable
-:END:
-
+**** task-list                                                  :variable:
 #+BEGIN_SRC emacs-lisp
 (defvar chronometrist-task-list nil
   "List of tasks in `chronometrist-file'.")
