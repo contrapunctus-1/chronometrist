@@ -350,7 +350,7 @@ treated as though their time is 00:00:00."
   "A time tracker with a nice UI."
   :group 'applications)
 #+END_SRC
-**** chronometrist-file                                  :custom:variable:
+**** chronometrist-file                                              :custom:variable:
 #+BEGIN_SRC emacs-lisp
 (defcustom chronometrist-file
   (locate-user-emacs-file "chronometrist.sexp")
@@ -770,7 +770,7 @@ Return
          (chronometrist-out))
     t))
 #+END_SRC
-**** chronometrist-in                                            :command:
+**** chronometrist-in                                                        :command:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-in (task &optional _prefix)
   "Clock in to TASK; record current time in `chronometrist-file'.
@@ -780,7 +780,7 @@ TASK is the name of the task, a string. PREFIX is ignored."
     (chronometrist-sexp-new plist)
     (chronometrist-refresh)))
 #+END_SRC
-**** chronometrist-out                                           :command:
+**** chronometrist-out                                                       :command:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-out (&optional _prefix)
   "Record current moment as stop time to last s-exp in `chronometrist-file'.
@@ -789,7 +789,7 @@ PREFIX is ignored."
   (let ((plist (plist-put (chronometrist-last) :stop (chronometrist-format-time-iso8601))))
     (chronometrist-sexp-replace-last plist)))
 #+END_SRC
-**** chronometrist-mode-hook                                 :hook:normal:
+**** chronometrist-mode-hook                                             :hook:normal:
 #+BEGIN_SRC emacs-lisp
 (defvar chronometrist-mode-hook nil
   "Normal hook run at the very end of `chronometrist-mode'.")
@@ -876,7 +876,7 @@ is the name of the task to be clocked out of.")
     (chronometrist-out)
     (run-hook-with-args 'chronometrist-after-out-functions task)))
 #+END_SRC
-**** chronometrist-mode-map                                       :keymap:
+**** chronometrist-mode-map                                                   :keymap:
 #+BEGIN_SRC emacs-lisp
 (defvar chronometrist-mode-map
   (let ((map (make-sparse-keymap)))
@@ -890,7 +890,7 @@ is the name of the task to be clocked out of.")
     map)
   "Keymap used by `chronometrist-mode'.")
 #+END_SRC
-**** chronometrist-mode                                       :major:mode:
+**** chronometrist-mode                                                   :major:mode:
 #+BEGIN_SRC emacs-lisp
 (define-derived-mode chronometrist-mode tabulated-list-mode "Chronometrist"
   "Major mode for `chronometrist'."
@@ -1183,4 +1183,5 @@ TS must be a ts struct (see `ts.el')."
 
 # Local Variables:
 # eval: (visual-fill-column-mode -1)
+# eval: (nameless-mode)
 # End:
