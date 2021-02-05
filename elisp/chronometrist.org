@@ -77,8 +77,174 @@ This is displayed when the user clicks on the package's entry in =M-x list-packa
 (autoload 'chronometrist-report "chronometrist-report" nil t)
 (autoload 'chronometrist-statistics "chronometrist-statistics" nil t)
 #+END_SRC
+*** File
+**** pretty-print-function                               :custom:variable:
+#+BEGIN_SRC emacs-lisp
+(defcustom chronometrist-sexp-pretty-print-function #'chronometrist-plist-pp
+  "Function used to pretty print plists in `chronometrist-file'.
+Like `pp', it must accept an OBJECT and optionally a
+STREAM (which is the value of `current-buffer')."
+  :type 'function)
+#+END_SRC
+**** sexp-mode                                                :major:mode:
+#+BEGIN_SRC emacs-lisp
+(define-derived-mode chronometrist-sexp-mode
+  ;; fundamental-mode
+  emacs-lisp-mode
+  "chronometrist-sexp")
+#+END_SRC
+**** in-file                                                       :macro:
+#+BEGIN_SRC emacs-lisp
+(defmacro chronometrist-sexp-in-file (file &rest body)
+  "Run BODY in a buffer visiting FILE, restoring point afterwards."
+  (declare (indent defun) (debug t))
+  `(with-current-buffer (find-file-noselect ,file)
+     (save-excursion ,@body)))
+#+END_SRC
+**** loop-file                                                     :macro:
+#+BEGIN_SRC emacs-lisp
+(defmacro chronometrist-loop-file (for expr in file &rest loop-clauses)
+  "`cl-loop' LOOP-CLAUSES over s-expressions in FILE, in reverse.
+VAR is bound to each s-expression."
+  (declare (indent defun)
+           (debug nil)
+           ;; FIXME
+           ;; (debug ("for" form "in" form &rest &or sexp form))
+           )
+  `(chronometrist-sexp-in-file ,file
+     (goto-char (point-max))
+     (cl-loop with ,expr
+       while (and (not (bobp))
+                  (backward-list)
+                  (or (not (bobp))
+                      (not (looking-at-p "^[[:blank:]]*;")))
+                  (setq ,expr (ignore-errors (read (current-buffer))))
+                  (backward-list))
+       ,@loop-clauses)))
+#+END_SRC
+**** open-log                                                   :function:
+#+BEGIN_SRC emacs-lisp
+;;;; Queries
+(defun chronometrist-sexp-open-log ()
+  "Open `chronometrist-file' in another window."
+  (find-file-other-window chronometrist-file)
+  (goto-char (point-max)))
+#+END_SRC
+**** last                                                       :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-sexp-last ()
+  "Return last s-expression from `chronometrist-file'."
+  (chronometrist-sexp-in-file chronometrist-file
+    (goto-char (point-max))
+    (backward-list)
+    (ignore-errors (read (current-buffer)))))
+#+END_SRC
+**** current-task                                               :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-sexp-current-task ()
+  "Return the name of the currently clocked-in task, or nil if not clocked in."
+  (let ((last-event (chronometrist-sexp-last)))
+    (if (plist-member last-event :stop)
+        nil
+      (plist-get last-event :name))))
+#+END_SRC
+**** events-populate                                            :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-sexp-events-populate ()
+  "Populate hash table `chronometrist-events'.
+The data is acquired from `chronometrist-file'.
+
+Return final number of events read from file, or nil if there
+were none."
+  (chronometrist-sexp-in-file chronometrist-file
+    (goto-char (point-min))
+    (let ((index 0) expr pending-expr)
+      (while (or pending-expr
+                 (setq expr (ignore-errors (read (current-buffer)))))
+        ;; find and split midnight-spanning events during deserialization itself
+        (let* ((split-expr (chronometrist-events-maybe-split expr))
+               (new-value  (cond (pending-expr
+                                  (prog1 pending-expr
+                                    (setq pending-expr nil)))
+                                 (split-expr
+                                  (setq pending-expr (cl-second split-expr))
+                                  (cl-first split-expr))
+                                 (t expr)))
+               (new-value-date (->> (plist-get new-value :start)
+                                    (s-left 10)))
+               (existing-value (gethash new-value-date chronometrist-events)))
+          (unless pending-expr (cl-incf index))
+          (puthash new-value-date
+                   (if existing-value
+                       (append existing-value
+                               (list new-value))
+                     (list new-value))
+                   chronometrist-events)))
+      (unless (zerop index) index))))
+#+END_SRC
+**** create-file                                                :function:
+#+BEGIN_SRC emacs-lisp
+;;;; Modifications
+(defun chronometrist-sexp-create-file ()
+  "Create `chronometrist-file' if it doesn't already exist."
+  (unless (file-exists-p chronometrist-file)
+    (with-current-buffer (find-file-noselect chronometrist-file)
+      (goto-char (point-min))
+      (insert ";;; -*- mode: chronometrist-sexp; -*-")
+      (write-file chronometrist-file))))
+#+END_SRC
+**** new                                                        :function:
+#+BEGIN_SRC emacs-lisp
+(cl-defun chronometrist-sexp-new (plist)
+  "Add new PLIST at the end of `chronometrist-file'."
+  (chronometrist-sexp-in-file chronometrist-file
+    (goto-char (point-max))
+    ;; If we're adding the first s-exp in the file, don't add a
+    ;; newline before it
+    (unless (bobp) (insert "\n"))
+    (unless (bolp) (insert "\n"))
+    (funcall chronometrist-sexp-pretty-print-function plist (current-buffer))
+    (save-buffer)))
+#+END_SRC
+**** delete-list                                                :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-sexp-delete-list (&optional arg)
+  "Delete ARG lists after point."
+  (let ((point-1 (point)))
+    (forward-sexp (or arg 1))
+    (delete-region point-1 (point))))
+#+END_SRC
+**** replace-last                                               :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-sexp-replace-last (plist)
+  "Replace the last s-expression in `chronometrist-file' with PLIST."
+  (chronometrist-sexp-in-file chronometrist-file
+    (goto-char (point-max))
+    (unless (and (bobp) (bolp)) (insert "\n"))
+    (backward-list 1)
+    (chronometrist-sexp-delete-list)
+    (funcall chronometrist-sexp-pretty-print-function plist (current-buffer))
+    (save-buffer)))
+#+END_SRC
+**** reindent-buffer                                             :command:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-sexp-reindent-buffer ()
+  "Reindent the current buffer.
+This is meant to be run in `chronometrist-file' when using the s-expression backend."
+  (interactive)
+  (let (expr)
+    (goto-char (point-min))
+    (while (setq expr (ignore-errors (read (current-buffer))))
+      (backward-list)
+      (chronometrist-sexp-delete-list)
+      (when (looking-at "\n*")
+        (delete-region (match-beginning 0) (match-end 0)))
+      (funcall chronometrist-sexp-pretty-print-function expr (current-buffer))
+      (insert "\n")
+      (unless (eobp) (insert "\n")))))
+#+END_SRC
 *** Hash Table
-**** chronometrist-events                                       :variable:
+**** chronometrist-events                                                   :variable:
 #+BEGIN_SRC emacs-lisp
 (defvar chronometrist-events (make-hash-table :test #'equal)
   "Each key is a date in the form (YEAR MONTH DAY).
