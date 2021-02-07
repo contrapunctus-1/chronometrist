@@ -243,6 +243,12 @@ This is meant to be run in `chronometrist-file' when using the s-expression back
       (insert "\n")
       (unless (eobp) (insert "\n")))))
 #+END_SRC
+**** last
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-last ()
+  "Return the last entry from `chronometrist-file' as a plist."
+  (chronometrist-sexp-last))
+#+END_SRC
 *** Hash Table
 **** chronometrist-events                                                   :variable:
 #+BEGIN_SRC emacs-lisp
@@ -312,7 +318,7 @@ were none."
   (clrhash chronometrist-events)
   (chronometrist-sexp-events-populate))
 #+END_SRC
-**** events-update                                              :function:
+**** events-update                                      :function:mutator:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-events-update (plist &optional replace)
   "Add PLIST to the end of `chronometrist-events'.
@@ -325,7 +331,7 @@ If REPLACE is non-nil, replace the last event with PLIST."
          (append it (list plist))
          (puthash date it chronometrist-events))))
 #+END_SRC
-**** events-subset                                              :function:
+**** events-subset                                        :function:query:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-events-subset (start end)
   "Return a subset of `chronometrist-events'.
@@ -342,6 +348,71 @@ treated as though their time is 00:00:00."
                  (puthash key value subset)))
              chronometrist-events)
     subset))
+#+END_SRC
+**** task-time-one-day                                    :function:query:
+#+BEGIN_SRC emacs-lisp
+(cl-defun chronometrist-task-time-one-day (task &optional (ts (ts-now)))
+  "Return total time spent on TASK today or (if supplied) on timestamp TS.
+The data is obtained from `chronometrist-file', via `chronometrist-events'.
+
+TS should be a ts struct (see `ts.el').
+
+The return value is seconds, as an integer."
+  (let ((task-events (chronometrist-task-events-in-day task ts)))
+    (if task-events
+        (->> (chronometrist-events->ts-pairs task-events)
+             (chronometrist-ts-pairs->durations)
+             (-reduce #'+)
+             (truncate))
+      ;; no events for this task on TS, i.e. no time spent
+      0)))
+#+END_SRC
+**** task-time-one-day                                    :function:query:
+#+BEGIN_SRC emacs-lisp
+(cl-defun chronometrist-active-time-one-day (&optional (ts (ts-now)))
+  "Return the total active time on TS (if non-nil) or today.
+TS must be a ts struct (see `ts.el')
+
+Return value is seconds as an integer."
+  (->> chronometrist-task-list
+       (--map (chronometrist-task-time-one-day it ts))
+       (-reduce #'+)
+       (truncate)))
+#+END_SRC
+**** count-active-days                                    :function:query:
+#+BEGIN_SRC emacs-lisp
+(cl-defun chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
+  "Return the number of days the user spent any time on TASK.
+TABLE must be a hash table - if not supplied, `chronometrist-events' is used.
+
+This will not return correct results if TABLE contains records
+which span midnights. (see `chronometrist-events-clean')"
+  (let ((count 0))
+    (maphash (lambda (_date events)
+               (when (seq-find (lambda (event)
+                                 (equal (plist-get event :name) task))
+                               events)
+                 (cl-incf count)))
+             table)
+    count))
+#+END_SRC
+**** task-events-in-day                                   :function:query:
+#+BEGIN_SRC emacs-lisp
+(cl-defun chronometrist-task-events-in-day (task &optional (ts (ts-now)))
+  "Get events for TASK on TS.
+TS should be a ts struct (see `ts.el').
+
+Returns a list of events, where each event is a property list in
+the form (:name \"NAME\" :start START :stop STOP ...), where
+START and STOP are ISO-8601 time strings.
+
+This will not return correct results if TABLE contains records
+which span midnights. (see `chronometrist-events-clean')"
+  (->> (gethash (ts-format "%F" ts) chronometrist-events)
+       (mapcar (lambda (event)
+                 (when (equal task (plist-get event :name))
+                   event)))
+       (seq-filter #'identity)))
 #+END_SRC
 *** Chronometrist
 **** custom group                                           :custom:group:
@@ -1287,4 +1358,5 @@ file names respectively."
 # Local Variables:
 # eval: (visual-fill-column-mode -1)
 # eval: (nameless-mode)
+# eval: (add-hook 'after-save-hook (lambda () (start-process-shell-command "sed-tangle" (generate-new-buffer-name "sed-tangle") "sed -n '/#+BEGIN_SRC emacs-lisp$/,/#+END_SRC$/{//!p;}' chronometrist.org > chronometrist.el")))
 # End:
