@@ -73,7 +73,7 @@ This is displayed when the user clicks on the package's entry in =M-x list-packa
 (autoload 'chronometrist-report "chronometrist-report" nil t)
 (autoload 'chronometrist-statistics "chronometrist-statistics" nil t)
 #+END_SRC
-*** File
+*** Backend
 **** pretty-print-function                               :custom:variable:
 #+BEGIN_SRC emacs-lisp
 (defcustom chronometrist-sexp-pretty-print-function #'chronometrist-plist-pp
@@ -410,7 +410,7 @@ which span midnights. (see `chronometrist-events-clean')"
                    event)))
        (seq-filter #'identity)))
 #+END_SRC
-*** Chronometrist
+*** Chronometrist (frontend)
 **** custom group                                           :custom:group:
 #+BEGIN_SRC emacs-lisp
 (defgroup chronometrist nil
@@ -1238,7 +1238,7 @@ TS must be a ts struct (see `ts.el')."
     do (ts-decf (ts-day ts))
     finally return ts))
 #+END_SRC
-*** Time
+*** Time functions
 **** iso-timestamp->ts                                          :function:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-iso-timestamp->ts (timestamp)
@@ -1410,7 +1410,7 @@ ARG should be the new update interval, in seconds."
   (chronometrist-maybe-start-timer))
 #+END_SRC
 
-*** Migrate
+*** Migration
 **** table                                                      :variable:
 #+BEGIN_SRC emacs-lisp
 (defvar chronometrist-migrate-table (make-hash-table))
