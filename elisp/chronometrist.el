@@ -61,20 +61,24 @@
   (require 'subr-x))
 (autoload 'chronometrist-report "chronometrist-report" nil t)
 (autoload 'chronometrist-statistics "chronometrist-statistics" nil t)
+
 (defcustom chronometrist-sexp-pretty-print-function #'chronometrist-plist-pp
   "Function used to pretty print plists in `chronometrist-file'.
 Like `pp', it must accept an OBJECT and optionally a
 STREAM (which is the value of `current-buffer')."
   :type 'function)
+
 (define-derived-mode chronometrist-sexp-mode
   ;; fundamental-mode
   emacs-lisp-mode
   "chronometrist-sexp")
+
 (defmacro chronometrist-sexp-in-file (file &rest body)
   "Run BODY in a buffer visiting FILE, restoring point afterwards."
   (declare (indent defun) (debug t))
   `(with-current-buffer (find-file-noselect ,file)
      (save-excursion ,@body)))
+
 (defmacro chronometrist-loop-file (for expr in file &rest loop-clauses)
   "`cl-loop' LOOP-CLAUSES over s-expressions in FILE, in reverse.
 VAR is bound to each s-expression."
@@ -94,22 +98,26 @@ VAR is bound to each s-expression."
                   (backward-list))
        ,@loop-clauses)))
 ;;;; Queries
+
 (defun chronometrist-sexp-open-log ()
   "Open `chronometrist-file' in another window."
   (find-file-other-window chronometrist-file)
   (goto-char (point-max)))
+
 (defun chronometrist-sexp-last ()
   "Return last s-expression from `chronometrist-file'."
   (chronometrist-sexp-in-file chronometrist-file
     (goto-char (point-max))
     (backward-list)
     (ignore-errors (read (current-buffer)))))
+
 (defun chronometrist-sexp-current-task ()
   "Return the name of the currently clocked-in task, or nil if not clocked in."
   (let ((last-event (chronometrist-sexp-last)))
     (if (plist-member last-event :stop)
         nil
       (plist-get last-event :name))))
+
 (defun chronometrist-sexp-events-populate ()
   "Populate hash table `chronometrist-events'.
 The data is acquired from `chronometrist-file'.
@@ -142,6 +150,7 @@ were none."
                    chronometrist-events)))
       (unless (zerop index) index))))
 ;;;; Modifications
+
 (defun chronometrist-sexp-create-file ()
   "Create `chronometrist-file' if it doesn't already exist."
   (unless (file-exists-p chronometrist-file)
@@ -159,11 +168,13 @@ were none."
     (unless (bolp) (insert "\n"))
     (funcall chronometrist-sexp-pretty-print-function plist (current-buffer))
     (save-buffer)))
+
 (defun chronometrist-sexp-delete-list (&optional arg)
   "Delete ARG lists after point."
   (let ((point-1 (point)))
     (forward-sexp (or arg 1))
     (delete-region point-1 (point))))
+
 (defun chronometrist-sexp-replace-last (plist)
   "Replace the last s-expression in `chronometrist-file' with PLIST."
   (chronometrist-sexp-in-file chronometrist-file
@@ -173,6 +184,7 @@ were none."
     (chronometrist-sexp-delete-list)
     (funcall chronometrist-sexp-pretty-print-function plist (current-buffer))
     (save-buffer)))
+
 (defun chronometrist-sexp-reindent-buffer ()
   "Reindent the current buffer.
 This is meant to be run in `chronometrist-file' when using the s-expression backend."
@@ -187,14 +199,17 @@ This is meant to be run in `chronometrist-file' when using the s-expression back
       (funcall chronometrist-sexp-pretty-print-function expr (current-buffer))
       (insert "\n")
       (unless (eobp) (insert "\n")))))
+
 (defun chronometrist-last ()
   "Return the last entry from `chronometrist-file' as a plist."
   (chronometrist-sexp-last))
+
 (defvar chronometrist-events (make-hash-table :test #'equal)
   "Each key is a date in the form (YEAR MONTH DAY).
 Values are lists containing events, where each event is a list in
 the form (:name \"NAME\" :tags (TAGS) <key value pairs> ...
 :start TIME :stop TIME).")
+
 (defun chronometrist-day-start (timestamp)
   "Get start of day (according to `chronometrist-day-start-time') for TIMESTAMP.
 TIMESTAMP must be a time string in the ISO-8601 format.
@@ -211,6 +226,7 @@ Return value is a time value (see `current-time')."
          (reverse it)
          (append it timestamp-date-list)
          (apply #'encode-time it))))
+
 (defun chronometrist-events-maybe-split (event)
   "Split EVENT if it spans midnight.
 Return a list of two events if EVENT was split, else nil."
@@ -232,6 +248,7 @@ Return a list of two events if EVENT was split, else nil."
                 (-> event-2
                     (plist-put :start second-start)
                     (plist-put :stop  second-stop))))))))
+
 (defun chronometrist-events-populate ()
   "Clear hash table `chronometrist-events' (which see) and populate it.
 The data is acquired from `chronometrist-file'.
@@ -240,6 +257,7 @@ Return final number of events read from file, or nil if there
 were none."
   (clrhash chronometrist-events)
   (chronometrist-sexp-events-populate))
+
 (defun chronometrist-events-update (plist &optional replace)
   "Add PLIST to the end of `chronometrist-events'.
 If REPLACE is non-nil, replace the last event with PLIST."
@@ -250,6 +268,7 @@ If REPLACE is non-nil, replace the last event with PLIST."
     (--> (if replace (-drop-last 1 events-today) events-today)
          (append it (list plist))
          (puthash date it chronometrist-events))))
+
 (defun chronometrist-events-subset (start end)
   "Return a subset of `chronometrist-events'.
 The subset will contain values between dates START and END (both
@@ -318,9 +337,11 @@ which span midnights. (see `chronometrist-events-clean')"
                  (when (equal task (plist-get event :name))
                    event)))
        (seq-filter #'identity)))
+
 (defgroup chronometrist nil
   "A time tracker with a nice UI."
   :group 'applications)
+
 (defcustom chronometrist-file
   (locate-user-emacs-file "chronometrist.sexp")
   "Default path and name of the Chronometrist database.
@@ -345,28 +366,35 @@ TIME must be an ISO-8601 time string.
 \(The square brackets here refer to optional elements, not
 vectors.\)"
   :type 'file)
+
 (defcustom chronometrist-buffer-name "*Chronometrist*"
   "The name of the buffer created by `chronometrist'."
   :type 'string)
+
 (defcustom chronometrist-hide-cursor nil
   "If non-nil, hide the cursor and only highlight the current line in the `chronometrist' buffer."
   :type 'boolean)
+
 (defcustom chronometrist-update-interval 5
   "How often the `chronometrist' buffer should be updated, in seconds.
 
 This is not guaranteed to be accurate - see (info \"(elisp)Timers\")."
   :type 'integer)
+
 (defcustom chronometrist-activity-indicator "*"
   "How to indicate that a task is active.
 Can be a string to be displayed, or a function which returns this string.
 The default is \"*\""
   :type '(choice string function))
+
 (defcustom chronometrist-day-start-time "00:00:00"
   "The time at which a day is considered to start, in \"HH:MM:SS\".
 
 The default is midnight, i.e. \"00:00:00\"."
   :type 'string)
+
 (defvar chronometrist--point nil)
+
 (defun chronometrist-open-log (&optional _button)
   "Open `chronometrist-file' in another window.
 
@@ -374,18 +402,22 @@ Argument _BUTTON is for the purpose of using this command as a
 button action."
   (interactive)
   (chronometrist-sexp-open-log))
+
 (defun chronometrist-common-create-file ()
   "Create `chronometrist-file' if it doesn't already exist."
   (chronometrist-sexp-create-file))
+
 (defun chronometrist-task-active? (task)
   "Return t if TASK is currently clocked in, else nil."
   (equal (chronometrist-current-task) task))
+
 (defun chronometrist-activity-indicator ()
   "Return a string to indicate that a task is active.
 See custom variable `chronometrist-activity-indicator'."
   (if (functionp chronometrist-activity-indicator)
       (funcall chronometrist-activity-indicator)
     chronometrist-activity-indicator))
+
 (defun chronometrist-run-transformers (transformers arg)
   "Run TRANSFORMERS with ARG.
 TRANSFORMERS should be a list of functions (F₁ ... Fₙ), each of
@@ -399,6 +431,7 @@ Return the value returned by Fₙ."
       (dolist (fn transformers arg)
         (setq arg (funcall fn arg)))
     arg))
+
 (defun chronometrist-entries ()
   "Create entries to be displayed in the buffer created by `chronometrist', in the format specified by `tabulated-list-entries'."
   ;; HACK - these calls are commented out, because `chronometrist-entries' is
@@ -416,17 +449,20 @@ Return the value returned by Fₙ."
           (--> (vector index task-button task-time indicator)
                (list task it)
                (chronometrist-run-transformers chronometrist-entry-transformers it))))))
+
 (defun chronometrist-task-at-point ()
   "Return the task at point in the `chronometrist' buffer, or nil if there is no task at point."
   (save-excursion
     (beginning-of-line)
     (when (re-search-forward "[0-9]+ +" nil t)
       (get-text-property (point) 'tabulated-list-id))))
+
 (defun chronometrist-goto-last-task ()
   "In the `chronometrist' buffer, move point to the line containing the last active task."
   (goto-char (point-min))
   (re-search-forward (plist-get (chronometrist-last) :name) nil t)
   (beginning-of-line))
+
 (defun chronometrist-print-keybind (command &optional description firstonly)
   "Insert the keybindings for COMMAND.
 If DESCRIPTION is non-nil, insert that too.
@@ -435,6 +471,7 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
    (format "\n% 18s - %s"
            (chronometrist-format-keybinds command chronometrist-mode-map firstonly)
            (if description description ""))))
+
 (defun chronometrist-print-non-tabular ()
   "Print the non-tabular part of the buffer in `chronometrist'."
   (with-current-buffer chronometrist-buffer-name
@@ -459,6 +496,7 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
       (chronometrist-print-keybind 'chronometrist-open-log)
       (insert-text-button "view/edit log file" 'action #'chronometrist-open-log 'follow-link t)
       (insert "\n"))))
+
 (defun chronometrist-goto-nth-task (n)
   "Move point to the line containing the Nth task.
 Return the task at point, or nil if there is no corresponding
@@ -467,6 +505,7 @@ task. N must be a positive integer."
   (when (re-search-forward (format "^%d" n) nil t)
     (beginning-of-line)
     (chronometrist-task-at-point)))
+
 (defun chronometrist-refresh (&optional _ignore-auto _noconfirm)
   "Refresh the `chronometrist' buffer, without re-reading `chronometrist-file'.
 
@@ -481,6 +520,7 @@ value of `revert-buffer-function'."
         (chronometrist-print-non-tabular)
         (chronometrist-maybe-start-timer)
         (set-window-point window point)))))
+
 (defvar chronometrist--file-state nil
   "List containing the state of `chronometrist-file'.
 `chronometrist-refresh-file' sets this to a plist in the form
@@ -494,6 +534,7 @@ last s-expression.
 
 REST-START and REST-END represent the start of the file and the
 end of the second-last s-expression.")
+
 (defun chronometrist-file-hash (&optional start end hash)
   "Calculate hash of `chronometrist-file' between START and END.
 START can be
@@ -529,6 +570,7 @@ in `chronometrist-file' describing the region for which HASH was calculated."
                (secure-hash 'sha1 it)
                (list start end it))
         (list start end)))))
+
 (defun chronometrist-read-from (position)
   (chronometrist-sexp-in-file chronometrist-file
     (goto-char
@@ -536,6 +578,7 @@ in `chronometrist-file' describing the region for which HASH was calculated."
          position
        (funcall position)))
     (ignore-errors (read (current-buffer)))))
+
 (defun chronometrist-file-change-type (state)
   "Determine the type of change made to `chronometrist-file'.
 STATE must be a plist. (see `chronometrist--file-state')
@@ -571,15 +614,18 @@ Return
                    (progn (goto-char last-start)
                           (forward-list)))))
            :modify))))
+
 (defun chronometrist-task-list ()
   "Return a list of tasks from `chronometrist-file'."
   (--> (chronometrist-loop-file for plist in chronometrist-file collect (plist-get plist :name))
        (cl-remove-duplicates it :test #'equal)
        (sort it #'string-lessp)))
+
 (defun chronometrist-add-to-task-list (task)
   (unless (cl-member task chronometrist-task-list :test #'equal)
     (setq chronometrist-task-list
           (sort (cons task chronometrist-task-list) #'string-lessp))))
+
 (defun chronometrist-remove-from-task-list (task)
   (let ((count (cl-loop with count = 0
                  for intervals being the hash-values of chronometrist-events
@@ -643,6 +689,7 @@ Return
                   :rest (chronometrist-file-hash nil :before-last t)))
       ;; REVIEW - can we move most/all of this to the `chronometrist-file-change-hook'?
       (chronometrist-refresh)))
+
 (defun chronometrist-query-stop ()
   "Ask the user if they would like to clock out."
   (let ((task (chronometrist-current-task)))
@@ -650,6 +697,7 @@ Return
          (yes-or-no-p (format "Stop tracking time for %s? " task))
          (chronometrist-out))
     t))
+
 (defun chronometrist-in (task &optional _prefix)
   "Clock in to TASK; record current time in `chronometrist-file'.
 TASK is the name of the task, a string. PREFIX is ignored."
@@ -657,14 +705,17 @@ TASK is the name of the task, a string. PREFIX is ignored."
   (let ((plist `(:name ,task :start ,(chronometrist-format-time-iso8601))))
     (chronometrist-sexp-new plist)
     (chronometrist-refresh)))
+
 (defun chronometrist-out (&optional _prefix)
   "Record current moment as stop time to last s-exp in `chronometrist-file'.
 PREFIX is ignored."
   (interactive "P")
   (let ((plist (plist-put (chronometrist-last) :stop (chronometrist-format-time-iso8601))))
     (chronometrist-sexp-replace-last plist)))
+
 (defvar chronometrist-mode-hook nil
   "Normal hook run at the very end of `chronometrist-mode'.")
+
 (defvar chronometrist-list-format-transformers nil
   "List of functions to transform `tabulated-list-format' (which see).
 This is called with `chronometrist-run-transformers' in `chronometrist-mode', which see.
@@ -673,6 +724,7 @@ Extensions using `chronometrist-list-format-transformers' to
 increase the number of columns will also need to modify the value
 of `tabulated-list-entries' by using
 `chronometrist-entry-transformers'.")
+
 (defvar chronometrist-entry-transformers nil
   "List of functions to transform each entry of `tabulated-list-entries'.
 This is called with `chronometrist-run-transformers' in `chronometrist-entries', which see.
@@ -681,6 +733,7 @@ Extensions using `chronometrist-entry-transformers' to increase
 the number of columns will also need to modify the value of
 `tabulated-list-format' by using
 `chronometrist-list-format-transformers'.")
+
 (defvar chronometrist-before-in-functions nil
   "Functions to run before a task is clocked in.
 Each function in this hook must accept a single argument, which
@@ -689,6 +742,7 @@ is the name of the task to be clocked-in.
 The commands `chronometrist-toggle-task-button',
 `chronometrist-add-new-task-button', `chronometrist-toggle-task',
 and `chronometrist-add-new-task' will run this hook.")
+
 (defvar chronometrist-after-in-functions nil
   "Functions to run after a task is clocked in.
 Each function in this hook must accept a single argument, which
@@ -697,6 +751,7 @@ is the name of the task to be clocked-in.
 The commands `chronometrist-toggle-task-button',
 `chronometrist-add-new-task-button', `chronometrist-toggle-task',
 and `chronometrist-add-new-task' will run this hook.")
+
 (defvar chronometrist-before-out-functions nil
   "Functions to run before a task is clocked out.
 Each function in this hook must accept a single argument, which
@@ -704,22 +759,27 @@ is the name of the task to be clocked out of.
 
 The task will be stopped only if all functions in this list
 return a non-nil value.")
+
 (defvar chronometrist-after-out-functions nil
   "Functions to run after a task is clocked out.
 Each function in this hook must accept a single argument, which
 is the name of the task to be clocked out of.")
+
 (defvar chronometrist-file-change-hook nil
   "Functions to be run after `chronometrist-file' is changed on disk.")
+
 (defun chronometrist-run-functions-and-clock-in (task)
   "Run hooks and clock in to TASK."
   (run-hook-with-args 'chronometrist-before-in-functions task)
   (chronometrist-in task)
   (run-hook-with-args 'chronometrist-after-in-functions task))
+
 (defun chronometrist-run-functions-and-clock-out (task)
   "Run hooks and clock out of TASK."
   (when (run-hook-with-args-until-failure 'chronometrist-before-out-functions task)
     (chronometrist-out)
     (run-hook-with-args 'chronometrist-after-out-functions task)))
+
 (defvar chronometrist-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "RET")   #'chronometrist-toggle-task)
@@ -731,6 +791,7 @@ is the name of the task to be clocked out of.")
     (define-key map (kbd "a")     #'chronometrist-add-new-task)
     map)
   "Keymap used by `chronometrist-mode'.")
+
 (define-derived-mode chronometrist-mode tabulated-list-mode "Chronometrist"
   "Major mode for `chronometrist'."
   (make-local-variable 'tabulated-list-format)
@@ -744,6 +805,7 @@ is the name of the task to be clocked out of.")
   (tabulated-list-init-header)
   (setq revert-buffer-function #'chronometrist-refresh)
   (run-hooks 'chronometrist-mode-hook))
+
 (defun chronometrist-toggle-task-button (_button)
   "Button action to toggle a task.
 
@@ -760,6 +822,7 @@ action, and is ignored."
       (chronometrist-run-functions-and-clock-out current))
     (unless (equal at-point current)
       (chronometrist-run-functions-and-clock-in at-point))))
+
 (defun chronometrist-add-new-task-button (_button)
   "Button action to add a new task.
 
@@ -771,6 +834,7 @@ action, and is ignored."
     (let ((task (read-from-minibuffer "New task name: " nil nil nil nil nil t)))
       (chronometrist-run-functions-and-clock-in task))))
 ;; TODO - if clocked in and point not on a task, just clock out
+
 (defun chronometrist-toggle-task (&optional prefix inhibit-hooks)
   "Start or stop the task at point.
 
@@ -809,6 +873,7 @@ If INHIBIT-HOOKS is non-nil, the hooks
              (funcall out-function current))
            (unless (equal target current)
              (funcall in-function target))))))
+
 (defun chronometrist-toggle-task-no-hooks (&optional prefix)
   "Like `chronometrist-toggle-task', but don't run hooks.
 
@@ -816,11 +881,13 @@ With numeric prefix argument PREFIX, toggle the Nth task. If there
 is no corresponding task, do nothing."
   (interactive "P")
   (chronometrist-toggle-task prefix t))
+
 (defun chronometrist-add-new-task ()
   "Add a new task."
   (interactive)
   (chronometrist-add-new-task-button nil))
 ;;;###autoload
+
 (defun chronometrist (&optional arg)
   "Display the user's tasks and the time spent on them today.
 
@@ -870,12 +937,15 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
             (setq chronometrist--fs-watch
                   (file-notify-add-watch chronometrist-file '(change) #'chronometrist-refresh-file))))))))
 
+
 (defvar chronometrist-task-list nil
   "List of tasks in `chronometrist-file'.")
+
 (defvar chronometrist--fs-watch nil
   "Filesystem watch object.
 Used to prevent more than one watch being added for the same
 file.")
+
 (defun chronometrist-current-task ()
   "Return the name of the currently clocked-in task, or nil if not clocked in."
   (chronometrist-sexp-current-task))
@@ -903,15 +973,18 @@ supplied, 3 spaces are used."
                    (format "%2d" s)
                  (format "%02d" s))))
         (concat h m s)))))
+
 (defun chronometrist-common-file-empty-p (file)
   "Return t if FILE is empty."
   (let ((size (elt (file-attributes file) 7)))
     (if (zerop size) t nil)))
+
 (defun chronometrist-common-clear-buffer (buffer)
   "Clear the contents of BUFFER."
   (with-current-buffer buffer
     (goto-char (point-min))
     (delete-region (point-min) (point-max))))
+
 (defun chronometrist-format-keybinds (command map &optional firstonly)
   "Return the keybindings for COMMAND in MAP as a string.
 If FIRSTONLY is non-nil, return only the first keybinding found."
@@ -923,6 +996,7 @@ If FIRSTONLY is non-nil, return only the first keybinding found."
          (-take 2)
          (-interpose ", ")
          (apply #'concat))))
+
 (defun chronometrist-events->ts-pairs (events)
   "Convert EVENTS to a list of ts struct pairs (see `ts.el').
 
@@ -936,6 +1010,7 @@ EVENTS must be a list of valid Chronometrist property lists (see
                             (chronometrist-iso-timestamp->ts stop)
                           (ts-now))))
              (cons start stop))))
+
 (defun chronometrist-ts-pairs->durations (ts-pairs)
   "Return the durations represented by TS-PAIRS.
 TS-PAIRS is a list of pairs, where each element is a ts struct (see `ts.el').
@@ -945,6 +1020,7 @@ Return seconds as an integer, or 0 if TS-PAIRS is nil."
       (cl-loop for pair in ts-pairs collect
                (ts-diff (cdr pair) (car pair)))
     0))
+
 (defun chronometrist-previous-week-start (ts)
   "Find the previous `chronometrist-report-week-start-day' from TS.
 
@@ -960,6 +1036,7 @@ TS must be a ts struct (see `ts.el')."
     until (= week-start (ts-dow ts))
     do (ts-decf (ts-day ts))
     finally return ts))
+
 (defun chronometrist-iso-timestamp->ts (timestamp)
   "Return new ts struct, parsing TIMESTAMP with `parse-iso8601-time-string'."
   (-let [(second minute hour day month year dow _dst utcoff)
@@ -981,7 +1058,6 @@ DATE should be an ISO-8601 date string (\"YYYY-MM-DD\")."
     (ts-update
      (make-ts :hour 0 :minute 0 :second 0
               :day day :month month :year year))))
-
 (cl-defun chronometrist-date (&optional (ts (ts-now)))
   "Return a ts struct representing the time 00:00:00 on today's date.
 If TS is supplied, use that date instead of today.
@@ -997,6 +1073,7 @@ Optional argument UNIX-TIME should be a time value (see
 
 ;; Note - this assumes that an event never crosses >1 day. This seems
 ;; sufficient for all conceivable cases.
+
 (defun chronometrist-midnight-spanning-p (start-time stop-time)
   "Return non-nil if START-TIME and STOP-TIME cross a midnight.
 
@@ -1040,9 +1117,12 @@ EVENT should be a plist (see `chronometrist-file')."
         (stop  (plist-get event :stop)))
     (time-subtract (parse-iso8601-time-string stop)
                    (parse-iso8601-time-string start))))
+
 (defvar chronometrist--timer-object nil)
+
 (defcustom chronometrist-timer-hook nil
   "Functions run by `chronometrist-timer'.")
+
 (defun chronometrist-timer ()
   "Refresh Chronometrist and related buffers.
 
@@ -1055,11 +1135,13 @@ is clocked in to a task."
     (when (get-buffer-window chronometrist-buffer-name)
       (chronometrist-refresh))
     (run-hooks 'chronometrist-timer-hook)))
+
 (defun chronometrist-stop-timer ()
   "Stop the timer for Chronometrist buffers."
   (interactive)
   (cancel-timer chronometrist--timer-object)
   (setq chronometrist--timer-object nil))
+
 (defun chronometrist-maybe-start-timer (&optional interactive-test)
   "Start `chronometrist-timer' if `chronometrist--timer-object' is non-nil.
 INTERACTIVE-TEST is used to determine if this has been called
@@ -1071,6 +1153,7 @@ interactively."
     (when interactive-test
       (message "Timer started."))
     t))
+
 (defun chronometrist-force-restart-timer ()
   "Restart the timer for Chronometrist buffers."
   (interactive)
@@ -1078,6 +1161,7 @@ interactively."
     (cancel-timer chronometrist--timer-object))
   (setq chronometrist--timer-object
         (run-at-time t chronometrist-update-interval #'chronometrist-timer)))
+
 (defun chronometrist-change-update-interval (arg)
   "Change the update interval for Chronometrist buffers.
 
@@ -1087,9 +1171,11 @@ ARG should be the new update interval, in seconds."
   (setq chronometrist-update-interval arg
         chronometrist--timer-object nil)
   (chronometrist-maybe-start-timer))
+
 (defvar chronometrist-migrate-table (make-hash-table))
 ;; TODO - support other timeclock codes (currently only "i" and "o"
 ;; are supported.)
+
 (defun chronometrist-migrate-populate (in-file)
   "Read data from IN-FILE to `chronometrist-migrate-table'.
 
@@ -1138,7 +1224,9 @@ See `timeclock-log-data' for a description."
           (forward-line)
           (goto-char (point-at-bol))))
       nil)))
+
 (defvar timeclock-file)
+
 
 (defun chronometrist-migrate-timelog-file->sexp-file (&optional in-file out-file)
   "Migrate your existing `timeclock-file' to the Chronometrist file format.
@@ -1173,6 +1261,7 @@ file names respectively."
                    (insert "\n\n"))
                  chronometrist-migrate-table)
         (save-buffer)))))
+
 (defun chronometrist-migrate-check ()
   "Offer to import data from `timeclock-file' if `chronometrist-file' does not exist."
   (when (and (bound-and-true-p timeclock-file)
@@ -1182,4 +1271,5 @@ file names respectively."
                              timeclock-file))
         (chronometrist-migrate-timelog-file->sexp-file timeclock-file chronometrist-file)
       (message "You can migrate later using `chronometrist-migrate-timelog-file->sexp-file'."))))
+
 (provide 'chronometrist)
