@@ -1250,7 +1250,6 @@ TS must be a ts struct (see `ts.el')."
      (make-ts :hour hour :minute minute :second second
               :day day   :month month   :year year
               :dow dow   :tz-offset utcoff))))
-
 #+END_SRC
 **** iso-date->ts                                               :function:
 #+BEGIN_SRC emacs-lisp
@@ -1265,7 +1264,6 @@ DATE should be an ISO-8601 date string (\"YYYY-MM-DD\")."
     (ts-update
      (make-ts :hour 0 :minute 0 :second 0
               :day day :month month :year year))))
-
 #+END_SRC
 **** date                                                       :function:
 #+BEGIN_SRC emacs-lisp
@@ -1274,7 +1272,6 @@ DATE should be an ISO-8601 date string (\"YYYY-MM-DD\")."
 If TS is supplied, use that date instead of today.
 TS should be a ts struct (see `ts.el')."
   (ts-apply :hour 0 :minute 0 :second 0 ts))
-
 #+END_SRC
 **** format-time-iso8601                                        :function:
 #+BEGIN_SRC emacs-lisp
@@ -1316,7 +1313,6 @@ Return value is a list in the form
                      :stop  ,(chronometrist-format-time-iso8601 next-day-start))
             `(:start ,(chronometrist-format-time-iso8601 next-day-start)
                      :stop  ,stop-time)))))
-
 #+END_SRC
 **** seconds-to-hms                                             :function:
 #+BEGIN_SRC emacs-lisp
@@ -1328,7 +1324,6 @@ SECONDS must be a positive integer."
          (m       (% (/ seconds 60) 60))
          (h       (/ seconds 3600)))
     (list h m s)))
-
 #+END_SRC
 **** interval                                                   :function:
 #+BEGIN_SRC emacs-lisp
