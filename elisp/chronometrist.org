@@ -67,7 +67,6 @@ This is displayed when the user clicks on the package's entry in =M-x list-packa
 
 (require 'chronometrist-key-values)
 (require 'chronometrist-queries)
-(require 'chronometrist-migrate)
 (require 'chronometrist-sexp)
 (require 'chronometrist-time)
 
