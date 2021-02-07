@@ -1,6 +1,13 @@
 #+PROPERTY: header-args :tangle yes
 
 * chronometrist
+** About this file
+This Org literate program was born out of frustration with programs stored as text files, which are "expensive" to restructure (especially in the presence of a VCS). I am happy with the outcome - tree and source-block folding, tags, properties, and =org-match= have made it trivial to get different views of the program, and literate programming may allow me to express the "explanation" documentation in the same context as the program, without having to try to link between documentation and source.
+
+According to =benchmark= at the time of writing, =org-babel-tangle= takes about 30 seconds to tangle this file. Thus, I use a little sed one-liner (in the file-local variables) to do the tangling, which is nearly instant.
+
+Issues
+1. Emacs may freeze at the prompt for file-local variable values; C-g will quit the prompt, and permanently marking them as safe will make the freezing stop.
 ** Commentary
 This is displayed when the user clicks on the package's entry in =M-x list-packages=.
 #+BEGIN_SRC emacs-lisp
