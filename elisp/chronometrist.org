@@ -66,14 +66,10 @@ This is displayed when the user clicks on the package's entry in =M-x list-packa
 (require 'ts)
 
 (require 'chronometrist-key-values)
-(require 'chronometrist-queries)
-(require 'chronometrist-sexp)
-(require 'chronometrist-time)
 
 (eval-when-compile
   (defvar chronometrist-mode-map)
   (require 'subr-x))
-(autoload 'chronometrist-maybe-start-timer "chronometrist-timer" nil t)
 (autoload 'chronometrist-report "chronometrist-report" nil t)
 (autoload 'chronometrist-statistics "chronometrist-statistics" nil t)
 #+END_SRC
@@ -1344,6 +1340,76 @@ EVENT should be a plist (see `chronometrist-file')."
     (time-subtract (parse-iso8601-time-string stop)
                    (parse-iso8601-time-string start))))
 #+END_SRC
+*** Timer
+**** timer-object                                      :internal:variable:
+#+BEGIN_SRC emacs-lisp
+(defvar chronometrist--timer-object nil)
+#+END_SRC
+**** timer-hook                                     :hook:custom:variable:
+#+BEGIN_SRC emacs-lisp
+(defcustom chronometrist-timer-hook nil
+  "Functions run by `chronometrist-timer'.")
+#+END_SRC
+**** timer                                                      :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-timer ()
+  "Refresh Chronometrist and related buffers.
+
+Buffers will be refreshed only if they are visible and the user
+is clocked in to a task."
+  (when (chronometrist-current-task) ;; FIXME - This line is currently
+    ;; resulting in no refresh at midnight. When `chronometrist-entries' is
+    ;; optimized to consume less CPU and avoid unnecessary parsing,
+    ;; remove this condition.
+    (when (get-buffer-window chronometrist-buffer-name)
+      (chronometrist-refresh))
+    (run-hooks 'chronometrist-timer-hook)))
+#+END_SRC
+**** stop-timer                                                  :command:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-stop-timer ()
+  "Stop the timer for Chronometrist buffers."
+  (interactive)
+  (cancel-timer chronometrist--timer-object)
+  (setq chronometrist--timer-object nil))
+#+END_SRC
+**** maybe-start-timer                                           :command:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-maybe-start-timer (&optional interactive-test)
+  "Start `chronometrist-timer' if `chronometrist--timer-object' is non-nil.
+INTERACTIVE-TEST is used to determine if this has been called
+interactively."
+  (interactive "p")
+  (unless chronometrist--timer-object
+    (setq chronometrist--timer-object
+          (run-at-time t chronometrist-update-interval #'chronometrist-timer))
+    (when interactive-test
+      (message "Timer started."))
+    t))
+#+END_SRC
+**** force-restart-timer                                         :command:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-force-restart-timer ()
+  "Restart the timer for Chronometrist buffers."
+  (interactive)
+  (when chronometrist--timer-object
+    (cancel-timer chronometrist--timer-object))
+  (setq chronometrist--timer-object
+        (run-at-time t chronometrist-update-interval #'chronometrist-timer)))
+#+END_SRC
+**** change-update-interval                                      :command:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-change-update-interval (arg)
+  "Change the update interval for Chronometrist buffers.
+
+ARG should be the new update interval, in seconds."
+  (interactive "NEnter new interval (in seconds): ")
+  (cancel-timer chronometrist--timer-object)
+  (setq chronometrist-update-interval arg
+        chronometrist--timer-object nil)
+  (chronometrist-maybe-start-timer))
+#+END_SRC
+
 *** Migrate
 **** table                                                      :variable:
 #+BEGIN_SRC emacs-lisp

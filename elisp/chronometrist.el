@@ -55,14 +55,10 @@
 (require 'ts)
 
 (require 'chronometrist-key-values)
-(require 'chronometrist-queries)
-(require 'chronometrist-sexp)
-(require 'chronometrist-time)
 
 (eval-when-compile
   (defvar chronometrist-mode-map)
   (require 'subr-x))
-(autoload 'chronometrist-maybe-start-timer "chronometrist-timer" nil t)
 (autoload 'chronometrist-report "chronometrist-report" nil t)
 (autoload 'chronometrist-statistics "chronometrist-statistics" nil t)
 (defcustom chronometrist-sexp-pretty-print-function #'chronometrist-plist-pp
@@ -1044,6 +1040,53 @@ EVENT should be a plist (see `chronometrist-file')."
         (stop  (plist-get event :stop)))
     (time-subtract (parse-iso8601-time-string stop)
                    (parse-iso8601-time-string start))))
+(defvar chronometrist--timer-object nil)
+(defcustom chronometrist-timer-hook nil
+  "Functions run by `chronometrist-timer'.")
+(defun chronometrist-timer ()
+  "Refresh Chronometrist and related buffers.
+
+Buffers will be refreshed only if they are visible and the user
+is clocked in to a task."
+  (when (chronometrist-current-task) ;; FIXME - This line is currently
+    ;; resulting in no refresh at midnight. When `chronometrist-entries' is
+    ;; optimized to consume less CPU and avoid unnecessary parsing,
+    ;; remove this condition.
+    (when (get-buffer-window chronometrist-buffer-name)
+      (chronometrist-refresh))
+    (run-hooks 'chronometrist-timer-hook)))
+(defun chronometrist-stop-timer ()
+  "Stop the timer for Chronometrist buffers."
+  (interactive)
+  (cancel-timer chronometrist--timer-object)
+  (setq chronometrist--timer-object nil))
+(defun chronometrist-maybe-start-timer (&optional interactive-test)
+  "Start `chronometrist-timer' if `chronometrist--timer-object' is non-nil.
+INTERACTIVE-TEST is used to determine if this has been called
+interactively."
+  (interactive "p")
+  (unless chronometrist--timer-object
+    (setq chronometrist--timer-object
+          (run-at-time t chronometrist-update-interval #'chronometrist-timer))
+    (when interactive-test
+      (message "Timer started."))
+    t))
+(defun chronometrist-force-restart-timer ()
+  "Restart the timer for Chronometrist buffers."
+  (interactive)
+  (when chronometrist--timer-object
+    (cancel-timer chronometrist--timer-object))
+  (setq chronometrist--timer-object
+        (run-at-time t chronometrist-update-interval #'chronometrist-timer)))
+(defun chronometrist-change-update-interval (arg)
+  "Change the update interval for Chronometrist buffers.
+
+ARG should be the new update interval, in seconds."
+  (interactive "NEnter new interval (in seconds): ")
+  (cancel-timer chronometrist--timer-object)
+  (setq chronometrist-update-interval arg
+        chronometrist--timer-object nil)
+  (chronometrist-maybe-start-timer))
 (defvar chronometrist-migrate-table (make-hash-table))
 ;; TODO - support other timeclock codes (currently only "i" and "o"
 ;; are supported.)
