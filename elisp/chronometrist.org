@@ -249,6 +249,14 @@ This is meant to be run in `chronometrist-file' when using the s-expression back
   "Return the last entry from `chronometrist-file' as a plist."
   (chronometrist-sexp-last))
 #+END_SRC
+**** task-list                                            :function:query:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-task-list ()
+  "Return a list of tasks from `chronometrist-file'."
+  (--> (chronometrist-loop-file for plist in chronometrist-file collect (plist-get plist :name))
+       (cl-remove-duplicates it :test #'equal)
+       (sort it #'string-lessp)))
+#+END_SRC
 *** Plist pretty-printing
 **** normalize-whitespace                                       :function:
 #+BEGIN_SRC emacs-lisp
@@ -691,14 +699,6 @@ which span midnights. (see `chronometrist-events-clean')"
 #+BEGIN_SRC emacs-lisp
 (defvar chronometrist-task-list nil
   "List of tasks in `chronometrist-file'.")
-#+END_SRC
-**** task-list                                                  :function:
-#+BEGIN_SRC emacs-lisp
-(defun chronometrist-task-list ()
-  "Return a list of tasks from `chronometrist-file'."
-  (--> (chronometrist-loop-file for plist in chronometrist-file collect (plist-get plist :name))
-       (cl-remove-duplicates it :test #'equal)
-       (sort it #'string-lessp)))
 #+END_SRC
 **** add-to-task-list                                           :function:
 #+BEGIN_SRC emacs-lisp

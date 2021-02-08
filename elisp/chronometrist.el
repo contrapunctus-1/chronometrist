@@ -200,6 +200,12 @@ This is meant to be run in `chronometrist-file' when using the s-expression back
   "Return the last entry from `chronometrist-file' as a plist."
   (chronometrist-sexp-last))
 
+(defun chronometrist-task-list ()
+  "Return a list of tasks from `chronometrist-file'."
+  (--> (chronometrist-loop-file for plist in chronometrist-file collect (plist-get plist :name))
+       (cl-remove-duplicates it :test #'equal)
+       (sort it #'string-lessp)))
+
 (defun chronometrist-plist-pp-normalize-whitespace ()
   "Remove whitespace following point, and insert a space.
 Point is placed at the end of the space."
@@ -578,12 +584,6 @@ which span midnights. (see `chronometrist-events-clean')"
 
 (defvar chronometrist-task-list nil
   "List of tasks in `chronometrist-file'.")
-
-(defun chronometrist-task-list ()
-  "Return a list of tasks from `chronometrist-file'."
-  (--> (chronometrist-loop-file for plist in chronometrist-file collect (plist-get plist :name))
-       (cl-remove-duplicates it :test #'equal)
-       (sort it #'string-lessp)))
 
 (defun chronometrist-add-to-task-list (task)
   (unless (cl-member task chronometrist-task-list :test #'equal)
