@@ -579,6 +579,34 @@ which span midnights. (see `chronometrist-events-clean')"
 (defvar chronometrist-task-list nil
   "List of tasks in `chronometrist-file'.")
 
+(defun chronometrist-task-list ()
+  "Return a list of tasks from `chronometrist-file'."
+  (--> (chronometrist-loop-file for plist in chronometrist-file collect (plist-get plist :name))
+       (cl-remove-duplicates it :test #'equal)
+       (sort it #'string-lessp)))
+
+(defun chronometrist-add-to-task-list (task)
+  (unless (cl-member task chronometrist-task-list :test #'equal)
+    (setq chronometrist-task-list
+          (sort (cons task chronometrist-task-list) #'string-lessp))))
+
+(defun chronometrist-remove-from-task-list (task)
+  (let ((count (cl-loop with count = 0
+                 for intervals being the hash-values of chronometrist-events
+                 do (cl-loop for interval in intervals
+                      do (cl-incf count))
+                 finally return count))
+        (position (cl-loop with count = 0
+                    for intervals being the hash-values of chronometrist-events
+                    when (cl-loop for interval in intervals
+                           do (cl-incf count)
+                           when (equal task (plist-get interval :name))
+                           return t)
+                    return count)))
+    (when (and position (= position count))
+      ;; The only interval for TASK is the last expression
+      (setq chronometrist-task-list (remove task chronometrist-task-list)))))
+
 (defvar chronometrist--fs-watch nil
   "Filesystem watch object.
 Used to prevent more than one watch being added for the same
@@ -1088,34 +1116,6 @@ Return
                    (progn (goto-char last-start)
                           (forward-list)))))
            :modify))))
-
-(defun chronometrist-task-list ()
-  "Return a list of tasks from `chronometrist-file'."
-  (--> (chronometrist-loop-file for plist in chronometrist-file collect (plist-get plist :name))
-       (cl-remove-duplicates it :test #'equal)
-       (sort it #'string-lessp)))
-
-(defun chronometrist-add-to-task-list (task)
-  (unless (cl-member task chronometrist-task-list :test #'equal)
-    (setq chronometrist-task-list
-          (sort (cons task chronometrist-task-list) #'string-lessp))))
-
-(defun chronometrist-remove-from-task-list (task)
-  (let ((count (cl-loop with count = 0
-                 for intervals being the hash-values of chronometrist-events
-                 do (cl-loop for interval in intervals
-                      do (cl-incf count))
-                 finally return count))
-        (position (cl-loop with count = 0
-                    for intervals being the hash-values of chronometrist-events
-                    when (cl-loop for interval in intervals
-                           do (cl-incf count)
-                           when (equal task (plist-get interval :name))
-                           return t)
-                    return count)))
-    (when (and position (= position count))
-      ;; The only interval for TASK is the last expression
-      (setq chronometrist-task-list (remove task chronometrist-task-list)))))
 
   (defun chronometrist-refresh-file (fs-event)
     "Re-read `chronometrist-file' and refresh the `chronometrist' buffer.

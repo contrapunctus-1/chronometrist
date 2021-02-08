@@ -522,8 +522,8 @@ file names respectively."
         (chronometrist-migrate-timelog-file->sexp-file timeclock-file chronometrist-file)
       (message "You can migrate later using `chronometrist-migrate-timelog-file->sexp-file'."))))
 #+END_SRC
-*** Hash Table
-**** chronometrist-events                                                   :variable:
+*** Data structures
+**** chronometrist-events                                        :variable:hash_table:
 #+BEGIN_SRC emacs-lisp
 (defvar chronometrist-events (make-hash-table :test #'equal)
   "Each key is a date in the form (YEAR MONTH DAY).
@@ -687,12 +687,46 @@ which span midnights. (see `chronometrist-events-clean')"
                    event)))
        (seq-filter #'identity)))
 #+END_SRC
-*** Common
-**** task-list                                                  :variable:
+**** task-list                                             :variable:list:
 #+BEGIN_SRC emacs-lisp
 (defvar chronometrist-task-list nil
   "List of tasks in `chronometrist-file'.")
 #+END_SRC
+**** task-list                                                  :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-task-list ()
+  "Return a list of tasks from `chronometrist-file'."
+  (--> (chronometrist-loop-file for plist in chronometrist-file collect (plist-get plist :name))
+       (cl-remove-duplicates it :test #'equal)
+       (sort it #'string-lessp)))
+#+END_SRC
+**** add-to-task-list                                           :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-add-to-task-list (task)
+  (unless (cl-member task chronometrist-task-list :test #'equal)
+    (setq chronometrist-task-list
+          (sort (cons task chronometrist-task-list) #'string-lessp))))
+#+END_SRC
+**** remove-from-task-list                                      :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-remove-from-task-list (task)
+  (let ((count (cl-loop with count = 0
+                 for intervals being the hash-values of chronometrist-events
+                 do (cl-loop for interval in intervals
+                      do (cl-incf count))
+                 finally return count))
+        (position (cl-loop with count = 0
+                    for intervals being the hash-values of chronometrist-events
+                    when (cl-loop for interval in intervals
+                           do (cl-incf count)
+                           when (equal task (plist-get interval :name))
+                           return t)
+                    return count)))
+    (when (and position (= position count))
+      ;; The only interval for TASK is the last expression
+      (setq chronometrist-task-list (remove task chronometrist-task-list)))))
+#+END_SRC
+*** Common
 **** fs-watch                                          :internal:variable:
 #+BEGIN_SRC emacs-lisp
 (defvar chronometrist--fs-watch nil
@@ -1307,40 +1341,6 @@ Return
                    (progn (goto-char last-start)
                           (forward-list)))))
            :modify))))
-#+END_SRC
-***** task-list                                                :function:
-#+BEGIN_SRC emacs-lisp
-(defun chronometrist-task-list ()
-  "Return a list of tasks from `chronometrist-file'."
-  (--> (chronometrist-loop-file for plist in chronometrist-file collect (plist-get plist :name))
-       (cl-remove-duplicates it :test #'equal)
-       (sort it #'string-lessp)))
-#+END_SRC
-***** add-to-task-list                                         :function:
-#+BEGIN_SRC emacs-lisp
-(defun chronometrist-add-to-task-list (task)
-  (unless (cl-member task chronometrist-task-list :test #'equal)
-    (setq chronometrist-task-list
-          (sort (cons task chronometrist-task-list) #'string-lessp))))
-#+END_SRC
-***** remove-from-task-list                                    :function:
-#+BEGIN_SRC emacs-lisp
-(defun chronometrist-remove-from-task-list (task)
-  (let ((count (cl-loop with count = 0
-                 for intervals being the hash-values of chronometrist-events
-                 do (cl-loop for interval in intervals
-                      do (cl-incf count))
-                 finally return count))
-        (position (cl-loop with count = 0
-                    for intervals being the hash-values of chronometrist-events
-                    when (cl-loop for interval in intervals
-                           do (cl-incf count)
-                           when (equal task (plist-get interval :name))
-                           return t)
-                    return count)))
-    (when (and position (= position count))
-      ;; The only interval for TASK is the last expression
-      (setq chronometrist-task-list (remove task chronometrist-task-list)))))
 #+END_SRC
 ***** refresh-file                                             :function:
 #+BEGIN_SRC emacs-lisp
