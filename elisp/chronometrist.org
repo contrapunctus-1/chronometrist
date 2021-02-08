@@ -1,3 +1,4 @@
+#+TODO: TODO | REVIEW
 #+PROPERTY: header-args :tangle yes
 
 * chronometrist
@@ -72,13 +73,9 @@ This is displayed when the user clicks on the package's entry in =M-x list-packa
 (require 'dash)
 (require 'ts)
 
-(require 'chronometrist-key-values)
-
 (eval-when-compile
   (defvar chronometrist-mode-map)
   (require 'subr-x))
-(autoload 'chronometrist-report "chronometrist-report" nil t)
-(autoload 'chronometrist-statistics "chronometrist-statistics" nil t)
 #+END_SRC
 *** Backend
 **** pretty-print-function                               :custom:variable:
@@ -251,6 +248,176 @@ This is meant to be run in `chronometrist-file' when using the s-expression back
 (defun chronometrist-last ()
   "Return the last entry from `chronometrist-file' as a plist."
   (chronometrist-sexp-last))
+#+END_SRC
+
+*** Plist pretty-printing
+**** whitespace-re                                              :variable:
+#+BEGIN_SRC emacs-lisp
+(defvar chronometrist-plist-pp-whitespace-re "[\n\t\s]")
+#+END_SRC
+**** normalize-whitespace                                       :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-plist-pp-normalize-whitespace ()
+  "Remove whitespace following point, and insert a space.
+Point is placed at the end of the space."
+  (when (looking-at (concat chronometrist-plist-pp-whitespace-re "+"))
+    (delete-region (match-beginning 0) (match-end 0))
+    (insert " ")))
+#+END_SRC
+**** column                                                     :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-plist-pp-column ()
+  "Return column point is on, as an integer.
+0 means point is at the beginning of the line."
+  (- (point) (point-at-bol)))
+#+END_SRC
+**** pair-p                                           :function:predicate:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-plist-pp-pair-p (cons)
+  (and (listp cons) (not (listp (cdr cons)))))
+#+END_SRC
+**** alist-p                                          :function:predicate:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-plist-pp-alist-p (list)
+  "Return non-nil if LIST is an association list.
+If even a single element of LIST is a pure cons cell (as
+determined by `chronometrist-plist-pp-pair-p'), this function
+considers it an alist."
+  (when (listp list)
+    (cl-loop for elt in list thereis (chronometrist-plist-pp-pair-p elt))))
+#+END_SRC
+**** plist-p                                          :function:predicate:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-plist-pp-plist-p (list)
+  (while (consp list)
+    (setq list (if (and (keywordp (car list))
+                        (consp (cdr list)))
+                   (cddr list)
+                 'not-plist)))
+  (null list))
+#+END_SRC
+**** longest-keyword-length                                     :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-plist-pp-longest-keyword-length ()
+  "Find the length of the longest keyword in a plist.
+This assumes there is a single plist in the current buffer, and
+that point is after the first opening parenthesis."
+  (save-excursion
+    (cl-loop with sexp
+      while (setq sexp (ignore-errors (read (current-buffer))))
+      when (keywordp sexp)
+      maximize (length (symbol-name sexp)))))
+#+END_SRC
+**** indent-sexp                                                :function:
+#+BEGIN_SRC emacs-lisp
+(cl-defun chronometrist-plist-pp-indent-sexp (sexp &optional (right-indent 0))
+  "Return a string indenting SEXP by RIGHT-INDENT spaces."
+  (format (concat "% -" (number-to-string right-indent) "s")
+          sexp))
+#+END_SRC
+**** buffer                                                     :function:
+#+BEGIN_SRC emacs-lisp
+(cl-defun chronometrist-plist-pp-buffer (&optional inside-sublist-p)
+  "Recursively indent the alist, plist, or a list of plists after point.
+The list must be on a single line, as emitted by `prin1'."
+  (if (not (looking-at-p (rx (or ")" line-end))))
+      (progn
+        (setq sexp (save-excursion (read (current-buffer))))
+        (cond
+         ((chronometrist-plist-pp-plist-p sexp)
+          (chronometrist-plist-pp-buffer-plist inside-sublist-p)
+          (chronometrist-plist-pp-buffer inside-sublist-p))
+         ((chronometrist-plist-pp-alist-p sexp)
+          (chronometrist-plist-pp-buffer-alist)
+          (unless inside-sublist-p (chronometrist-plist-pp-buffer)))
+         ((chronometrist-plist-pp-pair-p sexp)
+          (forward-sexp)
+          (chronometrist-plist-pp-buffer inside-sublist-p))
+         ((listp sexp)
+          (down-list)
+          (chronometrist-plist-pp-buffer t))
+         (t (forward-sexp)
+            (chronometrist-plist-pp-buffer inside-sublist-p))))
+    ;; we're before a ) - is it a lone paren on its own line?
+    (let ((pos (point))
+          (bol (point-at-bol)))
+      (goto-char bol)
+      (if (string-match (concat "^" chronometrist-plist-pp-whitespace-re "*$")
+                        (buffer-substring bol pos))
+          ;; join the ) to the previous line by deleting the newline and whitespace
+          (delete-region (1- bol) pos)
+        (goto-char pos))
+      (when (not (eobp))
+        (forward-char)))))
+#+END_SRC
+**** buffer-plist                                               :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-plist-pp-buffer-plist (&optional inside-sublist-p)
+  "Indent a single plist after point."
+  (down-list)
+  (let ((left-indent  (1- (chronometrist-plist-pp-column)))
+        (right-indent (chronometrist-plist-pp-longest-keyword-length))
+        (first-p t) sexp)
+    (while (not (looking-at-p ")"))
+      (chronometrist-plist-pp-normalize-whitespace)
+      (setq sexp (save-excursion (read (current-buffer))))
+      (cond ((keywordp sexp)
+             (chronometrist-sexp-delete-list)
+             (insert (if first-p
+                         (progn (setq first-p nil) "")
+                       (make-string left-indent ?\ ))
+                     (chronometrist-plist-pp-indent-sexp sexp right-indent)))
+            ;; not a keyword = a value
+            ((chronometrist-plist-pp-plist-p sexp)
+             (chronometrist-plist-pp-buffer-plist))
+            ((and (listp sexp)
+                  (not (chronometrist-plist-pp-pair-p sexp)))
+             (chronometrist-plist-pp-buffer t)
+             (insert "\n"))
+            (t (forward-sexp)
+               (insert "\n"))))
+    (when (bolp) (delete-char -1))
+    (up-list)
+    ;; we have exited the plist, but might still be in a list with more plists
+    (unless (eolp) (insert "\n"))
+    (when inside-sublist-p
+      (insert (make-string (1- left-indent) ?\ )))))
+#+END_SRC
+**** buffer-alist                                               :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-plist-pp-buffer-alist ()
+  "Indent a single alist after point."
+  (down-list)
+  (let ((indent (chronometrist-plist-pp-column)) (first-p t) sexp)
+    (while (not (looking-at-p ")"))
+      (setq sexp (save-excursion (read (current-buffer))))
+      (chronometrist-sexp-delete-list)
+      (insert (if first-p
+                  (progn (setq first-p nil) "")
+                (make-string indent ?\ ))
+              (format "%S\n" sexp)))
+    (when (bolp) (delete-char -1))
+    (up-list)))
+#+END_SRC
+**** to-string                                                  :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-plist-pp-to-string (object)
+  "Convert OBJECT to a pretty-printed string."
+  (with-temp-buffer
+    (lisp-mode-variables nil)
+    (set-syntax-table emacs-lisp-mode-syntax-table)
+    (let ((print-quoted t))
+      (prin1 object (current-buffer)))
+    (goto-char (point-min))
+    (chronometrist-plist-pp-buffer)
+    (buffer-string)))
+#+END_SRC
+**** plist-pp                                                   :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-plist-pp (object &optional stream)
+  "Pretty-print OBJECT and output to STREAM (see `princ')."
+  (princ (chronometrist-plist-pp-to-string object)
+         (or stream standard-output)))
 #+END_SRC
 
 *** Migration
@@ -1519,6 +1686,300 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
             (setq chronometrist--fs-watch
                   (file-notify-add-watch chronometrist-file '(change) #'chronometrist-refresh-file))))))))
 
+#+END_SRC
+
+*** Report
+**** TODO [0%]
+1. [ ] preserve point when clicking buttons
+**** report                                                 :custom:group:
+#+BEGIN_SRC emacs-lisp
+(defgroup chronometrist-report nil
+  "Weekly report for the `chronometrist' time tracker."
+  :group 'chronometrist)
+#+END_SRC
+**** buffer-name                                         :custom:variable:
+#+BEGIN_SRC emacs-lisp
+(defcustom chronometrist-report-buffer-name "*Chronometrist-Report*"
+  "The name of the buffer created by `chronometrist-report'."
+  :type 'string)
+#+END_SRC
+**** week-start-day                                      :custom:variable:
+#+BEGIN_SRC emacs-lisp
+(defcustom chronometrist-report-week-start-day "Sunday"
+  "The day used for start of week by `chronometrist-report'."
+  :type 'string)
+#+END_SRC
+**** weekday-number-alist                                :custom:variable:
+#+BEGIN_SRC emacs-lisp
+(defcustom chronometrist-report-weekday-number-alist
+  '(("Sunday"    . 0)
+    ("Monday"    . 1)
+    ("Tuesday"   . 2)
+    ("Wednesday" . 3)
+    ("Thursday"  . 4)
+    ("Friday"    . 5)
+    ("Saturday"  . 6))
+  "Alist in the form (\"NAME\" . NUMBER), where \"NAME\" is the name of a weekday and NUMBER its associated number."
+  :type 'alist)
+#+END_SRC
+**** ui-date                                           :internal:variable:
+#+BEGIN_SRC emacs-lisp
+(defvar chronometrist-report--ui-date nil
+  "The first date of the week displayed by `chronometrist-report'.
+A value of nil means the current week. Otherwise, it must be a
+date in the form \"YYYY-MM-DD\".")
+#+END_SRC
+**** ui-week-dates                                     :internal:variable:
+#+BEGIN_SRC emacs-lisp
+(defvar chronometrist-report--ui-week-dates nil
+  "List of dates currently displayed by `chronometrist-report'.
+Each date is a list containing calendrical information (see (info \"(elisp)Time Conversion\"))")
+#+END_SRC
+**** point                                             :internal:variable:
+#+BEGIN_SRC emacs-lisp
+(defvar chronometrist-report--point nil)
+#+END_SRC
+**** date                                                       :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-report-date ()
+  "Return the date specified by `chronometrist-report--ui-date'.
+If it is nil, return the current date as calendrical
+information (see (info \"(elisp)Time Conversion\"))."
+  (if chronometrist-report--ui-date chronometrist-report--ui-date (chronometrist-date)))
+#+END_SRC
+**** date->dates-in-week                                        :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-report-date->dates-in-week (first-date-in-week)
+  "Return a list of dates in a week, starting from FIRST-DATE-IN-WEEK.
+Each date is a ts struct (see `ts.el').
+
+FIRST-DATE-IN-WEEK must be a ts struct representing the first date."
+  (cl-loop for i from 0 to 6 collect
+           (ts-adjust 'day i first-date-in-week)))
+#+END_SRC
+**** date->week-dates                                           :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-report-date->week-dates ()
+  "Return dates in week as a list.
+Each element is a ts struct (see `ts.el').
+
+The first date is the first occurrence of
+`chronometrist-report-week-start-day' before the date specified in
+`chronometrist-report--ui-date' (if non-nil) or the current date."
+  (->> (or chronometrist-report--ui-date (chronometrist-date))
+       (chronometrist-previous-week-start)
+       (chronometrist-report-date->dates-in-week)))
+#+END_SRC
+**** entries                                                    :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-report-entries ()
+  "Create entries to be displayed in the `chronometrist-report' buffer."
+  (let* ((week-dates (chronometrist-report-date->week-dates))) ;; uses today if chronometrist-report--ui-date is nil
+    (setq chronometrist-report--ui-week-dates week-dates)
+    (cl-loop for task in chronometrist-task-list collect
+             (let* ((durations        (--map (chronometrist-task-time-one-day task (chronometrist-date it))
+                                             week-dates))
+                    (duration-strings (mapcar #'chronometrist-format-time
+                                              durations))
+                    (total-duration   (->> (-reduce #'+ durations)
+                                           (chronometrist-format-time)
+                                           (vector))))
+               (list task
+                     (vconcat
+                      (vector task)
+                      duration-strings ;; vconcat converts lists to vectors
+                      total-duration))))))
+#+END_SRC
+**** print-keybind                                              :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-report-print-keybind (command &optional description firstonly)
+  "Insert one or more keybindings for COMMAND into the current buffer.
+DESCRIPTION is a description of the command.
+
+If FIRSTONLY is non-nil, insert only the first keybinding found."
+  (insert "\n    "
+          (chronometrist-format-keybinds command firstonly)
+          " - "
+          (if description description "")))
+#+END_SRC
+**** print-non-tabular                                          :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-report-print-non-tabular ()
+  "Print the non-tabular part of the buffer in `chronometrist-report'."
+  (let ((inhibit-read-only t)
+        (w                 "\n    ")
+        (total-time-daily  (->> chronometrist-report--ui-week-dates
+                                (mapcar #'chronometrist-date)
+                                (mapcar #'chronometrist-active-time-one-day))))
+    (goto-char (point-min))
+    (insert "                         ")
+    (insert (mapconcat (lambda (ts)
+                         (ts-format "%F" ts))
+                       (chronometrist-report-date->week-dates)
+                       " "))
+    (insert "\n")
+    (goto-char (point-max))
+    (insert w (format "%- 21s" "Total"))
+    (->> total-time-daily
+         (mapcar #'chronometrist-format-time)
+         (--map (format "% 9s  " it))
+         (apply #'insert))
+    (->> total-time-daily
+         (-reduce #'+)
+         (chronometrist-format-time)
+         (format "% 13s")
+         (insert))
+    (insert "\n" w)
+    (insert-text-button "<<" 'action #'chronometrist-report-previous-week 'follow-link t)
+    (insert (format "% 4s" " "))
+    (insert-text-button ">>" 'action #'chronometrist-report-next-week 'follow-link t)
+    (insert "\n")
+    (chronometrist-report-print-keybind 'chronometrist-report-previous-week)
+    (insert-text-button "previous week" 'action #'chronometrist-report-previous-week 'follow-link t)
+    (chronometrist-report-print-keybind 'chronometrist-report-next-week)
+    (insert-text-button "next week" 'action #'chronometrist-report-next-week 'follow-link t)
+    (chronometrist-report-print-keybind 'chronometrist-open-log)
+    (insert-text-button "open log file" 'action #'chronometrist-open-log 'follow-link t)))
+#+END_SRC
+**** REVIEW refresh                                             :function:
+Merge this into `chronometrist-refresh-file', while moving the -refresh call to the call site?
+
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-report-refresh (&optional _ignore-auto _noconfirm)
+  "Refresh the `chronometrist-report' buffer, without re-reading `chronometrist-file'."
+  (let* ((w (get-buffer-window chronometrist-report-buffer-name t))
+         (p (point)))
+    (with-current-buffer chronometrist-report-buffer-name
+      (tabulated-list-print t nil)
+      (chronometrist-report-print-non-tabular)
+      (chronometrist-maybe-start-timer)
+      (set-window-point w p))))
+#+END_SRC
+**** refresh-file                                               :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-report-refresh-file (_fs-event)
+  "Re-read `chronometrist-file' and refresh the `chronometrist-report' buffer.
+Argument _FS-EVENT is ignored."
+  (chronometrist-events-populate)
+  ;; (chronometrist-events-clean)
+  (chronometrist-report-refresh))
+#+END_SRC
+**** report-mode-map                                              :keymap:
+#+BEGIN_SRC emacs-lisp
+(defvar chronometrist-report-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "l") #'chronometrist-open-log)
+    (define-key map (kbd "b") #'chronometrist-report-previous-week)
+    (define-key map (kbd "f") #'chronometrist-report-next-week)
+    ;; Works when number of tasks < screen length; after that, you
+    ;; probably expect mousewheel to scroll up/down, and
+    ;; alt-mousewheel or something for next/previous week. For now,
+    ;; I'm assuming most people won't have all that many tasks - I've
+    ;; been using it for ~2 months and have 18 tasks, which are
+    ;; still just half the screen on my 15" laptop. Let's see what
+    ;; people say.
+    (define-key map [mouse-4] #'chronometrist-report-next-week)
+    (define-key map [mouse-5] #'chronometrist-report-previous-week)
+    map)
+  "Keymap used by `chronometrist-report-mode'.")
+#+END_SRC
+**** report-mode                                              :major:mode:
+#+BEGIN_SRC emacs-lisp
+(define-derived-mode chronometrist-report-mode tabulated-list-mode "Chronometrist-Report"
+  "Major mode for `chronometrist-report'."
+  (make-local-variable 'tabulated-list-format)
+  (setq tabulated-list-format [("Task"   25 t)
+                               ("Sunday"    10 t)
+                               ("Monday"    10 t)
+                               ("Tuesday"   10 t)
+                               ("Wednesday" 10 t)
+                               ("Thursday"  10 t)
+                               ("Friday"    10 t)
+                               ("Saturday"  10 t :pad-right 5)
+                               ("Total"     12 t)])
+  (make-local-variable 'tabulated-list-entries)
+  (setq tabulated-list-entries 'chronometrist-report-entries)
+  (make-local-variable 'tabulated-list-sort-key)
+  (setq tabulated-list-sort-key '("Task" . nil))
+  (tabulated-list-init-header)
+  (chronometrist-maybe-start-timer)
+  (add-hook 'chronometrist-timer-hook
+            (lambda ()
+              (when (get-buffer-window chronometrist-report-buffer-name)
+                (chronometrist-report-refresh))))
+  (setq revert-buffer-function #'chronometrist-report-refresh)
+  (unless chronometrist--fs-watch
+    (setq chronometrist--fs-watch
+          (file-notify-add-watch chronometrist-file
+                                 '(change)
+                                 #'chronometrist-refresh-file))))
+#+END_SRC
+**** chronometrist-report                                        :command:
+#+BEGIN_SRC emacs-lisp
+;;;###autoload
+(defun chronometrist-report (&optional keep-date)
+  "Display a weekly report of the data in `chronometrist-file'.
+
+ This is the 'listing command' for ‘chronometrist-report-mode’.
+
+If a buffer called `chronometrist-report-buffer-name' already
+exists and is visible, kill the buffer.
+
+If KEEP-DATE is nil (the default when not supplied), set
+`chronometrist-report--ui-date' to nil and display data from the
+current week. Otherwise, display data from the week specified by
+`chronometrist-report--ui-date'."
+  (interactive)
+  (chronometrist-migrate-check)
+  (let ((buffer (get-buffer-create chronometrist-report-buffer-name)))
+    (with-current-buffer buffer
+      (cond ((and (get-buffer-window chronometrist-report-buffer-name)
+                  (not keep-date))
+             (setq chronometrist-report--point (point))
+             (kill-buffer buffer))
+            (t (unless keep-date
+                 (setq chronometrist-report--ui-date nil))
+               (chronometrist-common-create-file)
+               (chronometrist-report-mode)
+               (switch-to-buffer buffer)
+               (chronometrist-report-refresh-file nil)
+               (goto-char (or chronometrist-report--point 1)))))))
+#+END_SRC
+**** report-previous-week                                        :command:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-report-previous-week (arg)
+  "View the previous week's report.
+With prefix argument ARG, move back ARG weeks."
+  (interactive "P")
+  (let ((arg (if (and arg (numberp arg))
+                 (abs arg)
+               1)))
+    (setq chronometrist-report--ui-date
+          (ts-adjust 'day (- (* arg 7))
+                     (if chronometrist-report--ui-date
+                         chronometrist-report--ui-date
+                       (ts-now)))))
+  (setq chronometrist-report--point (point))
+  (kill-buffer)
+  (chronometrist-report t))
+#+END_SRC
+**** report-next-week                                            :command:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-report-next-week (arg)
+  "View the next week's report.
+With prefix argument ARG, move forward ARG weeks."
+  (interactive "P")
+  (let ((arg (if (and arg (numberp arg))
+                 (abs arg)
+               1)))
+    (setq chronometrist-report--ui-date
+          (ts-adjust 'day (* arg 7)
+                     (if chronometrist-report--ui-date
+                         chronometrist-report--ui-date
+                       (ts-now))))
+    (setq chronometrist-report--point (point))
+    (kill-buffer)
+    (chronometrist-report t)))
 #+END_SRC
 ** Provide
 #+BEGIN_SRC emacs-lisp
