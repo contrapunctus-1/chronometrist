@@ -738,7 +738,7 @@ supplied, 3 spaces are used."
                  (format "%02d" s))))
         (concat h m s)))))
 #+END_SRC
-**** file-empty-p                                               :function:
+**** file-empty-p                                     :function:predicate:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-common-file-empty-p (file)
   "Return t if FILE is empty."
@@ -860,7 +860,7 @@ Optional argument UNIX-TIME should be a time value (see
 ;; Note - this assumes that an event never crosses >1 day. This seems
 ;; sufficient for all conceivable cases.
 #+END_SRC
-**** midnight-spanning-p                                        :function:
+**** midnight-spanning-p                              :function:predicate:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-midnight-spanning-p (start-time stop-time)
   "Return non-nil if START-TIME and STOP-TIME cross a midnight.
