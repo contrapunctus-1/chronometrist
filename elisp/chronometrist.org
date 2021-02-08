@@ -3,12 +3,14 @@
 
 * chronometrist
 ** About this file
-This Org literate program was born out of frustration with programs stored as text files, which are "expensive" to restructure (especially in the presence of a VCS). I am happy with the outcome - tree and source-block folding, tags, properties, and =org-match= have made it trivial to get different views of the program, and literate programming may allow me to express the "explanation" documentation in the same context as the program, without having to try to link between documentation and source.
+This Org literate program was born out of frustration with programs stored as text files, which are expensive to restructure (especially in the presence of a VCS). I am happy with the outcome - tree and source-block folding, tags, properties, and =org-match= have made it trivial to get different views of the program, and literate programming may allow me to express the "explanation" documentation in the same context as the program, without having to try to link between documentation and source.
 
 According to =benchmark= at the time of writing, =org-babel-tangle= takes about 30 seconds to tangle this file. Thus, I use a little sed one-liner (in the file-local variables) to do the tangling, which is nearly instant.
 
-Issues
-1. Emacs may freeze at the prompt for file-local variable values; C-g will quit the prompt, and permanently marking them as safe will make the freezing stop.
+*** TODO Issues
+1. When opening this file, Emacs may freeze at the prompt for file-local variable values; if so, C-g will quit the prompt, and permanently marking them as safe will make the freezing stop.
+2. [ ] I like =visual-fill-column-mode= for natural language, but I don't want it applied to code blocks. =polymode.el= may hold answers.
+3. [ ] Is there a cleaner tangling solution which is equally fast?
 ** Commentary
 This is displayed when the user clicks on the package's entry in =M-x list-packages=.
 #+BEGIN_SRC emacs-lisp
@@ -64,7 +66,7 @@ This is displayed when the user clicks on the package's entry in =M-x list-packa
 #+END_SRC
 
 ** Code
-*** Require
+*** External libraries
 #+BEGIN_SRC emacs-lisp
 ;;; Code:
 (require 'filenotify)
@@ -184,7 +186,6 @@ were none."
 #+END_SRC
 **** create-file                                                :function:
 #+BEGIN_SRC emacs-lisp
-;;;; Modifications
 (defun chronometrist-sexp-create-file ()
   "Create `chronometrist-file' if it doesn't already exist."
   (unless (file-exists-p chronometrist-file)
@@ -249,7 +250,6 @@ This is meant to be run in `chronometrist-file' when using the s-expression back
   "Return the last entry from `chronometrist-file' as a plist."
   (chronometrist-sexp-last))
 #+END_SRC
-
 *** Plist pretty-printing
 **** whitespace-re                                              :variable:
 #+BEGIN_SRC emacs-lisp
