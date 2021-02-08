@@ -712,12 +712,9 @@ TS must be a ts struct (see `ts.el')."
 
 (defun chronometrist-iso-date->ts (date)
   "Return a ts struct (see `ts.el') representing DATE.
-DATE should be an ISO-8601 date string (\"YYYY-MM-DD\")."
-  (let* ((date-list (mapcar #'string-to-number
-                            (split-string date "-")))
-         (day       (caddr date-list))
-         (month     (cadr date-list))
-         (year      (car date-list)))
+  DATE should be an ISO-8601 date string (\"YYYY-MM-DD\")."
+  (-let [(year month day) (mapcar #'string-to-number
+                                  (split-string date "-"))]
     (ts-update
      (make-ts :hour 0 :minute 0 :second 0
               :day day :month month :year year))))
