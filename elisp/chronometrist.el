@@ -47,6 +47,7 @@
 ;; * Chronometrist data is just s-expressions (plists), and may be easier to parse than a complex text format with numerous use-cases.
 
 ;; For information on usage and customization, see https://github.com/contrapunctus-1/chronometrist/blob/master/README.md
+
 ;;; Code:
 (require 'filenotify)
 (require 'cl-lib)
@@ -54,13 +55,9 @@
 (require 'dash)
 (require 'ts)
 
-(require 'chronometrist-key-values)
-
 (eval-when-compile
   (defvar chronometrist-mode-map)
   (require 'subr-x))
-(autoload 'chronometrist-report "chronometrist-report" nil t)
-(autoload 'chronometrist-statistics "chronometrist-statistics" nil t)
 
 (defcustom chronometrist-sexp-pretty-print-function #'chronometrist-plist-pp
   "Function used to pretty print plists in `chronometrist-file'.
@@ -97,7 +94,6 @@ VAR is bound to each s-expression."
                   (setq ,expr (ignore-errors (read (current-buffer))))
                   (backward-list))
        ,@loop-clauses)))
-;;;; Queries
 
 (defun chronometrist-sexp-open-log ()
   "Open `chronometrist-file' in another window."
@@ -149,7 +145,6 @@ were none."
                      (list new-value))
                    chronometrist-events)))
       (unless (zerop index) index))))
-;;;; Modifications
 
 (defun chronometrist-sexp-create-file ()
   "Create `chronometrist-file' if it doesn't already exist."
@@ -158,6 +153,7 @@ were none."
       (goto-char (point-min))
       (insert ";;; -*- mode: chronometrist-sexp; -*-")
       (write-file chronometrist-file))))
+
 (cl-defun chronometrist-sexp-new (plist)
   "Add new PLIST at the end of `chronometrist-file'."
   (chronometrist-sexp-in-file chronometrist-file
@@ -203,6 +199,247 @@ This is meant to be run in `chronometrist-file' when using the s-expression back
 (defun chronometrist-last ()
   "Return the last entry from `chronometrist-file' as a plist."
   (chronometrist-sexp-last))
+
+(defvar chronometrist-plist-pp-whitespace-re "[\n\t\s]")
+
+(defun chronometrist-plist-pp-normalize-whitespace ()
+  "Remove whitespace following point, and insert a space.
+Point is placed at the end of the space."
+  (when (looking-at (concat chronometrist-plist-pp-whitespace-re "+"))
+    (delete-region (match-beginning 0) (match-end 0))
+    (insert " ")))
+
+(defun chronometrist-plist-pp-column ()
+  "Return column point is on, as an integer.
+0 means point is at the beginning of the line."
+  (- (point) (point-at-bol)))
+
+(defun chronometrist-plist-pp-pair-p (cons)
+  (and (listp cons) (not (listp (cdr cons)))))
+
+(defun chronometrist-plist-pp-alist-p (list)
+  "Return non-nil if LIST is an association list.
+If even a single element of LIST is a pure cons cell (as
+determined by `chronometrist-plist-pp-pair-p'), this function
+considers it an alist."
+  (when (listp list)
+    (cl-loop for elt in list thereis (chronometrist-plist-pp-pair-p elt))))
+
+(defun chronometrist-plist-pp-plist-p (list)
+  (while (consp list)
+    (setq list (if (and (keywordp (car list))
+                        (consp (cdr list)))
+                   (cddr list)
+                 'not-plist)))
+  (null list))
+
+(defun chronometrist-plist-pp-longest-keyword-length ()
+  "Find the length of the longest keyword in a plist.
+This assumes there is a single plist in the current buffer, and
+that point is after the first opening parenthesis."
+  (save-excursion
+    (cl-loop with sexp
+      while (setq sexp (ignore-errors (read (current-buffer))))
+      when (keywordp sexp)
+      maximize (length (symbol-name sexp)))))
+
+(cl-defun chronometrist-plist-pp-indent-sexp (sexp &optional (right-indent 0))
+  "Return a string indenting SEXP by RIGHT-INDENT spaces."
+  (format (concat "% -" (number-to-string right-indent) "s")
+          sexp))
+
+(cl-defun chronometrist-plist-pp-buffer (&optional inside-sublist-p)
+  "Recursively indent the alist, plist, or a list of plists after point.
+The list must be on a single line, as emitted by `prin1'."
+  (if (not (looking-at-p (rx (or ")" line-end))))
+      (progn
+        (setq sexp (save-excursion (read (current-buffer))))
+        (cond
+         ((chronometrist-plist-pp-plist-p sexp)
+          (chronometrist-plist-pp-buffer-plist inside-sublist-p)
+          (chronometrist-plist-pp-buffer inside-sublist-p))
+         ((chronometrist-plist-pp-alist-p sexp)
+          (chronometrist-plist-pp-buffer-alist)
+          (unless inside-sublist-p (chronometrist-plist-pp-buffer)))
+         ((chronometrist-plist-pp-pair-p sexp)
+          (forward-sexp)
+          (chronometrist-plist-pp-buffer inside-sublist-p))
+         ((listp sexp)
+          (down-list)
+          (chronometrist-plist-pp-buffer t))
+         (t (forward-sexp)
+            (chronometrist-plist-pp-buffer inside-sublist-p))))
+    ;; we're before a ) - is it a lone paren on its own line?
+    (let ((pos (point))
+          (bol (point-at-bol)))
+      (goto-char bol)
+      (if (string-match (concat "^" chronometrist-plist-pp-whitespace-re "*$")
+                        (buffer-substring bol pos))
+          ;; join the ) to the previous line by deleting the newline and whitespace
+          (delete-region (1- bol) pos)
+        (goto-char pos))
+      (when (not (eobp))
+        (forward-char)))))
+
+(defun chronometrist-plist-pp-buffer-plist (&optional inside-sublist-p)
+  "Indent a single plist after point."
+  (down-list)
+  (let ((left-indent  (1- (chronometrist-plist-pp-column)))
+        (right-indent (chronometrist-plist-pp-longest-keyword-length))
+        (first-p t) sexp)
+    (while (not (looking-at-p ")"))
+      (chronometrist-plist-pp-normalize-whitespace)
+      (setq sexp (save-excursion (read (current-buffer))))
+      (cond ((keywordp sexp)
+             (chronometrist-sexp-delete-list)
+             (insert (if first-p
+                         (progn (setq first-p nil) "")
+                       (make-string left-indent ?\ ))
+                     (chronometrist-plist-pp-indent-sexp sexp right-indent)))
+            ;; not a keyword = a value
+            ((chronometrist-plist-pp-plist-p sexp)
+             (chronometrist-plist-pp-buffer-plist))
+            ((and (listp sexp)
+                  (not (chronometrist-plist-pp-pair-p sexp)))
+             (chronometrist-plist-pp-buffer t)
+             (insert "\n"))
+            (t (forward-sexp)
+               (insert "\n"))))
+    (when (bolp) (delete-char -1))
+    (up-list)
+    ;; we have exited the plist, but might still be in a list with more plists
+    (unless (eolp) (insert "\n"))
+    (when inside-sublist-p
+      (insert (make-string (1- left-indent) ?\ )))))
+
+(defun chronometrist-plist-pp-buffer-alist ()
+  "Indent a single alist after point."
+  (down-list)
+  (let ((indent (chronometrist-plist-pp-column)) (first-p t) sexp)
+    (while (not (looking-at-p ")"))
+      (setq sexp (save-excursion (read (current-buffer))))
+      (chronometrist-sexp-delete-list)
+      (insert (if first-p
+                  (progn (setq first-p nil) "")
+                (make-string indent ?\ ))
+              (format "%S\n" sexp)))
+    (when (bolp) (delete-char -1))
+    (up-list)))
+
+(defun chronometrist-plist-pp-to-string (object)
+  "Convert OBJECT to a pretty-printed string."
+  (with-temp-buffer
+    (lisp-mode-variables nil)
+    (set-syntax-table emacs-lisp-mode-syntax-table)
+    (let ((print-quoted t))
+      (prin1 object (current-buffer)))
+    (goto-char (point-min))
+    (chronometrist-plist-pp-buffer)
+    (buffer-string)))
+
+(defun chronometrist-plist-pp (object &optional stream)
+  "Pretty-print OBJECT and output to STREAM (see `princ')."
+  (princ (chronometrist-plist-pp-to-string object)
+         (or stream standard-output)))
+
+(defvar chronometrist-migrate-table (make-hash-table))
+
+;; TODO - support other timeclock codes (currently only "i" and "o"
+;; are supported.)
+(defun chronometrist-migrate-populate (in-file)
+  "Read data from IN-FILE to `chronometrist-migrate-table'.
+
+IN-FILE should be a file in the format supported by timeclock.el.
+See `timeclock-log-data' for a description."
+  (clrhash chronometrist-migrate-table)
+  (with-current-buffer (find-file-noselect in-file)
+    (save-excursion
+      (goto-char (point-min))
+      (let ((key-counter 0))
+        (while (not (eobp))
+          (let* ((event-string (buffer-substring-no-properties (point-at-bol)
+                                                               (point-at-eol)))
+                 (event-list   (split-string event-string "[ /:]"))
+                 (code         (cl-first event-list))
+                 (date-time    (--> event-list
+                                    (seq-drop it 1)
+                                    (seq-take it 6)
+                                    (mapcar #'string-to-number it)
+                                    (reverse it)
+                                    (apply #'encode-time it)
+                                    (chronometrist-format-time-iso8601 it)))
+                 (project-or-comment
+                  (replace-regexp-in-string
+                   (rx (and (or "i" "o") " "
+                            (and (= 4 digit) "/" (= 2 digit) "/" (= 2 digit) " ")
+                            (and (= 2 digit) ":" (= 2 digit) ":" (= 2 digit))
+                            (opt " ")))
+                   ""
+                   event-string)))
+            (pcase code
+              ("i"
+               (cl-incf key-counter)
+               (puthash key-counter
+                        `(:name ,project-or-comment :start ,date-time)
+                        chronometrist-migrate-table))
+              ("o"
+               (--> (gethash key-counter chronometrist-migrate-table)
+                    (append it
+                            `(:stop ,date-time)
+                            (when (and (stringp project-or-comment)
+                                       (not
+                                        (string= project-or-comment "")))
+                              `(:comment ,project-or-comment)))
+                    (puthash key-counter it chronometrist-migrate-table)))))
+          (forward-line)
+          (goto-char (point-at-bol))))
+      nil)))
+
+(defvar timeclock-file)
+
+(defun chronometrist-migrate-timelog-file->sexp-file (&optional in-file out-file)
+  "Migrate your existing `timeclock-file' to the Chronometrist file format.
+
+IN-FILE and OUT-FILE, if provided, are used as input and output
+file names respectively."
+  (interactive `(,(if (featurep 'timeclock)
+                      (read-file-name (concat "timeclock file (default: "
+                                              timeclock-file
+                                              "): ")
+                                      user-emacs-directory
+                                      timeclock-file t)
+                    (read-file-name (concat "timeclock file: ")
+                                    user-emacs-directory
+                                    nil t))
+                 ,(read-file-name (concat "Output file (default: "
+                                          (locate-user-emacs-file "chronometrist.sexp")
+                                          "): ")
+                                  user-emacs-directory
+                                  (locate-user-emacs-file "chronometrist.sexp"))))
+  (when (if (file-exists-p out-file)
+            (yes-or-no-p (concat "Output file "
+                                 out-file
+                                 " already exists - overwrite? "))
+          t)
+    (let ((output (find-file-noselect out-file)))
+      (with-current-buffer output
+        (chronometrist-common-clear-buffer output)
+        (chronometrist-migrate-populate in-file)
+        (maphash (lambda (_key value)
+                   (chronometrist-plist-pp value output)
+                   (insert "\n\n"))
+                 chronometrist-migrate-table)
+        (save-buffer)))))
+
+(defun chronometrist-migrate-check ()
+  "Offer to import data from `timeclock-file' if `chronometrist-file' does not exist."
+  (when (and (bound-and-true-p timeclock-file)
+             (not (file-exists-p chronometrist-file)))
+    (if (yes-or-no-p (format (concat "Chronometrist v0.3+ uses a new file format;"
+                                     " import data from %s ? ")
+                             timeclock-file))
+        (chronometrist-migrate-timelog-file->sexp-file timeclock-file chronometrist-file)
+      (message "You can migrate later using `chronometrist-migrate-timelog-file->sexp-file'."))))
 
 (defvar chronometrist-events (make-hash-table :test #'equal)
   "Each key is a date in the form (YEAR MONTH DAY).
@@ -284,6 +521,7 @@ treated as though their time is 00:00:00."
                  (puthash key value subset)))
              chronometrist-events)
     subset))
+
 (cl-defun chronometrist-task-time-one-day (task &optional (ts (ts-now)))
   "Return total time spent on TASK today or (if supplied) on timestamp TS.
 The data is obtained from `chronometrist-file', via `chronometrist-events'.
@@ -299,6 +537,7 @@ The return value is seconds, as an integer."
              (truncate))
       ;; no events for this task on TS, i.e. no time spent
       0)))
+
 (cl-defun chronometrist-active-time-one-day (&optional (ts (ts-now)))
   "Return the total active time on TS (if non-nil) or today.
 TS must be a ts struct (see `ts.el')
@@ -308,6 +547,7 @@ Return value is seconds as an integer."
        (--map (chronometrist-task-time-one-day it ts))
        (-reduce #'+)
        (truncate)))
+
 (cl-defun chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
   "Return the number of days the user spent any time on TASK.
 TABLE must be a hash table - if not supplied, `chronometrist-events' is used.
@@ -322,6 +562,7 @@ which span midnights. (see `chronometrist-events-clean')"
                  (cl-incf count)))
              table)
     count))
+
 (cl-defun chronometrist-task-events-in-day (task &optional (ts (ts-now)))
   "Get events for TASK on TS.
 TS should be a ts struct (see `ts.el').
@@ -337,6 +578,242 @@ which span midnights. (see `chronometrist-events-clean')"
                  (when (equal task (plist-get event :name))
                    event)))
        (seq-filter #'identity)))
+
+(defvar chronometrist-task-list nil
+  "List of tasks in `chronometrist-file'.")
+
+(defvar chronometrist--fs-watch nil
+  "Filesystem watch object.
+Used to prevent more than one watch being added for the same
+file.")
+
+(defun chronometrist-current-task ()
+  "Return the name of the currently clocked-in task, or nil if not clocked in."
+  (chronometrist-sexp-current-task))
+
+(cl-defun chronometrist-format-time (seconds &optional (blank "   "))
+  "Format SECONDS as a string suitable for display in Chronometrist buffers.
+SECONDS must be a positive integer.
+
+BLANK is a string to display in place of blank values. If not
+supplied, 3 spaces are used."
+  (-let [(h m s) (chronometrist-seconds-to-hms seconds)]
+    (if (and (zerop h) (zerop m) (zerop s))
+        "       -"
+      (let ((h (if (zerop h)
+                   blank
+                 (format "%2d:" h)))
+            (m (cond ((and (zerop h)
+                           (zerop m))
+                      blank)
+                     ((zerop h)
+                      (format "%2d:" m))
+                     (t
+                      (format "%02d:" m))))
+            (s (if (and (zerop h)
+                        (zerop m))
+                   (format "%2d" s)
+                 (format "%02d" s))))
+        (concat h m s)))))
+
+(defun chronometrist-common-file-empty-p (file)
+  "Return t if FILE is empty."
+  (let ((size (elt (file-attributes file) 7)))
+    (if (zerop size) t nil)))
+
+(defun chronometrist-common-clear-buffer (buffer)
+  "Clear the contents of BUFFER."
+  (with-current-buffer buffer
+    (goto-char (point-min))
+    (delete-region (point-min) (point-max))))
+
+(defun chronometrist-format-keybinds (command map &optional firstonly)
+  "Return the keybindings for COMMAND in MAP as a string.
+If FIRSTONLY is non-nil, return only the first keybinding found."
+  (if firstonly
+      (key-description
+       (where-is-internal command map firstonly))
+    (->> (where-is-internal command map)
+         (mapcar #'key-description)
+         (-take 2)
+         (-interpose ", ")
+         (apply #'concat))))
+
+(defun chronometrist-events->ts-pairs (events)
+  "Convert EVENTS to a list of ts struct pairs (see `ts.el').
+
+EVENTS must be a list of valid Chronometrist property lists (see
+`chronometrist-file')."
+  (cl-loop for plist in events collect
+           (let* ((start (chronometrist-iso-timestamp->ts
+                          (plist-get plist :start)))
+                  (stop (plist-get plist :stop))
+                  (stop (if stop
+                            (chronometrist-iso-timestamp->ts stop)
+                          (ts-now))))
+             (cons start stop))))
+
+(defun chronometrist-ts-pairs->durations (ts-pairs)
+  "Return the durations represented by TS-PAIRS.
+TS-PAIRS is a list of pairs, where each element is a ts struct (see `ts.el').
+
+Return seconds as an integer, or 0 if TS-PAIRS is nil."
+  (if ts-pairs
+      (cl-loop for pair in ts-pairs collect
+               (ts-diff (cdr pair) (car pair)))
+    0))
+
+(defun chronometrist-previous-week-start (ts)
+  "Find the previous `chronometrist-report-week-start-day' from TS.
+
+Return a ts struct for said day's beginning.
+
+If the day of TS is the same as the
+`chronometrist-report-week-start-day', return TS.
+
+TS must be a ts struct (see `ts.el')."
+  (cl-loop
+    with week-start =
+    (alist-get chronometrist-report-week-start-day chronometrist-report-weekday-number-alist nil nil #'equal)
+    until (= week-start (ts-dow ts))
+    do (ts-decf (ts-day ts))
+    finally return ts))
+
+(defun chronometrist-iso-timestamp->ts (timestamp)
+  "Return new ts struct, parsing TIMESTAMP with `parse-iso8601-time-string'."
+  (-let [(second minute hour day month year dow _dst utcoff)
+         (decode-time
+          (parse-iso8601-time-string timestamp))]
+    (ts-update
+     (make-ts :hour hour :minute minute :second second
+              :day day   :month month   :year year
+              :dow dow   :tz-offset utcoff))))
+
+(defun chronometrist-iso-date->ts (date)
+  "Return a ts struct (see `ts.el') representing DATE.
+DATE should be an ISO-8601 date string (\"YYYY-MM-DD\")."
+  (let* ((date-list (mapcar #'string-to-number
+                            (split-string date "-")))
+         (day       (caddr date-list))
+         (month     (cadr date-list))
+         (year      (car date-list)))
+    (ts-update
+     (make-ts :hour 0 :minute 0 :second 0
+              :day day :month month :year year))))
+
+(cl-defun chronometrist-date (&optional (ts (ts-now)))
+  "Return a ts struct representing the time 00:00:00 on today's date.
+If TS is supplied, use that date instead of today.
+TS should be a ts struct (see `ts.el')."
+  (ts-apply :hour 0 :minute 0 :second 0 ts))
+
+(defun chronometrist-format-time-iso8601 (&optional unix-time)
+  "Return current moment as an ISO-8601 format time string.
+
+Optional argument UNIX-TIME should be a time value (see
+`current-time') accepted by `format-time-string'."
+  (format-time-string "%FT%T%z" unix-time))
+
+;; Note - this assumes that an event never crosses >1 day. This seems
+;; sufficient for all conceivable cases.
+
+(defun chronometrist-midnight-spanning-p (start-time stop-time)
+  "Return non-nil if START-TIME and STOP-TIME cross a midnight.
+
+Return value is a list in the form
+\((:start START-TIME
+  :stop <day-start time on initial day>)
+ (:start <day start time on second day>
+  :stop STOP-TIME))"
+  ;; FIXME - time zones are ignored; may cause issues with
+  ;; time-zone-spanning events
+
+  ;; The time on which the first provided day starts (according to `chronometrist-day-start-time')
+  (let* ((first-day-start (chronometrist-day-start start-time))
+         ;; HACK - won't work with custom day-start time
+         ;; (first-day-end   (parse-iso8601-time-string
+         ;;                   (concat (chronometrist-date (parse-iso8601-time-string start-time))
+         ;;                           "24:00:00")))
+         (next-day-start  (time-add first-day-start
+                                    '(0 . 86400)))
+         (stop-time-unix  (parse-iso8601-time-string stop-time)))
+    ;; Does the event stop time exceed the next day start time?
+    (when (time-less-p next-day-start stop-time-unix)
+      (list `(:start ,start-time
+                     :stop  ,(chronometrist-format-time-iso8601 next-day-start))
+            `(:start ,(chronometrist-format-time-iso8601 next-day-start)
+                     :stop  ,stop-time)))))
+
+(defun chronometrist-seconds-to-hms (seconds)
+  "Convert SECONDS to a vector in the form [HOURS MINUTES SECONDS].
+SECONDS must be a positive integer."
+  (let* ((seconds (truncate seconds))
+         (s       (% seconds 60))
+         (m       (% (/ seconds 60) 60))
+         (h       (/ seconds 3600)))
+    (list h m s)))
+
+(defun chronometrist-interval (event)
+  "Return the period of time covered by EVENT as a time value.
+EVENT should be a plist (see `chronometrist-file')."
+  (let ((start (plist-get event :start))
+        (stop  (plist-get event :stop)))
+    (time-subtract (parse-iso8601-time-string stop)
+                   (parse-iso8601-time-string start))))
+
+(defvar chronometrist--timer-object nil)
+
+(defcustom chronometrist-timer-hook nil
+  "Functions run by `chronometrist-timer'.")
+
+(defun chronometrist-timer ()
+  "Refresh Chronometrist and related buffers.
+
+Buffers will be refreshed only if they are visible and the user
+is clocked in to a task."
+  (when (chronometrist-current-task) ;; FIXME - This line is currently
+    ;; resulting in no refresh at midnight. When `chronometrist-entries' is
+    ;; optimized to consume less CPU and avoid unnecessary parsing,
+    ;; remove this condition.
+    (when (get-buffer-window chronometrist-buffer-name)
+      (chronometrist-refresh))
+    (run-hooks 'chronometrist-timer-hook)))
+
+(defun chronometrist-stop-timer ()
+  "Stop the timer for Chronometrist buffers."
+  (interactive)
+  (cancel-timer chronometrist--timer-object)
+  (setq chronometrist--timer-object nil))
+
+(defun chronometrist-maybe-start-timer (&optional interactive-test)
+  "Start `chronometrist-timer' if `chronometrist--timer-object' is non-nil.
+INTERACTIVE-TEST is used to determine if this has been called
+interactively."
+  (interactive "p")
+  (unless chronometrist--timer-object
+    (setq chronometrist--timer-object
+          (run-at-time t chronometrist-update-interval #'chronometrist-timer))
+    (when interactive-test
+      (message "Timer started."))
+    t))
+
+(defun chronometrist-force-restart-timer ()
+  "Restart the timer for Chronometrist buffers."
+  (interactive)
+  (when chronometrist--timer-object
+    (cancel-timer chronometrist--timer-object))
+  (setq chronometrist--timer-object
+        (run-at-time t chronometrist-update-interval #'chronometrist-timer)))
+
+(defun chronometrist-change-update-interval (arg)
+  "Change the update interval for Chronometrist buffers.
+
+ARG should be the new update interval, in seconds."
+  (interactive "NEnter new interval (in seconds): ")
+  (cancel-timer chronometrist--timer-object)
+  (setq chronometrist-update-interval arg
+        chronometrist--timer-object nil)
+  (chronometrist-maybe-start-timer))
 
 (defgroup chronometrist nil
   "A time tracker with a nice UI."
@@ -642,6 +1119,7 @@ Return
     (when (and position (= position count))
       ;; The only interval for TASK is the last expression
       (setq chronometrist-task-list (remove task chronometrist-task-list)))))
+
   (defun chronometrist-refresh-file (fs-event)
     "Re-read `chronometrist-file' and refresh the `chronometrist' buffer.
   Argument _FS-EVENT is ignored."
@@ -833,8 +1311,8 @@ action, and is ignored."
       (chronometrist-run-functions-and-clock-out current))
     (let ((task (read-from-minibuffer "New task name: " nil nil nil nil nil t)))
       (chronometrist-run-functions-and-clock-in task))))
-;; TODO - if clocked in and point not on a task, just clock out
 
+;; TODO - if clocked in and point not on a task, just clock out
 (defun chronometrist-toggle-task (&optional prefix inhibit-hooks)
   "Start or stop the task at point.
 
@@ -886,8 +1364,8 @@ is no corresponding task, do nothing."
   "Add a new task."
   (interactive)
   (chronometrist-add-new-task-button nil))
-;;;###autoload
 
+;;;###autoload
 (defun chronometrist (&optional arg)
   "Display the user's tasks and the time spent on them today.
 
@@ -938,338 +1416,502 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
                   (file-notify-add-watch chronometrist-file '(change) #'chronometrist-refresh-file))))))))
 
 
-(defvar chronometrist-task-list nil
-  "List of tasks in `chronometrist-file'.")
+(defgroup chronometrist-report nil
+  "Weekly report for the `chronometrist' time tracker."
+  :group 'chronometrist)
 
-(defvar chronometrist--fs-watch nil
-  "Filesystem watch object.
-Used to prevent more than one watch being added for the same
-file.")
+(defcustom chronometrist-report-buffer-name "*Chronometrist-Report*"
+  "The name of the buffer created by `chronometrist-report'."
+  :type 'string)
 
-(defun chronometrist-current-task ()
-  "Return the name of the currently clocked-in task, or nil if not clocked in."
-  (chronometrist-sexp-current-task))
-(cl-defun chronometrist-format-time (seconds &optional (blank "   "))
-  "Format SECONDS as a string suitable for display in Chronometrist buffers.
-SECONDS must be a positive integer.
+(defcustom chronometrist-report-week-start-day "Sunday"
+  "The day used for start of week by `chronometrist-report'."
+  :type 'string)
 
-BLANK is a string to display in place of blank values. If not
-supplied, 3 spaces are used."
-  (-let [(h m s) (chronometrist-seconds-to-hms seconds)]
-    (if (and (zerop h) (zerop m) (zerop s))
-        "       -"
-      (let ((h (if (zerop h)
-                   blank
-                 (format "%2d:" h)))
-            (m (cond ((and (zerop h)
-                           (zerop m))
-                      blank)
-                     ((zerop h)
-                      (format "%2d:" m))
-                     (t
-                      (format "%02d:" m))))
-            (s (if (and (zerop h)
-                        (zerop m))
-                   (format "%2d" s)
-                 (format "%02d" s))))
-        (concat h m s)))))
+(defcustom chronometrist-report-weekday-number-alist
+  '(("Sunday"    . 0)
+    ("Monday"    . 1)
+    ("Tuesday"   . 2)
+    ("Wednesday" . 3)
+    ("Thursday"  . 4)
+    ("Friday"    . 5)
+    ("Saturday"  . 6))
+  "Alist in the form (\"NAME\" . NUMBER), where \"NAME\" is the name of a weekday and NUMBER its associated number."
+  :type 'alist)
 
-(defun chronometrist-common-file-empty-p (file)
-  "Return t if FILE is empty."
-  (let ((size (elt (file-attributes file) 7)))
-    (if (zerop size) t nil)))
+(defvar chronometrist-report--ui-date nil
+  "The first date of the week displayed by `chronometrist-report'.
+A value of nil means the current week. Otherwise, it must be a
+date in the form \"YYYY-MM-DD\".")
 
-(defun chronometrist-common-clear-buffer (buffer)
-  "Clear the contents of BUFFER."
-  (with-current-buffer buffer
+(defvar chronometrist-report--ui-week-dates nil
+  "List of dates currently displayed by `chronometrist-report'.
+Each date is a list containing calendrical information (see (info \"(elisp)Time Conversion\"))")
+
+(defvar chronometrist-report--point nil)
+
+(defun chronometrist-report-date ()
+  "Return the date specified by `chronometrist-report--ui-date'.
+If it is nil, return the current date as calendrical
+information (see (info \"(elisp)Time Conversion\"))."
+  (if chronometrist-report--ui-date chronometrist-report--ui-date (chronometrist-date)))
+
+(defun chronometrist-report-date->dates-in-week (first-date-in-week)
+  "Return a list of dates in a week, starting from FIRST-DATE-IN-WEEK.
+Each date is a ts struct (see `ts.el').
+
+FIRST-DATE-IN-WEEK must be a ts struct representing the first date."
+  (cl-loop for i from 0 to 6 collect
+           (ts-adjust 'day i first-date-in-week)))
+
+(defun chronometrist-report-date->week-dates ()
+  "Return dates in week as a list.
+Each element is a ts struct (see `ts.el').
+
+The first date is the first occurrence of
+`chronometrist-report-week-start-day' before the date specified in
+`chronometrist-report--ui-date' (if non-nil) or the current date."
+  (->> (or chronometrist-report--ui-date (chronometrist-date))
+       (chronometrist-previous-week-start)
+       (chronometrist-report-date->dates-in-week)))
+
+(defun chronometrist-report-entries ()
+  "Create entries to be displayed in the `chronometrist-report' buffer."
+  (let* ((week-dates (chronometrist-report-date->week-dates))) ;; uses today if chronometrist-report--ui-date is nil
+    (setq chronometrist-report--ui-week-dates week-dates)
+    (cl-loop for task in chronometrist-task-list collect
+             (let* ((durations        (--map (chronometrist-task-time-one-day task (chronometrist-date it))
+                                             week-dates))
+                    (duration-strings (mapcar #'chronometrist-format-time
+                                              durations))
+                    (total-duration   (->> (-reduce #'+ durations)
+                                           (chronometrist-format-time)
+                                           (vector))))
+               (list task
+                     (vconcat
+                      (vector task)
+                      duration-strings ;; vconcat converts lists to vectors
+                      total-duration))))))
+
+(defun chronometrist-report-print-keybind (command &optional description firstonly)
+  "Insert one or more keybindings for COMMAND into the current buffer.
+DESCRIPTION is a description of the command.
+
+If FIRSTONLY is non-nil, insert only the first keybinding found."
+  (insert "\n    "
+          (chronometrist-format-keybinds command firstonly)
+          " - "
+          (if description description "")))
+
+(defun chronometrist-report-print-non-tabular ()
+  "Print the non-tabular part of the buffer in `chronometrist-report'."
+  (let ((inhibit-read-only t)
+        (w                 "\n    ")
+        (total-time-daily  (->> chronometrist-report--ui-week-dates
+                                (mapcar #'chronometrist-date)
+                                (mapcar #'chronometrist-active-time-one-day))))
     (goto-char (point-min))
-    (delete-region (point-min) (point-max))))
+    (insert "                         ")
+    (insert (mapconcat (lambda (ts)
+                         (ts-format "%F" ts))
+                       (chronometrist-report-date->week-dates)
+                       " "))
+    (insert "\n")
+    (goto-char (point-max))
+    (insert w (format "%- 21s" "Total"))
+    (->> total-time-daily
+         (mapcar #'chronometrist-format-time)
+         (--map (format "% 9s  " it))
+         (apply #'insert))
+    (->> total-time-daily
+         (-reduce #'+)
+         (chronometrist-format-time)
+         (format "% 13s")
+         (insert))
+    (insert "\n" w)
+    (insert-text-button "<<" 'action #'chronometrist-report-previous-week 'follow-link t)
+    (insert (format "% 4s" " "))
+    (insert-text-button ">>" 'action #'chronometrist-report-next-week 'follow-link t)
+    (insert "\n")
+    (chronometrist-report-print-keybind 'chronometrist-report-previous-week)
+    (insert-text-button "previous week" 'action #'chronometrist-report-previous-week 'follow-link t)
+    (chronometrist-report-print-keybind 'chronometrist-report-next-week)
+    (insert-text-button "next week" 'action #'chronometrist-report-next-week 'follow-link t)
+    (chronometrist-report-print-keybind 'chronometrist-open-log)
+    (insert-text-button "open log file" 'action #'chronometrist-open-log 'follow-link t)))
 
-(defun chronometrist-format-keybinds (command map &optional firstonly)
-  "Return the keybindings for COMMAND in MAP as a string.
+(defun chronometrist-report-refresh (&optional _ignore-auto _noconfirm)
+  "Refresh the `chronometrist-report' buffer, without re-reading `chronometrist-file'."
+  (let* ((w (get-buffer-window chronometrist-report-buffer-name t))
+         (p (point)))
+    (with-current-buffer chronometrist-report-buffer-name
+      (tabulated-list-print t nil)
+      (chronometrist-report-print-non-tabular)
+      (chronometrist-maybe-start-timer)
+      (set-window-point w p))))
+
+(defun chronometrist-report-refresh-file (_fs-event)
+  "Re-read `chronometrist-file' and refresh the `chronometrist-report' buffer.
+Argument _FS-EVENT is ignored."
+  (chronometrist-events-populate)
+  ;; (chronometrist-events-clean)
+  (chronometrist-report-refresh))
+
+(defvar chronometrist-report-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "l") #'chronometrist-open-log)
+    (define-key map (kbd "b") #'chronometrist-report-previous-week)
+    (define-key map (kbd "f") #'chronometrist-report-next-week)
+    ;; Works when number of tasks < screen length; after that, you
+    ;; probably expect mousewheel to scroll up/down, and
+    ;; alt-mousewheel or something for next/previous week. For now,
+    ;; I'm assuming most people won't have all that many tasks - I've
+    ;; been using it for ~2 months and have 18 tasks, which are
+    ;; still just half the screen on my 15" laptop. Let's see what
+    ;; people say.
+    (define-key map [mouse-4] #'chronometrist-report-next-week)
+    (define-key map [mouse-5] #'chronometrist-report-previous-week)
+    map)
+  "Keymap used by `chronometrist-report-mode'.")
+
+(define-derived-mode chronometrist-report-mode tabulated-list-mode "Chronometrist-Report"
+  "Major mode for `chronometrist-report'."
+  (make-local-variable 'tabulated-list-format)
+  (setq tabulated-list-format [("Task"   25 t)
+                               ("Sunday"    10 t)
+                               ("Monday"    10 t)
+                               ("Tuesday"   10 t)
+                               ("Wednesday" 10 t)
+                               ("Thursday"  10 t)
+                               ("Friday"    10 t)
+                               ("Saturday"  10 t :pad-right 5)
+                               ("Total"     12 t)])
+  (make-local-variable 'tabulated-list-entries)
+  (setq tabulated-list-entries 'chronometrist-report-entries)
+  (make-local-variable 'tabulated-list-sort-key)
+  (setq tabulated-list-sort-key '("Task" . nil))
+  (tabulated-list-init-header)
+  (chronometrist-maybe-start-timer)
+  (add-hook 'chronometrist-timer-hook
+            (lambda ()
+              (when (get-buffer-window chronometrist-report-buffer-name)
+                (chronometrist-report-refresh))))
+  (setq revert-buffer-function #'chronometrist-report-refresh)
+  (unless chronometrist--fs-watch
+    (setq chronometrist--fs-watch
+          (file-notify-add-watch chronometrist-file
+                                 '(change)
+                                 #'chronometrist-refresh-file))))
+
+;;;###autoload
+(defun chronometrist-report (&optional keep-date)
+  "Display a weekly report of the data in `chronometrist-file'.
+
+ This is the 'listing command' for ‘chronometrist-report-mode’.
+
+If a buffer called `chronometrist-report-buffer-name' already
+exists and is visible, kill the buffer.
+
+If KEEP-DATE is nil (the default when not supplied), set
+`chronometrist-report--ui-date' to nil and display data from the
+current week. Otherwise, display data from the week specified by
+`chronometrist-report--ui-date'."
+  (interactive)
+  (chronometrist-migrate-check)
+  (let ((buffer (get-buffer-create chronometrist-report-buffer-name)))
+    (with-current-buffer buffer
+      (cond ((and (get-buffer-window chronometrist-report-buffer-name)
+                  (not keep-date))
+             (setq chronometrist-report--point (point))
+             (kill-buffer buffer))
+            (t (unless keep-date
+                 (setq chronometrist-report--ui-date nil))
+               (chronometrist-common-create-file)
+               (chronometrist-report-mode)
+               (switch-to-buffer buffer)
+               (chronometrist-report-refresh-file nil)
+               (goto-char (or chronometrist-report--point 1)))))))
+
+(defun chronometrist-report-previous-week (arg)
+  "View the previous week's report.
+With prefix argument ARG, move back ARG weeks."
+  (interactive "P")
+  (let ((arg (if (and arg (numberp arg))
+                 (abs arg)
+               1)))
+    (setq chronometrist-report--ui-date
+          (ts-adjust 'day (- (* arg 7))
+                     (if chronometrist-report--ui-date
+                         chronometrist-report--ui-date
+                       (ts-now)))))
+  (setq chronometrist-report--point (point))
+  (kill-buffer)
+  (chronometrist-report t))
+
+(defun chronometrist-report-next-week (arg)
+  "View the next week's report.
+With prefix argument ARG, move forward ARG weeks."
+  (interactive "P")
+  (let ((arg (if (and arg (numberp arg))
+                 (abs arg)
+               1)))
+    (setq chronometrist-report--ui-date
+          (ts-adjust 'day (* arg 7)
+                     (if chronometrist-report--ui-date
+                         chronometrist-report--ui-date
+                       (ts-now))))
+    (setq chronometrist-report--point (point))
+    (kill-buffer)
+    (chronometrist-report t)))
+
+(defgroup chronometrist-statistics nil
+  "Statistics buffer for the `chronometrist' time tracker."
+  :group 'chronometrist)
+
+(defcustom chronometrist-statistics-buffer-name "*Chronometrist-Statistics*"
+  "The name of the buffer created by `chronometrist-statistics'."
+  :type 'string)
+
+(defvar chronometrist-statistics--ui-state nil
+  "Stores the display state for `chronometrist-statistics'.
+
+This must be a plist in the form (:MODE :START :END).
+
+:MODE is either 'week, 'month, 'year, 'full, or 'custom.
+
+'week, 'month, and 'year mean display statistics
+weekly/monthly/yearly respectively.
+
+'full means display statistics from the beginning to the end of
+the `chronometrist-file'.
+
+'custom means display statistics from an arbitrary date range.
+
+:START and :END are the start and end of the date range to be
+displayed. They must be ts structs (see `ts.el').")
+
+(defvar chronometrist-statistics--point nil)
+
+(defvar chronometrist-statistics-mode-map)
+
+(cl-defun chronometrist-statistics-count-average-time-spent (task &optional (table chronometrist-events))
+  "Return the average time the user has spent on TASK from TABLE.
+
+TABLE should be a hash table - if not supplied,
+`chronometrist-events' is used."
+  ;; (cl-loop
+  ;;  for date being the hash-keys of table
+  ;;  (let ((events-in-day  (chronometrist-task-events-in-day task (chronometrist-iso-date->ts key))))
+  ;;    (when events-in-day)))
+  (let ((days  0)
+        (per-day-time-list))
+    (maphash (lambda (key _value)
+               (let ((events-in-day (chronometrist-task-events-in-day task (chronometrist-iso-date->ts key))))
+                 (when events-in-day
+                   (setq days (1+ days))
+                   (->> (chronometrist-events->ts-pairs events-in-day)
+                        (chronometrist-ts-pairs->durations)
+                        (-reduce #'+)
+                        (list)
+                        (append per-day-time-list)
+                        (setq per-day-time-list)))))
+             table)
+    (if per-day-time-list
+        (--> (-reduce #'+ per-day-time-list)
+             (/ it days))
+      0)))
+
+(defun chronometrist-statistics-entries-internal (table)
+  "Helper function for `chronometrist-statistics-entries'.
+
+It simply operates on the entire hash table TABLE (see
+`chronometrist-events' for table format), so ensure that TABLE is
+reduced to the desired range using
+`chronometrist-events-subset'."
+  (mapcar (lambda (task)
+            (let* ((active-days    (chronometrist-statistics-count-active-days task table))
+                   (active-percent (cl-case (plist-get chronometrist-statistics--ui-state :mode)
+                                     ('week (* 100 (/ active-days 7.0)))))
+                   (active-percent (if (zerop active-days)
+                                       (format "    % 6s" "-")
+                                     (format "    %05.2f%%" active-percent)))
+                   (active-days    (format "% 5s"
+                                           (if (zerop active-days)
+                                               "-"
+                                             active-days)))
+                   (average-time   (->> (chronometrist-statistics-count-average-time-spent task table)
+                                        (chronometrist-format-time)
+                                        (format "% 5s")))
+                   (content        (vector task
+                                           active-days
+                                           active-percent
+                                           average-time)))
+              (list task content)))
+          chronometrist-task-list))
+
+(defun chronometrist-statistics-entries ()
+  "Create entries to be displayed in the buffer created by `chronometrist-statistics'."
+  ;; We assume that all fields in `chronometrist-statistics--ui-state' are set, so they must
+  ;; be changed by the view-changing functions.
+  (cl-case (plist-get chronometrist-statistics--ui-state :mode)
+    ('week
+     (let* ((start (plist-get chronometrist-statistics--ui-state :start))
+            (end   (plist-get chronometrist-statistics--ui-state :end))
+            (ht    (chronometrist-events-subset start end)))
+       (chronometrist-statistics-entries-internal ht)))
+    (t ;; `chronometrist-statistics--ui-state' is nil, show current week's data
+     (let* ((start (chronometrist-previous-week-start (chronometrist-date)))
+            (end   (ts-adjust 'day 7 start))
+            (ht    (chronometrist-events-subset start end)))
+       (setq chronometrist-statistics--ui-state `(:mode week :start ,start :end ,end))
+       (chronometrist-statistics-entries-internal ht)))))
+
+(defun chronometrist-statistics-print-keybind (command &optional description firstonly)
+  "Insert the keybindings for COMMAND.
+If DESCRIPTION is non-nil, insert that too.
 If FIRSTONLY is non-nil, return only the first keybinding found."
-  (if firstonly
-      (key-description
-       (where-is-internal command map firstonly))
-    (->> (where-is-internal command map)
-         (mapcar #'key-description)
-         (-take 2)
-         (-interpose ", ")
-         (apply #'concat))))
+  (insert "\n    "
+          (chronometrist-format-keybinds command
+                             chronometrist-statistics-mode-map
+                             firstonly)
+          " - "
+          (if description description "")))
 
-(defun chronometrist-events->ts-pairs (events)
-  "Convert EVENTS to a list of ts struct pairs (see `ts.el').
+(defun chronometrist-statistics-print-non-tabular ()
+  "Print the non-tabular part of the buffer in `chronometrist-statistics'."
+  (let ((w "\n    ")
+        (inhibit-read-only t))
+    (goto-char (point-max))
+    (insert w)
+    (insert-text-button (cl-case (plist-get chronometrist-statistics--ui-state :mode)
+                          ('week "Weekly view"))
+                        ;; 'action #'chronometrist-report-previous-week ;; TODO - make interactive function to accept new mode from user
+                        'follow-link t)
+    (insert ", from")
+    (insert
+     (format " %s to %s\n"
+             (ts-format "%F" (plist-get chronometrist-statistics--ui-state :start))
+             (ts-format "%F" (plist-get chronometrist-statistics--ui-state :end))))))
 
-EVENTS must be a list of valid Chronometrist property lists (see
-`chronometrist-file')."
-  (cl-loop for plist in events collect
-           (let* ((start (chronometrist-iso-timestamp->ts
-                          (plist-get plist :start)))
-                  (stop (plist-get plist :stop))
-                  (stop (if stop
-                            (chronometrist-iso-timestamp->ts stop)
-                          (ts-now))))
-             (cons start stop))))
+(defun chronometrist-statistics-refresh (&optional _ignore-auto _noconfirm)
+  "Refresh the `chronometrist-statistics' buffer.
+This does not re-read `chronometrist-file'.
 
-(defun chronometrist-ts-pairs->durations (ts-pairs)
-  "Return the durations represented by TS-PAIRS.
-TS-PAIRS is a list of pairs, where each element is a ts struct (see `ts.el').
+The optional arguments _IGNORE-AUTO and _NOCONFIRM are ignored,
+and are present solely for the sake of using this function as a
+value of `revert-buffer-function'."
+  (let* ((w (get-buffer-window chronometrist-statistics-buffer-name t))
+         (p (point)))
+    (with-current-buffer chronometrist-statistics-buffer-name
+      (tabulated-list-print t nil)
+      (chronometrist-statistics-print-non-tabular)
+      (chronometrist-maybe-start-timer)
+      (set-window-point w p))))
 
-Return seconds as an integer, or 0 if TS-PAIRS is nil."
-  (if ts-pairs
-      (cl-loop for pair in ts-pairs collect
-               (ts-diff (cdr pair) (car pair)))
-    0))
+(defvar chronometrist-statistics-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "l") #'chronometrist-open-log)
+    (define-key map (kbd "b") #'chronometrist-statistics-previous-range)
+    (define-key map (kbd "f") #'chronometrist-statistics-next-range)
+    map)
+  "Keymap used by `chronometrist-statistics-mode'.")
 
-(defun chronometrist-previous-week-start (ts)
-  "Find the previous `chronometrist-report-week-start-day' from TS.
+(define-derived-mode chronometrist-statistics-mode tabulated-list-mode "Chronometrist-Statistics"
+  "Major mode for `chronometrist-statistics'."
+  (make-local-variable 'tabulated-list-format)
+  (setq tabulated-list-format
+        [("Task"      25 t)
+         ("Active days"  12 t)
+         ("%% of days active"   17 t)
+         ("Average time" 12 t)
+         ;; ("Current streak"           10 t)
+         ;; ("Last streak"              10 t)
+         ;; ("Longest streak"           10 t)
+         ])
+  (make-local-variable 'tabulated-list-entries)
+  (setq tabulated-list-entries 'chronometrist-statistics-entries)
+  (make-local-variable 'tabulated-list-sort-key)
+  (setq tabulated-list-sort-key '("Task" . nil))
+  (tabulated-list-init-header)
+  ;; (chronometrist-maybe-start-timer)
+  (add-hook 'chronometrist-timer-hook
+            (lambda ()
+              (when (get-buffer-window chronometrist-statistics-buffer-name)
+                (chronometrist-statistics-refresh))))
+  (setq revert-buffer-function #'chronometrist-statistics-refresh)
+  (unless chronometrist--fs-watch
+    (setq chronometrist--fs-watch
+          (file-notify-add-watch chronometrist-file
+                                 '(change)
+                                 #'chronometrist-refresh-file))))
 
-Return a ts struct for said day's beginning.
 
-If the day of TS is the same as the
-`chronometrist-report-week-start-day', return TS.
+;;;###autoload
+(defun chronometrist-statistics (&optional preserve-state)
+  "Display statistics for data in `chronometrist-file'.
+This is the 'listing command' for `chronometrist-statistics-mode'.
 
-TS must be a ts struct (see `ts.el')."
-  (cl-loop
-    with week-start =
-    (alist-get chronometrist-report-week-start-day chronometrist-report-weekday-number-alist nil nil #'equal)
-    until (= week-start (ts-dow ts))
-    do (ts-decf (ts-day ts))
-    finally return ts))
+If a buffer called `chronometrist-statistics-buffer-name' already
+exists and is visible, kill the buffer.
 
-(defun chronometrist-iso-timestamp->ts (timestamp)
-  "Return new ts struct, parsing TIMESTAMP with `parse-iso8601-time-string'."
-  (-let [(second minute hour day month year dow _dst utcoff)
-         (decode-time
-          (parse-iso8601-time-string timestamp))]
-    (ts-update
-     (make-ts :hour hour :minute minute :second second
-              :day day   :month month   :year year
-              :dow dow   :tz-offset utcoff))))
-
-(defun chronometrist-iso-date->ts (date)
-  "Return a ts struct (see `ts.el') representing DATE.
-DATE should be an ISO-8601 date string (\"YYYY-MM-DD\")."
-  (let* ((date-list (mapcar #'string-to-number
-                            (split-string date "-")))
-         (day       (caddr date-list))
-         (month     (cadr date-list))
-         (year      (car date-list)))
-    (ts-update
-     (make-ts :hour 0 :minute 0 :second 0
-              :day day :month month :year year))))
-(cl-defun chronometrist-date (&optional (ts (ts-now)))
-  "Return a ts struct representing the time 00:00:00 on today's date.
-If TS is supplied, use that date instead of today.
-TS should be a ts struct (see `ts.el')."
-  (ts-apply :hour 0 :minute 0 :second 0 ts))
-
-(defun chronometrist-format-time-iso8601 (&optional unix-time)
-  "Return current moment as an ISO-8601 format time string.
-
-Optional argument UNIX-TIME should be a time value (see
-`current-time') accepted by `format-time-string'."
-  (format-time-string "%FT%T%z" unix-time))
-
-;; Note - this assumes that an event never crosses >1 day. This seems
-;; sufficient for all conceivable cases.
-
-(defun chronometrist-midnight-spanning-p (start-time stop-time)
-  "Return non-nil if START-TIME and STOP-TIME cross a midnight.
-
-Return value is a list in the form
-\((:start START-TIME
-  :stop <day-start time on initial day>)
- (:start <day start time on second day>
-  :stop STOP-TIME))"
-  ;; FIXME - time zones are ignored; may cause issues with
-  ;; time-zone-spanning events
-
-  ;; The time on which the first provided day starts (according to `chronometrist-day-start-time')
-  (let* ((first-day-start (chronometrist-day-start start-time))
-         ;; HACK - won't work with custom day-start time
-         ;; (first-day-end   (parse-iso8601-time-string
-         ;;                   (concat (chronometrist-date (parse-iso8601-time-string start-time))
-         ;;                           "24:00:00")))
-         (next-day-start  (time-add first-day-start
-                                    '(0 . 86400)))
-         (stop-time-unix  (parse-iso8601-time-string stop-time)))
-    ;; Does the event stop time exceed the next day start time?
-    (when (time-less-p next-day-start stop-time-unix)
-      (list `(:start ,start-time
-                     :stop  ,(chronometrist-format-time-iso8601 next-day-start))
-            `(:start ,(chronometrist-format-time-iso8601 next-day-start)
-                     :stop  ,stop-time)))))
-
-(defun chronometrist-seconds-to-hms (seconds)
-  "Convert SECONDS to a vector in the form [HOURS MINUTES SECONDS].
-SECONDS must be a positive integer."
-  (let* ((seconds (truncate seconds))
-         (s       (% seconds 60))
-         (m       (% (/ seconds 60) 60))
-         (h       (/ seconds 3600)))
-    (list h m s)))
-
-(defun chronometrist-interval (event)
-  "Return the period of time covered by EVENT as a time value.
-EVENT should be a plist (see `chronometrist-file')."
-  (let ((start (plist-get event :start))
-        (stop  (plist-get event :stop)))
-    (time-subtract (parse-iso8601-time-string stop)
-                   (parse-iso8601-time-string start))))
-
-(defvar chronometrist--timer-object nil)
-
-(defcustom chronometrist-timer-hook nil
-  "Functions run by `chronometrist-timer'.")
-
-(defun chronometrist-timer ()
-  "Refresh Chronometrist and related buffers.
-
-Buffers will be refreshed only if they are visible and the user
-is clocked in to a task."
-  (when (chronometrist-current-task) ;; FIXME - This line is currently
-    ;; resulting in no refresh at midnight. When `chronometrist-entries' is
-    ;; optimized to consume less CPU and avoid unnecessary parsing,
-    ;; remove this condition.
-    (when (get-buffer-window chronometrist-buffer-name)
-      (chronometrist-refresh))
-    (run-hooks 'chronometrist-timer-hook)))
-
-(defun chronometrist-stop-timer ()
-  "Stop the timer for Chronometrist buffers."
+If PRESERVE-STATE is nil (the default when not supplied), display
+data from the current week. Otherwise, display data from the week
+specified by `chronometrist-statistics--ui-state'."
   (interactive)
-  (cancel-timer chronometrist--timer-object)
-  (setq chronometrist--timer-object nil))
+  (chronometrist-migrate-check)
+  (let* ((buffer     (get-buffer-create chronometrist-statistics-buffer-name))
+         (today      (chronometrist-date))
+         (week-start (chronometrist-previous-week-start today))
+         (week-end   (ts-adjust 'day 6 week-start)))
+    (with-current-buffer buffer
+      (cond ((get-buffer-window chronometrist-statistics-buffer-name)
+             (kill-buffer buffer))
+            (t ;; (delete-other-windows)
+             (unless preserve-state
+               (setq chronometrist-statistics--ui-state `(:mode week
+                                        :start ,week-start
+                                        :end   ,week-end)))
+             (chronometrist-common-create-file)
+             (chronometrist-statistics-mode)
+             (switch-to-buffer buffer)
+             (chronometrist-statistics-refresh))))))
 
-(defun chronometrist-maybe-start-timer (&optional interactive-test)
-  "Start `chronometrist-timer' if `chronometrist--timer-object' is non-nil.
-INTERACTIVE-TEST is used to determine if this has been called
-interactively."
-  (interactive "p")
-  (unless chronometrist--timer-object
-    (setq chronometrist--timer-object
-          (run-at-time t chronometrist-update-interval #'chronometrist-timer))
-    (when interactive-test
-      (message "Timer started."))
-    t))
+(defun chronometrist-statistics-previous-range (arg)
+  "View the statistics in the previous time range.
+If ARG is a numeric argument, go back that many times."
+  (interactive "P")
+  (let* ((arg   (if (and arg (numberp arg))
+                    (abs arg)
+                  1))
+         (start (plist-get chronometrist-statistics--ui-state :start)))
+    (cl-case (plist-get chronometrist-statistics--ui-state :mode)
+      ('week
+       (let* ((new-start (ts-adjust 'day (- (* arg 7)) start))
+              (new-end   (ts-adjust 'day +6 new-start)))
+         (plist-put chronometrist-statistics--ui-state :start new-start)
+         (plist-put chronometrist-statistics--ui-state :end   new-end))))
+    (setq chronometrist-statistics--point (point))
+    (kill-buffer)
+    (chronometrist-statistics t)))
 
-(defun chronometrist-force-restart-timer ()
-  "Restart the timer for Chronometrist buffers."
-  (interactive)
-  (when chronometrist--timer-object
-    (cancel-timer chronometrist--timer-object))
-  (setq chronometrist--timer-object
-        (run-at-time t chronometrist-update-interval #'chronometrist-timer)))
-
-(defun chronometrist-change-update-interval (arg)
-  "Change the update interval for Chronometrist buffers.
-
-ARG should be the new update interval, in seconds."
-  (interactive "NEnter new interval (in seconds): ")
-  (cancel-timer chronometrist--timer-object)
-  (setq chronometrist-update-interval arg
-        chronometrist--timer-object nil)
-  (chronometrist-maybe-start-timer))
-
-(defvar chronometrist-migrate-table (make-hash-table))
-;; TODO - support other timeclock codes (currently only "i" and "o"
-;; are supported.)
-
-(defun chronometrist-migrate-populate (in-file)
-  "Read data from IN-FILE to `chronometrist-migrate-table'.
-
-IN-FILE should be a file in the format supported by timeclock.el.
-See `timeclock-log-data' for a description."
-  (clrhash chronometrist-migrate-table)
-  (with-current-buffer (find-file-noselect in-file)
-    (save-excursion
-      (goto-char (point-min))
-      (let ((key-counter 0))
-        (while (not (eobp))
-          (let* ((event-string (buffer-substring-no-properties (point-at-bol)
-                                                               (point-at-eol)))
-                 (event-list   (split-string event-string "[ /:]"))
-                 (code         (cl-first event-list))
-                 (date-time    (--> event-list
-                                    (seq-drop it 1)
-                                    (seq-take it 6)
-                                    (mapcar #'string-to-number it)
-                                    (reverse it)
-                                    (apply #'encode-time it)
-                                    (chronometrist-format-time-iso8601 it)))
-                 (project-or-comment
-                  (replace-regexp-in-string
-                   (rx (and (or "i" "o") " "
-                            (and (= 4 digit) "/" (= 2 digit) "/" (= 2 digit) " ")
-                            (and (= 2 digit) ":" (= 2 digit) ":" (= 2 digit))
-                            (opt " ")))
-                   ""
-                   event-string)))
-            (pcase code
-              ("i"
-               (cl-incf key-counter)
-               (puthash key-counter
-                        `(:name ,project-or-comment :start ,date-time)
-                        chronometrist-migrate-table))
-              ("o"
-               (--> (gethash key-counter chronometrist-migrate-table)
-                    (append it
-                            `(:stop ,date-time)
-                            (when (and (stringp project-or-comment)
-                                       (not
-                                        (string= project-or-comment "")))
-                              `(:comment ,project-or-comment)))
-                    (puthash key-counter it chronometrist-migrate-table)))))
-          (forward-line)
-          (goto-char (point-at-bol))))
-      nil)))
-
-(defvar timeclock-file)
-
-
-(defun chronometrist-migrate-timelog-file->sexp-file (&optional in-file out-file)
-  "Migrate your existing `timeclock-file' to the Chronometrist file format.
-
-IN-FILE and OUT-FILE, if provided, are used as input and output
-file names respectively."
-  (interactive `(,(if (featurep 'timeclock)
-                      (read-file-name (concat "timeclock file (default: "
-                                              timeclock-file
-                                              "): ")
-                                      user-emacs-directory
-                                      timeclock-file t)
-                    (read-file-name (concat "timeclock file: ")
-                                    user-emacs-directory
-                                    nil t))
-                 ,(read-file-name (concat "Output file (default: "
-                                          (locate-user-emacs-file "chronometrist.sexp")
-                                          "): ")
-                                  user-emacs-directory
-                                  (locate-user-emacs-file "chronometrist.sexp"))))
-  (when (if (file-exists-p out-file)
-            (yes-or-no-p (concat "Output file "
-                                 out-file
-                                 " already exists - overwrite? "))
-          t)
-    (let ((output (find-file-noselect out-file)))
-      (with-current-buffer output
-        (chronometrist-common-clear-buffer output)
-        (chronometrist-migrate-populate in-file)
-        (maphash (lambda (_key value)
-                   (chronometrist-plist-pp value output)
-                   (insert "\n\n"))
-                 chronometrist-migrate-table)
-        (save-buffer)))))
-
-(defun chronometrist-migrate-check ()
-  "Offer to import data from `timeclock-file' if `chronometrist-file' does not exist."
-  (when (and (bound-and-true-p timeclock-file)
-             (not (file-exists-p chronometrist-file)))
-    (if (yes-or-no-p (format (concat "Chronometrist v0.3+ uses a new file format;"
-                                     " import data from %s ? ")
-                             timeclock-file))
-        (chronometrist-migrate-timelog-file->sexp-file timeclock-file chronometrist-file)
-      (message "You can migrate later using `chronometrist-migrate-timelog-file->sexp-file'."))))
+(defun chronometrist-statistics-next-range (arg)
+  "View the statistics in the next time range.
+If ARG is a numeric argument, go forward that many times."
+  (interactive "P")
+  (let* ((arg   (if (and arg (numberp arg))
+                    (abs arg)
+                  1))
+         (start (plist-get chronometrist-statistics--ui-state :start)))
+    (cl-case (plist-get chronometrist-statistics--ui-state :mode)
+      ('week
+       (let* ((new-start (ts-adjust 'day (* arg 7) start))
+              (new-end   (ts-adjust 'day 6 new-start)))
+         (plist-put chronometrist-statistics--ui-state :start new-start)
+         (plist-put chronometrist-statistics--ui-state :end   new-end))))
+    (setq chronometrist-statistics--point (point))
+    (kill-buffer)
+    (chronometrist-statistics t)))
 
 (provide 'chronometrist)
+
+

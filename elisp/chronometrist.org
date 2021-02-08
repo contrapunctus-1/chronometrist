@@ -126,7 +126,6 @@ VAR is bound to each s-expression."
 #+END_SRC
 **** open-log                                                   :function:
 #+BEGIN_SRC emacs-lisp
-;;;; Queries
 (defun chronometrist-sexp-open-log ()
   "Open `chronometrist-file' in another window."
   (find-file-other-window chronometrist-file)
@@ -2270,5 +2269,5 @@ If ARG is a numeric argument, go forward that many times."
 # Local Variables:
 # eval: (visual-fill-column-mode -1)
 # eval: (nameless-mode)
-# eval: (add-hook 'after-save-hook (lambda () (start-process-shell-command "sed-tangle" (generate-new-buffer-name "sed-tangle") "sed -n -e '/#+BEGIN_SRC emacs-lisp$/,/#+END_SRC$/{//!p;};/#+END_SRC/i\\ ' chronometrist.org > chronometrist.el")))
+# eval: (add-hook 'after-save-hook (lambda () (start-process-shell-command "sed-tangle" "sed-tangle" "sed -n -e '/#+BEGIN_SRC emacs-lisp$/,/#+END_SRC$/{//!p;};/#+END_SRC/i\\ ' chronometrist.org | sed -E 's/^ +$//' > chronometrist.el")))
 # End:
