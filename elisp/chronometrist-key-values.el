@@ -127,18 +127,17 @@ reversed and will have duplicate elements removed."
 Return the new value inserted into HISTORY-TABLE.
 
 HISTORY-TABLE must be a hash table. (see `chronometrist-tags-history')"
-  (chronometrist-loop-file for plist in file
-    when (equal task (plist-get plist :name)) do
-    (catch 'quit
-      (let* ((new-tags (plist-get plist :tags))
-             (check    (unless new-tags (throw 'quit nil)))
-             (new-tags (case chronometrist-tag-history-style
-                         (:combinations (list new-tags))
-                         (:individual   new-tags)))
-             (old-tags (gethash task history-table)))
-        (puthash task
-                 (if old-tags (append old-tags new-tags) new-tags)
-                 history-table))))
+  (puthash task nil history-table)
+  (chronometrist-loop-file for plist in file do
+    (let ((new-tag-list  (plist-get plist :tags))
+          (old-tag-lists (gethash task history-table)))
+      (and (equal task (plist-get plist :name))
+           new-tag-list
+           (puthash task
+                    (if old-tag-lists
+                        (append old-tag-lists (list new-tag-list))
+                      (list new-tag-list))
+                    history-table))))
   (chronometrist-history-prep task history-table))
 
 (defun chronometrist-key-history-populate (task history-table file)
@@ -146,6 +145,7 @@ HISTORY-TABLE must be a hash table. (see `chronometrist-tags-history')"
 Return the new value inserted into HISTORY-TABLE.
 
 HISTORY-TABLE must be a hash table (see `chronometrist-key-history')."
+  (puthash task nil history-table)
   (chronometrist-loop-file for plist in file do
     (catch 'quit
       (let* ((name     (plist-get plist :name))
@@ -164,9 +164,13 @@ HISTORY-TABLE must be a hash table (see `chronometrist-key-history')."
                  history-table))))
   (chronometrist-history-prep task history-table))
 
+;; We don't want values to be task-sensitive, so this does not have a
+;; KEY parameter similar to TASK for `chronometrist-tags-history-populate' or
+;; `chronometrist-key-history-populate'
 (defun chronometrist-value-history-populate (history-table file)
   "Store value history in HISTORY-TABLE from FILE.
 HISTORY-TABLE must be a hash table. (see `chronometrist-value-history')"
+  (clrhash history-table)
   ;; Note - while keys are Lisp keywords, values may be any Lisp
   ;; object, including lists
   (chronometrist-loop-file for plist in file do

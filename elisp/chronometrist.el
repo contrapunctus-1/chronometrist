@@ -10,7 +10,7 @@
 ;;                    (s "1.12.0")
 ;;                    (ts "0.2")
 ;;                    (anaphora "1.0.4"))
-;; Version: 0.6.0
+;; Version: 0.6.4
 
 (require 'filenotify)
 (require 'cl-lib)
@@ -132,7 +132,6 @@ The default is \"*\""
 The default is midnight, i.e. \"00:00:00\"."
   :type 'string)
 
-(defvar chronometrist--task-history nil)
 (defvar chronometrist--point nil)
 
 ;; ## FUNCTIONS ##
@@ -327,12 +326,6 @@ in `chronometrist-file' describing the region for which HASH was calculated."
 ;; nil     - rest same, last same, no expr after last-end
 ;; t       - rest changed
 
-;; tests -
-;; add newline after last expression and save
-;; remove newline afer last expession and save
-;; remove a key-value from last expression
-;; remove the last expression
-
 (defun chronometrist-file-change-type (state)
   "Determine the type of change made to `chronometrist-file'.
 STATE must be a plist. (see `chronometrist--file-state')
@@ -345,24 +338,19 @@ Return
       t  for any other change."
   (-let* (((last-start last-end)           (plist-get state :last))
           ((rest-start rest-end rest-hash) (plist-get state :rest))
-          ;; Using a hash for the last expression can cause issues -
-          ;; the last expression may shrink, and if we try to hash the
-          ;; old region again to determine if it has changed, we will
-          ;; get an args-out-of-range error. A hash will also result
-          ;; in false negatives for whitespace/indentation
+          ;; Using a hash to determine if the last expression has
+          ;; changed can cause issues - the expression may shrink, and
+          ;; if we try to compute the hash of the old region again, we
+          ;; will get an args-out-of-range error. A hash will also
+          ;; result in false negatives for whitespace/indentation
           ;; differences.
-          (last-same-p   (--> (hash-table-keys chronometrist-events) (last it) (car it)
-                              (gethash it chronometrist-events) (last it) (car it)
-                              (equal it (chronometrist-read-from last-start))))
+          (last-same-p     (--> (hash-table-keys chronometrist-events) (last it) (car it)
+                                (gethash it chronometrist-events) (last it) (car it)
+                                (equal it (chronometrist-read-from last-start))))
           (file-new-length (chronometrist-sexp-in-file chronometrist-file (point-max)))
-          ;; If the last expression is removed,
-          ;; `delete-trailing-whitespace' will also squeeze the two
-          ;; remaining trailing newlines, which makes file-new-length
-          ;; shorter than rest-end, and gives an erroneous result of t
-          ;; ("other change") rather than :removed
           (rest-same-p (unless (< file-new-length rest-end)
                          (equal rest-hash
-                                (third (chronometrist-file-hash rest-start rest-end t))))))
+                                (cl-third (chronometrist-file-hash rest-start rest-end t))))))
     (cond ((not rest-same-p) t)
           (last-same-p
            (when (chronometrist-read-from last-end) :append))
@@ -374,39 +362,81 @@ Return
                           (forward-list)))))
            :modify))))
 
-(defun chronometrist-refresh-file (_fs-event)
+(defun chronometrist-task-list ()
+  "Return a list of tasks from `chronometrist-file'."
+  (--> (chronometrist-loop-file for plist in chronometrist-file collect (plist-get plist :name))
+       (cl-remove-duplicates it :test #'equal)
+       (sort it #'string-lessp)))
+
+(defun chronometrist-reset-task-list ()
+  (setq chronometrist-task-list (chronometrist-task-list)))
+
+(defun chronometrist-add-to-task-list (task)
+  (unless (cl-member task chronometrist-task-list :test #'equal)
+    (setq chronometrist-task-list
+          (sort (cons task chronometrist-task-list) #'string-lessp))))
+
+(defun chronometrist-remove-from-task-list (task)
+  (let ((count (cl-loop with count = 0
+                 for intervals being the hash-values of chronometrist-events
+                 do (cl-loop for interval in intervals
+                      do (cl-incf count))
+                 finally return count))
+        (position (cl-loop with count = 0
+                    for intervals being the hash-values of chronometrist-events
+                    when (cl-loop for interval in intervals
+                           do (cl-incf count)
+                           when (equal task (plist-get interval :name))
+                           return t)
+                    return count)))
+    (when (or (not position)
+              (= position count))
+      ;; The only interval for TASK is the last expression
+      (setq chronometrist-task-list (remove task chronometrist-task-list)))))
+
+(defun chronometrist-refresh-file (fs-event)
   "Re-read `chronometrist-file' and refresh the `chronometrist' buffer.
 Argument _FS-EVENT is ignored."
   (run-hooks 'chronometrist-file-change-hook)
+  ;; (message "chronometrist - file %s" fs-event)
   ;; `chronometrist-file-change-type' must be run /before/ we update `chronometrist--file-state'
   ;; (the latter represents the old state of the file, which
   ;; `chronometrist-file-change-type' compares with the new one)
-  (aif chronometrist--file-state
-      (let ((file-change-type (chronometrist-file-change-type it)))
-        (message "chronometrist - file change type is %s" file-change-type)
-        (cond ((eq file-change-type :append)
-               (chronometrist-events-add (chronometrist-sexp-last)))
-              ((eq file-change-type :modify)
-               (chronometrist-events-replace-last (chronometrist-sexp-last)))
-              ((eq file-change-type :remove)
-               (let ((key (--> (hash-table-keys chronometrist-events)
-                               (last it)
-                               (car it))))
-                 (--> (gethash key chronometrist-events)
-                      (-drop-last 1 it)
-                      (puthash key it chronometrist-events))))
-              ((null file-change-type) nil)
-              (t (chronometrist-events-populate))))
-    (chronometrist-events-populate)
-    (--> (chronometrist-loop-file for plist in chronometrist-file collect (plist-get plist :name))
-         (cl-remove-duplicates it :test #'equal)
-         (sort it #'string-lessp)
-         (setq chronometrist-task-list it)))
-  (setq chronometrist--file-state
-        (list :last (chronometrist-file-hash :before-last nil)
-              :rest (chronometrist-file-hash nil :before-last t)))
-  ;; REVIEW - can we move most/all of this to the `chronometrist-file-change-hook'?
-  (chronometrist-refresh))
+  (-let* (((descriptor action file ...) fs-event)
+          (change      (when chronometrist--file-state
+                         (chronometrist-file-change-type chronometrist--file-state)))
+          (reset-watch (or (eq action 'deleted) (eq action 'renamed))))
+    ;; (message "chronometrist - file change type is %s" change)
+    (cond ((or reset-watch (not chronometrist--file-state) (eq change t))
+           (when reset-watch
+             (file-notify-rm-watch chronometrist--fs-watch)
+             (setq chronometrist--fs-watch nil chronometrist--file-state nil))
+           (chronometrist-events-populate)
+           (chronometrist-reset-task-list))
+          (chronometrist--file-state
+           (let* ((old-plist (chronometrist-events-last))
+                  (old-task  (plist-get old-plist :name))
+                  (new-task  (plist-get (chronometrist-sexp-last) :name)))
+             (pcase change
+               (:append
+                (chronometrist-events-update (chronometrist-sexp-last))
+                (chronometrist-add-to-task-list new-task))
+               (:modify
+                (chronometrist-events-update (chronometrist-sexp-last) t)
+                (chronometrist-remove-from-task-list old-task)
+                (chronometrist-add-to-task-list new-task))
+               (:remove
+                (let ((date (chronometrist-events-last-date)))
+                  (chronometrist-remove-from-task-list old-task)
+                  (--> (gethash date chronometrist-events)
+                       (-drop-last 1 it)
+                       (puthash date it chronometrist-events))))
+               ((pred null) nil)))))
+    (setq chronometrist--file-state
+          (list :last (chronometrist-file-hash :before-last nil)
+                :rest (chronometrist-file-hash nil :before-last t)))
+    ;; REVIEW - can we move most/all of this to the `chronometrist-file-change-hook'?
+    (chronometrist-refresh)))
 
 (defun chronometrist-query-stop ()
   "Ask the user if they would like to clock out."
@@ -554,8 +584,7 @@ action, and is ignored."
     (when current
       (chronometrist-run-functions-and-clock-out current))
     (let ((task (read-from-minibuffer "New task name: " nil nil nil nil nil t)))
-      (chronometrist-run-functions-and-clock-in task))
-    (chronometrist-refresh-file nil)))
+      (chronometrist-run-functions-and-clock-in task))))
 
 ;; ## COMMANDS ##
 

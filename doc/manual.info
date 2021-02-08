@@ -274,6 +274,26 @@ Determine type of change made to file
 Most changes, whether made through user-editing or by Chronometrist commands, happen at the end of the file. We try to detect the kind of change made - whether the last expression was modified, removed, or whether a new expression was added to the end - and make the corresponding change to @samp{chronometrist-events}, instead of doing a full parse again (@samp{chronometrist-events-populate}). The increase in responsiveness has been significant.
 
 When @samp{chronometrist-refresh-file} is run by the file system watcher, it uses  @samp{chronometrist-file-hash} to assign indices and a hash to @samp{chronometrist--file-state}. The next time the file changes, @samp{chronometrist-file-change-type} compares this state to the current state of the file to determine the type of change made.
+
+Challenges -
+@enumerate
+@item
+Correctly detecting the type of change
+@item
+Updating @samp{chronometrist-task-list} and the Chronometrist buffer, when a new task is added or the last interval for a task is removed (v0.6.4)
+@item
+Handling changes made to an active interval after midnight
+@itemize
+@item
+use the date from the plist's @samp{:start} timestamp instead of the date today
+@item
+:append - normally, add to table; for spanning intervals, invalid operation
+@item
+:modify - normally, replace in table; for spanning intervals, split and replace
+@item
+:remove - normally, remove from table; for spanning intervals, split and remove
+@end itemize
+@end enumerate
 @end enumerate
 
 @node Midnight-spanning events
@@ -533,12 +553,6 @@ Only returned by chronometrist-seconds-to-hms, called by chronometrist-format-ti
 
 @enumerate
 @item
-Variable - chronometrist-empty-time-string
-@item
-Variable - chronometrist-date-re
-@item
-Variable - chronometrist-time-re-ui
-@item
 Variable - chronometrist-task-list
 @item
 Internal Variable - chronometrist--fs-watch
@@ -619,8 +633,6 @@ Command - chronometrist-diary-view (&optional date)
 
 @enumerate
 @item
-Internal Variable - chronometrist--task-history
-@item
 Internal Variable - chronometrist--point
 @item
 Keymap - chronometrist-mode-map
@@ -662,6 +674,18 @@ Function - chronometrist-file-hash (&optional start end hash)
 Function - chronometrist-read-from (position)
 @item
 Function - chronometrist-file-change-type (state)
+@item
+Function - chronometrist-task-list ()
+@itemize
+@item
+-> List
+@end itemize
+@item
+Function - chronometrist-reset-task-list ()
+@item
+Function - chronometrist-add-to-task-list (task)
+@item
+Function - chronometrist-remove-from-task-list (task)
 @item
 Function - chronometrist-refresh-file (fs-event)
 @item
@@ -727,9 +751,7 @@ Function - chronometrist-events-maybe-split (event)
 @item
 Function - chronometrist-events-populate ()
 @item
-Function - chronometrist-events-add (plist)
-@item
-Function - chronometrist-events-replace-last (plist)
+Function - chronometrist-events-update (plist &optional replace)
 @item
 Function - chronometrist-events-subset (start end)
 @itemize

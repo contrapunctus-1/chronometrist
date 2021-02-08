@@ -36,6 +36,13 @@ Chronometrist and Org time tracking seem to be equivalent in terms of capabiliti
 * Chronometrist data is just s-expressions (plists), and may be easier to parse than a complex text format with numerous use-cases.
 
 ## Installation
+### MELPA
+1. Set up MELPA - https://melpa.org/#/getting-started
+
+   (Chronometrist uses semantic versioning and only releases are pushed to the master branch, so using MELPA Stable is recommended and has no effect on frequency of updates.)
+2. `M-x package-install RET chronometrist RET`
+
+### Git
 You can get `chronometrist` from https://github.com/contrapunctus-1/chronometrist
 
 `chronometrist` requires
@@ -43,6 +50,7 @@ You can get `chronometrist` from https://github.com/contrapunctus-1/chronometris
 * [dash.el](https://github.com/magnars/dash.el)
 * [s.el](https://github.com/magnars/s.el)
 * [ts.el](https://github.com/alphapapa/ts.el)
+* [anaphora](https://github.com/rolandwalker/anaphora)
 
 Add the "elisp/" subdirectory to your load-path, and `(require 'chronometrist)`.
 
@@ -168,9 +176,6 @@ Return nil (and run `magit-status') if the user answers no."
 (setq chronometrist-activity-indicator 'my-activity-indicator)
 ```
 
-### Better pretty-printing
-If you view/edit `chronometrist-file` pretty often, you may wish to install `ppp` and load it before `chronometrist`. `chronometrist-sexp-pretty-print-function` will then use `ppp` for pretty-printing instead of Emacs' built-in `pp`, resulting in nicer-looking plists. Use `M-x chronometrist-sexp-reindent-buffer` in a buffer visiting `chronometrist-file` to apply the changes to the whole file.
-
 ## Roadmap/Ideas
 * Show details for time spent on a project when clicking on a non-zero "time spent" field (in both Chronometrist and Chronometrist-Report buffers).
 
@@ -194,7 +199,7 @@ If you view/edit `chronometrist-file` pretty often, you may wish to install `ppp
 
 ## Contributions and contact
 Feedback and MRs are very welcome. 🙂
-* [TODO.org][TODO.org] has a long list of tasks
+* [TODO.org](TODO.org) has a long list of tasks
 * [doc/manual.org](doc/manual.org) contains an overview of the codebase, explains various mechanisms and decisions, and has a reference of definitions.
 
 If you have tried using Chronometrist, I'd love to hear your experiences! Get in touch with the author and other Emacs users in the Emacs channel on the Jabber network - [xmpp:emacs@salas.suchat.org?join](https://conversations.im/j/emacs@salas.suchat.org) ([web chat](https://inverse.chat/#converse/room?jid=emacs@salas.suchat.org))
@@ -217,4 +222,4 @@ jwiegley for timeclock.el, which we used as a backend in earlier versions
 
 blandest for helping me with the name
 
-fiete for testing and bug reports
+fiete and wu-lee for testing and bug reports

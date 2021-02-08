@@ -28,14 +28,12 @@
 
 (defvar chronometrist-events (make-hash-table :test #'equal)
   "Each key is a date in the form (YEAR MONTH DAY).
-
 Values are lists containing events, where each event is a list in
 the form (:name \"NAME\" :tags (TAGS) <key value pairs> ...
 :start TIME :stop TIME).")
 
 (defun chronometrist-day-start (timestamp)
   "Get start of day (according to `chronometrist-day-start-time') for TIMESTAMP.
-
 TIMESTAMP must be a time string in the ISO-8601 format.
 
 Return value is a time value (see `current-time')."
@@ -50,45 +48,6 @@ Return value is a time value (see `current-time')."
          (reverse it)
          (append it timestamp-date-list)
          (apply #'encode-time it))))
-
-;; (defun chronometrist-file-clean ()
-;;   "Clean `chronometrist-file' so that events can be processed accurately.
-;; NOTE - currently unused.
-
-;; This function splits midnight-spanning intervals into two. It
-;; must be called before running `chronometrist-populate'.
-
-;; It returns t if the table was modified, else nil."
-;;   (let ((buffer (find-file-noselect chronometrist-file))
-;;         modified
-;;         expr)
-;;     (with-current-buffer buffer
-;;       (save-excursion
-;;         (goto-char (point-min))
-;;         (while (setq expr (ignore-errors (read (current-buffer))))
-;;           (when (plist-get expr :stop)
-;;             (let ((split-time (chronometrist-midnight-spanning-p (plist-get expr :start)
-;;                                                      (plist-get expr :stop))))
-;;               (when split-time
-;;                 (let ((first-start  (plist-get (cl-first  split-time) :start))
-;;                       (first-stop   (plist-get (cl-first  split-time) :stop))
-;;                       (second-start (plist-get (cl-second split-time) :start))
-;;                       (second-stop  (plist-get (cl-second split-time) :stop)))
-;;                   (backward-list 1)
-;;                   (chronometrist-sexp-delete-list)
-;;                   (-> expr
-;;                       (plist-put :start first-start)
-;;                       (plist-put :stop  first-stop)
-;;                       (chronometrist-plist-pp buffer))
-;;                   (when (looking-at-p "\n\n")
-;;                     (delete-char 2))
-;;                   (-> expr
-;;                       (plist-put :start second-start)
-;;                       (plist-put :stop  second-stop)
-;;                       (chronometrist-plist-pp buffer))
-;;                   (setq modified t))))))
-;;         (save-buffer)))
-;;     modified))
 
 (defun chronometrist-events-maybe-split (event)
   "Split EVENT if it spans midnight.
@@ -127,25 +86,17 @@ were none."
   (clrhash chronometrist-events)
   (chronometrist-sexp-events-populate))
 
-(defun chronometrist-events-add (plist)
-  "Add new PLIST at the end of `chronometrist-events'."
-  (let* ((date-today   (format-time-string "%Y-%m-%d"))
-         (events-today (gethash date-today chronometrist-events)))
-    (--> (list plist)
-         (append events-today it)
-         (puthash date-today it chronometrist-events))))
+(defun chronometrist-events-update (plist &optional replace)
+  "Add PLIST to the end of `chronometrist-events'.
+If REPLACE is non-nil, replace the last event with PLIST."
+  (let* ((date (->> (plist-get plist :start)
+                    (chronometrist-iso-timestamp->ts )
+                    (ts-format "%F" )))
+         (events-today (gethash date chronometrist-events)))
+    (--> (if replace (-drop-last 1 events-today) events-today)
+         (append it (list plist))
+         (puthash date it chronometrist-events))))
 
-(defun chronometrist-events-replace-last (plist)
-  "Replace the last plist in `chronometrist-events' with PLIST."
-  (let* ((date-today   (format-time-string "%Y-%m-%d"))
-         (events-today (gethash date-today chronometrist-events)))
-    (--> (reverse events-today)
-         (cdr it)
-         (append (list plist) it)
-         (reverse it)
-         (puthash date-today it chronometrist-events))))
-
-;; to be replaced by plist-query
 (defun chronometrist-events-subset (start end)
   "Return a subset of `chronometrist-events'.
 
@@ -162,6 +113,17 @@ treated as though their time is 00:00:00."
                  (puthash key value subset)))
              chronometrist-events)
     subset))
+
+(defun chronometrist-events-last-date ()
+  (--> (hash-table-keys chronometrist-events)
+       (last it)
+       (car it)))
+
+(defun chronometrist-events-last ()
+  "Return the last plist from `chronometrist-events'."
+  (--> (gethash (chronometrist-events-last-date) chronometrist-events)
+       (last it)
+       (car it)))
 
 (provide 'chronometrist-events)
 

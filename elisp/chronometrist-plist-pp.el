@@ -40,6 +40,14 @@ considers it an alist."
   (when (listp list)
     (cl-loop for elt in list thereis (chronometrist-plist-pp-pair-p elt))))
 
+(defun chronometrist-plist-pp-plist-p (list)
+  (while (consp list)
+    (setq list (if (and (keywordp (car list))
+                        (consp (cdr list)))
+                   (cddr list)
+                 'not-plist)))
+  (null list))
+
 (defun chronometrist-plist-pp-longest-keyword-length ()
   "Find the length of the longest keyword in a plist.
 This assumes there is a single plist in the current buffer, and
@@ -62,7 +70,7 @@ The list must be on a single line, as emitted by `prin1'."
       (progn
         (setq sexp (save-excursion (read (current-buffer))))
         (cond
-         ((json-plist-p sexp)
+         ((chronometrist-plist-pp-plist-p sexp)
           (chronometrist-plist-pp-buffer-plist inside-sublist-p)
           (chronometrist-plist-pp-buffer inside-sublist-p))
          ((chronometrist-plist-pp-alist-p sexp)
@@ -104,7 +112,7 @@ The list must be on a single line, as emitted by `prin1'."
                        (make-string left-indent ?\ ))
                      (chronometrist-plist-pp-indent-sexp sexp right-indent)))
             ;; not a keyword = a value
-            ((json-plist-p sexp)
+            ((chronometrist-plist-pp-plist-p sexp)
              (chronometrist-plist-pp-buffer-plist))
             ((and (listp sexp)
                   (not (chronometrist-plist-pp-pair-p sexp)))

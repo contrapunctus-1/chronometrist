@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Added
+* Major mode (syntax highlighting, hook) for Chronometrist s-expression files, derived from emacs-lisp-mode
+### Fixed
+* Bug in updating the task list in some cases of the latest interval being modified.
+
+## [0.6.4] - 2021-01-27
+### Fixed
+* Incorrect order of tag/key/value history
+* Error when running emacs with `-q`
+* `chronometrist` buffer not being updated when a new task is added or the sole interval for a task is removed.
+
+## [0.6.3] - 2021-01-19
+### Fixed
+* Error from missing `require` form
+
+## [0.6.2] - 2021-01-07
+### Fixed
+* Incorrect tag history in some situations
+
+## [0.6.1] - 2021-01-04
+### Fixed
+* Removed a debugging `message` call which was accidentally left in
+
 ## [0.6.0] - 2021-01-04
 ### Added
 * New hooks - `chronometrist-mode-hook`, `chronometrist-list-format-transformers`, `chronometrist-entry-transformers`, and `chronometrist-timer-hook`.

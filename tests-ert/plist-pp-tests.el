@@ -1,6 +1,11 @@
 ;; -*- lexical-binding: t; -*-
 (require 'chronometrist-plist-pp)
 
+(ert-deftest plist-p ()
+  (should (eq t   (chronometrist-plist-pp-plist-p '(:a 1 :b 2))))
+  (should (eq nil (chronometrist-plist-pp-plist-p '(0 :a 1 :b 2))))
+  (should (eq nil (chronometrist-plist-pp-plist-p '(:a 1 :b 2 3)))))
+
 (ert-deftest plist-pp-buffer ()
   (should
    (equal
@@ -96,5 +101,5 @@
             " :comment (\"stretching\" (25 10 \"push-ups\")))"))))
 
 ;; Local Variables:
-;; nameless-current-name: "chronometrist"
+;; nameless-current-name: "chronometrist-plist-pp"
 ;; End:
