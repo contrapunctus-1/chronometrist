@@ -551,20 +551,16 @@ Return value is seconds as an integer."
        (-reduce #'+)
        (truncate)))
 
-(cl-defun chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
-  "Return the number of days the user spent any time on TASK.
-TABLE must be a hash table - if not supplied, `chronometrist-events' is used.
+  (cl-defun chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
+    "Return the number of days the user spent any time on TASK.
+  TABLE must be a hash table - if not supplied, `chronometrist-events' is used.
 
-This will not return correct results if TABLE contains records
-which span midnights. (see `chronometrist-events-clean')"
-  (let ((count 0))
-    (maphash (lambda (_date events)
-               (when (seq-find (lambda (event)
-                                 (equal (plist-get event :name) task))
-                               events)
-                 (cl-incf count)))
-             table)
-    count))
+  This will not return correct results if TABLE contains records
+  which span midnights. (see `chronometrist-events-clean')"
+    (cl-loop for events being the hash-values of chronometrist-events
+      count (seq-find (lambda (event)
+                        (equal task (plist-get event :name)))
+                      events)))
 
 (cl-defun chronometrist-task-events-in-day (task &optional (ts (ts-now)))
   "Get events for TASK on TS.
