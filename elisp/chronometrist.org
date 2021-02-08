@@ -1684,9 +1684,7 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
           (unless chronometrist--fs-watch
             (setq chronometrist--fs-watch
                   (file-notify-add-watch chronometrist-file '(change) #'chronometrist-refresh-file))))))))
-
 #+END_SRC
-
 *** Report
 **** TODO [0%]
 1. [ ] preserve point when clicking buttons
@@ -2187,7 +2185,6 @@ value of `revert-buffer-function'."
           (file-notify-add-watch chronometrist-file
                                  '(change)
                                  #'chronometrist-refresh-file))))
-
 #+END_SRC
 **** chronometrist-statistics                                                :command:
 #+BEGIN_SRC emacs-lisp

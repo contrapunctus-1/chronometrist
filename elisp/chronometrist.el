@@ -1415,7 +1415,6 @@ If numeric argument ARG is 2, run `chronometrist-statistics'."
             (setq chronometrist--fs-watch
                   (file-notify-add-watch chronometrist-file '(change) #'chronometrist-refresh-file))))))))
 
-
 (defgroup chronometrist-report nil
   "Weekly report for the `chronometrist' time tracker."
   :group 'chronometrist)
@@ -1844,7 +1843,6 @@ value of `revert-buffer-function'."
           (file-notify-add-watch chronometrist-file
                                  '(change)
                                  #'chronometrist-refresh-file))))
-
 
 ;;;###autoload
 (defun chronometrist-statistics (&optional preserve-state)
