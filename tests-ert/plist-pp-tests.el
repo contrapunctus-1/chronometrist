@@ -1,5 +1,5 @@
 ;; -*- lexical-binding: t; -*-
-(require 'chronometrist-plist-pp)
+(require 'chronometrist)
 
 (ert-deftest plist-p ()
   (should (eq t   (chronometrist-plist-pp-plist-p '(:a 1 :b 2))))

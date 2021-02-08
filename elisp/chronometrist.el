@@ -200,12 +200,10 @@ This is meant to be run in `chronometrist-file' when using the s-expression back
   "Return the last entry from `chronometrist-file' as a plist."
   (chronometrist-sexp-last))
 
-(defvar chronometrist-plist-pp-whitespace-re "[\n\t\s]")
-
 (defun chronometrist-plist-pp-normalize-whitespace ()
   "Remove whitespace following point, and insert a space.
 Point is placed at the end of the space."
-  (when (looking-at (concat chronometrist-plist-pp-whitespace-re "+"))
+  (when (looking-at "[[:blank:]]+")
     (delete-region (match-beginning 0) (match-end 0))
     (insert " ")))
 
@@ -273,8 +271,7 @@ The list must be on a single line, as emitted by `prin1'."
     (let ((pos (point))
           (bol (point-at-bol)))
       (goto-char bol)
-      (if (string-match (concat "^" chronometrist-plist-pp-whitespace-re "*$")
-                        (buffer-substring bol pos))
+      (if (string-match "^[[:blank:]]*$" (buffer-substring bol pos))
           ;; join the ) to the previous line by deleting the newline and whitespace
           (delete-region (1- bol) pos)
         (goto-char pos))
