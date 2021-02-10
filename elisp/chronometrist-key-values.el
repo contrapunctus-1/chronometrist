@@ -5,6 +5,7 @@
 (require 'dash)
 (require 'seq)
 (require 'anaphora)
+(require 'choice)
 
 (require 'chronometrist-migrate)
 (require 'chronometrist-events)
@@ -488,98 +489,42 @@ This function always returns t, so it can be used in `chronometrist-before-out-f
 
 ;; [x] we want C-g to quit, and universal arg to work...
 
-;; Subsume `chronometrist-choice/body' into `chronometrist-choice-define-commands'? Or we'll have
-;; to pass suggestions twice...
-
 ;; FIXME - incorrect tags added to file
 
-;; defchoice expands to...
-;;   define a global var for state ("key", form, "hint")
-;;   (another macro?) define commands using FORM in state
-;;   define keymap, use state to bind commands to given keys
-;;   define a foo/function to (analogous to Hydra's foo/body)
-;; we make a macro to generate choice prompts at runtime
+(defun chronometrist-defchoice (mode key table)
+  "MODE ::= :tag
+          | :key
+          | :value
 
-(defmacro defchoice (name &rest choices)
-  `(progn
-     (defvar ,(intern (format "%s-state")) choices)
-     (defun ,(intern (format "%s-prompt" name)) nil)))
-
-(defun chronometrist-choice-command-name (i)
-  (intern (format "chronometrist-choice-%s" i)))
-
-(defvar chronometrist-tag-choice/state nil)
-
-(defmacro chronometrist-choice-define-commands (type)
-  "TYPE can be one of :tag, :key, or :value."
-  (cl-loop with seq = chronometrist-tag-choice/state
-    with num = 0
-    for elt in seq do (incf num)
+KEY ::= \"task\" (if MODE is :tags or :keys)
+      | \"key\" (if MODE is :values)"
+  (cl-loop with num = 0
+    for comb in (-take 10 (gethash key table))
+    do (incf num)
     if (= num 10) do (setq num 0)
     collect
-    `(defun ,(chronometrist-choice-command-name num) (&optional arg)
-       (interactive "P")
-       (chronometrist-sexp-replace-last
-        (chronometrist-plist-update
-         (chronometrist-sexp-last)
-         (quote ,(case type
-                   (:tag (list :tags elt))
-                   (t elt)))))) into forms
-    finally
-    (cl-return
-     `(progn ,@forms
-             (defun chronometrist-choice-skip () (interactive))))))
+    (list (format "%s" num)
+          `(chronometrist-sexp-replace-last
+            (chronometrist-plist-update (chronometrist-sexp-last) ',(list :tags comb)))
+          (format "%s" comb))
+    into numeric-commands
+    finally do
+    (eval `(defchoice ,(intern
+                        (format
+                         "chronometrist-%s" (s-chop-prefix ":" (symbol-name mode))))
+             ,@numeric-commands
+             ("s" nil "skip")))))
 
-(defun chronometrist-choice/body (prompt choices)
-  "Query user with PROMPT to choose an element of SEQ.
-Each element corresponds to a numeric key (0-9). See
-`chronometrist-choice-define-commands' for creating the commands
-called by this function."
-  (let* (text
-         (map (aprog1 (make-sparse-keymap)
-                (set-keymap-parent it (current-global-map))
-                (cl-loop with sep = ", "
-                  for choice in choices
-                  do (incf num)
-                  if (= num 10) do (setq num 0 sep ".")
-                  collect
-                  (-let [(key form hint) choice]
-                    (define-key it (kbd key)
-                      (chronometrist-choice-command-name num))
-                    (format "[%s]: %s%s" num hint sep)) into hints
-                  finally do
-                  (setq text
-                        (propertize (apply #'concat prompt ": " hints)
-                                    'face 'minibuffer-prompt)))))
-         (key (read-key-sequence text))
-         (cmd (lookup-key map key)))
-    (command-execute cmd)
-    ;; cmd
-    ))
-
-(defun chronometrist-tags-choice (task)
+(defun chronometrist-tag-choice (task)
   "Query user for tags to be added to TASK.
 Return t, to permit use in `chronometrist-before-out-functions'."
-  (chronometrist-tags-history-populate task chronometrist-tags-history chronometrist-file)
-  (if (hash-table-empty-p chronometrist-tags-history)
-      (chronometrist-tags-add)
-    (cl-loop with num = 0
-      for comb in (-take 10 (gethash task chronometrist-tags-history))
-      do (incf num)
-      if (= num 10) do (setq num 0)
-      collect
-      (list (format "%s" num)
-            `(chronometrist-sexp-replace-last
-              (chronometrist-plist-update (chronometrist-sexp-last) (quote ,(list :tags comb))))
-            (format "%s" comb))
-      into numeric-commands
-      finally do
-      (setq chronometrist-tag-choice/state
-            (append numeric-commands
-                    '(("s" (defun chronometrist-choice-skip () (interactive)) "skip")))))
-    (chronometrist-choice-define-commands :tag)
-    (chronometrist-choice/body "Which tags?" chronometrist-tag-choice/state))
-  t)
+  (let ((table chronometrist-tags-history))
+    (chronometrist-tags-history-populate task table chronometrist-file)
+    (if (hash-table-empty-p table)
+        (chronometrist-tags-add)
+      (chronometrist-defchoice :tag task table)
+      (chronometrist-tag-choice-prompt "Which tags?"))
+    t))
 
 (provide 'chronometrist-key-values)
 
