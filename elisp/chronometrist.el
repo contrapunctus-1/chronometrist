@@ -518,6 +518,12 @@ If REPLACE is non-nil, replace the last event with PLIST."
          (append it (list plist))
          (puthash date it chronometrist-events))))
 
+(defun chronometrist-events-last ()
+  "Return the last plist from `chronometrist-events'."
+  (--> (gethash (chronometrist-events-last-date) chronometrist-events)
+       (last it)
+       (car it)))
+
 (defun chronometrist-events-subset (start end)
   "Return a subset of `chronometrist-events'.
 The subset will contain values between dates START and END (both

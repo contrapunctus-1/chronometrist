@@ -621,6 +621,14 @@ If REPLACE is non-nil, replace the last event with PLIST."
          (append it (list plist))
          (puthash date it chronometrist-events))))
 #+END_SRC
+**** events-last                                          :function:query:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-events-last ()
+  "Return the last plist from `chronometrist-events'."
+  (--> (gethash (chronometrist-events-last-date) chronometrist-events)
+       (last it)
+       (car it)))
+#+END_SRC
 **** events-subset                                        :function:query:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-events-subset (start end)
