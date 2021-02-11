@@ -33,57 +33,6 @@ reversed and will have duplicate elements removed."
        (cl-remove-duplicates it :test #'equal :from-end t)
        (puthash key it history-table)))
 
-(defun chronometrist-key-history-populate (task history-table file)
-  "Store key history for TASK in HISTORY-TABLE from FILE.
-Return the new value inserted into HISTORY-TABLE.
-
-HISTORY-TABLE must be a hash table (see `chronometrist-key-history')."
-  (puthash task nil history-table)
-  (chronometrist-loop-file for plist in file do
-    (catch 'quit
-      (let* ((name  (plist-get plist :name))
-             (check (unless (equal name task) (throw 'quit nil)))
-             (keys  (--> (chronometrist-plist-remove plist :name :start :stop :tags)
-                         (seq-filter #'keywordp it)
-                         (cl-loop for key in it collect
-                           (chronometrist-keyword-to-string key))))
-             (check (unless keys (throw 'quit nil)))
-             (old-keys (gethash name history-table)))
-        (puthash name
-                 (if old-keys (append old-keys keys) keys)
-                 history-table))))
-  (chronometrist-history-prep task history-table))
-
-;; We don't want values to be task-sensitive, so this does not have a
-;; KEY parameter similar to TASK for `chronometrist-tags-history-populate' or
-;; `chronometrist-key-history-populate'
-(defun chronometrist-value-history-populate (history-table file)
-  "Store value history in HISTORY-TABLE from FILE.
-HISTORY-TABLE must be a hash table. (see `chronometrist-value-history')"
-  (clrhash history-table)
-  ;; Note - while keys are Lisp keywords, values may be any Lisp
-  ;; object, including lists
-  (chronometrist-loop-file for plist in file do
-    ;; We call them user-key-values because we filter out Chronometrist's
-    ;; reserved key-values
-    (let ((user-key-values (chronometrist-plist-remove plist :name :tags :start :stop)))
-      (cl-loop for (key value) on user-key-values by #'cddr do
-        (let* ((key-string (chronometrist-keyword-to-string key))
-               (old-values (gethash key-string history-table))
-               (value      (if (not (stringp value)) ;; why?
-                               (list (format "%S" value))
-                             (list value))))
-          (puthash key-string
-                   (if old-values (append old-values value) value)
-                   history-table)))))
-  (maphash (lambda (key values)
-             (chronometrist-history-prep key history-table))
-           history-table))
-
-(defvar chronometrist--value-suggestions                                         :variable: nil
-  "Suggestions for values.
-Used as history by `chronometrist-value-prompt'.")
-
 (defun chronometrist-keyword-to-string (keyword)
   "Return KEYWORD as a string, with the leading \":\" removed."
   (replace-regexp-in-string "^:?" "" (symbol-name keyword)))
@@ -256,11 +205,59 @@ containing keywords used with that task, in reverse chronological
 order. The keywords are stored as strings and their leading \":\"
 is removed.")
 
+(defun chronometrist-key-history-populate (task history-table file)
+  "Store key history for TASK in HISTORY-TABLE from FILE.
+Return the new value inserted into HISTORY-TABLE.
+
+HISTORY-TABLE must be a hash table (see `chronometrist-key-history')."
+  (puthash task nil history-table)
+  (chronometrist-loop-file for plist in file do
+    (catch 'quit
+      (let* ((name  (plist-get plist :name))
+             (check (unless (equal name task) (throw 'quit nil)))
+             (keys  (--> (chronometrist-plist-remove plist :name :start :stop :tags)
+                         (seq-filter #'keywordp it)
+                         (cl-loop for key in it collect
+                           (chronometrist-keyword-to-string key))))
+             (check (unless keys (throw 'quit nil)))
+             (old-keys (gethash name history-table)))
+        (puthash name
+                 (if old-keys (append old-keys keys) keys)
+                 history-table))))
+  (chronometrist-history-prep task history-table))
+
 (defvar chronometrist-value-history
   (make-hash-table :test #'equal)
   "Hash table to store previously-used values for user-keys.
 The hash table keys are user-key names (as strings), and the
 values are lists containing values (as strings).")
+
+(defun chronometrist-value-history-populate (history-table file)
+  "Store value history in HISTORY-TABLE from FILE.
+HISTORY-TABLE must be a hash table. (see `chronometrist-value-history')"
+  (clrhash history-table)
+  ;; Note - while keys are Lisp keywords, values may be any Lisp
+  ;; object, including lists
+  (chronometrist-loop-file for plist in file do
+    ;; We call them user-key-values because we filter out Chronometrist's
+    ;; reserved key-values
+    (let ((user-key-values (chronometrist-plist-remove plist :name :tags :start :stop)))
+      (cl-loop for (key value) on user-key-values by #'cddr do
+        (let* ((key-string (chronometrist-keyword-to-string key))
+               (old-values (gethash key-string history-table))
+               (value      (if (not (stringp value)) ;; why?
+                               (list (format "%S" value))
+                             (list value))))
+          (puthash key-string
+                   (if old-values (append old-values value) value)
+                   history-table)))))
+  (maphash (lambda (key values)
+             (chronometrist-history-prep key history-table))
+           history-table))
+
+(defvar chronometrist--value-suggestions                                         :variable: nil
+  "Suggestions for values.
+Used as history by `chronometrist-value-prompt'.")
 
 (defvar chronometrist-kv-read-mode-map
   (let ((map (make-sparse-keymap)))
