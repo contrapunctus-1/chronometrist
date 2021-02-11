@@ -10,7 +10,7 @@
 ;;                    (s "1.12.0")
 ;;                    (ts "0.2")
 ;;                    (anaphora "1.0.4"))
-;; Version: 0.6.4
+;; Version: 0.6.5
 
 (require 'filenotify)
 (require 'cl-lib)
