@@ -518,6 +518,11 @@ If REPLACE is non-nil, replace the last event with PLIST."
          (append it (list plist))
          (puthash date it chronometrist-events))))
 
+(defun chronometrist-events-last-date ()
+  (--> (hash-table-keys chronometrist-events)
+       (last it)
+       (car it)))
+
 (defun chronometrist-events-last ()
   "Return the last plist from `chronometrist-events'."
   (--> (gethash (chronometrist-events-last-date) chronometrist-events)
