@@ -332,9 +332,8 @@ used in `chronometrist-before-out-functions'."
            (last-sexp   (chronometrist-last))
            (last-name   (plist-get last-sexp :name))
            (last-kvs    (chronometrist-plist-remove last-sexp :name :tags :start :stop))
-           (used-keys   (->> (seq-filter #'keywordp last-kvs)
-                             (mapcar #'symbol-name)
-                             (--map (chronometrist-keyword-to-string it)))))
+           (used-keys   (--map (chronometrist-keyword-to-string it)
+                               (seq-filter #'keywordp last-kvs))))
       (chronometrist-key-history-populate last-name chronometrist-key-history chronometrist-file)
       (chronometrist-value-history-populate chronometrist-value-history chronometrist-file)
       (switch-to-buffer buffer)
@@ -413,38 +412,39 @@ This function always returns t, so it can be used in `chronometrist-before-out-f
 This function always returns t, so it can be used in `chronometrist-before-out-functions'."
   (setq chronometrist--skip-detail-prompts nil) t)
 
-(defun chronometrist-defchoice (mode key table)
-  "MODE ::= :tag
-          | :key
-          | :value
+(defun chronometrist-defchoice (name type list)
+  "Construct and evaluate a `defchoice' form.
+  NAME should be a string - `defchoice' will be called with chronometrist-NAME.
 
-KEY ::= \"task\" (if MODE is :tags or :keys)
-      | \"key\" (if MODE is :values)"
+  TYPE should be a :key-values or :tags.
+
+  LIST should be a list, with all elements being either a plists,
+  or lists of symbols."
   (cl-loop with num = 0
-    for comb in (-take 10 (gethash key table))
+    for elt in (-take 10 list)
     do (incf num)
     if (= num 10) do (setq num 0)
     collect
     (list (format "%s" num)
           `(chronometrist-sexp-replace-last
-            (chronometrist-plist-update (chronometrist-sexp-last) ',(list :tags comb)))
-          (format "%s" comb))
-    into numeric-commands
-    finally do
-    (eval `(defchoice ,(intern
-                        (format
-                         "chronometrist-%s" (s-chop-prefix ":" (symbol-name mode))))
-             ,@numeric-commands
-             ("s" nil "skip")))))
+            (chronometrist-plist-update (chronometrist-sexp-last)
+                            ',(cl-case type
+                                (:tags (list :tags elt))
+                                (:key-values elt))))
+          (format "%s" elt)) into numeric-commands
+    finally do (eval
+                `(defchoice ,(intern (format "chronometrist-%s" name))
+                   ,@numeric-commands
+                   ("s" nil "skip")))))
 
 (defun chronometrist-tag-choice (task)
   "Query user for tags to be added to TASK.
-Return t, to permit use in `chronometrist-before-out-functions'."
+  Return t, to permit use in `chronometrist-before-out-functions'."
   (let ((table chronometrist-tags-history))
     (chronometrist-tags-history-populate task table chronometrist-file)
     (if (hash-table-empty-p table)
         (chronometrist-tags-add)
-      (chronometrist-defchoice :tag task table)
+      (chronometrist-defchoice "tag" :tag (gethash task table))
       (chronometrist-tag-choice-prompt "Which tags?"))
     t))
 
@@ -459,6 +459,22 @@ Return t, to permit use in `chronometrist-before-out-functions'."
       (chronometrist-key-choice-prompt "Which keys?"))
     t))
 
+
+(defun chronometrist-key-values-unified-choice (task)
+  "Query user for tags and key-values to be added for TASK.
+        Return t, to permit use in `chronometrist-before-out-functions'."
+  (let ((key-values (chronometrist-loop-file for plist in chronometrist-file
+                      when (equal (plist-get plist :name) task)
+                      collect (chronometrist-plist-remove plist :name :start :stop)
+                      into key-value-plists
+                      finally return
+                      (--> (seq-filter #'identity key-value-plists)
+                        (cl-remove-duplicates it :test #'equal :from-end t)))))
+    (if (null key-values)
+        (progn (chronometrist-tags-add) (chronometrist-kv-add))
+      (chronometrist-defchoice "unified" :key-values key-values)
+      (chronometrist-unified-choice-prompt  (format "Key-values for %s" task))))
+  t)
 
 (provide 'chronometrist-key-values)
 ;;; chronometrist-key-values.el ends here
