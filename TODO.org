@@ -131,7 +131,17 @@ Some options and ideas -
    1. find the difference between ISO-8601 timestamps
    2. compare ISO-8601 timestamps, and
    3. do 1 and 2 faster than Elisp.
-8. [ ] Change data structure - instead of storing each plist as-is, split each into two, one with the =:start= and one with the =:end=. (Tags and key values could be added to either one.) Now we have the elegance of the one-plist-is-a-complete-interval schema in the file, and the ease and speed of detection of midnight spanning intervals in memory.
+8. [ ] Change data structure - instead of storing each plist as-is, split each into two, one with the =:start= and one with the =:end=. Now we have the elegance of the one-plist-is-a-complete-interval schema in the file, and the ease and speed of detection of midnight spanning intervals in memory.
+
+   So this
+   : (:name "Task" ... :start "<timestamp>" :stop "<timestamp>")
+   is stored in hash table values as
+   #+BEGIN_SRC
+   ((:name "Task" ... :start "<timestamp>")
+    (:stop "<timestamp>")
+    ...)
+   #+END_SRC
+9. [ ] Change file timestamp format to =("<iso-date>" "<iso-time>")=
 ** Cache
    + Lessons from the parsimonious-reading branch - iterating =read= over the whole file is fast; splitting the intervals is not.
    + Things we need to read the whole file for - task list, tag/key/value history.
@@ -200,7 +210,7 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
    #+END_SRC
    ...is displayed as 1:53:52 (rather than 00:54:52) after clocking out. :\
 
-** chronometrist [7%]
+** chronometrist [6%]
 1. [ ] Add =:stop= time when we call =chronometrist-kv-accept=, not when we quit the key-value prompt with a blank input.
    * It might be nice to be able to quit =chronometrist-kv-add= with C-g instead, actually.
      + =C-g= stops execution of =chronometrist-run-functions-and-clock-in=/=chronometrist-run-functions-and-clock-out=, so they can't reach the calls for =chronometrist-in=/=chronometrist-out=.
@@ -334,6 +344,8 @@ ppp.el doesn't align plist values along the same column. It's also GPL, and I'm 
    2. Not asking for tags and/or key-values for a particular task, or having a special behaviour for a task. (e.g. some tasks I use follow certain patterns, which I'd like to automate away)
 3. [ ] Completion for sub-plists - if the value of a user keyword-value pair is a plist (heuristic - list with keyword as first element), can we reuse the keyword-value prompt for it? 🤔
    * Maybe generate the completion hash table when the plist is created, since this is likely to be less-used.
+4. [ ] Create a debug mode
+5. [ ] Create a verification command to test =chronometrist-file= for errors.
 
 ** plist-pp
 1. Represent sublists by depth (integer) instead of a boolean.
