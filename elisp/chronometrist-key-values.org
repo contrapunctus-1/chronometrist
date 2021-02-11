@@ -497,6 +497,88 @@ This function always returns t, so it can be used in `chronometrist-before-out-f
 This function always returns t, so it can be used in `chronometrist-before-out-functions'."
   (setq chronometrist--skip-detail-prompts nil) t)
 #+END_SRC
+*** WIP Single-key prompts
+This was initially implemented using Hydra. But, at the moment of reckoning, it turned out that Hydra does not pause Emacs until the user provides an input. Thus, we created a new library called =choice.el= which functions similarly to Hydra (key-form-hint associations are passed to a macro which emits a prompt function) and used that.
+
+Types of prompts planned (#1 and #2 are meant to be mixed and matched)
+1. (tag|key-value) combinations -> ...
+   * 0-9     - use combination (and exit)
+   * C-u 0-9 - edit combination (then exit)
+   * s       - skip (exit)
+   * (b      - back [to previous prompt])
+2. select individual (tags|keys|values) -> ...
+   * 0-9 - select (toggles; save in var; doesn't exit)
+   * u   - use selection (and exit)
+   * e   - edit selection (then exit)
+   * n   - new tag/key/value
+   * s   - skip (exit)
+   * (b  - back [to previous prompt])
+   Great for values; makes it easy to add multiple values, too, especially for users who don't know Lisp.
+3. tag-key-value combinations (everything in one prompt)
+   * 0-9     - use combination (and exit)
+   * C-u 0-9 - edit combination (then exit)
+   * s       - skip (exit)
+**** chronometrist-defchoice                                                :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-defchoice (mode key table)
+  "MODE ::= :tag
+          | :key
+          | :value
+
+KEY ::= \"task\" (if MODE is :tags or :keys)
+      | \"key\" (if MODE is :values)"
+  (cl-loop with num = 0
+    for comb in (-take 10 (gethash key table))
+    do (incf num)
+    if (= num 10) do (setq num 0)
+    collect
+    (list (format "%s" num)
+          `(chronometrist-sexp-replace-last
+            (chronometrist-plist-update (chronometrist-sexp-last) ',(list :tags comb)))
+          (format "%s" comb))
+    into numeric-commands
+    finally do
+    (eval `(defchoice ,(intern
+                        (format
+                         "chronometrist-%s" (s-chop-prefix ":" (symbol-name mode))))
+             ,@numeric-commands
+             ("s" nil "skip")))))
+#+END_SRC
+**** chronometrist-tag-choice                                               :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-tag-choice (task)
+  "Query user for tags to be added to TASK.
+Return t, to permit use in `chronometrist-before-out-functions'."
+  (let ((table chronometrist-tags-history))
+    (chronometrist-tags-history-populate task table chronometrist-file)
+    (if (hash-table-empty-p table)
+        (chronometrist-tags-add)
+      (chronometrist-defchoice :tag task table)
+      (chronometrist-tag-choice-prompt "Which tags?"))
+    t))
+#+END_SRC
+**** WIP chronometrist-key-choice                                           :function:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-key-choice (task)
+  "Query user for keys to be added to TASK.
+Return t, to permit use in `chronometrist-before-out-functions'."
+  (let ((table chronometrist-key-history))
+    (chronometrist-key-history-populate task table chronometrist-file)
+    (if (hash-table-empty-p table)
+        (chronometrist-kv-add)
+      (chronometrist-defchoice :key task table)
+      (chronometrist-key-choice-prompt "Which keys?"))
+    t))
+#+END_SRC
+**** WIP chronometrist-kv-prompt-helper                                        :function:
+#+BEGIN_SRC emacs-lisp :tangle no
+(defun chronometrist-kv-prompt-helper (mode task)
+  (let ((table (case mode
+                 (:tag chronometrist-tags-history)
+                 (:key chronometrist-key-history)
+                 (:value chronometrist-value-history)))
+        ())))
+#+END_SRC
 ** Provide
 #+BEGIN_SRC emacs-lisp
 (provide 'chronometrist-key-values)

@@ -420,6 +420,53 @@ This function always returns t, so it can be used in `chronometrist-before-out-f
 This function always returns t, so it can be used in `chronometrist-before-out-functions'."
   (setq chronometrist--skip-detail-prompts nil) t)
 
+(defun chronometrist-defchoice (mode key table)
+  "MODE ::= :tag
+          | :key
+          | :value
+
+KEY ::= \"task\" (if MODE is :tags or :keys)
+      | \"key\" (if MODE is :values)"
+  (cl-loop with num = 0
+    for comb in (-take 10 (gethash key table))
+    do (incf num)
+    if (= num 10) do (setq num 0)
+    collect
+    (list (format "%s" num)
+          `(chronometrist-sexp-replace-last
+            (chronometrist-plist-update (chronometrist-sexp-last) ',(list :tags comb)))
+          (format "%s" comb))
+    into numeric-commands
+    finally do
+    (eval `(defchoice ,(intern
+                        (format
+                         "chronometrist-%s" (s-chop-prefix ":" (symbol-name mode))))
+             ,@numeric-commands
+             ("s" nil "skip")))))
+
+(defun chronometrist-tag-choice (task)
+  "Query user for tags to be added to TASK.
+Return t, to permit use in `chronometrist-before-out-functions'."
+  (let ((table chronometrist-tags-history))
+    (chronometrist-tags-history-populate task table chronometrist-file)
+    (if (hash-table-empty-p table)
+        (chronometrist-tags-add)
+      (chronometrist-defchoice :tag task table)
+      (chronometrist-tag-choice-prompt "Which tags?"))
+    t))
+
+(defun chronometrist-key-choice (task)
+  "Query user for keys to be added to TASK.
+Return t, to permit use in `chronometrist-before-out-functions'."
+  (let ((table chronometrist-key-history))
+    (chronometrist-key-history-populate task table chronometrist-file)
+    (if (hash-table-empty-p table)
+        (chronometrist-kv-add)
+      (chronometrist-defchoice :key task table)
+      (chronometrist-key-choice-prompt "Which keys?"))
+    t))
+
+
 (provide 'chronometrist-key-values)
 ;;; chronometrist-key-values.el ends here
 
