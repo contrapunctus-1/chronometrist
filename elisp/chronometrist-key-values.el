@@ -1,18 +1,6 @@
 ;;; chronometrist-key-values.el --- add key-values to Chronometrist data -*- lexical-binding: t; -*-
 
-(require 'cl-lib)
-(require 'subr-x)
-(require 'dash)
-(require 'seq)
-(require 'anaphora)
-
-(require 'chronometrist-migrate)
-(require 'chronometrist-events)
-(require 'chronometrist-plist-pp)
-(require 'chronometrist-common)
-
-(declare-function chronometrist-refresh "chronometrist.el")
-(declare-function chronometrist-last "chronometrist-queries.el")
+(require 'chronometrist)
 
 ;; This is free and unencumbered software released into the public domain.
 ;;
@@ -28,8 +16,6 @@
 
 ;;; Code:
 
-(require 'chronometrist-sexp)
-
 (defvar chronometrist--tag-suggestions nil
   "Suggestions for tags.
 Used as history by `chronometrist-tags-prompt'.")
@@ -37,6 +23,10 @@ Used as history by `chronometrist-tags-prompt'.")
 (defvar chronometrist--value-suggestions nil
   "Suggestions for values.
 Used as history by `chronometrist--value-suggestions'.")
+
+(defun chronometrist-keyword-to-string (keyword)
+  "Return KEYWORD as a string, with the leading \":\" removed."
+  (replace-regexp-in-string "^:?" "" (symbol-name keyword)))
 
 (defun chronometrist-plist-remove (plist &rest keys)
   "Return PLIST with KEYS and their associated values removed."
@@ -144,7 +134,7 @@ HISTORY-TABLE must be a hash table (see `chronometrist-key-history')."
              (keys  (--> (chronometrist-plist-remove plist :name :start :stop :tags)
                          (seq-filter #'keywordp it)
                          (cl-loop for key in it collect
-                           (s-chop-prefix ":" (symbol-name key)))))
+                           (chronometrist-keyword-to-string key))))
              (check (unless keys (throw 'quit nil)))
              (old-keys (gethash name history-table)))
         (puthash name
@@ -166,7 +156,7 @@ HISTORY-TABLE must be a hash table. (see `chronometrist-value-history')"
     ;; reserved key-values
     (let ((user-key-values (chronometrist-plist-remove plist :name :tags :start :stop)))
       (cl-loop for (key value) on user-key-values by #'cddr do
-        (let* ((key-string (s-chop-prefix ":" (symbol-name key)))
+        (let* ((key-string (chronometrist-keyword-to-string key))
                (old-values (gethash key-string history-table))
                (value      (if (not (stringp value)) ;; why?
                                (list (format "%S" value))
@@ -182,10 +172,10 @@ HISTORY-TABLE must be a hash table. (see `chronometrist-value-history')"
   "Add tags from PLIST to `chronometrist-tags-history'."
   (let* ((table    chronometrist-tags-history)
          (name     (plist-get plist :name))
-         (tags     (awhen (plist-get plist :tags) (list it)))
+         (tags     (plist-get plist :tags))
          (old-tags (gethash name table)))
     (when tags
-      (--> (append tags old-tags)
+      (--> (cons tags old-tags)
            (puthash name it table)))))
 
 (defun chronometrist-tags-history-combination-strings (task)
@@ -358,7 +348,7 @@ used in `chronometrist-before-out-functions'."
            (last-kvs    (chronometrist-plist-remove last-sexp :name :tags :start :stop))
            (used-keys   (->> (seq-filter #'keywordp last-kvs)
                              (mapcar #'symbol-name)
-                             (--map (s-chop-prefix ":" it)))))
+                             (--map (chronometrist-keyword-to-string it)))))
       (chronometrist-key-history-populate last-name chronometrist-key-history chronometrist-file)
       (chronometrist-value-history-populate chronometrist-value-history chronometrist-file)
       (switch-to-buffer buffer)

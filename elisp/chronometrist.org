@@ -23,9 +23,7 @@ This is displayed when the user clicks on the package's entry in =M-x list-packa
 ;; Package-Requires: ((emacs "25.1")
 ;;                    (dash "2.16.0")
 ;;                    (seq "2.20")
-;;                    (s "1.12.0")
-;;                    (ts "0.2")
-;;                    (anaphora "1.0.4"))
+;;                    (ts "0.2"))
 ;; Version: 0.6.5
 
 ;; This is free and unencumbered software released into the public domain.
@@ -75,18 +73,20 @@ This is displayed when the user clicks on the package's entry in =M-x list-packa
 #+END_SRC
 
 ** Code
-*** External libraries
+*** Dependencies
 #+BEGIN_SRC emacs-lisp
-;;; Code:
-(require 'filenotify)
-(require 'cl-lib)
-(require 'subr-x)
-(require 'dash)
-(require 'ts)
+  ;;; Code:
+  (require 'dash)
+  (require 'ts)
 
-(eval-when-compile
-  (defvar chronometrist-mode-map)
-  (require 'subr-x))
+  (require 'seq)
+  (require 'filenotify)
+  (require 'cl-lib)
+  (require 'subr-x)
+
+  (eval-when-compile
+    (defvar chronometrist-mode-map)
+    (require 'subr-x))
 #+END_SRC
 *** Backend
 **** pretty-print-function                               :custom:variable:
@@ -180,8 +180,8 @@ were none."
                                   (setq pending-expr (cl-second split-expr))
                                   (cl-first split-expr))
                                  (t expr)))
-               (new-value-date (->> (plist-get new-value :start)
-                                    (s-left 10)))
+               (new-value-date (--> (plist-get new-value :start)
+                                    (substring it 0 10)))
                (existing-value (gethash new-value-date chronometrist-events)))
           (unless pending-expr (cl-incf index))
           (puthash new-value-date

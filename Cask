@@ -9,9 +9,7 @@
 (depends-on "cl")
 (depends-on "dash"     "2.16.0")
 (depends-on "seq"      "2.20")
-(depends-on "s"        "1.12.0")
 (depends-on "ts"       "0.2")
-(depends-on "anaphora" "1.0.4")
 
 (files "elisp/*.el")
 

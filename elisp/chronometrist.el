@@ -7,9 +7,7 @@
 ;; Package-Requires: ((emacs "25.1")
 ;;                    (dash "2.16.0")
 ;;                    (seq "2.20")
-;;                    (s "1.12.0")
-;;                    (ts "0.2")
-;;                    (anaphora "1.0.4"))
+;;                    (ts "0.2"))
 ;; Version: 0.6.5
 
 ;; This is free and unencumbered software released into the public domain.
@@ -57,16 +55,18 @@
 
 ;; For information on usage and customization, see https://github.com/contrapunctus-1/chronometrist/blob/master/README.md
 
-;;; Code:
-(require 'filenotify)
-(require 'cl-lib)
-(require 'subr-x)
-(require 'dash)
-(require 'ts)
+  ;;; Code:
+  (require 'dash)
+  (require 'ts)
 
-(eval-when-compile
-  (defvar chronometrist-mode-map)
-  (require 'subr-x))
+  (require 'seq)
+  (require 'filenotify)
+  (require 'cl-lib)
+  (require 'subr-x)
+
+  (eval-when-compile
+    (defvar chronometrist-mode-map)
+    (require 'subr-x))
 
 (defcustom chronometrist-sexp-pretty-print-function #'chronometrist-plist-pp
   "Function used to pretty print plists in `chronometrist-file'.
@@ -143,8 +143,8 @@ were none."
                                   (setq pending-expr (cl-second split-expr))
                                   (cl-first split-expr))
                                  (t expr)))
-               (new-value-date (->> (plist-get new-value :start)
-                                    (s-left 10)))
+               (new-value-date (--> (plist-get new-value :start)
+                                    (substring it 0 10)))
                (existing-value (gethash new-value-date chronometrist-events)))
           (unless pending-expr (cl-incf index))
           (puthash new-value-date
