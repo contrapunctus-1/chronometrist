@@ -14,6 +14,7 @@
 
 ;;; Code:
 (require 'chronometrist)
+(require 'choice)
 
 (defun chronometrist-plist-remove (plist &rest keys)
   "Return PLIST with KEYS and their associated values removed."
@@ -255,7 +256,7 @@ HISTORY-TABLE must be a hash table. (see `chronometrist-value-history')"
              (chronometrist-history-prep key history-table))
            history-table))
 
-(defvar chronometrist--value-suggestions                                         :variable: nil
+(defvar chronometrist--value-suggestions nil
   "Suggestions for values.
 Used as history by `chronometrist-value-prompt'.")
 

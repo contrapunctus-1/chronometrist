@@ -24,6 +24,7 @@
 #+BEGIN_SRC emacs-lisp
 ;;; Code:
 (require 'chronometrist)
+(require 'choice)
 #+END_SRC
 ** Code
 *** Common
@@ -312,7 +313,7 @@ HISTORY-TABLE must be a hash table. (see `chronometrist-value-history')"
 #+END_SRC
 **** chronometrist--value-suggestions                                       :variable:
 #+BEGIN_SRC emacs-lisp
-(defvar chronometrist--value-suggestions                                         :variable: nil
+(defvar chronometrist--value-suggestions nil
   "Suggestions for values.
 Used as history by `chronometrist-value-prompt'.")
 #+END_SRC
