@@ -11,8 +11,17 @@ According to =benchmark= at the time of writing, =org-babel-tangle= takes about 
 1. When opening this file, Emacs may freeze at the prompt for file-local variable values; if so, C-g will quit the prompt, and permanently marking them as safe will make the freezing stop.
 2. [ ] I like =visual-fill-column-mode= for natural language, but I don't want it applied to code blocks. =polymode.el= may hold answers.
 3. [ ] Is there a cleaner tangling solution which is equally fast?
-** Commentary
-This is displayed when the user clicks on the package's entry in =M-x list-packages=.
+** Library headers and commentary
+Once, for sake of neatness, I made the value of =Package-Requires:= multiline -
+#+BEGIN_SRC emacs-lisp :tangle no
+;; Package-Requires: ((emacs "25.1")
+;;                    (dash "2.16.0")
+;;                    (seq "2.20")
+;;                    (ts "0.2"))
+#+END_SRC
+But I discovered that if I do that, =package-lint= says - =error: Couldn't parse "Package-Requires" header: End of file during parsing=.
+
+"Commentary" is displayed when the user clicks on the package's entry in =M-x list-packages=.
 #+BEGIN_SRC emacs-lisp
 ;;; chronometrist.el --- A time tracker with a nice interface -*- lexical-binding: t; -*-
 
@@ -20,10 +29,7 @@ This is displayed when the user clicks on the package's entry in =M-x list-packa
 ;; Maintainer: contrapunctus <xmpp:contrapunctus@jabber.fr>
 ;; Keywords: calendar
 ;; Homepage: https://github.com/contrapunctus-1/chronometrist
-;; Package-Requires: ((emacs "25.1")
-;;                    (dash "2.16.0")
-;;                    (seq "2.20")
-;;                    (ts "0.2"))
+;; Package-Requires: ((emacs "25.1") (dash "2.16.0") (seq "2.20") (ts "0.2"))
 ;; Version: 0.6.5
 
 ;; This is free and unencumbered software released into the public domain.
@@ -75,18 +81,19 @@ This is displayed when the user clicks on the package's entry in =M-x list-packa
 ** Code
 *** Dependencies
 #+BEGIN_SRC emacs-lisp
-  ;;; Code:
-  (require 'dash)
-  (require 'ts)
+;;; Code:
+(require 'dash)
+(require 'ts)
 
-  (require 'seq)
-  (require 'filenotify)
-  (require 'cl-lib)
-  (require 'subr-x)
+(require 'cl-lib)
+(require 'seq)
+(require 'filenotify)
+(require 'subr-x)
+(require 'parse-time)
 
-  (eval-when-compile
-    (defvar chronometrist-mode-map)
-    (require 'subr-x))
+(eval-when-compile
+  (defvar chronometrist-mode-map)
+  (require 'subr-x))
 #+END_SRC
 *** Backend
 **** pretty-print-function                               :custom:variable:
@@ -885,7 +892,7 @@ TS must be a ts struct (see `ts.el')."
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-iso-date->ts (date)
   "Return a ts struct (see `ts.el') representing DATE.
-  DATE should be an ISO-8601 date string (\"YYYY-MM-DD\")."
+DATE should be an ISO-8601 date string (\"YYYY-MM-DD\")."
   (-let [(year month day) (mapcar #'string-to-number
                                   (split-string date "-"))]
     (ts-update
@@ -2276,6 +2283,8 @@ If ARG is a numeric argument, go forward that many times."
 ** Provide
 #+BEGIN_SRC emacs-lisp
 (provide 'chronometrist)
+
+;;; chronometrist.el ends here
 #+END_SRC
 
 # Local Variables:

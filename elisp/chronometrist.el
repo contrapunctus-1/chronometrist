@@ -1,13 +1,11 @@
+
 ;;; chronometrist.el --- A time tracker with a nice interface -*- lexical-binding: t; -*-
 
 ;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
 ;; Maintainer: contrapunctus <xmpp:contrapunctus@jabber.fr>
 ;; Keywords: calendar
 ;; Homepage: https://github.com/contrapunctus-1/chronometrist
-;; Package-Requires: ((emacs "25.1")
-;;                    (dash "2.16.0")
-;;                    (seq "2.20")
-;;                    (ts "0.2"))
+;; Package-Requires: ((emacs "25.1") (dash "2.16.0") (seq "2.20") (ts "0.2"))
 ;; Version: 0.6.5
 
 ;; This is free and unencumbered software released into the public domain.
@@ -55,18 +53,19 @@
 
 ;; For information on usage and customization, see https://github.com/contrapunctus-1/chronometrist/blob/master/README.md
 
-  ;;; Code:
-  (require 'dash)
-  (require 'ts)
+;;; Code:
+(require 'dash)
+(require 'ts)
 
-  (require 'seq)
-  (require 'filenotify)
-  (require 'cl-lib)
-  (require 'subr-x)
+(require 'cl-lib)
+(require 'seq)
+(require 'filenotify)
+(require 'subr-x)
+(require 'parse-time)
 
-  (eval-when-compile
-    (defvar chronometrist-mode-map)
-    (require 'subr-x))
+(eval-when-compile
+  (defvar chronometrist-mode-map)
+  (require 'subr-x))
 
 (defcustom chronometrist-sexp-pretty-print-function #'chronometrist-plist-pp
   "Function used to pretty print plists in `chronometrist-file'.
@@ -228,6 +227,7 @@ Point is placed at the end of the space."
   (- (point) (point-at-bol)))
 
 (defun chronometrist-plist-pp-pair-p (cons)
+  "Return non-nil if CONS is a pair, i.e. (CAR . CDR)."
   (and (listp cons) (not (listp (cdr cons)))))
 
 (defun chronometrist-plist-pp-alist-p (list)
@@ -239,6 +239,7 @@ considers it an alist."
     (cl-loop for elt in list thereis (chronometrist-plist-pp-pair-p elt))))
 
 (defun chronometrist-plist-pp-plist-p (list)
+  "Return non-nil if LIST is a property list, i.e. (:KEYWORD VALUE ...)"
   (while (consp list)
     (setq list (if (and (keywordp (car list))
                         (consp (cdr list)))
