@@ -27,8 +27,7 @@
 ;; default), command to cycle between them
 
 ;;; Code:
-(require 'chronometrist-events)
-(require 'chronometrist-common)
+(require 'chronometrist)
 
 (defvar chronometrist-diary-buffer-name "*Chronometrist-Diary*"
   "Name for the buffer created by `chronometrist-diary'.")

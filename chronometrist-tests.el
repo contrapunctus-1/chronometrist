@@ -15,7 +15,6 @@
 
 (require 'ert)
 (require 'chronometrist)
-(require 'chronometrist-report)
 
 ;; TODO - add tests for chronometrist-task-time-one-day with custom day start
 ;; times.

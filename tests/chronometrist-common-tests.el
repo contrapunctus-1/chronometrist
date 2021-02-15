@@ -1,6 +1,6 @@
 ;;; -*- lexical-binding: t; -*-
 (require 'buttercup)
-(require 'chronometrist-common)
+(require 'chronometrist)
 
 (describe
  "chronometrist-format-time"

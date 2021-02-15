@@ -1,6 +1,6 @@
 ;; -*- lexical-binding: t; -*-
 (require 'buttercup)
-(require 'chronometrist-plist-pp)
+(require 'chronometrist)
 
 (describe "chronometrist-plist-pp-buffer"
   :var ((buffer (find-file-noselect "tests/plist-pp-test.sexp")))

@@ -1,11 +1,7 @@
 ;; -*- lexical-binding: t; -*-
 (require 'buttercup)
 (require 'ts)
-(require 'chronometrist-sexp)
-(require 'chronometrist-events)
-(require 'chronometrist-queries)
-(require 'chronometrist-time)
-
+(require 'chronometrist)
 
 (describe "chronometrist-task-time-one-day"
   :var ((ts-1 (chronometrist-iso-date->ts "2018-01-01"))
