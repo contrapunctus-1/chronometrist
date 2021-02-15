@@ -36,21 +36,30 @@ Chronometrist and Org time tracking seem to be equivalent in terms of capabiliti
 * Chronometrist data is just s-expressions (plists), and may be easier to parse than a complex text format with numerous use-cases.
 
 ## Installation
-### MELPA
+### Literate program
+`chronometrist` is a literate Org program. You can choose to load the `.el` file as usual (which we autogenerate and commit to Git), but if you want to
+* hack on the source, or
+* view the source and literate documentation together, or
+* want jump-to-source commands to take you to the Org document,
+then we suggest installing [literate-elisp](https://github.com/jingtaozf/literate-elisp) and [loading the Org file directly](https://github.com/jingtaozf/literate-elisp#load-an-org-file)
+
+(The same goes for the optional extension `chronometrist-key-values`, also a part of this repository.)
+
+### from MELPA
 1. Set up MELPA - https://melpa.org/#/getting-started
 
    (Chronometrist uses semantic versioning and only releases are pushed to the master branch, so using MELPA Stable is recommended and has no effect on frequency of updates.)
 2. `M-x package-install RET chronometrist RET`
 
-### Git
+### from Git
 You can get `chronometrist` from https://github.com/contrapunctus-1/chronometrist
 
 `chronometrist` requires
-* Emacs v26 or higher
+* Emacs v25 or higher
 * [dash.el](https://github.com/magnars/dash.el)
-* [s.el](https://github.com/magnars/s.el)
 * [ts.el](https://github.com/alphapapa/ts.el)
-* [anaphora](https://github.com/rolandwalker/anaphora)
+
+The optional extension `chronometrist-key-values` requires `choice.el`, apart from `chronometrist` itself.
 
 Add the "elisp/" subdirectory to your load-path, and `(require 'chronometrist)`.
 
@@ -167,13 +176,12 @@ Return nil (and run `magit-status') if the user answers no."
   (thread-last (plist-put (chronometrist-last)
                           :stop (chronometrist-format-time-iso8601))
     list
-    chronometrist-events->ts-pairs
-    chronometrist-ts-pairs->durations
+    chronometrist-events-to-durations
     (-reduce #'+)
     truncate
     chronometrist-format-time))
 
-(setq chronometrist-activity-indicator 'my-activity-indicator)
+(setq chronometrist-activity-indicator #'my-activity-indicator)
 ```
 
 ## Roadmap/Ideas
