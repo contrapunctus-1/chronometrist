@@ -363,16 +363,16 @@ of `chronometrist-kv-add'."
                        finally return key-suggestions)
                      nil nil nil 'key-suggestions)))
 #+END_SRC
-**** chronometrist-value-prompt                                             :function:
+**** chronometrist-value-prompt                                 :function:
 #+BEGIN_SRC emacs-lisp
-  (defun chronometrist-value-prompt (key)
-    "Prompt the user to enter values.
-  KEY should be a string for the just-entered key."
-    (setq chronometrist--value-suggestions (gethash key chronometrist-value-history))
-    (completing-read (format "Value (%s to quit): " (chronometrist-kv-completion-quit-key))
-                     chronometrist--value-suggestions nil nil nil 'chronometrist--value-suggestions))
+(defun chronometrist-value-prompt (key)
+  "Prompt the user to enter values.
+KEY should be a string for the just-entered key."
+  (setq chronometrist--value-suggestions (gethash key chronometrist-value-history))
+  (completing-read (format "Value (%s to quit): " (chronometrist-kv-completion-quit-key))
+                   chronometrist--value-suggestions nil nil nil 'chronometrist--value-suggestions))
 #+END_SRC
-**** chronometrist-value-insert                                             :function:
+**** chronometrist-value-insert                                 :function:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-value-insert (value)
   "Insert VALUE into the key-value entry buffer."
@@ -461,44 +461,11 @@ used in `chronometrist-before-out-functions'."
   (kill-buffer chronometrist-kv-buffer-name)
   (chronometrist-refresh))
 #+END_SRC
-*** Skipping queries
-**** chronometrist--skip-detail-prompts                            :internal:variable:
-#+BEGIN_SRC emacs-lisp
-(defvar chronometrist--skip-detail-prompts nil)
-#+END_SRC
-**** chronometrist-skip-query-prompt                                        :function:
-#+BEGIN_SRC emacs-lisp
-(defun chronometrist-skip-query-prompt (task)
-  "Offer to skip tag/key-value prompts and reuse last-used details.
-This function always returns t, so it can be used in `chronometrist-before-out-functions'."
-  ;; find latest interval for TASK; if it has tags or key-values, prompt
-  (let (plist)
-    ;; iterate over events in reverse
-    (cl-loop for key in (reverse (hash-table-keys chronometrist-events)) do
-      (cl-loop for event in (reverse (gethash key chronometrist-events))
-        when (and (equal task (plist-get event :name))
-                  (setq plist (chronometrist-plist-remove event :name :start :stop)))
-        return nil)
-      when plist return nil)
-    (and plist
-         (yes-or-no-p
-          (format "Skip prompt and use last-used tags/key-values? %S " plist))
-         (setq chronometrist--skip-detail-prompts t)
-         (chronometrist-plist-update (plist-get plist :tags) plist))
-    t))
-#+END_SRC
-**** chronometrist-skip-query-reset                                         :function:
-#+BEGIN_SRC emacs-lisp
-(defun chronometrist-skip-query-reset (_task)
-  "Enable prompting for tags and key-values.
-This function always returns t, so it can be used in `chronometrist-before-out-functions'."
-  (setq chronometrist--skip-detail-prompts nil) t)
-#+END_SRC
 *** WIP Single-key prompts [0%]
 This was initially implemented using Hydra. But, at the moment of reckoning, it turned out that Hydra does not pause Emacs until the user provides an input, and is thus unsuited for use in a hook. Thus, we created a new library called =choice.el= which functions similarly to Hydra (key-form-hint associations are passed to a macro which emits a prompt function) and used that.
 
 Types of prompts planned (#1 and #2 are meant to be mixed and matched)
-1. [-] (tag|key-value)-combination-prompt - select combinations of (tags|key-values)
+1. [-] (tag|key-value)-combination-choice - select combinations of (tags|key-values)
    * commands
      + 0-9     - use combination (and exit)
      + C-u 0-9 - edit combination (then exit)

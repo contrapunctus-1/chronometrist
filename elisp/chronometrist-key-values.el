@@ -300,7 +300,7 @@ of `chronometrist-kv-add'."
 
 (defun chronometrist-value-prompt (key)
   "Prompt the user to enter values.
-  KEY should be a string for the just-entered key."
+KEY should be a string for the just-entered key."
   (setq chronometrist--value-suggestions (gethash key chronometrist-value-history))
   (completing-read (format "Value (%s to quit): " (chronometrist-kv-completion-quit-key))
                    chronometrist--value-suggestions nil nil nil 'chronometrist--value-suggestions))
@@ -386,32 +386,6 @@ used in `chronometrist-before-out-functions'."
   (kill-buffer chronometrist-kv-buffer-name)
   (chronometrist-refresh))
 
-(defvar chronometrist--skip-detail-prompts nil)
-
-(defun chronometrist-skip-query-prompt (task)
-  "Offer to skip tag/key-value prompts and reuse last-used details.
-This function always returns t, so it can be used in `chronometrist-before-out-functions'."
-  ;; find latest interval for TASK; if it has tags or key-values, prompt
-  (let (plist)
-    ;; iterate over events in reverse
-    (cl-loop for key in (reverse (hash-table-keys chronometrist-events)) do
-      (cl-loop for event in (reverse (gethash key chronometrist-events))
-        when (and (equal task (plist-get event :name))
-                  (setq plist (chronometrist-plist-remove event :name :start :stop)))
-        return nil)
-      when plist return nil)
-    (and plist
-         (yes-or-no-p
-          (format "Skip prompt and use last-used tags/key-values? %S " plist))
-         (setq chronometrist--skip-detail-prompts t)
-         (chronometrist-plist-update (plist-get plist :tags) plist))
-    t))
-
-(defun chronometrist-skip-query-reset (_task)
-  "Enable prompting for tags and key-values.
-This function always returns t, so it can be used in `chronometrist-before-out-functions'."
-  (setq chronometrist--skip-detail-prompts nil) t)
-
 (defun chronometrist-defchoice (name type list)
   "Construct and evaluate a `defchoice' form.
   NAME should be a string - `defchoice' will be called with chronometrist-NAME.
@@ -478,3 +452,5 @@ Return t, to permit use in `chronometrist-before-out-functions'."
 
 (provide 'chronometrist-key-values)
 ;;; chronometrist-key-values.el ends here
+
+
