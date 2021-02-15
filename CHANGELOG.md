@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2021-02-12
+### Added
+* Single key prompts for key-values - `chronometrist-tag-choice`, and `chronometrist-key-values-unified-choice`, with more to come.
+### Removed
+* `chronometrist-skip-query-prompt`, `chronometrist-skip-query-reset`, and `chronometrist--skip-detail-prompts` - these are covered by the new single key prompt functions
+
 ## [0.6.5] - 2021-02-11
 ### Added
 * Major mode (syntax highlighting, hook) for Chronometrist s-expression files, derived from emacs-lisp-mode
