@@ -11,6 +11,11 @@
 
 ;;; Commentary:
 ;;
+;; This package lets users attach tags and key-values to their tracked time, similar to tags and properties in Org mode.
+;;
+;; To use, add one or more of these functions to any chronometrist hook except `chronometrist-before-in-functions`.
+;; * `completing-read'-based - `chronometrist-tags-add` and/or `chronometrist-kv-add'
+;; * `choice'-based (Hydra-like) - `chronometrist-unified-choice'
 
 ;;; Code:
 (require 'chronometrist)
@@ -142,12 +147,12 @@ This is used to provide history for `completing-read-multiple' in
 This is used to provide completion for individual tags, in
 `completing-read-multiple' in `chronometrist-tags-prompt'."
   (--> (gethash task chronometrist-tags-history)
-       (-flatten it)
-       (cl-remove-duplicates it :test #'equal)
-       (cl-loop for elt in it
-                collect (if (stringp elt)
-                            elt
-                          (symbol-name elt)))))
+    (-flatten it)
+    (cl-remove-duplicates it :test #'equal)
+    (cl-loop for elt in it
+      collect (if (stringp elt)
+                  elt
+                (symbol-name elt)))))
 
 (defun chronometrist-tags-prompt (task &optional initial-input)
   "Read one or more tags from the user and return them as a list of strings.
@@ -161,28 +166,27 @@ INITIAL-INPUT is as used in `completing-read'."
                             initial-input
                             'chronometrist--tag-suggestions))
 
-  (defun chronometrist-tags-add (&rest _args)
-    "Read tags from the user; add them to the last entry in `chronometrist-file'.
-  _ARGS are ignored. This function always returns t, so it can be
-  used in `chronometrist-before-out-functions'."
-    (unless chronometrist--skip-detail-prompts
-      (let* ((last-expr (chronometrist-last))
-             (last-name (plist-get last-expr :name))
-             (_history  (chronometrist-tags-history-populate last-name chronometrist-tags-history chronometrist-file))
-             (last-tags (plist-get last-expr :tags))
-             (input     (->> last-tags
-                             (chronometrist-maybe-symbol-to-string)
-                             (-interpose ",")
-                             (apply #'concat)
-                             (chronometrist-tags-prompt last-name)
-                             (chronometrist-maybe-string-to-symbol))))
-        (when input
-          (--> (append last-tags input)
-            (reverse it)
-            (cl-remove-duplicates it :test #'equal)
-            (reverse it)
-            (chronometrist-plist-update it nil)))))
-    t)
+(defun chronometrist-tags-add (&rest _args)
+  "Read tags from the user; add them to the last entry in `chronometrist-file'.
+_ARGS are ignored. This function always returns t, so it can be
+used in `chronometrist-before-out-functions'."
+  (unless chronometrist--skip-detail-prompts
+    (let* ((last-expr (chronometrist-last))
+           (last-name (plist-get last-expr :name))
+           (_history  (chronometrist-tags-history-populate last-name chronometrist-tags-history chronometrist-file))
+           (last-tags (plist-get last-expr :tags))
+           (input     (->> (chronometrist-maybe-symbol-to-string last-tags)
+                           (-interpose ",")
+                           (apply #'concat)
+                           (chronometrist-tags-prompt last-name)
+                           (chronometrist-maybe-string-to-symbol))))
+      (when input
+        (--> (append last-tags input)
+          (reverse it)
+          (cl-remove-duplicates it :test #'equal)
+          (reverse it)
+          (chronometrist-plist-update it nil)))))
+  t)
 
 (defgroup chronometrist-key-values nil
   "Add key-values to Chronometrist time intervals."
@@ -286,15 +290,16 @@ It currently supports ido, ido-ubiquitous, ivy, and helm."
 USED-KEYS are keys they have already added since the invocation
 of `chronometrist-kv-add'."
   (let ((key-suggestions (--> (chronometrist-last)
-                              (plist-get it :name)
-                              (gethash it chronometrist-key-history))))
-    (completing-read (format "Key (%s to quit): " (chronometrist-kv-completion-quit-key))
+                           (plist-get it :name)
+                           (gethash it chronometrist-key-history))))
+    (completing-read (format "Key (%s to quit): "
+                             (chronometrist-kv-completion-quit-key))
                      ;; don't suggest keys which have already been used
                      (cl-loop for used-key in used-keys do
-                       (->> key-suggestions
-                            (seq-remove (lambda (key)
-                                          (equal key used-key)))
-                            (setq key-suggestions))
+                       (setq key-suggestions
+                             (seq-remove (lambda (key)
+                                           (equal key used-key))
+                                         key-suggestions))
                        finally return key-suggestions)
                      nil nil nil 'key-suggestions)))
 
@@ -302,8 +307,10 @@ of `chronometrist-kv-add'."
   "Prompt the user to enter values.
 KEY should be a string for the just-entered key."
   (setq chronometrist--value-suggestions (gethash key chronometrist-value-history))
-  (completing-read (format "Value (%s to quit): " (chronometrist-kv-completion-quit-key))
-                   chronometrist--value-suggestions nil nil nil 'chronometrist--value-suggestions))
+  (completing-read (format "Value (%s to quit): "
+                           (chronometrist-kv-completion-quit-key))
+                   chronometrist--value-suggestions nil nil nil
+                   'chronometrist--value-suggestions))
 
 (defun chronometrist-value-insert (value)
   "Insert VALUE into the key-value entry buffer."

@@ -22,7 +22,7 @@
    7. [X] regression - no value history
    8. [ ] Possible to add the same key-value twice
       * Clock in, clock out, add key-value and accept, delete :stop time and save, clock out again, accept the already-inserted key-value - duplicate!
-** Features [20%]
+** Features [25%]
    1. [ ] Create chronometrist-unused-projects-list + chronometrist-projects-list.
    2. [ ] New commands
       1. [ ] *Kill/discard* (bind to 'k') - which will delete the interval currently being recorded.
@@ -34,8 +34,7 @@
    3. [ ] Hook enhancement - can we supply the whole plist (including tags and key-values) to the task-start hooks, so users can have even smarter hook functions?
       * That would mean ensuring that -kv-read runs before other hooks.
       * Actually, it should be trivial to access the last expression in the file, so maybe this is unnecessary.
-   4. [ ] key-values and tags should work regardless of what hook they're called from, to give users the option to modify behaviour (does clock in start after you've finished adding details, or before?)
-   5. [X] Revisit 'no reason' commands - maybe we should ask for tags and key-values with the regular commands, and skip them with the 'no reason' variants?
+   4. [X] Revisit 'no reason' commands - maybe we should ask for tags and key-values with the regular commands, and skip them with the 'no reason' variants?
 *** Key-values [66%]
     1. [X] bug - value-history appears in chronological rather than reverse chronological order
     2. [X] generate history hash table from chronometrist-file.
