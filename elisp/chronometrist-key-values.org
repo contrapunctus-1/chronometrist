@@ -107,7 +107,7 @@ reversed and will have duplicate elements removed."
 (defun chronometrist-maybe-string-to-symbol (list)
   "For each string in LIST, if it has no spaces, convert it to a symbol."
   (cl-loop for string in list
-    if (string-match-p "[[:space:]]" it)
+    if (string-match-p "[[:space:]]" string)
     collect string
     else collect (intern string)))
 #+END_SRC
@@ -255,23 +255,22 @@ INITIAL-INPUT is as used in `completing-read'."
   "Read tags from the user; add them to the last entry in `chronometrist-file'.
 _ARGS are ignored. This function always returns t, so it can be
 used in `chronometrist-before-out-functions'."
-  (unless chronometrist--skip-detail-prompts
-    (let* ((last-expr (chronometrist-last))
-           (last-name (plist-get last-expr :name))
-           (_history  (chronometrist-tags-history-populate last-name chronometrist-tags-history chronometrist-file))
-           (last-tags (plist-get last-expr :tags))
-           (input     (->> (chronometrist-maybe-symbol-to-string last-tags)
-                           (-interpose ",")
-                           (apply #'concat)
-                           (chronometrist-tags-prompt last-name)
-                           (chronometrist-maybe-string-to-symbol))))
-      (when input
-        (--> (append last-tags input)
-          (reverse it)
-          (cl-remove-duplicates it :test #'equal)
-          (reverse it)
-          (chronometrist-plist-update it nil)))))
-  t)
+  (let* ((last-expr (chronometrist-last))
+         (last-name (plist-get last-expr :name))
+         (_history  (chronometrist-tags-history-populate last-name chronometrist-tags-history chronometrist-file))
+         (last-tags (plist-get last-expr :tags))
+         (input     (->> (chronometrist-maybe-symbol-to-string last-tags)
+                         (-interpose ",")
+                         (apply #'concat)
+                         (chronometrist-tags-prompt last-name)
+                         (chronometrist-maybe-string-to-symbol))))
+    (when input
+      (--> (append last-tags input)
+        (reverse it)
+        (cl-remove-duplicates it :test #'equal)
+        (reverse it)
+        (chronometrist-plist-update it nil)))
+    t))
 #+END_SRC
 *** Key-Values
 **** chronometrist-key-values                                           :custom:group:
@@ -454,47 +453,46 @@ to add them to the last s-expression in `chronometrist-file', or
 
 _ARGS are ignored. This function always returns t, so it can be
 used in `chronometrist-before-out-functions'."
-  (unless chronometrist--skip-detail-prompts
-    (let* ((buffer      (get-buffer-create chronometrist-kv-buffer-name))
-           (first-key-p t)
-           (last-sexp   (chronometrist-last))
-           (last-name   (plist-get last-sexp :name))
-           (last-kvs    (chronometrist-plist-remove last-sexp :name :tags :start :stop))
-           (used-keys   (--map (chronometrist-keyword-to-string it)
-                               (seq-filter #'keywordp last-kvs))))
-      (chronometrist-key-history-populate last-name chronometrist-key-history chronometrist-file)
-      (chronometrist-value-history-populate chronometrist-value-history chronometrist-file)
-      (switch-to-buffer buffer)
-      (with-current-buffer buffer
-        (chronometrist-common-clear-buffer buffer)
-        (chronometrist-kv-read-mode)
-        (if (and (chronometrist-current-task) last-kvs)
-            (progn
-              (funcall chronometrist-sexp-pretty-print-function last-kvs buffer)
-              (down-list -1)
-              (insert "\n "))
-          (insert "()")
-          (down-list -1))
-        (catch 'empty-input
-          (let (input key value)
-            (while t
-              (setq key (chronometrist-key-prompt used-keys)
-                    input key
-                    used-keys (append used-keys
-                                      (list key)))
-              (if (string-empty-p input)
-                  (throw 'empty-input nil)
-                (unless first-key-p
-                  (insert " "))
-                (insert ":" key)
-                (setq first-key-p nil))
-              (setq value (chronometrist-value-prompt key)
-                    input value)
-              (if (string-empty-p input)
-                  (throw 'empty-input nil)
-                (chronometrist-value-insert value)))))
-        (chronometrist-sexp-reindent-buffer))))
-  t)
+  (let* ((buffer      (get-buffer-create chronometrist-kv-buffer-name))
+         (first-key-p t)
+         (last-sexp   (chronometrist-last))
+         (last-name   (plist-get last-sexp :name))
+         (last-kvs    (chronometrist-plist-remove last-sexp :name :tags :start :stop))
+         (used-keys   (--map (chronometrist-keyword-to-string it)
+                             (seq-filter #'keywordp last-kvs))))
+    (chronometrist-key-history-populate last-name chronometrist-key-history chronometrist-file)
+    (chronometrist-value-history-populate chronometrist-value-history chronometrist-file)
+    (switch-to-buffer buffer)
+    (with-current-buffer buffer
+      (chronometrist-common-clear-buffer buffer)
+      (chronometrist-kv-read-mode)
+      (if (and (chronometrist-current-task) last-kvs)
+          (progn
+            (funcall chronometrist-sexp-pretty-print-function last-kvs buffer)
+            (down-list -1)
+            (insert "\n "))
+        (insert "()")
+        (down-list -1))
+      (catch 'empty-input
+        (let (input key value)
+          (while t
+            (setq key (chronometrist-key-prompt used-keys)
+                  input key
+                  used-keys (append used-keys
+                                    (list key)))
+            (if (string-empty-p input)
+                (throw 'empty-input nil)
+              (unless first-key-p
+                (insert " "))
+              (insert ":" key)
+              (setq first-key-p nil))
+            (setq value (chronometrist-value-prompt key)
+                  input value)
+            (if (string-empty-p input)
+                (throw 'empty-input nil)
+              (chronometrist-value-insert value)))))
+      (chronometrist-sexp-reindent-buffer))
+    t))
 #+END_SRC
 **** chronometrist-kv-accept                                                 :command:
 #+BEGIN_SRC emacs-lisp
