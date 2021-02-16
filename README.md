@@ -100,15 +100,6 @@ To be prompted for tags, add `chronometrist-tags-add` to any hook except `chrono
 #### Key-value pairs
 Similarly, to be prompted for key-values, add `chronometrist-kv-add` to any hook except `chronometrist-before-in-functions`. To exit the prompt, press the key it indicates for quitting - you can then edit the resulting key-values by hand if required. Press `C-c C-c` to accept the key-values, or `C-c C-k` to cancel.
 
-#### Quick re-use of last-used tags and/or key-values
-Add `chronometrist-skip-query-prompt` to the hook(s) containing `chronometrist-tags-add`/`chronometrist-kv-add`, _before_ these functions, and `chronometrist-skip-query-reset` _after_ them -
-```elisp
-(setq chronometrist-before-out-functions '(chronometrist-skip-query-prompt
-                                           chronometrist-tags-add
-                                           chronometrist-kv-add
-                                           chronometrist-skip-query-reset))
-```
-
 ### Prompt when exiting Emacs
 If you wish to be prompted when you exit Emacs while tracking time, you can use this -
 
