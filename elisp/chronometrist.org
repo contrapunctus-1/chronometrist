@@ -1085,6 +1085,9 @@ ARG should be the new update interval, in seconds."
 #+END_SRC
 *** Frontends
 **** Chronometrist
+***** TODO [%0]
+1. [ ] Define hooks with defcustom instead of defvar
+2. [ ] Change abnormal hooks to normal hooks
 ***** custom group                                         :custom:group:
 #+BEGIN_SRC emacs-lisp
 (defgroup chronometrist nil
