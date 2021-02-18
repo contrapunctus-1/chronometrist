@@ -602,6 +602,16 @@ file names respectively."
       (message "You can migrate later using `chronometrist-migrate-timelog-file-to-sexp-file'."))))
 #+END_SRC
 *** Data structures
+**** reset-state                                                 :command:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-reset ()
+  "Reset Chronometrist's internal state."
+  (interactive)
+  (chronometrist-reset-task-list)
+  (chronometrist-events-populate)
+  (setq chronometrist--file-state nil)
+  (chronometrist-refresh))
+#+END_SRC
 **** chronometrist-events                                                   :variable:
 :PROPERTIES:
 :VALUE:    hash table

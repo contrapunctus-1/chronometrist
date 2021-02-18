@@ -450,6 +450,14 @@ file names respectively."
         (chronometrist-migrate-timelog-file-to-sexp-file timeclock-file chronometrist-file)
       (message "You can migrate later using `chronometrist-migrate-timelog-file-to-sexp-file'."))))
 
+(defun chronometrist-reset ()
+  "Reset Chronometrist's internal state."
+  (interactive)
+  (chronometrist-reset-task-list)
+  (chronometrist-events-populate)
+  (setq chronometrist--file-state nil)
+  (chronometrist-refresh))
+
 (defvar chronometrist-events (make-hash-table :test #'equal)
   "Each key is a date in the form (YEAR MONTH DAY).
 Values are lists containing events, where each event is a list in
