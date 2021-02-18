@@ -1,10 +1,25 @@
 ;; -*- lexical-binding: t; -*-
 (require 'chronometrist)
 
+(defvar chronometrist-test-file
+  (concat (file-name-directory (buffer-file-name))
+          "test.sexp"))
+
 (ert-deftest task-list ()
   (let ((task-list (chronometrist-task-list)))
     (should (listp task-list))
     (should (seq-every-p #'stringp task-list))))
+
+(ert-deftest file-hash ()
+  (-let* ((chronometrist-file chronometrist-test-file)
+          ((last-start last-end)
+           (chronometrist-file-hash :before-last nil))
+          ((rest-start rest-end rest-hash)
+           (chronometrist-file-hash nil :before-last t)))
+    (should (= 1 rest-start))
+    (should (= 1247 rest-end))
+    (should (= 1249 last-start))
+    (should (= 1419 last-end))))
 
 (defmacro chronometrist-tests--change-type-and-update (state)
   `(prog1 (chronometrist-file-change-type ,state)
@@ -17,7 +32,7 @@
 ;; remove newline after last expession and save => nil
 
 (ert-deftest file-change-type ()
-  (let* ((chronometrist-file            (concat default-directory "test.sexp"))
+  (let* ((chronometrist-file            chronometrist-test-file)
          (test-contents    (with-current-buffer (find-file-noselect chronometrist-file)
                              (buffer-substring (point-min) (point-max))))
          (chronometrist--file-state-old chronometrist--file-state)
