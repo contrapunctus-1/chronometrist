@@ -586,8 +586,7 @@ The return value is seconds, as an integer."
 TS must be a ts struct (see `ts.el')
 
 Return value is seconds as an integer."
-  (->> chronometrist-task-list
-       (--map (chronometrist-task-time-one-day it ts))
+  (->> (--map (chronometrist-task-time-one-day it ts) chronometrist-task-list)
        (-reduce #'+)
        (truncate)))
 
@@ -597,7 +596,7 @@ Return value is seconds as an integer."
 
   This will not return correct results if TABLE contains records
 which span midnights."
-  (cl-loop for events being the hash-values of chronometrist-events
+  (cl-loop for events being the hash-values of table
     count (seq-find (lambda (event)
                       (equal task (plist-get event :name)))
                     events)))
@@ -1070,10 +1069,9 @@ in `chronometrist-file' describing the region for which HASH was calculated."
 
 (defun chronometrist-read-from (position)
   (chronometrist-sexp-in-file chronometrist-file
-    (goto-char
-     (if (number-or-marker-p position)
-         position
-       (funcall position)))
+    (goto-char (if (number-or-marker-p position)
+                   position
+                 (funcall position)))
     (ignore-errors (read (current-buffer)))))
 
 (defun chronometrist-file-change-type (state)
@@ -1086,15 +1084,22 @@ Return
 :remove  if the last s-expression was removed,
     nil  if the contents didn't change, and
       t  for any other change."
-  (-let* (((last-start last-end)           (plist-get state :last))
-          ((rest-start rest-end rest-hash) (plist-get state :rest))
-          (last-same-p     (--> (hash-table-keys chronometrist-events) (last it) (car it)
-                                (gethash it chronometrist-events) (last it) (car it)
-                                (equal it (chronometrist-read-from last-start))))
-          (file-new-length (chronometrist-sexp-in-file chronometrist-file (point-max)))
-          (rest-same-p (unless (< file-new-length rest-end)
-                         (equal rest-hash
-                                (cl-third (chronometrist-file-hash rest-start rest-end t))))))
+  (-let*
+      (((last-start last-end)           (plist-get state :last))
+       ((rest-start rest-end rest-hash) (plist-get state :rest))
+       (last-expr-file  (chronometrist-read-from last-start))
+       (last-expr-ht    (chronometrist-events-last))
+       (last-same-p     (equal last-expr-ht last-expr-file))
+       (file-new-length (chronometrist-sexp-in-file chronometrist-file (point-max)))
+       (rest-same-p     (unless (< file-new-length rest-end)
+                          (--> (chronometrist-file-hash rest-start rest-end t)
+                            (cl-third it)
+                            (equal rest-hash it)))))
+    ;; (message "chronometrist - last-start\nlast-expr-file - %S\nlast-expr-ht - %S"
+    ;;          last-expr-file
+    ;;          last-expr-ht)
+    ;; (message "chronometrist - last-same-p - %S, rest-same-p - %S"
+    ;;          last-same-p rest-same-p)
     (cond ((not rest-same-p) t)
           (last-same-p
            (when (chronometrist-read-from last-end) :append))

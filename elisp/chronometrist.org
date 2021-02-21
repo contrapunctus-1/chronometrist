@@ -7,6 +7,8 @@ This Org literate program was born out of frustration with programs stored as te
 
 According to =benchmark= at the time of writing, =org-babel-tangle= takes about 30 seconds to tangle this file. Thus, I use a little sed one-liner (in the file-local variables) to do the tangling, which is nearly instant.
 
+The sed script emits anything between lines matching the exact strings "#+BEGIN_SRC emacs-lisp" and "#+END_SRC".
+
 *** Definition metadata
 Each definition has its own heading. The type of definition is stored in tags -
 1. custom group
@@ -774,12 +776,11 @@ The return value is seconds, as an integer."
 TS must be a ts struct (see `ts.el')
 
 Return value is seconds as an integer."
-  (->> chronometrist-task-list
-       (--map (chronometrist-task-time-one-day it ts))
+  (->> (--map (chronometrist-task-time-one-day it ts) chronometrist-task-list)
        (-reduce #'+)
        (truncate)))
 #+END_SRC
-**** count-active-days                                            :reader:
+**** count-active-days                                            :function:
 #+BEGIN_SRC emacs-lisp
 (cl-defun chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
   "Return the number of days the user spent any time on TASK.
@@ -787,7 +788,7 @@ Return value is seconds as an integer."
 
   This will not return correct results if TABLE contains records
 which span midnights."
-  (cl-loop for events being the hash-values of chronometrist-events
+  (cl-loop for events being the hash-values of table
     count (seq-find (lambda (event)
                       (equal task (plist-get event :name)))
                     events)))
@@ -1376,10 +1377,9 @@ in `chronometrist-file' describing the region for which HASH was calculated."
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-read-from (position)
   (chronometrist-sexp-in-file chronometrist-file
-    (goto-char
-     (if (number-or-marker-p position)
-         position
-       (funcall position)))
+    (goto-char (if (number-or-marker-p position)
+                   position
+                 (funcall position)))
     (ignore-errors (read (current-buffer)))))
 #+END_SRC
 ***** file-change-type                                           :reader:
@@ -1388,12 +1388,12 @@ The initial idea was to use two hashes, one for the content between the start of
 + false negatives for whitespace/indentation differences.
 
 Possible states
-1. rest-start rest-end last-start last-end
-2. :append - rest same, last same, new expr after last-end
-3. :modify - rest same, last not same, no expr after last-end
-4. :remove - rest same, last not same, no expr after last-start
-5. nil     - rest same, last same, no expr after last-end
-6. t       - rest changed
+: <rest-start> <rest-end> <last-start> <last-end>
+1. :append - rest same, last same, new expr after last-end
+2. :modify - rest same, last not same, no expr after last-end
+3. :remove - rest same, last not same, no expr after last-start
+4. nil     - rest same, last same, no expr after last-end
+5. t       - rest changed
 
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-file-change-type (state)
@@ -1406,15 +1406,22 @@ Return
 :remove  if the last s-expression was removed,
     nil  if the contents didn't change, and
       t  for any other change."
-  (-let* (((last-start last-end)           (plist-get state :last))
-          ((rest-start rest-end rest-hash) (plist-get state :rest))
-          (last-same-p     (--> (hash-table-keys chronometrist-events) (last it) (car it)
-                                (gethash it chronometrist-events) (last it) (car it)
-                                (equal it (chronometrist-read-from last-start))))
-          (file-new-length (chronometrist-sexp-in-file chronometrist-file (point-max)))
-          (rest-same-p (unless (< file-new-length rest-end)
-                         (equal rest-hash
-                                (cl-third (chronometrist-file-hash rest-start rest-end t))))))
+  (-let*
+      (((last-start last-end)           (plist-get state :last))
+       ((rest-start rest-end rest-hash) (plist-get state :rest))
+       (last-expr-file  (chronometrist-read-from last-start))
+       (last-expr-ht    (chronometrist-events-last))
+       (last-same-p     (equal last-expr-ht last-expr-file))
+       (file-new-length (chronometrist-sexp-in-file chronometrist-file (point-max)))
+       (rest-same-p     (unless (< file-new-length rest-end)
+                          (--> (chronometrist-file-hash rest-start rest-end t)
+                            (cl-third it)
+                            (equal rest-hash it)))))
+    ;; (message "chronometrist - last-start\nlast-expr-file - %S\nlast-expr-ht - %S"
+    ;;          last-expr-file
+    ;;          last-expr-ht)
+    ;; (message "chronometrist - last-same-p - %S, rest-same-p - %S"
+    ;;          last-same-p rest-same-p)
     (cond ((not rest-same-p) t)
           (last-same-p
            (when (chronometrist-read-from last-end) :append))
