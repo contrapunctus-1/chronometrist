@@ -2,7 +2,9 @@
 (require 'chronometrist)
 
 (defvar chronometrist-test-file
-  (concat (file-name-directory (buffer-file-name))
+  ;; `buffer-file-name' returns nil when Emacs is run in batch mode
+  (concat (or (ignore-errors (file-name-directory (buffer-file-name)))
+              default-directory)
           "test.sexp"))
 
 (ert-deftest task-list ()

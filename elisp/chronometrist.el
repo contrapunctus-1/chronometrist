@@ -464,29 +464,25 @@ Values are lists containing events, where each event is a list in
 the form (:name \"NAME\" :tags (TAGS) <key value pairs> ...
 :start TIME :stop TIME).")
 
-(defun chronometrist-day-start (timestamp)
-  "Get start of day (according to `chronometrist-day-start-time') for TIMESTAMP.
+(defun chronometrist-apply-time (time timestamp)
+  "Return TIMESTAMP with time modified to TIME.
+TIME must be a string in the form \"HH:MM:SS\"
+
 TIMESTAMP must be a time string in the ISO-8601 format.
 
-Return value is a time value (see `current-time')."
-  (let ((timestamp-date-list (->> timestamp
-                                  (parse-iso8601-time-string)
-                                  (decode-time)
-                                  (-drop 3)
-                                  (-take 3))))
-    (--> chronometrist-day-start-time
-         (split-string it ":")
-         (mapcar #'string-to-number it)
-         (reverse it)
-         (append it timestamp-date-list)
-         (apply #'encode-time it))))
+Return value is a ts struct (see `ts.el')."
+  (-let [(h m s) (mapcar #'string-to-number (split-string time ":"))]
+    (ts-apply :hour h :minute m :second s
+              (chronometrist-iso-timestamp-to-ts timestamp))))
+
 
 (defun chronometrist-events-maybe-split (event)
   "Split EVENT if it spans midnight.
 Return a list of two events if EVENT was split, else nil."
   (when (plist-get event :stop)
     (let ((split-time (chronometrist-midnight-spanning-p (plist-get event :start)
-                                             (plist-get event :stop))))
+                                             (plist-get event :stop)
+                                             chronometrist-day-start-time)))
       (when split-time
         (let ((first-start  (plist-get (cl-first  split-time) :start))
               (first-stop   (plist-get (cl-first  split-time) :stop))
@@ -502,6 +498,7 @@ Return a list of two events if EVENT was split, else nil."
                 (-> event-2
                     (plist-put :start second-start)
                     (plist-put :stop  second-stop))))))))
+
 
 (defun chronometrist-events-populate ()
   "Clear hash table `chronometrist-events' (which see) and populate it.
@@ -747,9 +744,14 @@ Optional argument UNIX-TIME should be a time value (see
 ;; Note - this assumes that an event never crosses >1 day. This seems
 ;; sufficient for all conceivable cases.
 
-(defun chronometrist-midnight-spanning-p (start-time stop-time)
+(defun chronometrist-midnight-spanning-p (start-time stop-time day-start-time)
   "Return non-nil if START-TIME and STOP-TIME cross a midnight.
-Return value is a list in the form
+START-TIME and STOP-TIME must be ISO-8601 timestamps.
+
+DAY-START-TIME must be a string in the form \"HH:MM:SS\" (see
+`chronometrist-day-start-time')
+
+Return a list in the form
 \((:start START-TIME
   :stop <day-start time on initial day>)
  (:start <day start time on second day>
@@ -758,20 +760,24 @@ Return value is a list in the form
   ;; time-zone-spanning events
 
   ;; The time on which the first provided day starts (according to `chronometrist-day-start-time')
-  (let* ((first-day-start (chronometrist-day-start start-time))
+  (let* ((start-ts        (chronometrist-iso-timestamp-to-ts start-time))
+         (stop-ts         (chronometrist-iso-timestamp-to-ts stop-time))
+         (first-day-start (chronometrist-apply-time day-start-time start-time))
          ;; HACK - won't work with custom day-start time
          ;; (first-day-end   (parse-iso8601-time-string
          ;;                   (concat (chronometrist-date (parse-iso8601-time-string start-time))
          ;;                           "24:00:00")))
-         (next-day-start  (time-add first-day-start
-                                    '(0 . 86400)))
-         (stop-time-unix  (parse-iso8601-time-string stop-time)))
+         (next-day-start  (ts-adjust 'hour 24 first-day-start)))
     ;; Does the event stop time exceed the next day start time?
-    (when (time-less-p next-day-start stop-time-unix)
+    (message "first-day-start - %s\nnext-day-start - %s"
+             (ts-format "%FT%T%z" first-day-start)
+             (ts-format "%FT%T%z" next-day-start))
+    (when (ts< next-day-start stop-ts)
       (list `(:start ,start-time
-                     :stop  ,(chronometrist-format-time-iso8601 next-day-start))
-            `(:start ,(chronometrist-format-time-iso8601 next-day-start)
+                     :stop  ,(ts-format "%FT%T%z" next-day-start))
+            `(:start ,(ts-format "%FT%T%z" next-day-start)
                      :stop  ,stop-time)))))
+
 
 (defun chronometrist-seconds-to-hms (seconds)
   "Convert SECONDS to a vector in the form [HOURS MINUTES SECONDS].
@@ -1837,8 +1843,8 @@ specified by `chronometrist-statistics--ui-state'."
             (t ;; (delete-other-windows)
              (unless preserve-state
                (setq chronometrist-statistics--ui-state `(:mode week
-                                        :start ,week-start
-                                        :end   ,week-end)))
+                                         :start ,week-start
+                                         :end   ,week-end)))
              (chronometrist-common-create-file)
              (chronometrist-statistics-mode)
              (switch-to-buffer buffer)
@@ -1883,3 +1889,5 @@ If ARG is a numeric argument, go forward that many times."
 (provide 'chronometrist)
 
 ;;; chronometrist.el ends here
+
+
