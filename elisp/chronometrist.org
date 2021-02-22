@@ -2098,8 +2098,8 @@ The first date is the first occurrence of
   "Create entries to be displayed in the `chronometrist-report' buffer."
   (cl-loop
     ;; `chronometrist-report-date-to-week-dates' uses today if chronometrist-report--ui-date is nil
-    with week-dates = (progn (setq chronometrist-report--ui-week-dates week-dates)
-                             (chronometrist-report-date-to-week-dates))
+    with week-dates = (setq chronometrist-report--ui-week-dates
+                            (chronometrist-report-date-to-week-dates))
     for task in chronometrist-task-list collect
     (let* ((durations        (--map (chronometrist-task-time-one-day task (chronometrist-date it))
                                     week-dates))
