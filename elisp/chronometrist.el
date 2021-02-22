@@ -1,3 +1,5 @@
+
+
 ;;; chronometrist.el --- A time tracker with a nice interface -*- lexical-binding: t; -*-
 
 ;; Author: contrapunctus <xmpp:contrapunctus@jabber.fr>
@@ -65,6 +67,8 @@
 (eval-when-compile
   (defvar chronometrist-mode-map)
   (require 'subr-x))
+
+
 
 (defcustom chronometrist-sexp-pretty-print-function #'chronometrist-plist-pp
   "Function used to pretty print plists in `chronometrist-file'.
@@ -344,6 +348,7 @@ considers it an alist."
                  'not-plist)))
   (null list))
 
+
 (defun chronometrist-plist-pp-longest-keyword-length ()
   "Find the length of the longest keyword in a plist.
 This assumes there is a single plist in the current buffer, and
@@ -390,6 +395,7 @@ The list must be on a single line, as emitted by `prin1'."
         (goto-char pos))
       (when (not (eobp))
         (forward-char)))))
+
 
 (defun chronometrist-plist-pp-buffer-plist (&optional inside-sublist-p)
   "Indent a single plist after point."
@@ -1112,100 +1118,6 @@ value of `revert-buffer-function'."
         (chronometrist-print-non-tabular)
         (chronometrist-maybe-start-timer)
         (set-window-point window point)))))
-
-(defvar chronometrist--file-state nil
-  "List containing the state of `chronometrist-file'.
-`chronometrist-refresh-file' sets this to a plist in the form
-
-\(:last (LAST-START LAST-END) :rest (REST-START REST-END HASH))
-
-\(see `chronometrist-file-hash')
-
-LAST-START and LAST-END represent the start and the end of the
-last s-expression.
-
-REST-START and REST-END represent the start of the file and the
-end of the second-last s-expression.")
-
-(defun chronometrist-file-hash (&optional start end hash)
-  "Calculate hash of `chronometrist-file' between START and END.
-START can be
-a number or marker,
-:before-last - the position at the start of the last s-expression
-nil or any other value - the value of `point-min'.
-
-END can be
-a number or marker,
-:before-last - the position at the end of the second-last s-expression,
-nil or any other value - the position at the end of the last s-expression.
-
-Return (START END) if HASH is nil, else (START END HASH).
-
-Return a list in the form (A B HASH), where A and B are markers
-in `chronometrist-file' describing the region for which HASH was calculated."
-  (chronometrist-sexp-in-file chronometrist-file
-    (let* ((start (cond ((number-or-marker-p start) start)
-                        ((eq :before-last start)
-                         (goto-char (point-max))
-                         (backward-list))
-                        (t (point-min))))
-           (end   (cond ((number-or-marker-p end) end)
-                        ((eq :before-last end)
-                         (goto-char (point-max))
-                         (backward-list 2)
-                         (forward-list))
-                        (t (goto-char (point-max))
-                           (backward-list)
-                           (forward-list)))))
-      (if hash
-          (--> (buffer-substring-no-properties start end)
-               (secure-hash 'sha1 it)
-               (list start end it))
-        (list start end)))))
-
-(defun chronometrist-read-from (position)
-  (chronometrist-sexp-in-file chronometrist-file
-    (goto-char (if (number-or-marker-p position)
-                   position
-                 (funcall position)))
-    (ignore-errors (read (current-buffer)))))
-
-(defun chronometrist-file-change-type (state)
-  "Determine the type of change made to `chronometrist-file'.
-STATE must be a plist. (see `chronometrist--file-state')
-
-Return
-:append  if a new s-expression was added to the end,
-:modify  if the last s-expression was modified,
-:remove  if the last s-expression was removed,
-    nil  if the contents didn't change, and
-      t  for any other change."
-  (-let*
-      (((last-start last-end)           (plist-get state :last))
-       ((rest-start rest-end rest-hash) (plist-get state :rest))
-       (last-expr-file  (chronometrist-read-from last-start))
-       (last-expr-ht    (chronometrist-events-last))
-       (last-same-p     (equal last-expr-ht last-expr-file))
-       (file-new-length (chronometrist-sexp-in-file chronometrist-file (point-max)))
-       (rest-same-p     (unless (< file-new-length rest-end)
-                          (--> (chronometrist-file-hash rest-start rest-end t)
-                            (cl-third it)
-                            (equal rest-hash it)))))
-    ;; (message "chronometrist - last-start\nlast-expr-file - %S\nlast-expr-ht - %S"
-    ;;          last-expr-file
-    ;;          last-expr-ht)
-    ;; (message "chronometrist - last-same-p - %S, rest-same-p - %S"
-    ;;          last-same-p rest-same-p)
-    (cond ((not rest-same-p) t)
-          (last-same-p
-           (when (chronometrist-read-from last-end) :append))
-          ((not (chronometrist-read-from last-start))
-           :remove)
-          ((not (chronometrist-read-from
-                 (lambda ()
-                   (progn (goto-char last-start)
-                          (forward-list)))))
-           :modify))))
 
 (defun chronometrist-refresh-file (fs-event)
   "Re-read `chronometrist-file' and refresh the `chronometrist' buffer.

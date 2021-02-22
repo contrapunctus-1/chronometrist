@@ -572,6 +572,14 @@ considers it an alist."
                  'not-plist)))
   (null list))
 #+END_SRC
+***** tests
+#+BEGIN_SRC emacs-lisp :load test
+(ert-deftest plist-p ()
+  (should (eq t   (chronometrist-plist-pp-plist-p '(:a 1 :b 2))))
+  (should (eq nil (chronometrist-plist-pp-plist-p '(0 :a 1 :b 2))))
+  (should (eq nil (chronometrist-plist-pp-plist-p '(:a 1 :b 2 3)))))
+
+#+END_SRC
 **** longest-keyword-length                                       :reader:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-plist-pp-longest-keyword-length ()
@@ -626,6 +634,102 @@ The list must be on a single line, as emitted by `prin1'."
         (goto-char pos))
       (when (not (eobp))
         (forward-char)))))
+#+END_SRC
+***** tests
+#+BEGIN_SRC emacs-lisp :load test
+(ert-deftest plist-pp-buffer ()
+  (should
+   (equal
+    (chronometrist-plist-pp-to-string
+     '(:name "Task"
+       :tags (foo bar)
+       :comment ((70 . "baz")
+                 "zot"
+                 (16 . "frob")
+                 (20 20 "quux"))
+       :start "2020-06-25T19:27:57+0530"
+       :stop "2020-06-25T19:43:30+0530"))
+    (concat
+     "(:name    \"Task\"\n"
+     " :tags    (foo bar)\n"
+     " :comment ((70 . \"baz\")\n"
+     "           \"zot\"\n"
+     "           (16 . \"frob\")\n"
+     "           (20 20 \"quux\"))\n"
+     " :start   \"2020-06-25T19:27:57+0530\"\n"
+     " :stop    \"2020-06-25T19:43:30+0530\")")))
+  (should
+   (equal
+    (chronometrist-plist-pp-to-string
+     '(:name  "Singing"
+       :tags  (classical solo)
+       :piece ((:composer "Gioachino Rossini"
+                :name     "Il barbiere di Siviglia"
+                :aria     ("All'idea di quel metallo" "Dunque io son"))
+               (:composer "Ralph Vaughan Williams"
+                :name     "Songs of Travel"
+                :movement ((4 . "Youth and Love")
+                           (5 . "In Dreams")
+                           (7 . "Wither Must I Wander?")))
+               (:composer "Ralph Vaughan Williams"
+                :name     "Merciless Beauty"
+                :movement 1)
+               (:composer "Franz Schubert"
+                :name     "Winterreise"
+                :movement ((1 . "Gute Nacht")
+                           (2 . "Die Wetterfahne")
+                           (4 . "Erstarrung"))))
+       :start "2020-11-01T12:01:20+0530"
+       :stop  "2020-11-01T13:08:32+0530"))
+    (concat
+     "(:name  \"Singing\"\n"
+     " :tags  (classical solo)\n"
+     " :piece ((:composer \"Gioachino Rossini\"\n"
+     "          :name     \"Il barbiere di Siviglia\"\n"
+     "          :aria     (\"All'idea di quel metallo\" \"Dunque io son\"))\n"
+     "         (:composer \"Ralph Vaughan Williams\"\n"
+     "          :name     \"Songs of Travel\"\n"
+     "          :movement ((4 . \"Youth and Love\")\n"
+     "                     (5 . \"In Dreams\")\n"
+     "                     (7 . \"Wither Must I Wander?\")))\n"
+     "         (:composer \"Ralph Vaughan Williams\"\n"
+     "          :name     \"Merciless Beauty\"\n"
+     "          :movement 1)\n"
+     "         (:composer \"Franz Schubert\"\n"
+     "          :name     \"Winterreise\"\n"
+     "          :movement ((1 . \"Gute Nacht\")\n"
+     "                     (2 . \"Die Wetterfahne\")\n"
+     "                     (4 . \"Erstarrung\"))))\n"
+     " :start \"2020-11-01T12:01:20+0530\"\n"
+     " :stop  \"2020-11-01T13:08:32+0530\")")))
+  (should (equal
+           (chronometrist-plist-pp-to-string
+            '(:name "Cooking"
+              :tags (lunch)
+              :recipe (:name "moong-masoor ki dal"
+                       :url "https://www.mirchitales.com/moong-masoor-dal-red-and-yellow-lentil-curry/")
+              :start "2020-09-23T15:22:39+0530"
+              :stop "2020-09-23T16:29:49+0530"))
+           (concat
+            "(:name   \"Cooking\"\n"
+            " :tags   (lunch)\n"
+            " :recipe (:name \"moong-masoor ki dal\"\n"
+            "          :url  \"https://www.mirchitales.com/moong-masoor-dal-red-and-yellow-lentil-curry/\")\n"
+            " :start  \"2020-09-23T15:22:39+0530\"\n"
+            " :stop   \"2020-09-23T16:29:49+0530\")")))
+  (should (equal
+           (chronometrist-plist-pp-to-string
+            '(:name    "Exercise"
+              :tags    (warm-up)
+              :start   "2018-11-21T15:35:04+0530"
+              :stop    "2018-11-21T15:38:41+0530"
+              :comment ("stretching" (25 10 "push-ups"))))
+           (concat
+            "(:name    \"Exercise\"\n"
+            " :tags    (warm-up)\n"
+            " :start   \"2018-11-21T15:35:04+0530\"\n"
+            " :stop    \"2018-11-21T15:38:41+0530\"\n"
+            " :comment (\"stretching\" (25 10 \"push-ups\")))"))))
 #+END_SRC
 **** buffer-plist                                                 :writer:
 #+BEGIN_SRC emacs-lisp
@@ -1579,123 +1683,6 @@ value of `revert-buffer-function'."
         (chronometrist-maybe-start-timer)
         (set-window-point window point)))))
 #+END_SRC
-***** file-state                                      :internal:variable:
-:PROPERTIES:
-:VALUE:    list
-:END:
-#+BEGIN_SRC emacs-lisp
-(defvar chronometrist--file-state nil
-  "List containing the state of `chronometrist-file'.
-`chronometrist-refresh-file' sets this to a plist in the form
-
-\(:last (LAST-START LAST-END) :rest (REST-START REST-END HASH))
-
-\(see `chronometrist-file-hash')
-
-LAST-START and LAST-END represent the start and the end of the
-last s-expression.
-
-REST-START and REST-END represent the start of the file and the
-end of the second-last s-expression.")
-#+END_SRC
-***** file-hash                                                  :reader:
-#+BEGIN_SRC emacs-lisp
-(defun chronometrist-file-hash (&optional start end hash)
-  "Calculate hash of `chronometrist-file' between START and END.
-START can be
-a number or marker,
-:before-last - the position at the start of the last s-expression
-nil or any other value - the value of `point-min'.
-
-END can be
-a number or marker,
-:before-last - the position at the end of the second-last s-expression,
-nil or any other value - the position at the end of the last s-expression.
-
-Return (START END) if HASH is nil, else (START END HASH).
-
-Return a list in the form (A B HASH), where A and B are markers
-in `chronometrist-file' describing the region for which HASH was calculated."
-  (chronometrist-sexp-in-file chronometrist-file
-    (let* ((start (cond ((number-or-marker-p start) start)
-                        ((eq :before-last start)
-                         (goto-char (point-max))
-                         (backward-list))
-                        (t (point-min))))
-           (end   (cond ((number-or-marker-p end) end)
-                        ((eq :before-last end)
-                         (goto-char (point-max))
-                         (backward-list 2)
-                         (forward-list))
-                        (t (goto-char (point-max))
-                           (backward-list)
-                           (forward-list)))))
-      (if hash
-          (--> (buffer-substring-no-properties start end)
-               (secure-hash 'sha1 it)
-               (list start end it))
-        (list start end)))))
-#+END_SRC
-***** read-from                                                  :reader:
-#+BEGIN_SRC emacs-lisp
-(defun chronometrist-read-from (position)
-  (chronometrist-sexp-in-file chronometrist-file
-    (goto-char (if (number-or-marker-p position)
-                   position
-                 (funcall position)))
-    (ignore-errors (read (current-buffer)))))
-#+END_SRC
-***** file-change-type                                           :reader:
-The initial idea was to use two hashes, one for the content between the start of the file up to the last expression, and the other for the last expression itself. However, in the latter case, this can cause issues -
-+ the expression may shrink, and if we try to compute the hash of the previously-known region again, we will get an args-out-of-range error.
-+ false negatives for whitespace/indentation differences.
-
-Possible states
-: <rest-start> <rest-end> <last-start> <last-end>
-1. :append - rest same, last same, new expr after last-end
-2. :modify - rest same, last not same, no expr after last-end
-3. :remove - rest same, last not same, no expr after last-start
-4. nil     - rest same, last same, no expr after last-end
-5. t       - rest changed
-
-#+BEGIN_SRC emacs-lisp
-(defun chronometrist-file-change-type (state)
-  "Determine the type of change made to `chronometrist-file'.
-STATE must be a plist. (see `chronometrist--file-state')
-
-Return
-:append  if a new s-expression was added to the end,
-:modify  if the last s-expression was modified,
-:remove  if the last s-expression was removed,
-    nil  if the contents didn't change, and
-      t  for any other change."
-  (-let*
-      (((last-start last-end)           (plist-get state :last))
-       ((rest-start rest-end rest-hash) (plist-get state :rest))
-       (last-expr-file  (chronometrist-read-from last-start))
-       (last-expr-ht    (chronometrist-events-last))
-       (last-same-p     (equal last-expr-ht last-expr-file))
-       (file-new-length (chronometrist-sexp-in-file chronometrist-file (point-max)))
-       (rest-same-p     (unless (< file-new-length rest-end)
-                          (--> (chronometrist-file-hash rest-start rest-end t)
-                            (cl-third it)
-                            (equal rest-hash it)))))
-    ;; (message "chronometrist - last-start\nlast-expr-file - %S\nlast-expr-ht - %S"
-    ;;          last-expr-file
-    ;;          last-expr-ht)
-    ;; (message "chronometrist - last-same-p - %S, rest-same-p - %S"
-    ;;          last-same-p rest-same-p)
-    (cond ((not rest-same-p) t)
-          (last-same-p
-           (when (chronometrist-read-from last-end) :append))
-          ((not (chronometrist-read-from last-start))
-           :remove)
-          ((not (chronometrist-read-from
-                 (lambda ()
-                   (progn (goto-char last-start)
-                          (forward-list)))))
-           :modify))))
-#+END_SRC
 ***** refresh-file                                               :writer:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-refresh-file (fs-event)
@@ -2484,34 +2471,34 @@ value of `revert-buffer-function'."
 #+END_SRC
 ***** statistics-mode                                        :major:mode:
 #+BEGIN_SRC emacs-lisp
-  (define-derived-mode chronometrist-statistics-mode tabulated-list-mode "Chronometrist-Statistics"
-    "Major mode for `chronometrist-statistics'."
-    (make-local-variable 'tabulated-list-format)
-    (setq tabulated-list-format
-          [("Task"              25 t)
-           ("Active days"       12 t)
-           ("%% of days active" 17 t)
-           ("Average time"      12 t)
-           ;; ("Current streak"    10 t)
-           ;; ("Last streak"       10 t)
-           ;; ("Longest streak"    10 t)
-           ])
-    (make-local-variable 'tabulated-list-entries)
-    (setq tabulated-list-entries 'chronometrist-statistics-entries)
-    (make-local-variable 'tabulated-list-sort-key)
-    (setq tabulated-list-sort-key '("Task" . nil))
-    (tabulated-list-init-header)
-    ;; (chronometrist-maybe-start-timer)
-    (add-hook 'chronometrist-timer-hook
-              (lambda ()
-                (when (get-buffer-window chronometrist-statistics-buffer-name)
-                  (chronometrist-statistics-refresh))))
-    (setq revert-buffer-function #'chronometrist-statistics-refresh)
-    (unless chronometrist--fs-watch
-      (setq chronometrist--fs-watch
-            (file-notify-add-watch chronometrist-file
-                                   '(change)
-                                   #'chronometrist-refresh-file))))
+(define-derived-mode chronometrist-statistics-mode tabulated-list-mode "Chronometrist-Statistics"
+  "Major mode for `chronometrist-statistics'."
+  (make-local-variable 'tabulated-list-format)
+  (setq tabulated-list-format
+        [("Task"              25 t)
+         ("Active days"       12 t)
+         ("%% of days active" 17 t)
+         ("Average time"      12 t)
+         ;; ("Current streak"    10 t)
+         ;; ("Last streak"       10 t)
+         ;; ("Longest streak"    10 t)
+         ])
+  (make-local-variable 'tabulated-list-entries)
+  (setq tabulated-list-entries 'chronometrist-statistics-entries)
+  (make-local-variable 'tabulated-list-sort-key)
+  (setq tabulated-list-sort-key '("Task" . nil))
+  (tabulated-list-init-header)
+  ;; (chronometrist-maybe-start-timer)
+  (add-hook 'chronometrist-timer-hook
+            (lambda ()
+              (when (get-buffer-window chronometrist-statistics-buffer-name)
+                (chronometrist-statistics-refresh))))
+  (setq revert-buffer-function #'chronometrist-statistics-refresh)
+  (unless chronometrist--fs-watch
+    (setq chronometrist--fs-watch
+          (file-notify-add-watch chronometrist-file
+                                 '(change)
+                                 #'chronometrist-refresh-file))))
 #+END_SRC
 ***** chronometrist-statistics                                              :command:
 #+BEGIN_SRC emacs-lisp
@@ -2538,8 +2525,8 @@ specified by `chronometrist-statistics--ui-state'."
             (t ;; (delete-other-windows)
              (unless preserve-state
                (setq chronometrist-statistics--ui-state `(:mode week
-                                        :start ,week-start
-                                        :end   ,week-end)))
+                                         :start ,week-start
+                                         :end   ,week-end)))
              (chronometrist-common-create-file)
              (chronometrist-statistics-mode)
              (switch-to-buffer buffer)

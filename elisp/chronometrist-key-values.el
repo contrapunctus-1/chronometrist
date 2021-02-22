@@ -38,6 +38,7 @@
           keys)
     plist))
 
+
 (defun chronometrist-history-prep (key history-table)
   "Prepare history hash tables for use in prompts.
 Each value in hash table TABLE must be a list. Each value will be
@@ -119,6 +120,7 @@ HISTORY-TABLE must be a hash table. (see `chronometrist-tags-history')"
                     history-table))))
   (chronometrist-history-prep task history-table))
 
+
 (defvar chronometrist--tag-suggestions nil
   "Suggestions for tags.
 Used as history by `chronometrist-tags-prompt'.")
@@ -179,7 +181,8 @@ _ARGS are ignored. This function always returns t, so it can be
 used in `chronometrist-before-out-functions'."
   (let* ((last-expr (chronometrist-last))
          (last-name (plist-get last-expr :name))
-         (_history  (chronometrist-tags-history-populate last-name chronometrist-tags-history chronometrist-file))
+         (_history  (chronometrist-tags-history-populate last-name
+                                             chronometrist-tags-history chronometrist-file))
          (last-tags (plist-get last-expr :tags))
          (input     (->> (chronometrist-maybe-symbol-to-string last-tags)
                          (-interpose ",")
@@ -191,7 +194,9 @@ used in `chronometrist-before-out-functions'."
         (reverse it)
         (cl-remove-duplicates it :test #'equal)
         (reverse it)
-        (chronometrist-plist-update it nil)))
+        (list :tags it)
+        (chronometrist-plist-update (chronometrist-sexp-last) it)
+        (chronometrist-sexp-replace-last it)))
     t))
 
 (defgroup chronometrist-key-values nil
@@ -232,6 +237,7 @@ HISTORY-TABLE must be a hash table (see `chronometrist-key-history')."
                  history-table))))
   (chronometrist-history-prep task history-table))
 
+
 (defvar chronometrist-value-history
   (make-hash-table :test #'equal)
   "Hash table to store previously-used values for user-keys.
@@ -260,6 +266,7 @@ HISTORY-TABLE must be a hash table. (see `chronometrist-value-history')"
   (maphash (lambda (key values)
              (chronometrist-history-prep key history-table))
            history-table))
+
 
 (defvar chronometrist--value-suggestions nil
   "Suggestions for values.
@@ -389,7 +396,8 @@ used in `chronometrist-before-out-functions'."
       (setq user-kv-expr (ignore-errors (read (current-buffer))))
       (kill-buffer chronometrist-kv-buffer-name))
     (if user-kv-expr
-        (chronometrist-plist-update nil user-kv-expr)
+        (chronometrist-sexp-replace-last
+         (chronometrist-plist-update (chronometrist-sexp-last) user-kv-expr))
       (chronometrist-refresh))))
 
 (defun chronometrist-kv-reject ()
