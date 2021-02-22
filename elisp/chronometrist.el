@@ -214,6 +214,103 @@ This is meant to be run in `chronometrist-file' when using the s-expression back
        (cl-remove-duplicates it :test #'equal)
        (sort it #'string-lessp)))
 
+
+(defvar chronometrist--file-state nil
+  "List containing the state of `chronometrist-file'.
+`chronometrist-refresh-file' sets this to a plist in the form
+
+\(:last (LAST-START LAST-END) :rest (REST-START REST-END HASH))
+
+\(see `chronometrist-file-hash')
+
+LAST-START and LAST-END represent the start and the end of the
+last s-expression.
+
+REST-START and REST-END represent the start of the file and the
+end of the second-last s-expression.")
+
+(defun chronometrist-file-hash (&optional start end hash)
+  "Calculate hash of `chronometrist-file' between START and END.
+START can be
+a number or marker,
+:before-last - the position at the start of the last s-expression
+nil or any other value - the value of `point-min'.
+
+END can be
+a number or marker,
+:before-last - the position at the end of the second-last s-expression,
+nil or any other value - the position at the end of the last s-expression.
+
+Return (START END) if HASH is nil, else (START END HASH).
+
+Return a list in the form (A B HASH), where A and B are markers
+in `chronometrist-file' describing the region for which HASH was calculated."
+  (chronometrist-sexp-in-file chronometrist-file
+    (let* ((start (cond ((number-or-marker-p start) start)
+                        ((eq :before-last start)
+                         (goto-char (point-max))
+                         (backward-list))
+                        (t (point-min))))
+           (end   (cond ((number-or-marker-p end) end)
+                        ((eq :before-last end)
+                         (goto-char (point-max))
+                         (backward-list 2)
+                         (forward-list))
+                        (t (goto-char (point-max))
+                           (backward-list)
+                           (forward-list)))))
+      (if hash
+          (--> (buffer-substring-no-properties start end)
+               (secure-hash 'sha1 it)
+               (list start end it))
+        (list start end)))))
+
+
+(defun chronometrist-read-from (position)
+  (chronometrist-sexp-in-file chronometrist-file
+    (goto-char (if (number-or-marker-p position)
+                   position
+                 (funcall position)))
+    (ignore-errors (read (current-buffer)))))
+
+(defun chronometrist-file-change-type (state)
+  "Determine the type of change made to `chronometrist-file'.
+STATE must be a plist. (see `chronometrist--file-state')
+
+Return
+:append  if a new s-expression was added to the end,
+:modify  if the last s-expression was modified,
+:remove  if the last s-expression was removed,
+    nil  if the contents didn't change, and
+      t  for any other change."
+  (-let*
+      (((last-start last-end)           (plist-get state :last))
+       ((rest-start rest-end rest-hash) (plist-get state :rest))
+       (last-expr-file  (chronometrist-read-from last-start))
+       (last-expr-ht    (chronometrist-events-last))
+       (last-same-p     (equal last-expr-ht last-expr-file))
+       (file-new-length (chronometrist-sexp-in-file chronometrist-file (point-max)))
+       (rest-same-p     (unless (< file-new-length rest-end)
+                          (--> (chronometrist-file-hash rest-start rest-end t)
+                            (cl-third it)
+                            (equal rest-hash it)))))
+    ;; (message "chronometrist - last-start\nlast-expr-file - %S\nlast-expr-ht - %S"
+    ;;          last-expr-file
+    ;;          last-expr-ht)
+    ;; (message "chronometrist - last-same-p - %S, rest-same-p - %S"
+    ;;          last-same-p rest-same-p)
+    (cond ((not rest-same-p) t)
+          (last-same-p
+           (when (chronometrist-read-from last-end) :append))
+          ((not (chronometrist-read-from last-start))
+           :remove)
+          ((not (chronometrist-read-from
+                 (lambda ()
+                   (progn (goto-char last-start)
+                          (forward-list)))))
+           :modify))))
+
+
 (defun chronometrist-plist-pp-normalize-whitespace ()
   "Remove whitespace following point, and insert a space.
 Point is placed at the end of the space."
@@ -763,15 +860,8 @@ Return a list in the form
   (let* ((start-ts        (chronometrist-iso-timestamp-to-ts start-time))
          (stop-ts         (chronometrist-iso-timestamp-to-ts stop-time))
          (first-day-start (chronometrist-apply-time day-start-time start-time))
-         ;; HACK - won't work with custom day-start time
-         ;; (first-day-end   (parse-iso8601-time-string
-         ;;                   (concat (chronometrist-date (parse-iso8601-time-string start-time))
-         ;;                           "24:00:00")))
          (next-day-start  (ts-adjust 'hour 24 first-day-start)))
     ;; Does the event stop time exceed the next day start time?
-    (message "first-day-start - %s\nnext-day-start - %s"
-             (ts-format "%FT%T%z" first-day-start)
-             (ts-format "%FT%T%z" next-day-start))
     (when (ts< next-day-start stop-ts)
       (list `(:start ,start-time
                      :stop  ,(ts-format "%FT%T%z" next-day-start))
@@ -1843,8 +1933,8 @@ specified by `chronometrist-statistics--ui-state'."
             (t ;; (delete-other-windows)
              (unless preserve-state
                (setq chronometrist-statistics--ui-state `(:mode week
-                                         :start ,week-start
-                                         :end   ,week-end)))
+                                                   :start ,week-start
+                                                   :end   ,week-end)))
              (chronometrist-common-create-file)
              (chronometrist-statistics-mode)
              (switch-to-buffer buffer)

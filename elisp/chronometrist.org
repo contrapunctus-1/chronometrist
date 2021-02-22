@@ -129,7 +129,26 @@ But I discovered that if I do that, =package-lint= says - =error: Couldn't parse
   (defvar chronometrist-mode-map)
   (require 'subr-x))
 #+END_SRC
-*** Backend
+*** TODO Backend
+1. [ ] add newline after last expression and save => nil
+1. [ ] remove newline after last expession and save => nil
+
+**** FIXME tests
+#+BEGIN_SRC emacs-lisp :load test
+(defvar chronometrist-test-file
+  (concat (file-name-directory (buffer-file-name)) "test.sexp"))
+#+END_SRC
+1. [ ] =buffer-file-name= returns nil when Emacs is run in batch mode; I've tried using =(concat (or (ignore-errors (file-name-directory (buffer-file-name))) default-directory) "test.sexp")=, but that resulted in ="~/.emacs.d/test.sexp"= being used instead, for some reason.
+   * maybe we can store the test file contents in a string instead, and create a temporary test file using =make-temp-file=?
+
+Boilerplate for updating state between file operations in tests.
+#+BEGIN_SRC emacs-lisp :load test
+(defmacro chronometrist-tests--change-type-and-update (state)
+  `(prog1 (chronometrist-file-change-type ,state)
+     (setq ,state
+           (list :last (chronometrist-file-hash :before-last nil)
+                 :rest (chronometrist-file-hash nil :before-last t)))))
+#+END_SRC
 **** pretty-print-function                               :custom:variable:
 #+BEGIN_SRC emacs-lisp
 (defcustom chronometrist-sexp-pretty-print-function #'chronometrist-plist-pp
@@ -307,6 +326,198 @@ This is meant to be run in `chronometrist-file' when using the s-expression back
   (--> (chronometrist-loop-file for plist in chronometrist-file collect (plist-get plist :name))
        (cl-remove-duplicates it :test #'equal)
        (sort it #'string-lessp)))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :load test
+(ert-deftest task-list ()
+  (let ((task-list (chronometrist-task-list)))
+    (should (listp task-list))
+    (should (seq-every-p #'stringp task-list))))
+#+END_SRC
+**** file-state                                        :internal:variable:
+:PROPERTIES:
+:VALUE:    list
+:END:
+#+BEGIN_SRC emacs-lisp
+(defvar chronometrist--file-state nil
+  "List containing the state of `chronometrist-file'.
+`chronometrist-refresh-file' sets this to a plist in the form
+
+\(:last (LAST-START LAST-END) :rest (REST-START REST-END HASH))
+
+\(see `chronometrist-file-hash')
+
+LAST-START and LAST-END represent the start and the end of the
+last s-expression.
+
+REST-START and REST-END represent the start of the file and the
+end of the second-last s-expression.")
+#+END_SRC
+**** file-hash                                                    :reader:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-file-hash (&optional start end hash)
+  "Calculate hash of `chronometrist-file' between START and END.
+START can be
+a number or marker,
+:before-last - the position at the start of the last s-expression
+nil or any other value - the value of `point-min'.
+
+END can be
+a number or marker,
+:before-last - the position at the end of the second-last s-expression,
+nil or any other value - the position at the end of the last s-expression.
+
+Return (START END) if HASH is nil, else (START END HASH).
+
+Return a list in the form (A B HASH), where A and B are markers
+in `chronometrist-file' describing the region for which HASH was calculated."
+  (chronometrist-sexp-in-file chronometrist-file
+    (let* ((start (cond ((number-or-marker-p start) start)
+                        ((eq :before-last start)
+                         (goto-char (point-max))
+                         (backward-list))
+                        (t (point-min))))
+           (end   (cond ((number-or-marker-p end) end)
+                        ((eq :before-last end)
+                         (goto-char (point-max))
+                         (backward-list 2)
+                         (forward-list))
+                        (t (goto-char (point-max))
+                           (backward-list)
+                           (forward-list)))))
+      (if hash
+          (--> (buffer-substring-no-properties start end)
+               (secure-hash 'sha1 it)
+               (list start end it))
+        (list start end)))))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :load test
+(ert-deftest file-hash ()
+  (-let* ((chronometrist-file chronometrist-test-file)
+          ((last-start last-end)
+           (chronometrist-file-hash :before-last nil))
+          ((rest-start rest-end rest-hash)
+           (chronometrist-file-hash nil :before-last t)))
+    (message "chronometrist - file-hash test - file path is %s" chronometrist-test-file)
+    (should (= 1 rest-start))
+    (should (= 1247 rest-end))
+    (should (= 1249 last-start))
+    (should (= 1419 last-end))))
+#+END_SRC
+**** read-from                                                    :reader:
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-read-from (position)
+  (chronometrist-sexp-in-file chronometrist-file
+    (goto-char (if (number-or-marker-p position)
+                   position
+                 (funcall position)))
+    (ignore-errors (read (current-buffer)))))
+#+END_SRC
+**** file-change-type                                             :reader:
+The initial idea was to use two hashes, one for the content between the start of the file up to the last expression, and the other for the last expression itself. However, in the latter case, this can cause issues -
++ the expression may shrink, and if we try to compute the hash of the previously-known region again, we will get an args-out-of-range error.
++ false negatives for whitespace/indentation differences.
+
+Possible states
+: <rest-start> <rest-end> <last-start> <last-end>
+1. :append - rest same, last same, new expr after last-end
+2. :modify - rest same, last not same, no expr after last-end
+3. :remove - rest same, last not same, no expr after last-start
+4. nil     - rest same, last same, no expr after last-end
+5. t       - rest changed
+
+#+BEGIN_SRC emacs-lisp
+(defun chronometrist-file-change-type (state)
+  "Determine the type of change made to `chronometrist-file'.
+STATE must be a plist. (see `chronometrist--file-state')
+
+Return
+:append  if a new s-expression was added to the end,
+:modify  if the last s-expression was modified,
+:remove  if the last s-expression was removed,
+    nil  if the contents didn't change, and
+      t  for any other change."
+  (-let*
+      (((last-start last-end)           (plist-get state :last))
+       ((rest-start rest-end rest-hash) (plist-get state :rest))
+       (last-expr-file  (chronometrist-read-from last-start))
+       (last-expr-ht    (chronometrist-events-last))
+       (last-same-p     (equal last-expr-ht last-expr-file))
+       (file-new-length (chronometrist-sexp-in-file chronometrist-file (point-max)))
+       (rest-same-p     (unless (< file-new-length rest-end)
+                          (--> (chronometrist-file-hash rest-start rest-end t)
+                            (cl-third it)
+                            (equal rest-hash it)))))
+    ;; (message "chronometrist - last-start\nlast-expr-file - %S\nlast-expr-ht - %S"
+    ;;          last-expr-file
+    ;;          last-expr-ht)
+    ;; (message "chronometrist - last-same-p - %S, rest-same-p - %S"
+    ;;          last-same-p rest-same-p)
+    (cond ((not rest-same-p) t)
+          (last-same-p
+           (when (chronometrist-read-from last-end) :append))
+          ((not (chronometrist-read-from last-start))
+           :remove)
+          ((not (chronometrist-read-from
+                 (lambda ()
+                   (progn (goto-char last-start)
+                          (forward-list)))))
+           :modify))))
+#+END_SRC
+***** tests
+#+BEGIN_SRC emacs-lisp :load test
+(ert-deftest file-change-type ()
+  (let* ((chronometrist-file            chronometrist-test-file)
+         (test-contents    (with-current-buffer (find-file-noselect chronometrist-file)
+                             (buffer-substring (point-min) (point-max))))
+         (chronometrist--file-state-old chronometrist--file-state)
+         (chronometrist--file-state     (list :last (chronometrist-file-hash :before-last nil)
+                                 :rest (chronometrist-file-hash nil :before-last t)))
+         (chronometrist-events-old      chronometrist-events))
+    (chronometrist-events-populate)
+    (unwind-protect
+        (progn
+          (should (eq nil (chronometrist-file-change-type chronometrist--file-state)))
+          (should (eq :append
+                      (progn
+                        (chronometrist-sexp-new
+                         '(:name "Append Test"
+                                 :start "2021-02-01T13:06:46+0530"
+                                 :stop "2021-02-01T13:06:49+0530"))
+                        (chronometrist-tests--change-type-and-update chronometrist--file-state))))
+          (should (eq :modify
+                      (progn
+                        (chronometrist-sexp-replace-last
+                         '(:name "Modify Test"
+                                 :tags (some tags)
+                                 :start "2021-02-01T13:06:46+0530"
+                                 :stop "2021-02-01T13:06:49+0530"))
+                        (chronometrist-tests--change-type-and-update chronometrist--file-state))))
+          (should (eq :remove
+                      (progn
+                        (chronometrist-sexp-in-file chronometrist-file
+                          (goto-char (point-max))
+                          (backward-list 1)
+                          (chronometrist-sexp-delete-list 1)
+                          (save-buffer))
+                        (chronometrist-tests--change-type-and-update chronometrist--file-state))))
+          (should (eq t
+                      (progn
+                        (chronometrist-sexp-in-file chronometrist-file
+                          (goto-char (point-min))
+                          (chronometrist-plist-pp '(:name "Other Change Test"
+                                             :start "2021-02-02T17:39:40+0530"
+                                             :stop "2021-02-02T17:39:44+0530")
+                                     (current-buffer))
+                          (save-buffer))
+                        (chronometrist-tests--change-type-and-update chronometrist--file-state)))))
+      (with-current-buffer (find-file-noselect chronometrist-file)
+        (delete-region (point-min) (point-max))
+        (insert test-contents)
+        (save-buffer))
+      (setq chronometrist--file-state chronometrist--file-state-old
+            chronometrist-events chronometrist-events-old))))
 #+END_SRC
 *** Plist pretty-printing
 pp.el doesn't align plist keys along the same column.
@@ -688,7 +899,7 @@ Return a list of two events if EVENT was split, else nil."
           '((:name "Guitar"
                    :tags (classical warm-up)
                    :start "2021-02-12T23:45:21+0530"
-                   :stop "2021-02-12T24:00:00+0530")
+                   :stop "2021-02-13T00:00:00+0530")
             (:name "Guitar"
                    :tags (classical warm-up)
                    :start "2021-02-13T00:00:00+0530"
@@ -1001,6 +1212,8 @@ Optional argument UNIX-TIME should be a time value (see
 ;; sufficient for all conceivable cases.
 #+END_SRC
 **** FIXME midnight-spanning-p                                    :reader:
+It does not matter here that the =:stop= dates in the returned plists are different from the =:start=, because =chronometrist-events-populate= uses only the date segment of the =:start= values as hash table keys. (The hash table keys form the rest of the program's notion of "days", and that of which plists belong to which day.)
+
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-midnight-spanning-p (start-time stop-time day-start-time)
   "Return non-nil if START-TIME and STOP-TIME cross a midnight.
@@ -1021,36 +1234,40 @@ Return a list in the form
   (let* ((start-ts        (chronometrist-iso-timestamp-to-ts start-time))
          (stop-ts         (chronometrist-iso-timestamp-to-ts stop-time))
          (first-day-start (chronometrist-apply-time day-start-time start-time))
-         ;; HACK - won't work with custom day-start time
-         ;; (first-day-end   (parse-iso8601-time-string
-         ;;                   (concat (chronometrist-date (parse-iso8601-time-string start-time))
-         ;;                           "24:00:00")))
          (next-day-start  (ts-adjust 'hour 24 first-day-start)))
     ;; Does the event stop time exceed the next day start time?
-    (message "first-day-start - %s\nnext-day-start - %s"
-             (ts-format "%FT%T%z" first-day-start)
-             (ts-format "%FT%T%z" next-day-start))
     (when (ts< next-day-start stop-ts)
       (list `(:start ,start-time
                      :stop  ,(ts-format "%FT%T%z" next-day-start))
             `(:start ,(ts-format "%FT%T%z" next-day-start)
                      :stop  ,stop-time)))))
 #+END_SRC
-
+***** tests
 #+BEGIN_SRC emacs-lisp :load test
 (ert-deftest chronometrist-midnight-spanning-p ()
   (should
-   (null (chronometrist-midnight-spanning-p "2021-02-17T01:33:12+0530"
-                                "2021-02-17T01:56:08+0530"
-                                "00:00:00")))
+   (null
+    (chronometrist-midnight-spanning-p "2021-02-17T01:33:12+0530"
+                           "2021-02-17T01:56:08+0530"
+                           "00:00:00")))
   (should
-   (equal (chronometrist-midnight-spanning-p "2021-02-19T23:45:36+0530"
-                                 "2021-02-20T00:18:40+0530"
-                                 "00:00:00")
-          '((:start "2021-02-19T23:45:36+0530"
-                    :stop "2021-02-19T24:00:00+0530")
-            (:start "2021-02-20T00:00:00+0530"
-                    :stop "2021-02-20T00:18:40+0530")))))
+   (equal
+    (chronometrist-midnight-spanning-p "2021-02-19T23:45:36+0530"
+                           "2021-02-20T00:18:40+0530"
+                           "00:00:00")
+    '((:start "2021-02-19T23:45:36+0530"
+              :stop "2021-02-20T00:00:00+0530")
+      (:start "2021-02-20T00:00:00+0530"
+              :stop "2021-02-20T00:18:40+0530"))))
+  (should
+   (equal
+    (chronometrist-midnight-spanning-p "2021-02-19T23:45:36+0530"
+                           "2021-02-20T03:18:40+0530"
+                           "01:20:30")
+    '((:start "2021-02-19T23:45:36+0530"
+              :stop "2021-02-20T01:20:30+0530")
+      (:start "2021-02-20T01:20:30+0530"
+              :stop "2021-02-20T03:18:40+0530")))))
 #+END_SRC
 
 **** seconds-to-hms                                             :function:
