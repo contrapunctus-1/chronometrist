@@ -47,7 +47,7 @@ Further details are stored in properties -
    * A workaround is to press =M-o M-o=
 ** Library headers and commentary
 Once, for sake of neatness, I made the value of =Package-Requires:= multiline -
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp :tangle no :load no
 ;; Package-Requires: ((emacs "25.1")
 ;;                    (dash "2.16.0")
 ;;                    (seq "2.20")
@@ -116,6 +116,7 @@ But I discovered that if I do that, =package-lint= says - =error: Couldn't parse
 *** Dependencies
 #+BEGIN_SRC emacs-lisp
 ;;; Code:
+;; This file was automatically generated from chronometrist.org
 (require 'dash)
 (require 'ts)
 
@@ -136,9 +137,65 @@ But I discovered that if I do that, =package-lint= says - =error: Couldn't parse
 **** FIXME tests
 #+BEGIN_SRC emacs-lisp :load test
 (defvar chronometrist-test-file
-  (concat (file-name-directory (buffer-file-name)) "test.sexp"))
+  (make-temp-file
+   "chronometrist-test-" nil ".sexp"
+   (with-output-to-string
+     (mapcar
+      (lambda (plist)
+        ;; to use this, we'd have to move `chronometrist-plist-pp' before this
+        ;; definition, and I'm perfectly content with where it is
+        ;; right now
+        ;; (chronometrist-plist-pp plist)
+        (print plist)
+        (princ "\n\n"))
+      '((:name "Programming"
+               :start "2018-01-01T00:00:00+0530"
+               :stop  "2018-01-01T01:00:00+0530")
+        (:name "Swimming"
+               :start "2018-01-01T02:00:00+0530"
+               :stop  "2018-01-01T03:00:00+0530")
+        (:name "Cooking"
+               :start "2018-01-01T04:00:00+0530"
+               :stop  "2018-01-01T05:00:00+0530")
+        (:name "Guitar"
+               :start "2018-01-01T06:00:00+0530"
+               :stop  "2018-01-01T07:00:00+0530")
+        (:name "Cycling"
+               :start "2018-01-01T08:00:00+0530"
+               :stop  "2018-01-01T09:00:00+0530")
+        (:name "Programming"
+               :start "2018-01-02T23:00:00+0530"
+               :stop  "2018-01-03T01:00:00+0530")
+        (:name "Cooking"
+               :start "2018-01-03T23:00:00+0530"
+               :stop  "2018-01-04T01:00:00+0530")
+        (:name "Programming"
+               :tags      (bug-hunting)
+               :project   "Chronometrist"
+               :component "goals"
+               :start     "2020-05-09T20:03:25+0530"
+               :stop      "2020-05-09T20:05:55+0530")
+        (:name "Arrangement/new edition"
+               :tags     (new edition)
+               :song     "Songs of Travel"
+               :composer "Vaughan Williams, Ralph"
+               :start    "2020-05-10T00:04:14+0530"
+               :stop     "2020-05-10T00:25:48+0530")
+        (:name "Guitar"
+               :tags  (classical warm-up)
+               :start "2020-05-10T15:41:14+0530"
+               :stop  "2020-05-10T15:55:42+0530")
+        (:name "Guitar"
+               :tags  (classical solo)
+               :start "2020-05-10T16:00:00+0530"
+               :stop  "2020-05-10T16:30:00+0530")
+        (:name "Programming"
+               :tags  (reading)
+               :book  "Smalltalk-80: The Language and Its Implementation"
+               :start "2020-05-10T16:33:17+0530"
+               :stop  "2020-05-10T17:10:48+0530"))))))
 #+END_SRC
-1. [ ] =buffer-file-name= returns nil when Emacs is run in batch mode; I've tried using =(concat (or (ignore-errors (file-name-directory (buffer-file-name))) default-directory) "test.sexp")=, but that resulted in ="~/.emacs.d/test.sexp"= being used instead, for some reason.
+1. [X] =buffer-file-name= returns nil when Emacs is run in batch mode; I've tried using =(concat (or (ignore-errors (file-name-directory (buffer-file-name))) default-directory) "test.sexp")=, but that resulted in ="~/.emacs.d/test.sexp"= being used instead, for some reason.
    * maybe we can store the test file contents in a string instead, and create a temporary test file using =make-temp-file=?
 
 Boilerplate for updating state between file operations in tests.
@@ -473,45 +530,50 @@ Return
                              (buffer-substring (point-min) (point-max))))
          (chronometrist--file-state-old chronometrist--file-state)
          (chronometrist--file-state     (list :last (chronometrist-file-hash :before-last nil)
-                                 :rest (chronometrist-file-hash nil :before-last t)))
+                                  :rest (chronometrist-file-hash nil :before-last t)))
          (chronometrist-events-old      chronometrist-events))
     (chronometrist-events-populate)
     (unwind-protect
         (progn
-          (should (eq nil (chronometrist-file-change-type chronometrist--file-state)))
-          (should (eq :append
-                      (progn
-                        (chronometrist-sexp-new
-                         '(:name "Append Test"
-                                 :start "2021-02-01T13:06:46+0530"
-                                 :stop "2021-02-01T13:06:49+0530"))
-                        (chronometrist-tests--change-type-and-update chronometrist--file-state))))
-          (should (eq :modify
-                      (progn
-                        (chronometrist-sexp-replace-last
-                         '(:name "Modify Test"
-                                 :tags (some tags)
-                                 :start "2021-02-01T13:06:46+0530"
-                                 :stop "2021-02-01T13:06:49+0530"))
-                        (chronometrist-tests--change-type-and-update chronometrist--file-state))))
-          (should (eq :remove
-                      (progn
-                        (chronometrist-sexp-in-file chronometrist-file
-                          (goto-char (point-max))
-                          (backward-list 1)
-                          (chronometrist-sexp-delete-list 1)
-                          (save-buffer))
-                        (chronometrist-tests--change-type-and-update chronometrist--file-state))))
-          (should (eq t
-                      (progn
-                        (chronometrist-sexp-in-file chronometrist-file
-                          (goto-char (point-min))
-                          (chronometrist-plist-pp '(:name "Other Change Test"
-                                             :start "2021-02-02T17:39:40+0530"
-                                             :stop "2021-02-02T17:39:44+0530")
-                                     (current-buffer))
-                          (save-buffer))
-                        (chronometrist-tests--change-type-and-update chronometrist--file-state)))))
+          (should
+           (eq nil (chronometrist-file-change-type chronometrist--file-state)))
+          (should
+           (eq :append
+               (progn
+                 (chronometrist-sexp-new
+                  '(:name "Append Test"
+                          :start "2021-02-01T13:06:46+0530"
+                          :stop "2021-02-01T13:06:49+0530"))
+                 (chronometrist-tests--change-type-and-update chronometrist--file-state))))
+          (should
+           (eq :modify
+               (progn
+                 (chronometrist-sexp-replace-last
+                  '(:name "Modify Test"
+                          :tags (some tags)
+                          :start "2021-02-01T13:06:46+0530"
+                          :stop "2021-02-01T13:06:49+0530"))
+                 (chronometrist-tests--change-type-and-update chronometrist--file-state))))
+          (should
+           (eq :remove
+               (progn
+                 (chronometrist-sexp-in-file chronometrist-file
+                   (goto-char (point-max))
+                   (backward-list 1)
+                   (chronometrist-sexp-delete-list 1)
+                   (save-buffer))
+                 (chronometrist-tests--change-type-and-update chronometrist--file-state))))
+          (should
+           (eq t
+               (progn
+                 (chronometrist-sexp-in-file chronometrist-file
+                   (goto-char (point-min))
+                   (chronometrist-plist-pp '(:name "Other Change Test"
+                                       :start "2021-02-02T17:39:40+0530"
+                                       :stop "2021-02-02T17:39:44+0530")
+                               (current-buffer))
+                   (save-buffer))
+                 (chronometrist-tests--change-type-and-update chronometrist--file-state)))))
       (with-current-buffer (find-file-noselect chronometrist-file)
         (delete-region (point-min) (point-max))
         (insert test-contents)

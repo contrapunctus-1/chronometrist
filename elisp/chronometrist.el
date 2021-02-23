@@ -55,6 +55,7 @@
 ;; For information on usage and customization, see https://github.com/contrapunctus-1/chronometrist/blob/master/README.md
 
 ;;; Code:
+;; This file was automatically generated from chronometrist.org
 (require 'dash)
 (require 'ts)
 
@@ -1845,8 +1846,8 @@ specified by `chronometrist-statistics--ui-state'."
             (t ;; (delete-other-windows)
              (unless preserve-state
                (setq chronometrist-statistics--ui-state `(:mode week
-                                                   :start ,week-start
-                                                   :end   ,week-end)))
+                                         :start ,week-start
+                                         :end   ,week-end)))
              (chronometrist-common-create-file)
              (chronometrist-statistics-mode)
              (switch-to-buffer buffer)
