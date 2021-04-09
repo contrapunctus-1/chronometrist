@@ -714,5 +714,4 @@ Return t, to permit use in `chronometrist-before-out-functions'."
 # Local Variables:
 # eval: (visual-fill-column-mode -1)
 # eval: (nameless-mode)
-# eval: (progn (make-local-variable 'after-save-hook) (add-hook 'after-save-hook (lambda () (start-process-shell-command "chronometrist-sed-tangle" "chronometrist-sed-tangle" "sed -n -e '/#+BEGIN_SRC emacs-lisp$/,/#+END_SRC$/{//!p;};/#+END_SRC/i\\ ' chronometrist-key-values.org | sed -E 's/^ +$//' > chronometrist-key-values.el"))))
 # End:

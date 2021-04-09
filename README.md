@@ -36,15 +36,6 @@ Chronometrist and Org time tracking seem to be equivalent in terms of capabiliti
 * Chronometrist data is just s-expressions (plists), and may be easier to parse than a complex text format with numerous use-cases.
 
 ## Installation
-### Literate program
-`chronometrist` is a literate Org program. You can choose to load the `.el` file as usual (which we autogenerate and commit to Git), but if you want to
-* hack on the source, or
-* view the source and literate documentation together, or
-* want jump-to-source commands to take you to the Org document,
-then we suggest installing [literate-elisp](https://github.com/jingtaozf/literate-elisp) and [loading the Org file directly](https://github.com/jingtaozf/literate-elisp#load-an-org-file)
-
-(The same goes for the optional extension `chronometrist-key-values`, also a part of this repository.)
-
 ### from MELPA
 1. Set up MELPA - https://melpa.org/#/getting-started
 

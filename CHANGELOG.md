@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * Single key prompts for key-values - `chronometrist-tag-choice`, and `chronometrist-key-values-unified-choice`, with more to come.
 * `chronometrist-reset`, to clear all internal state
+### Changed
+* `chronometrist` is now a literate Org program.
 ### Removed
 * `chronometrist-skip-query-prompt`, `chronometrist-skip-query-reset`, and `chronometrist--skip-detail-prompts` - these are covered by the new single key prompt functions
 

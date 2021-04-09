@@ -5,9 +5,13 @@
 ** About this file
 This Org literate program was born out of frustration with programs stored as text files, which are expensive to restructure (especially in the presence of a VCS). I am happy with the outcome - tree and source-block folding, tags, properties, and =org-match= have made it trivial to get different views of the program, and literate programming may allow me to express the "explanation" documentation in the same context as the program, without having to try to link between documentation and source.
 
-According to =benchmark= at the time of writing, =org-babel-tangle= takes about 30 seconds to tangle this file. Thus, I use a little sed one-liner (in the file-local variables) to do the tangling, which is nearly instant.
+At first, I tried tangling. Back when I used =benchmark.el= to test it, =org-babel-tangle= took about 30 seconds to tangle this file. Thus, I wrote a little sed one-liner (in the file-local variables) to do the tangling, which was nearly instant. It emitted anything between lines matching the exact strings ="#+BEGIN_SRC emacs-lisp"= and ="#+END_SRC"= -
 
-The sed script emits anything between lines matching the exact strings "#+BEGIN_SRC emacs-lisp" and "#+END_SRC".
+#+BEGIN_SRC org
+# eval: (progn (make-local-variable 'after-save-hook) (add-hook 'after-save-hook (lambda () (start-process-shell-command "chronometrist-sed-tangle" "chronometrist-sed-tangle" "sed -n -e '/#+BEGIN_SRC emacs-lisp$/,/#+END_SRC$/{//!p;};/#+END_SRC/i\\ ' chronometrist.org | sed -E 's/^ +$//' > chronometrist.el"))))
+#+END_SRC
+
+These days, rather than fiddling with tangling, we use the =literate-elisp= package to load this Org file directly. This way, source links (e.g. help buffers, stack traces) lead to this Org file, and this documentation is available to each user, within the comfort of Emacs. The only issue is that certain tools, like =checkdoc=, are currently a pain to use.
 
 *** Definition metadata
 Each definition has its own heading. The type of definition is stored in tags -
@@ -46,6 +50,8 @@ Further details are stored in properties -
 5. [ ] Some source blocks don't get syntax highlighted.
    * A workaround is to press =M-o M-o=
 ** Library headers and commentary
+Library headers are not strictly necessary since we don't tangle anymore and the new =chronometrist.el= already has them, but they're left here just in case someone does decide to tangle this file.
+
 Once, for sake of neatness, I made the value of =Package-Requires:= multiline -
 #+BEGIN_SRC emacs-lisp :tangle no :load no
 ;; Package-Requires: ((emacs "25.1")
@@ -2644,5 +2650,4 @@ If ARG is a numeric argument, go forward that many times."
 # Local Variables:
 # eval: (visual-fill-column-mode -1)
 # eval: (nameless-mode)
-# eval: (progn (make-local-variable 'after-save-hook) (add-hook 'after-save-hook (lambda () (start-process-shell-command "chronometrist-sed-tangle" "chronometrist-sed-tangle" "sed -n -e '/#+BEGIN_SRC emacs-lisp$/,/#+END_SRC$/{//!p;};/#+END_SRC/i\\ ' chronometrist.org | sed -E 's/^ +$//' > chronometrist.el"))))
 # End:
