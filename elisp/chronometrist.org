@@ -1,3 +1,4 @@
+#+TITLE: Chronometrist
 #+TODO: TODO WIP EXTEND CLEANUP FIXME REVIEW |
 #+PROPERTY: header-args :tangle yes
 
@@ -1574,6 +1575,8 @@ vectors.\)"
   :type 'string)
 #+END_SRC
 ***** hide-cursor                                       :custom:variable:
+I have not yet gotten this to work as well as I wanted.
+
 #+BEGIN_SRC emacs-lisp
 (defcustom chronometrist-hide-cursor nil
   "If non-nil, hide the cursor and only highlight the current line in the `chronometrist' buffer."
@@ -1596,6 +1599,7 @@ The default is \"*\""
   :type '(choice string function))
 #+END_SRC
 ***** day-start-time                                    :custom:variable:
+[[* events-maybe-split][=chronometrist-events-maybe-split=]] refers to this, but I'm not sure this has the desired effect at the moment—haven't even tried using it.
 #+BEGIN_SRC emacs-lisp
 (defcustom chronometrist-day-start-time "00:00:00"
   "The time at which a day is considered to start, in \"HH:MM:SS\".
@@ -1639,6 +1643,7 @@ See custom variable `chronometrist-activity-indicator'."
     chronometrist-activity-indicator))
 #+END_SRC
 ***** run-transformers                                         :function:
+Used by [[* entry-transformers][=chronometrist-entry-transformers=]] and [[* list-format-transformers][=chronometrist-list-format-transformers=]] to remove the need for Chronometrist to know about extensions like =chronometrist-goal=.
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-run-transformers (transformers arg)
   "Run TRANSFORMERS with ARG.
@@ -2646,7 +2651,7 @@ If ARG is a numeric argument, go forward that many times."
 
 ;;; chronometrist.el ends here
 #+END_SRC
-
+** Local variables
 # Local Variables:
 # eval: (visual-fill-column-mode -1)
 # eval: (nameless-mode)
