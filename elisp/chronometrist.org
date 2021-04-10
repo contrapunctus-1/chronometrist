@@ -35,27 +35,7 @@ Was not aware of Org time tracking. Still a little uneasy with the size of Org.
 :DESCRIPTION: Explanation of some terms used later
 :END:
 For lack of a better term, events are how we refer to time intervals. They are stored as plists; each contains at least a =:name "<name>"=, a =:start "<iso-timestamp>"=, and (except in case of an ongoing task) a =:stop "<iso-timestamp>"=.
-*** Project overview
-:PROPERTIES:
-:DESCRIPTION: A broad overview of the code
-:END:
-Chronometrist has three components, and each has a file containing major mode definitions and user-facing commands.
-1. [[file:../elisp/chronometrist.el][chronometrist.el]]
-2. [[file:../elisp/chronometrist-report.el][chronometrist-report.el]]
-3. [[file:../elisp/chronometrist-statistics.el][chronometrist-statistics.el]]
 
-All three of these use =(info "(elisp)Tabulated List Mode")=. Each of them also contains a "-print-non-tabular" function, which prints the non-tabular parts of the buffer.
-
-Each of them has a corresponding =-custom= file, which contain the Customize group and custom variable definitions for user-facing variables -
-- [[file:../elisp/chronometrist-custom.el][chronometrist-custom.el]]
-- [[file:../elisp/chronometrist-report-custom.el][chronometrist-report-custom.el]]
-- [[file:../elisp/chronometrist-statistics-custom.el][chronometrist-statistics-custom.el]]
-
-[[file:../elisp/chronometrist-common.el][chronometrist-common.el]] contains definitions common to all components.
-
-All three components use timers to keep their buffers updated. [[file:../elisp/chronometrist-timer.el][chronometrist-timer.el]] contains all timer-related code.
-
-Note - sometimes, when hacking or dealing with errors, timers may result in subtle bugs which are very hard to debug. Using =chronometrist-force-restart-timer= or restarting Emacs can fix them, so try that as a first sanity check.
 
 *** Chronometrist
 :PROPERTIES:
@@ -1675,6 +1655,8 @@ EVENT should be a plist (see `chronometrist-file')."
                    (parse-iso8601-time-string start))))
 #+END_SRC
 *** Timer
+Note - sometimes, when hacking or dealing with errors, timers may result in subtle bugs which are very hard to debug. Using =chronometrist-force-restart-timer= or restarting Emacs can fix them, so try that as a first sanity check.
+
 **** timer-object                                      :internal:variable:
 #+BEGIN_SRC emacs-lisp
 (defvar chronometrist--timer-object nil)
@@ -1741,6 +1723,8 @@ ARG should be the new update interval, in seconds."
   (chronometrist-maybe-start-timer))
 #+END_SRC
 *** Frontends
+All three of these use =(info "(elisp)Tabulated List Mode")=. Each of them also contains a "-print-non-tabular" function, which prints the non-tabular parts of the buffer.
+
 **** Chronometrist
 ***** TODO [%0]
 1. [ ] Define hooks with defcustom instead of defvar
