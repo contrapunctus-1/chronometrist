@@ -34,7 +34,6 @@ How to@dots{}
 
 Reference
 
-* Legend of currently-used time formats::
 * chronometrist-common.el: chronometrist-commonel.
 * chronometrist-custom.el: chronometrist-customel.
 * chronometrist-diary-view.el: chronometrist-diary-viewel.
@@ -52,15 +51,6 @@ Reference
 * chronometrist-timer.el: chronometrist-timerel.
 * chronometrist-goal::
 * chronometrist-sexp::
-
-Legend of currently-used time formats
-
-* ts::
-* iso-timestamp::
-* iso-date::
-* seconds::
-* minutes::
-* list-duration::
 
 @end detailmenu
 @end menu
@@ -99,7 +89,6 @@ From the project root, you can now run
 @chapter Reference
 
 @menu
-* Legend of currently-used time formats::
 * chronometrist-common.el: chronometrist-commonel.
 * chronometrist-custom.el: chronometrist-customel.
 * chronometrist-diary-view.el: chronometrist-diary-viewel.
@@ -118,80 +107,6 @@ From the project root, you can now run
 * chronometrist-goal::
 * chronometrist-sexp::
 @end menu
-
-@node Legend of currently-used time formats
-@section Legend of currently-used time formats
-
-@menu
-* ts::
-* iso-timestamp::
-* iso-date::
-* seconds::
-* minutes::
-* list-duration::
-@end menu
-
-@node ts
-@subsection ts
-
-ts.el struct
-@itemize
-@item
-Used by nearly all internal functions
-@end itemize
-
-@node iso-timestamp
-@subsection iso-timestamp
-
-"YYYY-MM-DDTHH:MM:SSZ"
-@itemize
-@item
-Used in the s-expression file format
-@item
-Read by chronometrist-sexp-events-populate
-@item
-Used in the plists in the chronometrist-events hash table values
-@end itemize
-
-@node iso-date
-@subsection iso-date
-
-"YYYY-MM-DD"
-@itemize
-@item
-Used as hash table keys in chronometrist-events - can't use ts structs for keys, you'd have to make a hash table predicate which uses ts=
-@end itemize
-
-@node seconds
-@subsection seconds
-
-integer seconds as duration
-@itemize
-@item
-Used for most durations
-@item
-May be changed to floating point to allow larger durations. The minimum range of `most-positive-fixnum` is 536870911, which seems to be enough to represent durations of 17 years.
-@item
-Used for update intervals (chronometrist-update-interval, chronometrist-change-update-interval)
-@end itemize
-
-@node minutes
-@subsection minutes
-
-integer minutes as duration
-@itemize
-@item
-Used for goals (chronometrist-goals-list, chronometrist-get-goal) - minutes seems like the ideal unit for users to enter
-@end itemize
-
-@node list-duration
-@subsection list-duration
-
-(hours minute seconds)
-@itemize
-@item
-Only returned by chronometrist-seconds-to-hms, called by chronometrist-format-time
-@end itemize
 
 @node chronometrist-commonel
 @section chronometrist-common.el

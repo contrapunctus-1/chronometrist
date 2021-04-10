@@ -1,59 +1,17 @@
 #+TITLE: Chronometrist
+#+SUBTITLE: A Time Tracker For Emacs
 #+TODO: TODO WIP EXTEND CLEANUP FIXME REVIEW |
 #+PROPERTY: header-args :tangle yes
 
 * chronometrist
-** About this file
-This Org literate program was born out of frustration with programs stored as text files, which are expensive to restructure (especially in the presence of a VCS). I am happy with the outcome - tree and source-block folding, tags, properties, and =org-match= have made it trivial to get different views of the program, and literate programming may allow me to express the "explanation" documentation in the same context as the program, without having to try to link between documentation and source.
-
-At first, I tried tangling. Back when I used =benchmark.el= to test it, =org-babel-tangle= took about 30 seconds to tangle this file. Thus, I wrote a little sed one-liner (in the file-local variables) to do the tangling, which was nearly instant. It emitted anything between lines matching the exact strings ="#+BEGIN_SRC emacs-lisp"= and ="#+END_SRC"= -
-
-#+BEGIN_SRC org
-# eval: (progn (make-local-variable 'after-save-hook) (add-hook 'after-save-hook (lambda () (start-process-shell-command "chronometrist-sed-tangle" "chronometrist-sed-tangle" "sed -n -e '/#+BEGIN_SRC emacs-lisp$/,/#+END_SRC$/{//!p;};/#+END_SRC/i\\ ' chronometrist.org | sed -E 's/^ +$//' > chronometrist.el"))))
-#+END_SRC
-
-These days, rather than fiddling with tangling, we use the =literate-elisp= package to load this Org file directly. This way, source links (e.g. help buffers, stack traces) lead to this Org file, and this documentation is available to each user, within the comfort of Emacs. The only issue is that certain tools, like =checkdoc=, are currently a pain to use.
-
-*** Definition metadata
-Each definition has its own heading. The type of definition is stored in tags -
-1. custom group
-2. [custom|hook|internal] variable
-3. keymap (use variable instead?)
-4. macro
-5. function
-   * does not refer to external state
-   * primarily used for the return value
-6. reader
-   * reads external state without modifying it
-   * primarily used for the return value
-7. writer
-   * modifies external state, namely a data structure or file
-   * primarily used for side-effects
-8. procedure
-   * any other impure function
-   * usually affects the display
-   * primarily used for side-effects
-9. major/minor mode
-10. command
-
-Further details are stored in properties -
-1. :INPUT: (for functions)
-2. :VALUE: list|hash table|...
-   * for functions, this is the return value
-3. :STATE: <external file or data structure read or written to>
-*** TODO Issues
-1. When opening this file, Emacs may freeze at the prompt for file-local variable values; if so, C-g will quit the prompt, and permanently marking them as safe will make the freezing stop.
-2. [ ] I like =visual-fill-column-mode= for natural language, but I don't want it applied to code blocks. =polymode.el= may hold answers.
-3. [ ] Is there a tangling solution which requires only one command (e.g. currently we use two =sed= s) but is equally fast?
-   * Perhaps we can get rid of the requirement of adding newlines after each source block, and add the newlines ourselves. That gives us control, and also makes it possible to insert Org text in the middle of a definition without unnecessary newlines.
-4. [ ] =nameless-mode= does not have any effect in =org-src-mode= buffers.
-   * It is activated, but it has no way to know the name.
-5. [ ] Some source blocks don't get syntax highlighted.
-   * A workaround is to press =M-o M-o=
 ** Explanation
 :PROPERTIES:
 :DESCRIPTION: The design, the implementation, and a little history
 :END:
+*** Why I wrote Chronometrist
+A Time Tracker - SQLite, UNIX timestamps
+
+Was not aware of Org time tracking. Still a little uneasy with the size of Org.
 *** Design goals
 :PROPERTIES:
 :DESCRIPTION: Some vague objectives which guided the project
@@ -229,7 +187,79 @@ Each of these has a corresponding function to clear it and fill it with values -
 + [[file:../elisp/chronometrist-key-values.el::defun chronometrist-value-history-populate (][=chronometrist-value-history-populate=]], and
 + [[file:../elisp/chronometrist-key-values.el::defun chronometrist-tags-history-populate (][=chronometrist-tags-history-populate=]].
 
-** Library headers and commentary
+*** Literate programming
+The shift from a bunch of Elisp files to a single Org literate program was born out of frustration with programs stored as text files, which are expensive to restructure (especially in the presence of a VCS). While some dissatisfactions remain, I generally prefer the outcome - tree and source-block folding, tags, properties, and =org-match= have made it trivial to get different views of the program, and literate programming may allow me to express the "explanation" documentation in the same context as the program, without having to try to link between documentation and source.
+
+At first, I tried tangling. Back when I used =benchmark.el= to test it, =org-babel-tangle= took about 30 seconds to tangle this file. Thus, I wrote a little sed one-liner (in the file-local variables) to do the tangling, which was nearly instant. It emitted anything between lines matching the exact strings ="#+BEGIN_SRC emacs-lisp"= and ="#+END_SRC"= -
+
+#+BEGIN_SRC org
+# eval: (progn (make-local-variable 'after-save-hook) (add-hook 'after-save-hook (lambda () (start-process-shell-command "chronometrist-sed-tangle" "chronometrist-sed-tangle" "sed -n -e '/#+BEGIN_SRC emacs-lisp$/,/#+END_SRC$/{//!p;};/#+END_SRC/i\\ ' chronometrist.org | sed -E 's/^ +$//' > chronometrist.el"))))
+#+END_SRC
+
+These days, rather than fiddling with tangling, we use the =literate-elisp= package to load this Org file directly. This way, source links (e.g. help buffers, stack traces) lead to this Org file, and this documentation is available to each user, within the comfort of Emacs. The only issue is that certain tools, like =checkdoc=, are currently a pain to use.
+
+**** Definition metadata
+Each definition has its own heading. The type of definition is stored in tags -
+1. custom group
+2. [custom|hook|internal] variable
+3. keymap (use variable instead?)
+4. macro
+5. function
+   * does not refer to external state
+   * primarily used for the return value
+6. reader
+   * reads external state without modifying it
+   * primarily used for the return value
+7. writer
+   * modifies external state, namely a data structure or file
+   * primarily used for side-effects
+8. procedure
+   * any other impure function
+   * usually affects the display
+   * primarily used for side-effects
+9. major/minor mode
+10. command
+
+Further details are stored in properties -
+1. :INPUT: (for functions)
+2. :VALUE: list|hash table|...
+   * for functions, this is the return value
+3. :STATE: <external file or data structure read or written to>
+**** TODO Issues
+1. When opening this file, Emacs may freeze at the prompt for file-local variable values; if so, C-g will quit the prompt, and permanently marking them as safe will make the freezing stop.
+2. [ ] I like =visual-fill-column-mode= for natural language, but I don't want it applied to code blocks. =polymode.el= may hold answers.
+3. [ ] Is there a tangling solution which requires only one command (e.g. currently we use two =sed= s) but is equally fast?
+   * Perhaps we can get rid of the requirement of adding newlines after each source block, and add the newlines ourselves. That gives us control, and also makes it possible to insert Org text in the middle of a definition without unnecessary newlines.
+4. [ ] =nameless-mode= does not have any effect in =org-src-mode= buffers.
+   * It is activated, but it has no way to know the name.
+5. [ ] Some source blocks don't get syntax highlighted.
+   * A workaround is to press =M-o M-o=
+*** Currently-Used Time Formats
+**** ts
+  ts.el struct
+  * Used by nearly all internal functions
+**** iso-timestamp
+  "YYYY-MM-DDTHH:MM:SSZ"
+  * Used in the s-expression file format
+  * Read by chronometrist-sexp-events-populate
+  * Used in the plists in the chronometrist-events hash table values
+**** iso-date
+  "YYYY-MM-DD"
+  * Used as hash table keys in chronometrist-events - can't use ts structs for keys, you'd have to make a hash table predicate which uses ts=
+**** seconds
+  integer seconds as duration
+  * Used for most durations
+  * May be changed to floating point to allow larger durations. The minimum range of `most-positive-fixnum` is 536870911, which seems to be enough to represent durations of 17 years.
+  * Used for update intervals (chronometrist-update-interval, chronometrist-change-update-interval)
+**** minutes
+  integer minutes as duration
+  * Used for goals (chronometrist-goals-list, chronometrist-get-goal) - minutes seems like the ideal unit for users to enter
+**** list-duration
+  (hours minute seconds)
+  * Only returned by chronometrist-seconds-to-hms, called by chronometrist-format-time
+
+** The program
+*** Library headers and commentary
 Library headers are not strictly necessary since we don't tangle anymore and the new =chronometrist.el= already has them, but they're left here just in case someone does decide to tangle this file.
 
 Once, for sake of neatness, I made the value of =Package-Requires:= multiline -
@@ -298,7 +328,6 @@ But I discovered that if I do that, =package-lint= says - =error: Couldn't parse
 ;; For information on usage and customization, see https://github.com/contrapunctus-1/chronometrist/blob/master/README.md
 #+END_SRC
 
-** Code
 *** Dependencies
 #+BEGIN_SRC emacs-lisp
 ;;; Code:
@@ -317,6 +346,8 @@ But I discovered that if I do that, =package-lint= says - =error: Couldn't parse
   (require 'subr-x))
 #+END_SRC
 *** TODO Backend
+Chronometrist stores data in a text file containing plists.
+
 1. [ ] add newline after last expression and save => nil
 1. [ ] remove newline after last expession and save => nil
 
@@ -1364,7 +1395,7 @@ Return value is seconds as an integer."
        (-reduce #'+)
        (truncate)))
 #+END_SRC
-**** count-active-days                                            :function:
+**** count-active-days                                          :function:
 #+BEGIN_SRC emacs-lisp
 (cl-defun chronometrist-statistics-count-active-days (task &optional (table chronometrist-events))
   "Return the number of days the user spent any time on TASK.
@@ -1714,6 +1745,7 @@ ARG should be the new update interval, in seconds."
 ***** TODO [%0]
 1. [ ] Define hooks with defcustom instead of defvar
 2. [ ] Change abnormal hooks to normal hooks
+3. [ ] midnight-spanning plist not displayed (may have to do with partial updates)
 ***** custom group                                         :custom:group:
 #+BEGIN_SRC emacs-lisp
 (defgroup chronometrist nil
@@ -2824,13 +2856,13 @@ If ARG is a numeric argument, go forward that many times."
     (kill-buffer)
     (chronometrist-statistics t)))
 #+END_SRC
-** Provide
+*** Provide
 #+BEGIN_SRC emacs-lisp
 (provide 'chronometrist)
 
 ;;; chronometrist.el ends here
 #+END_SRC
-** Local variables
+*** Local variables
 # Local Variables:
 # eval: (visual-fill-column-mode -1)
 # eval: (nameless-mode)
