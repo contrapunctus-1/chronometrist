@@ -74,7 +74,7 @@ Further details are stored in properties -
 #+END_SRC
 ** Code
 *** Common
-**** chronometrist-plist-remove                                             :function:
+**** plist-remove                                             :function:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-plist-remove (plist &rest keys)
   "Return PLIST with KEYS and their associated values removed."
@@ -118,7 +118,7 @@ Further details are stored in properties -
           '(:b 2 :c 3))))
 
 #+END_SRC
-**** chronometrist-history-prep                                               :writer:
+**** history-prep                                               :writer:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-history-prep (key history-table)
   "Prepare history hash tables for use in prompts.
@@ -128,13 +128,13 @@ reversed and will have duplicate elements removed."
        (cl-remove-duplicates it :test #'equal :from-end t)
        (puthash key it history-table)))
 #+END_SRC
-**** chronometrist-keyword-to-string                                        :function:
+**** keyword-to-string                                        :function:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-keyword-to-string (keyword)
   "Return KEYWORD as a string, with the leading \":\" removed."
   (replace-regexp-in-string "^:?" "" (symbol-name keyword)))
 #+END_SRC
-**** chronometrist-maybe-string-to-symbol                                   :function:
+**** maybe-string-to-symbol                                   :function:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-maybe-string-to-symbol (list)
   "For each string in LIST, if it has no spaces, convert it to a symbol."
@@ -143,7 +143,7 @@ reversed and will have duplicate elements removed."
     collect string
     else collect (intern string)))
 #+END_SRC
-**** chronometrist-maybe-symbol-to-string                                   :function:
+**** maybe-symbol-to-string                                   :function:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-maybe-symbol-to-string (list)
   "Convert each symbol in LIST to a string."
@@ -152,7 +152,7 @@ reversed and will have duplicate elements removed."
            it)
          list))
 #+END_SRC
-**** chronometrist-plist-update                                             :function:
+**** plist-update                                             :function:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-plist-update (old-plist new-plist)
   "Add tags and keyword-values from NEW-PLIST to OLD-PLIST.
@@ -186,7 +186,7 @@ alongside new tags from NEW-PLIST."
             (when old-stop `(:stop  ,old-stop)))))
 #+END_SRC
 *** Tags
-**** chronometrist-tags-history                                             :variable:
+**** tags-history                                             :variable:
 :PROPERTIES:
 :VALUE:    hash table
 :END:
@@ -197,7 +197,7 @@ Each value is a list of tag combinations, in reverse
 chronological order. Each combination is a list containing tags
 as symbol and/or strings.")
 #+END_SRC
-**** chronometrist-tags-history-populate                                      :writer:
+**** tags-history-populate                                      :writer:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-tags-history-populate (task history-table file)
   "Store tag history for TASK in HISTORY-TABLE from FILE.
@@ -238,13 +238,13 @@ HISTORY-TABLE must be a hash table. (see `chronometrist-tags-history')"
           '((reading) (bug-hunting)))))
 #+END_SRC
 
-**** chronometrist--tag-suggestions                                         :variable:
+**** -tag-suggestions                                         :variable:
 #+BEGIN_SRC emacs-lisp
 (defvar chronometrist--tag-suggestions nil
   "Suggestions for tags.
 Used as history by `chronometrist-tags-prompt'.")
 #+END_SRC
-**** chronometrist-tags-history-add                                           :writer:
+**** tags-history-add                                           :writer:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-tags-history-add (plist)
   "Add tags from PLIST to `chronometrist-tags-history'."
@@ -256,7 +256,7 @@ Used as history by `chronometrist-tags-prompt'.")
       (--> (cons tags old-tags)
            (puthash name it table)))))
 #+END_SRC
-**** chronometrist-tags-history-combination-strings                           :reader:
+**** tags-history-combination-strings                           :reader:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-tags-history-combination-strings (task)
   "Return list of past tag combinations for TASK.
@@ -274,7 +274,7 @@ This is used to provide history for `completing-read-multiple' in
                       (-interpose ",")
                       (apply #'concat))))))
 #+END_SRC
-**** chronometrist-tags-history-individual-strings                            :reader:
+**** tags-history-individual-strings                            :reader:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-tags-history-individual-strings (task)
   "Return list of tags for TASK, with each tag being a single string.
@@ -288,7 +288,7 @@ This is used to provide completion for individual tags, in
                   elt
                 (symbol-name elt)))))
 #+END_SRC
-**** chronometrist-tags-prompt                                                :reader:
+**** tags-prompt                                                :reader:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-tags-prompt (task &optional initial-input)
   "Read one or more tags from the user and return them as a list of strings.
@@ -302,7 +302,7 @@ INITIAL-INPUT is as used in `completing-read'."
                             initial-input
                             'chronometrist--tag-suggestions))
 #+END_SRC
-**** chronometrist-tags-add                                              :hook:writer:
+**** tags-add                                              :hook:writer:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-tags-add (&rest _args)
   "Read tags from the user; add them to the last entry in `chronometrist-file'.
@@ -329,20 +329,20 @@ used in `chronometrist-before-out-functions'."
     t))
 #+END_SRC
 *** Key-Values
-**** chronometrist-key-values                                           :custom:group:
+**** key-values                                           :custom:group:
 #+BEGIN_SRC emacs-lisp
 (defgroup chronometrist-key-values nil
   "Add key-values to Chronometrist time intervals."
   :group 'chronometrist)
 #+END_SRC
-**** chronometrist-kv-buffer-name                                    :custom:variable:
+**** kv-buffer-name                                    :custom:variable:
 #+BEGIN_SRC emacs-lisp
 (defcustom chronometrist-kv-buffer-name "*Chronometrist-Key-Values*"
   "Name of buffer in which key-values are entered."
   :group 'chronometrist-key-values
   :type 'string)
 #+END_SRC
-**** chronometrist-key-history                                              :variable:
+**** key-history                                              :variable:
 :PROPERTIES:
 :VALUE:    hash table
 :END:
@@ -355,7 +355,7 @@ containing keywords used with that task, in reverse chronological
 order. The keywords are stored as strings and their leading \":\"
 is removed.")
 #+END_SRC
-**** chronometrist-key-history-populate                                       :writer:
+**** key-history-populate                                       :writer:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-key-history-populate (task history-table file)
   "Store key history for TASK in HISTORY-TABLE from FILE.
@@ -389,7 +389,7 @@ HISTORY-TABLE must be a hash table (see `chronometrist-key-history')."
   (should (= (length (gethash "Programming" chronometrist-key-history)) 3))
   (should (= (length (gethash "Arrangement/new edition" chronometrist-key-history)) 2)))
 #+END_SRC
-**** chronometrist-value-history                                            :variable:
+**** value-history                                            :variable:
 :PROPERTIES:
 :VALUE:    hash table
 :END:
@@ -400,7 +400,7 @@ HISTORY-TABLE must be a hash table (see `chronometrist-key-history')."
 The hash table keys are user-key names (as strings), and the
 values are lists containing values (as strings).")
 #+END_SRC
-**** chronometrist-value-history-populate                                     :writer:
+**** value-history-populate                                     :writer:
 We don't want values to be task-sensitive, so this does not have a KEY parameter similar to TASK for =chronometrist-tags-history-populate= or =chronometrist-key-history-populate=.
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-value-history-populate (history-table file)
@@ -438,13 +438,13 @@ HISTORY-TABLE must be a hash table. (see `chronometrist-value-history')"
      always (stringp task))))
 
 #+END_SRC
-**** chronometrist--value-suggestions                                       :variable:
+**** -value-suggestions                                       :variable:
 #+BEGIN_SRC emacs-lisp
 (defvar chronometrist--value-suggestions nil
   "Suggestions for values.
 Used as history by `chronometrist-value-prompt'.")
 #+END_SRC
-**** chronometrist-kv-read-mode-map                                           :keymap:
+**** kv-read-mode-map                                           :keymap:
 #+BEGIN_SRC emacs-lisp
 (defvar chronometrist-kv-read-mode-map
   (let ((map (make-sparse-keymap)))
@@ -453,7 +453,7 @@ Used as history by `chronometrist-value-prompt'.")
     map)
   "Keymap used by `chronometrist-kv-read-mode'.")
 #+END_SRC
-**** chronometrist-kv-read-mode                                           :major:mode:
+**** kv-read-mode                                           :major:mode:
 #+BEGIN_SRC emacs-lisp
 (define-derived-mode chronometrist-kv-read-mode emacs-lisp-mode "Key-Values"
   "Mode used by `chronometrist' to read key values from the user."
@@ -461,7 +461,7 @@ Used as history by `chronometrist-value-prompt'.")
        (substitute-command-keys)
        (insert)))
 #+END_SRC
-**** chronometrist-kv-completion-quit-key                                     :reader:
+**** kv-completion-quit-key                                     :reader:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-kv-completion-quit-key ()
   "Return appropriate keybinding (as a string) to quit from `completing-read'.
@@ -476,7 +476,7 @@ It currently supports ido, ido-ubiquitous, ivy, and helm."
           "\\<helm-comp-read-map>\\[helm-cr-empty-string]")
          (t "leave blank"))))
 #+END_SRC
-**** chronometrist-key-prompt                                                 :reader:
+**** key-prompt                                                 :reader:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-key-prompt (used-keys)
   "Prompt the user to enter keys.
@@ -496,7 +496,7 @@ of `chronometrist-kv-add'."
                        finally return key-suggestions)
                      nil nil nil 'key-suggestions)))
 #+END_SRC
-**** chronometrist-value-prompt                                               :writer:
+**** value-prompt                                               :writer:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-value-prompt (key)
   "Prompt the user to enter values.
@@ -507,7 +507,7 @@ KEY should be a string for the just-entered key."
                    chronometrist--value-suggestions nil nil nil
                    'chronometrist--value-suggestions))
 #+END_SRC
-**** chronometrist-value-insert                                               :writer:
+**** value-insert                                               :writer:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-value-insert (value)
   "Insert VALUE into the key-value entry buffer."
@@ -522,7 +522,7 @@ KEY should be a string for the just-entered key."
         (t (insert "\"" value "\"")))
   (insert "\n"))
 #+END_SRC
-**** chronometrist-kv-add                                                :hook:writer:
+**** kv-add                                                :hook:writer:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-kv-add (&rest _args)
   "Read key-values from user, adding them to a temporary buffer for review.
@@ -573,7 +573,7 @@ used in `chronometrist-before-out-functions'."
       (chronometrist-sexp-reindent-buffer))
     t))
 #+END_SRC
-**** chronometrist-kv-accept                                                 :command:
+**** kv-accept                                                 :command:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-kv-accept ()
   "Accept the plist in `chronometrist-kv-buffer-name' and add it to `chronometrist-file'."
@@ -588,7 +588,7 @@ used in `chronometrist-before-out-functions'."
          (chronometrist-plist-update (chronometrist-sexp-last) user-kv-expr))
       (chronometrist-refresh))))
 #+END_SRC
-**** chronometrist-kv-reject                                                 :command:
+**** kv-reject                                                 :command:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-kv-reject ()
   "Reject the property list in `chronometrist-kv-buffer-name'."
@@ -624,7 +624,7 @@ Types of prompts planned (#1 and #2 are meant to be mixed and matched)
      + s       - skip (exit)
    * [X] basic implementation
    * [ ] make it more aesthetically pleasing in case of long suggestion strings
-**** chronometrist-defchoice                                                :function:
+**** defchoice                                                :function:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-defchoice (name type list)
   "Construct and evaluate a `defchoice' form.
@@ -635,7 +635,7 @@ Types of prompts planned (#1 and #2 are meant to be mixed and matched)
   LIST should be a list, with all elements being either a plists,
   or lists of symbols."
   (cl-loop with num = 0
-    for elt in (-take 10 list)
+    for elt in (-take 7 list)
     do (incf num)
     if (= num 10) do (setq num 0)
     collect
@@ -651,7 +651,7 @@ Types of prompts planned (#1 and #2 are meant to be mixed and matched)
                    ,@numeric-commands
                    ("s" nil "skip")))))
 #+END_SRC
-**** chronometrist-tag-choice                                               :function:
+**** tag-choice                                               :function:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-tag-choice (task)
   "Query user for tags to be added to TASK.
@@ -691,7 +691,7 @@ Return t, to permit use in `chronometrist-before-out-functions'."
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-key-values-unified-choice (task)
   "Query user for tags and key-values to be added for TASK.
-        Return t, to permit use in `chronometrist-before-out-functions'."
+Return t, to permit use in `chronometrist-before-out-functions'."
   (let ((key-values (chronometrist-loop-file for plist in chronometrist-file
                       when (equal (plist-get plist :name) task)
                       collect (chronometrist-plist-remove plist :name :start :stop)
