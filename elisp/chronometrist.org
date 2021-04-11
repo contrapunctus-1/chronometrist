@@ -3,13 +3,24 @@
 #+TODO: TODO WIP EXTEND CLEANUP FIXME REVIEW |
 #+PROPERTY: header-args :tangle yes
 
-* chronometrist
+* Chronometrist
+** Introduction
+This is a book about Chronometrist, a time tracker for Emacs, written by a humble hobbyist hacker. It coincidentally also happens to contain the full source code, and can be loaded as an Emacs Lisp program using the =literate-elisp= library.
+
+I hope this book passes Tim Daly's "Hawaii Test", in which a programmer with no knowledge of this program whatsover can read this book end-to-end, and come out an expert in its maintenance.
+
+—contrapunctus
+
 ** Explanation
 :PROPERTIES:
 :DESCRIPTION: The design, the implementation, and a little history
 :END:
 *** Why I wrote Chronometrist
+Frequently wondered where I spent my time.
+
 A Time Tracker - SQLite, UNIX timestamps
+
+Timeclock - integrated into Emacs = more likely to use it.
 
 Was not aware of Org time tracking. Still a little uneasy with the size of Org.
 *** Design goals
