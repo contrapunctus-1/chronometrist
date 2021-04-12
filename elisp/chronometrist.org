@@ -47,22 +47,20 @@ Was not aware of Org time tracking. Still a little uneasy with the size of Org.
 :END:
 For lack of a better term, events are how we refer to time intervals. They are stored as plists; each contains at least a =:name "<name>"=, a =:start "<iso-timestamp>"=, and (except in case of an ongoing task) a =:stop "<iso-timestamp>"=.
 
-*** Chronometrist
-:PROPERTIES:
-:DESCRIPTION: The primary command and its associated buffer.
-:END:
+*** Overview
+At its most basic, we read data from a [[program-backend][plain text file]] containing Lisp plists, store it in a [[program-data-structures][hash table]], and display it as a [[elisp:(find-library "tabulated-list-mode")][=tabulated-list-mode=]] buffer. When the file is changed, whether by the program or the user, we update the hash table and the buffer.
 
-**** Optimization
+*** Optimization
 It is of great importance that Chronometrist be responsive -
 + A responsive program is more likely to be used; recall our design goal of 'incentivizing use'.
 + Being an Emacs program, freezing the UI for any human-noticeable length of time is unacceptable - it prevents the user from working on anything in their environment.
 Thus, I have considered various optimization strategies, and so far implemented two.
 
-***** Prevent excess creation of file watchers
+**** Prevent excess creation of file watchers
 One of the earliest 'optimizations' of great importance turned out to simply be a bug - turns out, if you run an identical call to [[elisp:(describe-function 'file-notify-add-watch)][=file-notify-add-watch=]] twice, you create /two/ file watchers and your callback will be called /twice./ We were creating a file watcher /each time the chronometrist command was run./ 🤦 This was causing humongous slowdowns each time the file changed. 😅
 + It was fixed in v0.2.2 by making the watch creation conditional, using [[* fs-watch][=chronometrist--fs-watch=]] to store the watch object.
 
-***** Preserve hash table state for some commands
+**** Preserve hash table state for some commands
 NOTE - this has been replaced with a more general optimization - see next section.
 
 The next one was released in v0.5. Till then, any time the [[* chronometrist-file][=chronometrist-file=]] was modified, we'd clear the [[* chronometrist-events][=chronometrist-events=]] hash table and read data into it again. The reading itself is nearly-instant, even with ~2 years' worth of data [fn:1] (it uses Emacs' [[elisp:(describe-function 'read)][=read=]], after all), but the splitting of [[* Midnight-spanning events][midnight-spanning events]] is the real performance killer.
@@ -79,7 +77,7 @@ There are still some operations which [[* refresh-file][=chronometrist-refresh-f
 
 [fn:1] As indicated by exploratory work in the =parsimonious-reading= branch, where I made a loop to only =read= and collect s-expressions from the file. It was near-instant...until I added event splitting to it.
 
-***** Determine type of change made to file
+**** Determine type of change made to file
 Most changes, whether made through user-editing or by Chronometrist commands, happen at the end of the file. We try to detect the kind of change made - whether the last expression was modified, removed, or whether a new expression was added to the end - and make the corresponding change to =chronometrist-events=, instead of doing a full parse again (=chronometrist-events-populate=). The increase in responsiveness has been significant.
 
 When =chronometrist-refresh-file= is run by the file system watcher, it uses  =chronometrist-file-hash= to assign indices and a hash to =chronometrist--file-state=. The next time the file changes, =chronometrist-file-change-type= compares this state to the current state of the file to determine the type of change made.
