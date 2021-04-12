@@ -47,25 +47,25 @@ Similarly, tags are stored using a =:tags (<tag>*)= keyword-value pair. The tags
 
 [fn:1] To remove this restriction, I had briefly considered making a keyword called =:user=, whose value would be another plist containing all user-defined keyword-values. But in practice, this hasn't been a big enough issue yet to justify the work.
 *** User input
-The entry points are [[file:chronometrist-key-values.org::* kv-add][=chronometrist-kv-add=]] and [[file:chronometrist-key-values.org::* tags-add][=chronometrist-tags-add=]]. The user adds these to the desired hooks, and they prompt the user for tags/key-values.
+The entry points are [[kv-add][=chronometrist-kv-add=]] and [[tags-add][=chronometrist-tags-add=]]. The user adds these to the desired hooks, and they prompt the user for tags/key-values.
 
 Both have corresponding functions to create a prompt -
-+ [[file:chronometrist-key-values.org::* key-prompt][=chronometrist-key-prompt=]],
-+ [[file:chronometrist-key-values.org::* value-prompt][=chronometrist-value-prompt=]], and
-+ [[file:chronometrist-key-values.org::* tags-prompt][=chronometrist-tags-prompt=]].
++ [[key-prompt][=chronometrist-key-prompt=]],
++ [[value-prompt][=chronometrist-value-prompt=]], and
++ [[tags-prompt][=chronometrist-tags-prompt=]].
 
-[[file:chronometrist-key-values.org::* kv-add][=chronometrist-kv-add=]]'s way of reading key-values from the user is somewhat different from most Emacs prompts - it creates a new buffer, and uses the minibuffer to alternatingly ask for keys and values in a loop. Key-values are inserted into the buffer as the user enters/selects them. The user can break out of this loop with an empty input (the keys to accept an empty input differ between completion systems, so we try to let the user know about them using [[file:chronometrist-key-values.org::* kv-completion-quit-key][=chronometrist-kv-completion-quit-key=]]). After exiting the loop, they can edit the key-values in the buffer, and use the commands [[file:chronometrist-key-values.org::* kv-accept][=chronometrist-kv-accept=]] to accept the key-values (which uses [[file:chronometrist-key-values.org::* plist-update][=chronometrist-plist-update=]] to add them to the last plist in =chronometrist-file=) or [[file:chronometrist-key-values.org::* kv-reject][=chronometrist-kv-reject=]] to discard them.
+[[kv-add][=chronometrist-kv-add=]]'s way of reading key-values from the user is somewhat different from most Emacs prompts - it creates a new buffer, and uses the minibuffer to alternatingly ask for keys and values in a loop. Key-values are inserted into the buffer as the user enters/selects them. The user can break out of this loop with an empty input (the keys to accept an empty input differ between completion systems, so we try to let the user know about them using [[kv-completion-quit-key][=chronometrist-kv-completion-quit-key=]]). After exiting the loop, they can edit the key-values in the buffer, and use the commands [[kv-accept][=chronometrist-kv-accept=]] to accept the key-values (which uses [[plist-update][=chronometrist-plist-update=]] to add them to the last plist in =chronometrist-file=) or [[kv-reject][=chronometrist-kv-reject=]] to discard them.
 
 *** History
 All prompts suggest past user inputs. These are queried from three history hash tables -
-+ [[file:chronometrist-key-values.org::* key-history][=chronometrist-key-history=]],
-+ [[file:chronometrist-key-values.org::* value-history][=chronometrist-value-history=]], and
-+ [[file:chronometrist-key-values.org::* tags-history][=chronometrist-tags-history=]].
++ [[key-history][=chronometrist-key-history=]],
++ [[value-history][=chronometrist-value-history=]], and
++ [[tags-history][=chronometrist-tags-history=]].
 
 Each of these has a corresponding function to clear it and fill it with values -
-+ [[file:chronometrist-key-values.org::* key-history-populate][=chronometrist-key-history-populate=]]
-+ [[file:chronometrist-key-values.org::* value-history-populate][=chronometrist-value-history-populate=]], and
-+ [[file:chronometrist-key-values.org::* tags-history-populate][=chronometrist-tags-history-populate=]].
++ [[key-history-populate][=chronometrist-key-history-populate=]]
++ [[value-history-populate][=chronometrist-value-history-populate=]], and
++ [[tags-history-populate][=chronometrist-tags-history-populate=]].
 
 ** Library headers and commentary
 #+BEGIN_SRC emacs-lisp
