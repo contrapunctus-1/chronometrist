@@ -199,12 +199,12 @@ Further details are stored in properties -
   ts.el struct
   * Used by nearly all internal functions
 **** iso-timestamp
-  "YYYY-MM-DDTHH:MM:SSZ"
+  ="YYYY-MM-DDTHH:MM:SSZ"=
   * Used in the s-expression file format
   * Read by chronometrist-sexp-events-populate
   * Used in the plists in the chronometrist-events hash table values
 **** iso-date
-  "YYYY-MM-DD"
+  ="YYYY-MM-DD"=
   * Used as hash table keys in chronometrist-events - can't use ts structs for keys, you'd have to make a hash table predicate which uses ts=
 **** seconds
   integer seconds as duration
@@ -213,9 +213,9 @@ Further details are stored in properties -
   * Used for update intervals (chronometrist-update-interval, chronometrist-change-update-interval)
 **** minutes
   integer minutes as duration
-  * Used for goals (chronometrist-goals-list, chronometrist-get-goal) - minutes seems like the ideal unit for users to enter
+  * Used by [[https://www.github.com/contrapunctus-1/chronometrist-goal][chronometrist-goal]] (chronometrist-goals-list, chronometrist-get-goal) - minutes seems like the ideal unit for users to enter
 **** list-duration
-  (hours minute seconds)
+  =(hours minute seconds)=
   * Only returned by chronometrist-seconds-to-hms, called by chronometrist-format-time
 
 ** The program
