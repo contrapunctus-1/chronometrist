@@ -49,9 +49,9 @@ Quite recently, after around two years of Chronometrist developement and use, I 
 For lack of a better term, events are how we refer to time intervals. They are stored as plists; each contains at least a =:name "<name>"=, a =:start "<iso-timestamp>"=, and (except in case of an ongoing task) a =:stop "<iso-timestamp>"=.
 
 *** Overview
-At its most basic, we read data from a [[program-backend][plain text file]] containing Lisp plists, store it in a [[program-data-structures][hash table]], and [[program-frontend-chronometrist][display it]] as a [[elisp:(find-library "tabulated-list-mode")][=tabulated-list-mode=]] buffer. When the file is changed—whether by the program or the user—we [[refresh-file][update the hash table]] and the buffer.
+At its most basic, we read data from a [[#program-backend][plain text file]] containing Lisp plists, store it in a [[#program-data-structures][hash table]], and [[#program-frontend-chronometrist][display it]] as a [[elisp:(find-library "tabulated-list-mode")][=tabulated-list-mode=]] buffer. When the file is changed—whether by the program or the user—we [[refresh-file][update the hash table]] and the buffer.
 
-In addition, we implement a [[program-pretty-printer][plist pretty-printer]] and some migration commands. This repository also contains an extension for attaching arbitrary metadata to time intervals, and there is a extension for [[https://www.github.com/contrapunctus-1/chronometrist-goal][time goals and alerts]] in a separate repository.
+In addition, we implement a [[#program-pretty-printer][plist pretty-printer]] and some migration commands. This repository also contains an extension for [[file:chronometrist-key-values.org][attaching arbitrary metadata]] to time intervals, and there is a extension for [[https://www.github.com/contrapunctus-1/chronometrist-goal][time goals and alerts]] in a separate repository.
 
 *** Optimization
 It is of great importance that Chronometrist be responsive -
@@ -209,7 +209,7 @@ Further details are stored in properties -
 **** seconds
   integer seconds as duration
   * Used for most durations
-  * May be changed to floating point to allow larger durations. The minimum range of `most-positive-fixnum` is 536870911, which seems to be enough to represent durations of 17 years.
+  * May be changed to floating point to allow larger durations. The minimum range of =most-positive-fixnum= is 536870911, which seems to be enough to represent durations of 17 years.
   * Used for update intervals (chronometrist-update-interval, chronometrist-change-update-interval)
 **** minutes
   integer minutes as duration
@@ -1166,7 +1166,7 @@ file names respectively."
 :PROPERTIES:
 :CUSTOM_ID: program-data-structures
 :END:
-Reading directly from the file could be difficult, especially when your most common query is "get all intervals recorded on <date>" - and so, we maintain the hash table =chronometrist-events=, where each key is a date in the ISO-8601 format. The function =chronometrist-events-populate= is currently responsible for ensuring all [[explanation-midnight-spanning-events][midnight-spanning events]] are stored in =chronometrist-events= after being split.
+Reading directly from the file could be difficult, especially when your most common query is "get all intervals recorded on <date>" - and so, we maintain the hash table =chronometrist-events=, where each key is a date in the ISO-8601 format. The function =chronometrist-events-populate= is currently responsible for ensuring all [[#explanation-midnight-spanning-events][midnight-spanning events]] are stored in =chronometrist-events= after being split.
 
 =chronometrist-events= is used by most (all?) interval-consuming functions, but is never written to the user's file itself.
 
