@@ -7,7 +7,7 @@
 ** Introduction
 This is a book about Chronometrist, a time tracker for Emacs, written by a humble hobbyist hacker. It coincidentally also happens to contain the full source code, and can be loaded as an Emacs Lisp program using the =literate-elisp= library.
 
-I hope this book passes Tim Daly's "Hawaii Test", in which a programmer with no knowledge of this program whatsover can read this book end-to-end, and come out an expert in its maintenance.
+I hope this book—when completed—passes Tim Daly's [[https://www.youtube.com/watch?v=Av0PQDVTP4A&t=8m52s]["Hawaii Test"]], in which a programmer with no knowledge of this program whatsover can read this book end-to-end, and come out as much of an expert in its maintenance as the original author.
 
 —contrapunctus
 
@@ -16,13 +16,14 @@ I hope this book passes Tim Daly's "Hawaii Test", in which a programmer with no 
 :DESCRIPTION: The design, the implementation, and a little history
 :END:
 *** Why I wrote Chronometrist
-Frequently wondered where I spent my time.
+I frequently wondered where I spent my time. Call it a mix of introspection and curiosity.
 
-A Time Tracker - SQLite, UNIX timestamps
+At first I tried an Android application, "A Time Tracker". The designs of Chronometrist's main buffer and the =chronometrist-report= buffer still resemble that of A Time Tracker. However, every now and then I'd forget to start or stop tracking. Each time I did, I had to open an SQLite database and edit UNIX timestamps to correct it, which was not fun :\
 
-Timeclock - integrated into Emacs = more likely to use it.
+Later, I discovered John Wiegley's =timeclock=. It turned out that since it was an Emacs extension (actually, a part of Emacs), I was more likely to use it. Chronometrist started out as an "A Time Tracker"-like UI for =timeclock=, moving to an s-expression backend later.
 
-Was not aware of Org time tracking. Still a little uneasy with the size of Org.
+Quite recently, after around two years of Chronometrist developement and use, I discovered Org time tracking. I'm not quite a fan of storing data in a complex text format.
+
 *** Design goals
 :PROPERTIES:
 :DESCRIPTION: Some vague objectives which guided the project
@@ -39,7 +40,7 @@ Was not aware of Org time tracking. Still a little uneasy with the size of Org.
 5. Have a useful, informative, interactive interface
 6. Support mouse and keyboard use equally
 
-    [1] I still have doubts about this. Having SQL as a query language would be very useful in perusing the stored data. Maybe we should have tried to create a companion mode to edit SQL databases interactively?
+[1] I still have doubts about this. Having SQL as a query language would be very useful in perusing the stored data. Maybe we should have tried to create a companion mode to edit SQL databases interactively?
 
 *** Terminology
 :PROPERTIES:
@@ -48,7 +49,9 @@ Was not aware of Org time tracking. Still a little uneasy with the size of Org.
 For lack of a better term, events are how we refer to time intervals. They are stored as plists; each contains at least a =:name "<name>"=, a =:start "<iso-timestamp>"=, and (except in case of an ongoing task) a =:stop "<iso-timestamp>"=.
 
 *** Overview
-At its most basic, we read data from a [[program-backend][plain text file]] containing Lisp plists, store it in a [[program-data-structures][hash table]], and display it as a [[elisp:(find-library "tabulated-list-mode")][=tabulated-list-mode=]] buffer. When the file is changed, whether by the program or the user, we update the hash table and the buffer.
+At its most basic, we read data from a [[program-backend][plain text file]] containing Lisp plists, store it in a [[program-data-structures][hash table]], and [[program-frontend-chronometrist][display it]] as a [[elisp:(find-library "tabulated-list-mode")][=tabulated-list-mode=]] buffer. When the file is changed—whether by the program or the user—we [[refresh-file][update the hash table]] and the buffer.
+
+In addition, we implement a [[program-pretty-printer][plist pretty-printer]] and some migration commands. This repository also contains an extension for attaching arbitrary metadata to time intervals, and there is a extension for [[https://www.github.com/contrapunctus-1/chronometrist-goal][time goals and alerts]] in a separate repository.
 
 *** Optimization
 It is of great importance that Chronometrist be responsive -
@@ -94,6 +97,7 @@ Challenges -
 *** Midnight-spanning events
 :PROPERTIES:
 :DESCRIPTION: Events starting on one day and ending on another
+:CUSTOM_ID: explanation-midnight-spanning-events
 :END:
 A unique problem in working with Chronometrist, one I had never foreseen, was tasks which start on one day and end on another. These mess up data consumption (especially interval calculations and acquiring data for a specific date) in all sorts of unforeseen ways.
 
@@ -133,7 +137,7 @@ After hacking, always test for and ensure the following -
 :DESCRIPTION: Deriving dates in the current week
 :END:
 A quick description, starting from the first time [[* chronometrist-report][=chronometrist-report=]] is run in an Emacs session -
-1. We get the current date as a ts struct =(chronometrist-date)=.
+1. We get the current date as a ts struct, using =chronometrist-date=.
 2. The variable =chronometrist-report-week-start-day= stores the day we consider the week to start with. The default is "Sunday".
 
    We check if the date from #2 is on the week start day, else decrement it till we are, using =(chronometrist-report-previous-week-start)=.
@@ -302,10 +306,14 @@ But I discovered that if I do that, =package-lint= says - =error: Couldn't parse
   (require 'subr-x))
 #+END_SRC
 *** TODO Backend
-Chronometrist stores data in a text file containing plists.
+:PROPERTIES:
+:CUSTOM_ID: program-backend
+:END:
+
+All file-related operations are grouped here. There has been some work towards creating a multiple-backend system in the =sql= branch, based on the [[elisp:(find-library "eieio")][=eieio=]] library.
 
 1. [ ] add newline after last expression and save => nil
-1. [ ] remove newline after last expession and save => nil
+2. [ ] remove newline after last expession and save => nil
 
 **** FIXME tests
 #+BEGIN_SRC emacs-lisp :load test
@@ -755,9 +763,10 @@ Return
             chronometrist-events chronometrist-events-old))))
 #+END_SRC
 *** Plist pretty-printing
-pp.el doesn't align plist keys along the same column.
-
-ppp.el (MELPA) doesn't align plist /values/ along the same column; also, it's GPL, and I try to avoid GPL dependencies.
+:PROPERTIES:
+:CUSTOM_ID: program-pretty-printer
+:END:
+=pp.el=, part of Emacs, doesn't align plist keys along the same column. =ppp.el= (available on MELPA) doesn't align plist /values/ along the same column; also, it's GPL, and I try to avoid GPL dependencies. And thus, I wrote this ad hoc plist pretty-printer.
 
 1. [X] work recursively for plist/alist values
 2. [X] Add variable (to chronometrist-sexp.el) to set pretty-printing function. Default to ppp.el if found, fallback to internal Emacs pretty printer, and let users set their own pretty printing function.
@@ -1154,6 +1163,13 @@ file names respectively."
       (message "You can migrate later using `chronometrist-migrate-timelog-file-to-sexp-file'."))))
 #+END_SRC
 *** Data structures
+:PROPERTIES:
+:CUSTOM_ID: program-data-structures
+:END:
+Reading directly from the file could be difficult, especially when your most common query is "get all intervals recorded on <date>" - and so, we maintain the hash table =chronometrist-events=, where each key is a date in the ISO-8601 format. The function =chronometrist-events-populate= is currently responsible for ensuring all [[explanation-midnight-spanning-events][midnight-spanning events]] are stored in =chronometrist-events= after being split.
+
+=chronometrist-events= is used by most (all?) interval-consuming functions, but is never written to the user's file itself.
+
 **** reset-state                                                 :command:
 #+BEGIN_SRC emacs-lisp
 (defun chronometrist-reset ()
@@ -1702,6 +1718,10 @@ ARG should be the new update interval, in seconds."
 All three of these use =(info "(elisp)Tabulated List Mode")=. Each of them also contains a "-print-non-tabular" function, which prints the non-tabular parts of the buffer.
 
 **** Chronometrist
+:PROPERTIES:
+:CUSTOM_ID: program-frontend-chronometrist
+:END:
+
 ***** TODO [%0]
 1. [ ] Define hooks with defcustom instead of defvar
 2. [ ] Change abnormal hooks to normal hooks
