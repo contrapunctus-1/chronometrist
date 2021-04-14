@@ -99,7 +99,9 @@ Challenges -
 :DESCRIPTION: Events starting on one day and ending on another
 :CUSTOM_ID: explanation-midnight-spanning-events
 :END:
-A unique problem in working with Chronometrist, one I had never foreseen, was tasks which start on one day and end on another. These mess up data consumption (especially interval calculations and acquiring data for a specific date) in all sorts of unforeseen ways.
+A unique problem in working with Chronometrist, one I had never foreseen, was tasks which start on one day and end on another. For instance, you start working on something at 2021-01-01T23:00 hours and stop on 2021-01-02T01:00.
+
+These mess up data consumption (especially interval calculations and acquiring data for a specific date) in all sorts of unforeseen ways.
 
 There are a few different approaches of dealing with them. (Currently, Chronometrist uses #3.)
 **** Check the code of the first event of the day (timeclock format)
