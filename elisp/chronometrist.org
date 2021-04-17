@@ -16,13 +16,13 @@ I hope this book—when completed—passes Tim Daly's [[https://www.youtube.com/
 :DESCRIPTION: The design, the implementation, and a little history
 :END:
 *** Why I wrote Chronometrist
-I frequently wondered where I spent my time. Call it a mix of introspection and curiosity.
+It probably started of by me frequently wondering - what did I do all day? How much time have I spent doing X? Call it a mix of introspection and curiosity. It is also a tool to help me stay focused on a single task at a time, and to not go overboard and work on something for 7 hours straight.
 
 At first I tried an Android application, "A Time Tracker". The designs of Chronometrist's main buffer and the =chronometrist-report= buffer still resemble that of A Time Tracker. However, every now and then I'd forget to start or stop tracking. Each time I did, I had to open an SQLite database and edit UNIX timestamps to correct it, which was not fun :\
 
 Later, I discovered John Wiegley's =timeclock=. It turned out that since it was an Emacs extension (actually, a part of Emacs), I was more likely to use it. Chronometrist started out as an "A Time Tracker"-like UI for =timeclock=, moving to an s-expression backend later.
 
-Quite recently, after around two years of Chronometrist developement and use, I discovered Org time tracking. I'm not quite a fan of storing data in a complex text format.
+Quite recently, after around two years of Chronometrist developement and use, I discovered that Org mode has a time tracking feature, too. Even though I've embraced some of [[#explanation-literate-programming][the joys of Org]], I'm not quite at ease with the idea of storing data in a complex text format with only one complete implementation.
 
 *** Design goals
 :PROPERTIES:
@@ -48,6 +48,8 @@ Quite recently, after around two years of Chronometrist developement and use, I 
 :END:
 For lack of a better term, events are how we refer to time intervals. They are stored as plists; each contains at least a =:name "<name>"=, a =:start "<iso-timestamp>"=, and (except in case of an ongoing task) a =:stop "<iso-timestamp>"=.
 
+See also [[#explanation-time-formats][Currently-Used Time Formats]]
+
 *** Overview
 At its most basic, we read data from a [[#program-backend][plain text file]] containing Lisp plists, store it in a [[#program-data-structures][hash table]], and [[#program-frontend-chronometrist][display it]] as a [[elisp:(find-library "tabulated-list-mode")][=tabulated-list-mode=]] buffer. When the file is changed—whether by the program or the user—we [[refresh-file][update the hash table]] and the buffer.
 
@@ -60,13 +62,13 @@ It is of great importance that Chronometrist be responsive -
 Thus, I have considered various optimization strategies, and so far implemented two.
 
 **** Prevent excess creation of file watchers
-One of the earliest 'optimizations' of great importance turned out to simply be a bug - turns out, if you run an identical call to [[elisp:(describe-function 'file-notify-add-watch)][=file-notify-add-watch=]] twice, you create /two/ file watchers and your callback will be called /twice./ We were creating a file watcher /each time the chronometrist command was run./ 🤦 This was causing humongous slowdowns each time the file changed. 😅
+One of the earliest 'optimizations' of great importance turned out to simply be a bug - turns out, if you run an identical call to [[elisp:(describe-function 'file-notify-add-watch)][=file-notify-add-watch=]] twice, you create /two/ file watchers and your callback will be called /twice./ We were creating a file watcher /each time the =chronometrist= command was run./ 🤦 This was causing humongous slowdowns each time the file changed. 😅
 + It was fixed in v0.2.2 by making the watch creation conditional, using [[* fs-watch][=chronometrist--fs-watch=]] to store the watch object.
 
 **** Preserve hash table state for some commands
 NOTE - this has been replaced with a more general optimization - see next section.
 
-The next one was released in v0.5. Till then, any time the [[* chronometrist-file][=chronometrist-file=]] was modified, we'd clear the [[* chronometrist-events][=chronometrist-events=]] hash table and read data into it again. The reading itself is nearly-instant, even with ~2 years' worth of data [fn:1] (it uses Emacs' [[elisp:(describe-function 'read)][=read=]], after all), but the splitting of [[* Midnight-spanning events][midnight-spanning events]] is the real performance killer.
+The next one was released in v0.5. Till then, any time the [[* chronometrist-file][=chronometrist-file=]] was modified, we'd clear the [[* chronometrist-events][=chronometrist-events=]] hash table and read data into it again. The reading itself is nearly-instant, even with ~2 years' worth of data [fn:1] (it uses Emacs' [[elisp:(describe-function 'read)][=read=]], after all), but the splitting of [[#explanation-midnight-spanning-intervals][midnight-spanning events]] is the real performance killer.
 
 After the optimization...
 1. Two backend functions ([[* new][=chronometrist-sexp-new=]] and [[* replace-last][=chronometrist-sexp-replace-last=]]) were modified to set a flag (=chronometrist--inhibit-read-p=) before saving the file.
@@ -94,35 +96,38 @@ Challenges -
    * :modify - normally, replace in table; for spanning intervals, split and replace
    * :remove - normally, remove from table; for spanning intervals, split and remove
 
-*** Midnight-spanning events
+*** Midnight-spanning intervals
 :PROPERTIES:
 :DESCRIPTION: Events starting on one day and ending on another
-:CUSTOM_ID: explanation-midnight-spanning-events
+:CUSTOM_ID: explanation-midnight-spanning-intervals
 :END:
 A unique problem in working with Chronometrist, one I had never foreseen, was tasks which start on one day and end on another. For instance, you start working on something at 2021-01-01T23:00 hours and stop on 2021-01-02T01:00.
 
-These mess up data consumption (especially interval calculations and acquiring data for a specific date) in all sorts of unforeseen ways.
+These mess up data consumption in all sorts of unforeseen ways, especially interval calculations and acquiring intervals for a specific date. In case of two of the most common operations throughout the program -
+1. finding the intervals recorded on a given date -
+2. finding the time spent on a task on a given day - if the day's intervals used for this contain a midnight-spanning interval, you'll have inaccurate results - it will include yesterday's time from the interval as well as today's.
 
 There are a few different approaches of dealing with them. (Currently, Chronometrist uses #3.)
 **** Check the code of the first event of the day (timeclock format)
 :PROPERTIES:
 :DESCRIPTION: When the code of the first event in the day is "o", it's a midnight-spanning event.
 :END:
-  + Advantage - very simple to detect
-  + Disadvantage - "in" and "out" events must be represented separately
++ Advantage - very simple to detect
++ Disadvantage - "in" and "out" events must be represented separately
 **** Split them at the file level
-     + Advantage - operation is performed only once for each such event + simpler data-consuming code + reduced post-parsing load.
-     + What happens when the user changes their day-start-time? The split-up events are now split wrongly, and the second event may get split /again./
-       Possible solutions -
-       1. Add function to check if, for two events A and B, the :stop of A is the same as the :start of B, and that all their other tags are identical. Then we can re-split them according to the new day-start-time.
-       2. Add a :split tag to split events. It can denote that the next event was originally a part of this one.
-       3. Re-check and update the file when the day-start-time changes.
-          - Possible with ~add-variable-watcher~ or ~:custom-set~ in Customize (thanks bpalmer)
++ Advantage - operation is performed only once for each such event + simpler data-consuming code + reduced post-parsing load.
++ What happens when the user changes their day-start-time? The split-up events are now split wrongly, and the second event may get split /again./
+
+Possible solutions -
+1. Add function to check if, for two events A and B, the :stop of A is the same as the :start of B, and that all their other tags are identical. Then we can re-split them according to the new day-start-time.
+2. Add a :split tag to split events. It can denote that the next event was originally a part of this one.
+3. Re-check and update the file when the day-start-time changes.
+   - Possible with ~add-variable-watcher~ or ~:custom-set~ in Customize (thanks bpalmer)
 **** Split them at the hash-table-level
-     Handled by ~chronometrist-sexp-events-populate~
-     + Advantage - simpler data-consuming code.
+Handled by ~chronometrist-sexp-events-populate~
++ Advantage - simpler data-consuming code.
 **** Split them at the data-consumer level (e.g. when calculating time for one day/getting events for one day)
-     + Advantage - reduced repetitive post-parsing load.
++ Advantage - reduced repetitive post-parsing load.
 
 *** Point restore behaviour
 :PROPERTIES:
@@ -150,6 +155,9 @@ A quick description, starting from the first time [[* chronometrist-report][=chr
 5. To get data for the previous/next weeks, we decrement/increment the date in =chronometrist-report--ui-date= by 7 days and repeat the above process (via =(chronometrist-report-previous-week)= / =(chronometrist-report-next-week)=).
 
 *** Literate programming
+:PROPERTIES:
+:CUSTOM_ID: explanation-literate-programming
+:END:
 The shift from a bunch of Elisp files to a single Org literate program was born out of frustration with programs stored as text files, which are expensive to restructure (especially in the presence of a VCS). While some dissatisfactions remain, I generally prefer the outcome - tree and source-block folding, tags, properties, and =org-match= have made it trivial to get different views of the program, and literate programming may allow me to express the "explanation" documentation in the same context as the program, without having to try to link between documentation and source.
 
 At first, I tried tangling. Back when I used =benchmark.el= to test it, =org-babel-tangle= took about 30 seconds to tangle this file. Thus, I wrote a little sed one-liner (in the file-local variables) to do the tangling, which was nearly instant. It emitted anything between lines matching the exact strings ="#+BEGIN_SRC emacs-lisp"= and ="#+END_SRC"= -
@@ -197,6 +205,10 @@ Further details are stored in properties -
 5. [ ] Some source blocks don't get syntax highlighted.
    * A workaround is to press =M-o M-o=
 *** Currently-Used Time Formats
+:PROPERTIES:
+:CUSTOM_ID: explanation-time-formats
+:END:
+
 **** ts
   ts.el struct
   * Used by nearly all internal functions
@@ -220,7 +232,7 @@ Further details are stored in properties -
   =(hours minute seconds)=
   * Only returned by chronometrist-seconds-to-hms, called by chronometrist-format-time
 
-** The program
+** The Program
 *** Library headers and commentary
 Library headers are not strictly necessary since we don't tangle anymore and the new =chronometrist.el= already has them, but they're left here just in case someone does decide to tangle this file.
 
@@ -1168,9 +1180,9 @@ file names respectively."
 :PROPERTIES:
 :CUSTOM_ID: program-data-structures
 :END:
-Reading directly from the file could be difficult, especially when your most common query is "get all intervals recorded on <date>" - and so, we maintain the hash table =chronometrist-events=, where each key is a date in the ISO-8601 format. The function =chronometrist-events-populate= is currently responsible for ensuring all [[#explanation-midnight-spanning-events][midnight-spanning events]] are stored in =chronometrist-events= after being split.
+Reading directly from the file could be difficult, especially when your most common query is "get all intervals recorded on <date>" - and so, we maintain the hash table =chronometrist-events=, where each key is a date in the ISO-8601 format. The function =chronometrist-events-populate= is currently responsible for ensuring all [[#explanation-midnight-spanning-intervals][midnight-spanning intervals]] are stored in =chronometrist-events= after being split.
 
-=chronometrist-events= is used by most (all?) interval-consuming functions, but is never written to the user's file itself.
+The data from =chronometrist-events= is used by most (all?) interval-consuming functions, but is never written to the user's file itself.
 
 **** reset-state                                                 :command:
 #+BEGIN_SRC emacs-lisp
@@ -1649,6 +1661,8 @@ EVENT should be a plist (see `chronometrist-file')."
                    (parse-iso8601-time-string start))))
 #+END_SRC
 *** Timer
+Instead of the Emacs convention of pressing ~g~ to update, we keep buffers updated with a timer.
+
 Note - sometimes, when hacking or dealing with errors, timers may result in subtle bugs which are very hard to debug. Using =chronometrist-force-restart-timer= or restarting Emacs can fix them, so try that as a first sanity check.
 
 **** timer-object                                      :internal:variable:
@@ -2844,8 +2858,9 @@ If ARG is a numeric argument, go forward that many times."
 
 ;;; chronometrist.el ends here
 #+END_SRC
-*** Local variables
+** Local Variables
 # Local Variables:
+# org-html-self-link-headlines: t
 # eval: (visual-fill-column-mode -1)
 # eval: (nameless-mode)
 # End:
