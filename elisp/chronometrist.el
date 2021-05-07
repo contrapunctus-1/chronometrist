@@ -5,7 +5,7 @@
 ;; Keywords: calendar
 ;; Homepage: https://github.com/contrapunctus-1/chronometrist
 ;; Package-Requires: ((emacs "25.1") (literate-elisp "0.1") (dash "2.16.0") (seq "2.20") (ts "0.2"))
-;; Version: 0.6.5
+;; Version: 0.7.0
 
 ;; This is free and unencumbered software released into the public domain.
 ;;
